@@ -12,12 +12,12 @@ jobs:
         with:
           node-version: '22'
       - name: Instalar front-end
-        run: npm install
+        run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
       - name: Instalar servidor
-        run: npm install --prefix server
+        run: npm ci --prefix server
       - run: npm run typecheck --prefix server
       - run: npm test --prefix server
       - run: npm run build --prefix server

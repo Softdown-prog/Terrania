@@ -2,7 +2,13 @@
 
 RPG **2D top-down e procedural** para navegador, desenhado em **HTML5 + TypeScript + Canvas 2D** sem PNG, spritesheets ou React. Inspirado em ideias de mundo/RPG do antigo Terranium (`Softdown-prog/2d2`), sem transportar o motor C++/SDL3.
 
-## Versão 0.2 — multiplayer experimental
+## Versão 0.3 — site, mundo e movimento
+
+A raiz agora é o site de apresentação. **Jogar** abre `/jogar/`, com tela dedicada, ajuda, câmera ajustável e controles móveis. Mundo, guia, novidades e comunidade têm páginas próprias. Veja [site e alfa 0.3](docs/SITE_E_ALFA_03.md).
+
+O cenário ganhou vegetação com profundidade, texturas, margens de água e marcos na clareira. O herói ganhou animação direcional, aceleração/frenagem e combate com preparo, recuo e efeitos. A câmera tem antecipação, zoom e opção de movimento reduzido.
+
+### Multiplayer experimental
 
 **Front-end no Cloudflare Pages; servidor WebSocket Node.js na VPS.** A mesma seed produz o mapa no cliente e orienta colisões no servidor. O servidor controla posições, vida, monstros, ataques e progresso da missão de cinco slimes. O navegador só envia movimento/ataque e desenha os personagens.
 
@@ -21,7 +27,7 @@ Node.js 22+ recomendado.
 **Somente navegador (offline):**
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -29,13 +35,13 @@ npm run dev
 
 ```bash
 # terminal 1, servidor
-cd server && npm install && npm run dev
+cd server && npm ci && npm run dev
 
 # terminal 2, na raiz do projeto
 VITE_MULTIPLAYER_URL=ws://localhost:8787/ws npm run dev
 ```
 
-Abrir duas abas em `http://localhost:5173/?room=origins`. O servidor aceita a origem `http://localhost:5173` para desenvolvimento.
+Abrir duas abas em `http://localhost:5173/jogar/?room=origins`. O servidor aceita a origem `http://localhost:5173` para desenvolvimento.
 
 ## Verificações
 
@@ -49,7 +55,7 @@ npm test
 npm run build
 ```
 
-Os `npm install` devem ser feitos antes. O build da interface produz `dist/`. `server/Dockerfile` prepara apenas a API multiplayer, sem navegador e sem Chrome/Chromium.
+Os `npm ci` devem ser feitos antes. O build da interface produz `dist/`. `server/Dockerfile` prepara apenas a API multiplayer, sem navegador e sem Chrome/Chromium.
 
 ## Produção
 
@@ -61,9 +67,11 @@ Os `npm install` devem ser feitos antes. O build da interface produz `dist/`. `s
 
 ## Escopo e repositório
 
-Repositório oficial: [`Softdown-prog/Terrania`](https://github.com/Softdown-prog/Terrania). O repositório do Terranium original (`Softdown-prog/2d2`) permanece separado. O backend ainda não foi instalado na VPS nem conectado a um domínio público. Veja os documentos em `docs/` e o roteiro em `docs/ROADMAP.md`.
+Repositório oficial: [`Softdown-prog/Terrania`](https://github.com/Softdown-prog/Terrania). O repositório do Terranium original (`Softdown-prog/2d2`) permanece separado. A disponibilidade do backend depende da configuração externa; esta alteração não instala nem atualiza serviços na VPS. Veja os documentos em `docs/` e o roteiro em `docs/ROADMAP.md`.
 ## Motor e interface separados
 
 `src/main.ts` só inicializa a aplicação. O motor local em `src/engine/OfflineSimulation.ts` não depende de DOM, Canvas, armazenamento nem WebSocket; o controlador `src/game/Game.ts` integra motor, renderizador, HUD e rede. A simulação autoritativa online fica em `server/src/Room.ts` e compartilha atores, colisão e protocolo.
 
 **Cloudflare Pages não precisa de Dockerfile:** build `npm run build`, saída `dist`. A VPS usa o Dockerfile existente em `server/Dockerfile`. Consulte [arquitetura](docs/ARQUITETURA.md) e [custos/deploy](docs/ESTRUTURA_E_CUSTOS.md).
+
+**Compatibilidade da alfa 0.3:** publique também o backend desta revisão; o protocolo 2 impede misturar o cliente novo com as regras físicas antigas. Sem backend compatível, o solo permanece utilizável. O save local existente é mantido.

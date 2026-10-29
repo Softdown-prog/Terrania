@@ -10,7 +10,10 @@
 - [ ] Validar build real com dependências instaladas e fluxo entre dois navegadores
 
 ## Fase 1 — Vertical slice de RPG
-- [ ] Melhorar herói procedural e animações em oito direções
+- [x] Melhorar herói procedural e animações em oito direções
+- [x] Separar site de apresentação e entrada do jogo
+- [x] Profundidade no cenário, movimento com aceleração e câmera ajustável
+- [x] Integração local com dois clientes WebSocket e build multipágina validado
 - [ ] Cidade inicial com NPCs, placas, interiores e diálogos
 - [ ] Inventário, equipamentos, loot e itens consumíveis
 - [ ] Sistema de quests com estados e recompensas

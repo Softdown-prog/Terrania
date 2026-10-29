@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0d2423" />
+    <meta
+      name="description"
+      content="Prepare links de salas, convide amigos e participe do desenvolvimento de Terrania: Origins."
+    />
+    <meta property="og:title" content="Comunidade · Terrania: Origins" />
+    <meta
+      property="og:description"
+      content="Prepare links de salas, convide amigos e participe do desenvolvimento de Terrania: Origins."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/art/crest.svg" />
+    <title>Comunidade · Terrania: Origins</title>
+  </head>
+  <body class="inner-page">
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="/" aria-label="Terrania: Origins — início"
+          ><img src="/art/crest.svg" alt="" width="37" height="44" /><span
+            >TERRANIA<small>O R I G I N S</small></span
+          ></a
+        ><button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="main-nav"
+          aria-label="Abrir navegação"
+        >
+          <span></span><span></span>
+        </button>
+        <nav id="main-nav" aria-label="Navegação principal">
+          <a href="/mundo/">O mundo</a><a href="/guia/">Como jogar</a
+          ><a href="/novidades/">Novidades</a
+          ><a href="/comunidade/" aria-current="page">Comunidade</a
+          ><a class="button button-small nav-play" href="/jogar/"
+            >Jogar agora <span aria-hidden="true">↗</span></a
+          >
+        </nav>
+      </div>
+    </header>
+    <main id="conteudo">
+      <section class="page-intro section-shell">
+        <a class="back-link" href="/">← Voltar ao início</a
+        ><span class="eyebrow">COMUNIDADE / NO MESMO CAMINHO</span>
+        <h1>Uma aventura cresce<br />com quem <em>participa.</em></h1>
+        <p>
+          Explore a alfa, convide alguém para experimentar uma sala e conte o
+          que encontrou. Seus relatos ajudam a melhorar o mundo de Terrania.
+        </p>
+      </section>
+      <section id="salas" class="section-shell room-section">
+        <div>
+          <span class="eyebrow">ENCONTRE SUA COMPANHIA</span>
+          <h2>Prepare o próximo encontro.</h2>
+          <p>
+            Escolha um nome de sala e compartilhe o link com seus amigos. Todos
+            precisam abrir a mesma sala. A conexão depende da disponibilidade do
+            servidor; o estado real aparece dentro do jogo.
+          </p>
+          <p class="field-note">
+            Salas são públicas e experimentais. O nome da sala não é uma senha.
+            Não use dados pessoais nele.
+          </p>
+        </div>
+        <form class="room-form" action="/jogar/" method="get">
+          <label for="room">NOME DA SALA</label>
+          <div class="room-input">
+            <span aria-hidden="true">✧</span
+            ><input
+              id="room"
+              name="room"
+              type="text"
+              pattern="[a-z0-9-]{1,24}"
+              minlength="1"
+              maxlength="24"
+              value="origins"
+              required
+              autocomplete="off"
+              aria-describedby="roomHelp"
+            />
+          </div>
+          <p id="roomHelp">
+            Use letras minúsculas, números e hífen. Até 24 caracteres.
+          </p>
+          <button class="button" type="submit">
+            Acessar sala <span aria-hidden="true">↗</span></button
+          ><button class="copy-button" id="copyRoom" type="button">
+            Copiar link para convidar
+          </button>
+          <p id="roomFeedback" class="room-feedback" role="status"></p>
+          <div class="room-warning">
+            <i></i>
+            <p id="roomAvailability">
+              O status da conexão será mostrado no jogo. Sem conexão, você pode
+              continuar em modo solo.
+            </p>
+          </div>
+        </form>
+      </section>
+      <section class="section-shell participation">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">CONSTRUA ESSE MUNDO COM A GENTE</span>
+            <h2>O que você descobriu?</h2>
+          </div>
+          <p>
+            Um caminho bloqueado, uma ideia de criatura ou um detalhe que fez
+            falta. Cada relato ajuda.
+          </p>
+        </div>
+        <div class="participation-grid">
+          <article>
+            <span class="line-icon" aria-hidden="true">✧</span>
+            <h3>Encontrou um problema?</h3>
+            <p>
+              Conte o que aconteceu, o navegador, o aparelho e a semente do
+              mundo. Uma captura da tela ajuda a reproduzir o problema.
+            </p>
+            <a
+              href="https://github.com/Softdown-prog/Terrania/issues/new?labels=bug"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-link"
+              >Relatar no GitHub ↗</a
+            >
+          </article>
+          <article>
+            <span class="line-icon" aria-hidden="true">✦</span>
+            <h3>Tem uma ideia?</h3>
+            <p>
+              Descreva a experiência que você gostaria de encontrar. Missões,
+              criaturas e melhorias de controle são bem-vindas.
+            </p>
+            <a
+              href="https://github.com/Softdown-prog/Terrania/issues/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-link"
+              >Enviar uma sugestão ↗</a
+            >
+          </article>
+          <article>
+            <span class="line-icon" aria-hidden="true">⌘</span>
+            <h3>Quer acompanhar de perto?</h3>
+            <p>
+              Veja as atualizações do código e o roteiro de desenvolvimento.
+              Para publicar relatos no GitHub, é preciso uma conta por lá.
+            </p>
+            <a
+              href="https://github.com/Softdown-prog/Terrania"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-link"
+              >Abrir o projeto ↗</a
+            >
+          </article>
+        </div>
+      </section>
+      <section class="section-shell community-note">
+        <span class="eyebrow">BOA COMPANHIA FAZ A DIFERENÇA</span>
+        <h2>Explore com respeito.</h2>
+        <p>
+          Respeite outros jogadores. Não tente interromper salas, automatizar
+          abusos ou explorar falhas para prejudicar a experiência. Se encontrar
+          uma vulnerabilidade, evite publicar dados sensíveis no relato.
+        </p>
+      </section>
+      <section class="final-cta section-shell">
+        <span class="eyebrow">HÁ UM CAMINHO À SUA ESPERA</span>
+        <h2>A próxima aventura<br />começa na clareira.</h2>
+        <a class="button" href="/jogar/"
+          >Entrar em Terrania <span aria-hidden="true">↗</span></a
+        >
+        <p>No navegador. Sem instalação.</p>
+        <img src="/art/crest.svg" alt="" class="cta-crest" />
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-main">
+        <a class="brand" href="/"
+          ><img src="/art/crest.svg" alt="" width="34" height="40" /><span
+            >TERRANIA<small>O R I G I N S</small></span
+          ></a
+        >
+        <p>
+          O caminho começa com você.<br />Um RPG independente em construção.
+        </p>
+        <a href="/jogar/" class="text-link"
+          >Sua aventura espera <span aria-hidden="true">↗</span></a
+        >
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Terrania: Origins · Softdown</span>
+        <nav aria-label="Informações do site">
+          <a href="/privacidade/">Privacidade</a
+          ><a href="/termos/">Termos de uso</a
+          ><a
+            href="https://github.com/Softdown-prog/Terrania"
+            target="_blank"
+            rel="noopener noreferrer"
+            >GitHub ↗</a
+          >
+        </nav>
+        <span class="alpha-label"><i></i> ALFA EM DESENVOLVIMENTO</span>
+      </div>
+    </footer>
+    <script type="module" src="/src/site/site.ts"></script>
+  </body>
+</html>
