@@ -11,6 +11,7 @@ import {
 import { loadLocalSave, saveLocal } from "../storage/localSave.ts";
 import { CanvasScene } from "../ui/CanvasScene.ts";
 import { Hud, type Preferences } from "../ui/Hud.ts";
+import { nearestNpc } from "../world/npcs.ts";
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
@@ -72,6 +73,7 @@ export class Game {
       this.accumulator = 0;
     });
     this.hud.onNewWorld(() => this.newWorld());
+    this.hud.onTalk(() => this.talkToNpc());
     requestAnimationFrame((t) => this.frame(t));
   }
   private configure(p: Preferences): void {
@@ -119,6 +121,14 @@ export class Game {
     player.attackTime = Math.max(player.attackTime, self.attackTime);
     this.hud.setPlayerCount(this.multiplayer?.players.length ?? 1, true);
   }
+  private talkToNpc(): void {
+    if (this.hud.menuOpen) return;
+    const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
+    if (!npc) return;
+    this.input.clear();
+    this.multiplayer?.sendInput(0, 0, false);
+    this.hud.showNpcDialogue(npc, this.sim.kills);
+  }
   private newWorld(): void {
     if (this.multiplayer?.connected) return;
     const values = new Uint32Array(1);
@@ -141,6 +151,7 @@ export class Game {
     this.lastTime = time;
     this.clock += dt;
     const online = this.multiplayer?.connected === true;
+    if (this.input.consumeTalk() && !this.hud.menuOpen) this.talkToNpc();
     const paused = this.hud.menuOpen || document.hidden;
     if (paused) this.input.clear();
     const movement = paused ? { x: 0, y: 0 } : this.input.movement();
@@ -192,6 +203,7 @@ export class Game {
     if (feedback.hurt) this.camera.shake(0.65);
     this.camera.update(dt, this.sim.player);
     this.hud.update(this.sim.player, this.sim.kills);
+    this.hud.setNearbyNpc(nearestNpc(this.sim.player.x, this.sim.player.y));
     this.scene.render(
       this.world,
       this.camera,

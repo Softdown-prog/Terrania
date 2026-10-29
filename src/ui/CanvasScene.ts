@@ -3,6 +3,8 @@ import type { Slime } from '../actors/Slime.ts';
 import type { HeroState, MobState } from '../shared/protocol.ts';
 import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
+import { NPCS, NPC_TALK_RANGE } from '../world/npcs.ts';
+import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
 import type { Effects } from '../render/Effects.ts';
 import type { Camera } from '../render/Camera.ts';
@@ -20,6 +22,12 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
     const faded = (prop.kind === 'tree' || prop.kind === 'arch') &&
       Math.abs(player.x - prop.x) < (prop.kind === 'arch' ? 22 : 32) && player.y < prop.y && player.y > prop.y - 65;
     actors.push({ y: prop.y, draw: () => renderScenery(ctx, prop, prop.x - left, prop.y - top, time, faded) });
+  }
+  for (const npc of NPCS) {
+    if (Math.abs(npc.x - cameraX) > width / 2 + 40 || Math.abs(npc.y - cameraY) > height / 2 + 65) continue;
+    actors.push({ y: npc.y, draw: () =>
+      renderNpc(ctx, npc, npc.x - left, npc.y - top,
+        Math.hypot(player.x - npc.x, player.y - npc.y) <= NPC_TALK_RANGE) });
   }
   for (const mob of mobs) if (Math.abs(mob.x - cameraX) < width / 2 + 30 && Math.abs(mob.y - cameraY) < height / 2 + 40) {
     actors.push({ y: mob.y, draw: () => renderSlime(ctx, mob, mob.x - left, mob.y - top) });

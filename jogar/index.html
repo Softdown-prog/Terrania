@@ -74,8 +74,9 @@
           <path d="m8 24 15-19 4-1-1 5-17 16M4 22l7 6M5 28l-2 2" /></svg
         ><span>ATACAR</span>
       </button>
+      <button id="talkButton" hidden type="button" aria-label="Conversar com personagem">Conversar <kbd>E</kbd></button>
       <div class="keyboard-hint" aria-hidden="true">
-        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar
+        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar <span>·</span> <kbd>E</kbd> conversar
       </div>
       <dialog id="settingsDialog" aria-labelledby="settingsTitle">
         <button class="dialog-x" data-close-dialog aria-label="Fechar ajustes">
@@ -133,6 +134,10 @@
             <dd>Caminhar em oito direções</dd>
           </div>
           <div>
+            <dt>E ou botão Conversar</dt>
+            <dd>Converse com a guardiã quando estiver perto dela.</dd>
+          </div>
+          <div>
             <dt>Espaço ou J</dt>
             <dd>Atacar na direção em que você olha. Segure para repetir.</dd>
           </div>
@@ -152,6 +157,14 @@
         <button class="primary-button" data-close-dialog type="button">
           Entendi, vamos explorar
         </button>
+      </dialog>
+      <dialog id="npcDialog" aria-labelledby="npcName">
+        <button class="dialog-x" data-close-dialog type="button" aria-label="Fechar conversa">×</button>
+        <span class="dialog-kicker" id="npcRole"></span>
+        <h1 id="npcName"></h1>
+        <p id="npcSpeech" aria-live="polite"></p>
+        <small class="dialog-note" id="npcStep"></small>
+        <button id="npcNext" class="primary-button" type="button">Continuar</button>
       </dialog>
       <dialog id="worldDialog" aria-labelledby="worldTitle">
         <span class="dialog-kicker">UMA NOVA PARTIDA</span>

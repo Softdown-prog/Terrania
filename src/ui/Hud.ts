@@ -1,4 +1,5 @@
 import type { Player } from "../actors/Player.ts";
+import { npcDialogue, type Npc } from "../world/npcs.ts";
 export interface Preferences {
   zoom: number;
   effects: boolean;
@@ -18,12 +19,17 @@ export class Hud {
   private readonly newWorld = element<HTMLButtonElement>("newWorld");
   private readonly settings = element<HTMLDialogElement>("settingsDialog");
   private readonly help = element<HTMLDialogElement>("helpDialog");
+  private readonly npcDialog = element<HTMLDialogElement>("npcDialog");
+  private readonly talkButton = element<HTMLButtonElement>("talkButton");
+  private readonly npcNext = element<HTMLButtonElement>("npcNext");
+  private npcLines: readonly string[] = [];
+  private npcPage = 0;
   private readonly worldDialog = element<HTMLDialogElement>("worldDialog");
   private readonly zoom = element<HTMLInputElement>("zoom");
   private readonly effects = element<HTMLInputElement>("effects");
   private readonly motion = element<HTMLInputElement>("cameraMotion");
   constructor() {
-    for (const dialog of [this.settings, this.help, this.worldDialog])
+    for (const dialog of [this.settings, this.help, this.worldDialog, this.npcDialog])
       dialog.addEventListener("close", () => {
         if (!this.menuOpen)
           document.getElementById("game")?.focus({ preventScroll: true });
@@ -39,6 +45,11 @@ export class Hud {
     ))
       close.addEventListener("click", () => close.closest("dialog")?.close());
     this.newWorld.addEventListener("click", () => this.worldDialog.showModal());
+    this.npcNext.addEventListener("click", () => {
+      this.npcPage++;
+      if (this.npcPage >= this.npcLines.length) this.npcDialog.close();
+      else this.updateNpcPage();
+    });
     element("fullscreenButton").addEventListener("click", () => {
       void this.toggleFullscreen();
     });
@@ -62,7 +73,7 @@ export class Hud {
     }
   }
   get menuOpen(): boolean {
-    return this.settings.open || this.help.open || this.worldDialog.open;
+    return this.settings.open || this.help.open || this.worldDialog.open || this.npcDialog.open;
   }
   loadPreferences(): Preferences {
     let saved: Partial<Preferences> = {};
@@ -111,6 +122,31 @@ export class Hud {
         }
         cb(p);
       });
+  }
+  onTalk(cb: () => void): void {
+    this.talkButton.addEventListener("click", cb);
+  }
+  setNearbyNpc(npc: Npc | null): void {
+    this.talkButton.hidden = npc === null;
+    if (npc) {
+      this.talkButton.title = "Conversar com " + npc.name + " (E)";
+      this.talkButton.setAttribute("aria-label", "Conversar com " + npc.name);
+    }
+  }
+  private updateNpcPage(): void {
+    element("npcSpeech").textContent = this.npcLines[this.npcPage] ?? "";
+    element("npcStep").textContent =
+      "Mensagem " + (this.npcPage + 1) + " de " + this.npcLines.length;
+    this.npcNext.textContent = this.npcPage === this.npcLines.length - 1
+      ? "Encerrar conversa" : "Continuar";
+  }
+  showNpcDialogue(npc: Npc, kills: number): void {
+    this.npcLines = npcDialogue(npc, kills);
+    this.npcPage = 0;
+    element("npcName").textContent = npc.name;
+    element("npcRole").textContent = npc.role;
+    this.updateNpcPage();
+    this.npcDialog.showModal();
   }
   onNewWorld(cb: () => void): void {
     element("confirmWorld").addEventListener("click", () => {
