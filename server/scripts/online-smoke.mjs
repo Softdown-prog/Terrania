@@ -34,14 +34,14 @@ async function until(predicate, label, ms = 8_000) {
 for (const publicOrigin of [origin, "https://terrania-origins.pages.dev"]) {
   await check("frontend publicado em " + publicOrigin, async () => {
     const site = await get(publicOrigin + "/");
-    const pageTitle = site.match(/<title>([^<]*)<\\/title>/i)?.[1] ?? "(sem titulo)";
+    const pageTitle = site.match(/<title>([^<]*)<\/title>/i)?.[1] ?? "(sem titulo)";
     console.log("  homepage:", pageTitle);
     assert.ok(site.includes("/jogar/"), "homepage ainda não é site de apresentação alfa 0.3");
     const game = await get(publicOrigin + "/jogar/");
-    const gameTitle = game.match(/<title>([^<]*)<\\/title>/i)?.[1] ?? "(sem titulo)";
+    const gameTitle = game.match(/<title>([^<]*)<\/title>/i)?.[1] ?? "(sem titulo)";
     console.log("  jogo:", gameTitle);
     assert.ok(game.includes("ALFA 0.3"), "jogo publicado não é alfa 0.3");
-    const assets = [...game.matchAll(/<script[^>]*src="([^"]+\\.js)"/g)].map(m => m[1]);
+    const assets = [...game.matchAll(/<script[^>]*src="([^"]+\.js)"/g)].map(m => m[1]);
     assert.ok(assets.length, "HTML do jogo não referencia bundle JS");
     const scripts = await Promise.all(assets.map(asset => get(new URL(asset, publicOrigin).href)));
     assert.ok(scripts.some(code => code.includes(endpoint)), "variável WSS não aparece no bundle publicado");
