@@ -8,6 +8,10 @@ A raiz agora é o site de apresentação. **Jogar** abre `/jogar/`, com tela ded
 
 O cenário ganhou vegetação com profundidade, texturas, margens de água e marcos na clareira. O herói ganhou animação direcional, aceleração/frenagem e combate com preparo, recuo e efeitos. A câmera tem antecipação, zoom e opção de movimento reduzido.
 
+### Primeira personagem não jogável
+
+**Aela, guardiã da clareira**, está perto do ponto inicial e oferece pistas sobre a missão dos cinco slimes. Aproxime-se e pressione **E** ou toque em **Conversar**. As falas mudam conforme os slimes derrotados, sem mudar o protocolo ou o estado autoritativo da VPS. É o primeiro passo dos NPCs do mundo — ainda não concede recompensas.
+
 ### Multiplayer experimental
 
 **Front-end no Cloudflare Pages; servidor WebSocket Node.js na VPS.** A mesma seed produz o mapa no cliente e orienta colisões no servidor. O servidor controla posições, vida, monstros, ataques e progresso da missão de cinco slimes. O navegador só envia movimento/ataque e desenha os personagens.
