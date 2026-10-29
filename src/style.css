@@ -221,6 +221,30 @@ input:focus-visible {
 .keyboard-hint span {
   opacity: 0.4;
 }
+#talkButton {
+  position: absolute;
+  right: 24px;
+  bottom: max(90px, calc(env(safe-area-inset-bottom) + 85px));
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 5px;
+  border: 1px solid #dec48a;
+  background: #1f4c3de8;
+  color: #f8e9be;
+  box-shadow: 0 4px 20px #0d241bb0;
+  font-size: 12px;
+  font-weight: 600;
+}
+#talkButton[hidden] { display: none !important; }
+#talkButton kbd {
+  margin-left: 6px;
+  padding: 2px 5px;
+  border: 1px solid #e2d3a566;
+  border-radius: 3px;
+  font: 10px system-ui;
+}
+#npcSpeech { min-height: 68px; }
+#npcStep { display: block; color: #c7b888; }
 #gameNotice {
   position: absolute;
   bottom: 55px;
@@ -457,6 +481,11 @@ noscript a {
   }
   .keyboard-hint {
     display: none;
+  }
+  #talkButton {
+    right: 20px;
+    bottom: max(142px, calc(env(safe-area-inset-bottom) + 135px));
+    font-size: 11px;
   }
   .bottom-info {
     left: 50%;
