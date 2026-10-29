@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "..",
+    "outDir": "dist",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "rewriteRelativeImportExtensions": true,
+    "skipLibCheck": true,
+    "lib": [
+      "ES2022"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "../src/actors/*.ts",
+    "../src/world/collision.ts",
+    "../src/world/random.ts",
+    "../src/world/terrain.ts",
+    "../src/shared/protocol.ts"
+  ]
+}

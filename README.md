@@ -1,0 +1,64 @@
+# Terrania: Origins
+
+RPG **2D top-down e procedural** para navegador, desenhado em **HTML5 + TypeScript + Canvas 2D** sem PNG, spritesheets ou React. Inspirado em ideias de mundo/RPG do antigo Terranium (`Softdown-prog/2d2`), sem transportar o motor C++/SDL3.
+
+## Versão 0.2 — multiplayer experimental
+
+**Front-end no Cloudflare Pages; servidor WebSocket Node.js na VPS.** A mesma seed produz o mapa no cliente e orienta colisões no servidor. O servidor controla posições, vida, monstros, ataques e progresso da missão de cinco slimes. O navegador só envia movimento/ataque e desenha os personagens.
+
+- Jogadores anônimos em salas (`?room=origins` ou `?room=amigos`), com outros heróis visíveis pelo nome.
+- Slimes compartilhados e combate calculado no servidor; 20 ticks/s e cerca de 10 snapshots/s para entidades próximas.
+- Chunks 16×16 tiles, cache visual até 24 chunks por cliente, câmera que desenha só a área visível.
+- Se o backend não estiver configurado, o jogo funciona **offline**, com save local; ao cair a conexão, retorna ao modo local.
+- Teclado WASD/setas ou joystick mobile; Espaço/J ou botão da espada para atacar.
+
+**O multiplayer é um primeiro protótipo:** salas e personagens são descartados quando todos saem. Ainda não há contas, inventário sincronizado, banco de dados, chat, missões persistentes, sistema antifraude completo ou suporte comprovado a muitos jogadores simultâneos.
+
+## Executar localmente
+
+Node.js 22+ recomendado.
+
+**Somente navegador (offline):**
+
+```bash
+npm install
+npm run dev
+```
+
+**Multiplayer, em dois terminais:**
+
+```bash
+# terminal 1, servidor
+cd server && npm install && npm run dev
+
+# terminal 2, na raiz do projeto
+VITE_MULTIPLAYER_URL=ws://localhost:8787/ws npm run dev
+```
+
+Abrir duas abas em `http://localhost:5173/?room=origins`. O servidor aceita a origem `http://localhost:5173` para desenvolvimento.
+
+## Verificações
+
+```bash
+npm run typecheck
+npm test
+npm run build
+cd server
+npm run typecheck
+npm test
+npm run build
+```
+
+Os `npm install` devem ser feitos antes. O build da interface produz `dist/`. `server/Dockerfile` prepara apenas a API multiplayer, sem navegador e sem Chrome/Chromium.
+
+## Produção
+
+- **Cloudflare Pages:** Vite, `npm run build`, pasta `dist`, variável `VITE_MULTIPLAYER_URL=wss://DOMINIO-REAL/ws`.
+- **VPS:** Docker Compose isolado (`server/compose.yml`) com orçamento inicial de 256 MiB e 0,5 CPU, com `ALLOWED_ORIGINS` restrito à origem HTTPS real.
+- **Caddy:** TLS/WSS na frente do backend. Se o Caddy é um contêiner, configure a rede compartilhada: `localhost` dentro dele não aponta para a VPS.
+
+**Leia antes de instalar:** [`docs/MULTIPLAYER_VPS.md`](docs/MULTIPLAYER_VPS.md). Não há deploy remoto automático nem modificação de serviços existentes nesta entrega.
+
+## Escopo e repositório
+
+Repositório oficial: [`Softdown-prog/Terrania`](https://github.com/Softdown-prog/Terrania). O repositório do Terranium original (`Softdown-prog/2d2`) permanece separado. O backend ainda não foi instalado na VPS nem conectado a um domínio público. Veja os documentos em `docs/` e o roteiro em `docs/ROADMAP.md`.

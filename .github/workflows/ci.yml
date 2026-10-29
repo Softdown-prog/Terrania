@@ -1,0 +1,23 @@
+name: Verificar Terrania front-end e multiplayer
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar front-end
+        run: npm install
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Instalar servidor
+        run: npm install --prefix server
+      - run: npm run typecheck --prefix server
+      - run: npm test --prefix server
+      - run: npm run build --prefix server

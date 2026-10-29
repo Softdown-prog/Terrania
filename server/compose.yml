@@ -1,0 +1,25 @@
+name: terrania-origins
+services:
+  multiplayer:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:8787:8787"
+    environment:
+      NODE_ENV: production
+      PORT: "8787"
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Configure a origem exata do Cloudflare Pages no arquivo .env}
+    mem_limit: 256m
+    cpus: "0.50"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 80
+    stop_grace_period: 10s
