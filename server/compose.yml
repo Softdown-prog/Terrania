@@ -23,3 +23,15 @@ services:
       - no-new-privileges:true
     pids_limit: 80
     stop_grace_period: 10s
+    # Mantém a rede privada do jogo e permite acesso pelo Caddy existente.
+    networks:
+      default:
+      proxy:
+        aliases:
+          - terrania-backend
+
+# A rede softload_proxy já existe na VPS. Este Compose não a cria nem a modifica.
+networks:
+  proxy:
+    external: true
+    name: softload_proxy
