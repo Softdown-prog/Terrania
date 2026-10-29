@@ -1,0 +1,21 @@
+name: Smoke público Terrania online
+on:
+  pull_request:
+    paths:
+      - "server/scripts/online-smoke.mjs"
+      - ".github/workflows/online-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  dois-jogadores:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar dependência do cliente WebSocket
+        run: npm ci --prefix server --no-audit --no-fund
+      - name: Testar Pages, health e dois jogadores na VPS
+        run: node server/scripts/online-smoke.mjs
