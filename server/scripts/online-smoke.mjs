@@ -31,17 +31,22 @@ async function until(predicate, label, ms = 8_000) {
     await sleep(50);
   }
 }
-await check("site alfa 0.3 and multiplayer build variable", async () => {
-  const site = await get(origin + "/");
-  assert.match(site, /Terrania/i);
-  assert.match(site, /jogar\//i);
-  const game = await get(origin + "/jogar/");
-  assert.match(game, /ALFA 0\.3/i, "jogo publicado não é alfa 0.3");
-  const assets = [...game.matchAll(/<script[^>]*src="([^"]+\.js)"/g)].map(m => m[1]);
-  assert.ok(assets.length, "HTML do jogo não referencia bundle JS");
-  const scripts = await Promise.all(assets.map(asset => get(new URL(asset, origin).href)));
-  assert.ok(scripts.some(code => code.includes(endpoint)), "VITE_MULTIPLAYER_URL não aparece no bundle publicado");
-});
+for (const publicOrigin of [origin, "https://terrania-origins.pages.dev"]) {
+  await check("frontend publicado em " + publicOrigin, async () => {
+    const site = await get(publicOrigin + "/");
+    const pageTitle = site.match(/<title>([^<]*)<\\/title>/i)?.[1] ?? "(sem titulo)";
+    console.log("  homepage:", pageTitle);
+    assert.ok(site.includes("/jogar/"), "homepage ainda não é site de apresentação alfa 0.3");
+    const game = await get(publicOrigin + "/jogar/");
+    const gameTitle = game.match(/<title>([^<]*)<\\/title>/i)?.[1] ?? "(sem titulo)";
+    console.log("  jogo:", gameTitle);
+    assert.ok(game.includes("ALFA 0.3"), "jogo publicado não é alfa 0.3");
+    const assets = [...game.matchAll(/<script[^>]*src="([^"]+\\.js)"/g)].map(m => m[1]);
+    assert.ok(assets.length, "HTML do jogo não referencia bundle JS");
+    const scripts = await Promise.all(assets.map(asset => get(new URL(asset, publicOrigin).href)));
+    assert.ok(scripts.some(code => code.includes(endpoint)), "variável WSS não aparece no bundle publicado");
+  });
+}
 await check("health público da VPS", async () => {
   assert.deepEqual(JSON.parse(await get(api + "/health")), { status: "ok" });
 });
