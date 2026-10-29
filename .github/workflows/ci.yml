@@ -16,6 +16,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Validar empacotamento do Worker e assets (sem publicar)
+        run: npx --yes wrangler@4.156.0 deploy --dry-run
       - name: Instalar servidor
         run: npm ci --prefix server
       - run: npm run typecheck --prefix server
