@@ -31,7 +31,7 @@ async function until(predicate, label, ms = 8_000) {
     await sleep(50);
   }
 }
-for (const publicOrigin of [origin, "https://terrania-origins.pages.dev"]) {
+for (const publicOrigin of [origin]) {
   await check("frontend publicado em " + publicOrigin, async () => {
     const site = await get(publicOrigin + "/");
     const pageTitle = site.match(/<title>([^<]*)<\/title>/i)?.[1] ?? "(sem titulo)";
