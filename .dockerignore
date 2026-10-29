@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/.git
+**/.env
+**/.env.*
+**/preview-dist
+**/*.zip
+**/coverage
+**/.DS_Store

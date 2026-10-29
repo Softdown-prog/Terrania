@@ -1,39 +1,34 @@
-# Arquitetura — Terrania: Origins
+# Arquitetura técnica — Terrania: Origins
 
-## Front-end
-HTML5 + TypeScript, Vite para build e Canvas 2D, hospedado no Cloudflare Pages.
+## Destinos
+- Cloudflare Pages publica só o frontend estático compilado pelo Vite.
+- VPS executa só o backend Node.js/WebSocket atrás do Caddy, com um único Dockerfile em `server/Dockerfile`.
+- A renderização procedural fica no navegador; o backend não instala Canvas, React, Chromium nem ferramentas gráficas.
 
-Pastas:
-- `src/world/`: seed determinística, terrenos, chunks e colisão.
-- `src/render/`: representação visual procedural do terreno e entidades.
-- `src/actors/`: herói e slime, compartilhados com o servidor nas regras puras.
-- `src/input/`: teclado e joystick touch.
-- `src/game/`: ciclo de atualização, câmera, save local e integração.
-- `src/net/`: cliente WebSocket e reconexão.
-- `src/shared/`: protocolo e validadores usados por ambos os lados.
+## Camadas
+```text
+src/main.ts                       bootstrap mínimo do navegador
+src/game/Game.ts                  controlador que liga entrada/motor/render/rede
+src/engine/OfflineSimulation.ts   regras offline sem DOM, Canvas ou rede
+src/actors/                       herói e slimes, compartilhados com o backend
+src/world/                        seed, terreno e colisão determinística
+src/render/WorldRenderer.ts       cache de chunks e culling no Canvas
+src/render/actors.ts, terrain.ts  desenhos procedurais
+src/ui/CanvasScene.ts             desenha mundo e personagens na tela
+src/ui/Hud.ts                     interface HTML
+src/storage/localSave.ts          persistência local (isolada do motor)
+src/input/                        teclado e touch
+src/net/                          WebSocket do cliente
+src/shared/                       tipos e protocolo
+server/src/Room.ts                salas e simulação online autoritativa
+server/src/main.ts                bootstrap HTTP/WebSocket, heartbeat e limites
+server/Dockerfile                 build multi-stage só para a VPS
+```
 
-## Gerador e memória
-Cada tile é função da seed e coordenada global; os chunks são 16×16 tiles com tiles de 32 pixels. O cliente desenha chunks próximos do viewport em Canvas auxiliar e preserva até 24 chunks num cache LRU, gerando novamente os mais antigos quando necessário. O cliente renderiza apenas objetos que chegam à área visível.
+O motor offline recebe a direção/ataque, simula e devolve estado. Nenhuma biblioteca visual é importada por ele. O servidor reutiliza exclusivamente `src/actors`, `src/world` e `src/shared`, e valida movimentos, dano e monstros. O jogo online mantém predição visual no cliente; a posição oficial vem da VPS.
 
-A seed só descreve o terreno natural. Mudanças persistentes (inventário, mineração, construções e quests) exigirão armazenamento de deltas e banco transacional; não serão derivadas da seed.
+## Chunks e desempenho
+Cada tile mede 32×32 px; chunks de 16×16 tiles (512×512 px). O par seed/coordenadas gera os mesmos tiles, incluindo coordenadas negativas. O Canvas cacheia no máximo 24 chunks (até ~24 MiB de buffers RGBA, antes de overhead no navegador). Só chunks visíveis são desenhados. A simulação ainda usa delta limitado e não tem passo fixo completo; isso é melhoria futura.
 
-## Back-end
-Node.js 22, TypeScript e ws num processo separado, destinado à VPS.
-- Um `Room` controla jogadores, slimes, colisão, ataques e vida.
-- A direção/ataque vêm do cliente; posição e vida não são aceitos como autoridade.
-- Taxa de simulação inicial: 20 Hz; snapshots de entidades próximas: cerca de 10 Hz.
-- Máximo experimental: 48 clientes, 8 salas, até 12 clientes por sala.
-- Sem autenticação e sem persistência nesta versão.
-- Healthcheck em `GET /health`.
-
-## Limites de segurança
-- CORS não protege WebSockets: validar header Origin no upgrade, mas Origin não substitui autenticação.
-- Validar formato/taxa/tamanho das mensagens e usar TLS via proxy.
-- Servidor decide dano, cura e ganhos, nunca confiar no cliente.
-- Não expor porta interna 8787 diretamente na internet.
-- Antes de produção: autenticação, métricas, antiabuso, limites por IP, persistência e backup.
-
-## Decisões de operação
-- Cloudflare Pages não roda o processo WebSocket persistente.
-- Servidor em container Docker próprio, isolado de Softload V4 e demais aplicações.
-- Não alterar Caddy/Cloudflare/DNS sem inspecionar rede e configurar plano de reversão.
+## Persistência e segurança
+Offline salva localmente; multiplayer usa estado temporário em memória por sala e ainda não tem contas, banco de dados, autorização ou proteção contra abuso para produção em larga escala. Nunca enviar segredos em variáveis `VITE_`. Para custos e deploy, consultar `docs/ESTRUTURA_E_CUSTOS.md`.

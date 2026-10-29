@@ -62,3 +62,8 @@ Os `npm install` devem ser feitos antes. O build da interface produz `dist/`. `s
 ## Escopo e repositório
 
 Repositório oficial: [`Softdown-prog/Terrania`](https://github.com/Softdown-prog/Terrania). O repositório do Terranium original (`Softdown-prog/2d2`) permanece separado. O backend ainda não foi instalado na VPS nem conectado a um domínio público. Veja os documentos em `docs/` e o roteiro em `docs/ROADMAP.md`.
+## Motor e interface separados
+
+`src/main.ts` só inicializa a aplicação. O motor local em `src/engine/OfflineSimulation.ts` não depende de DOM, Canvas, armazenamento nem WebSocket; o controlador `src/game/Game.ts` integra motor, renderizador, HUD e rede. A simulação autoritativa online fica em `server/src/Room.ts` e compartilha atores, colisão e protocolo.
+
+**Cloudflare Pages não precisa de Dockerfile:** build `npm run build`, saída `dist`. A VPS usa o Dockerfile existente em `server/Dockerfile`. Consulte [arquitetura](docs/ARQUITETURA.md) e [custos/deploy](docs/ESTRUTURA_E_CUSTOS.md).

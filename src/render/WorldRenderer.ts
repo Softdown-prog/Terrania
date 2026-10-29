@@ -1,8 +1,7 @@
-import { CHUNK_PIXELS, chunkOf } from './terrain.ts';
-import { canMoveOnSeed } from './collision.ts';
-import { generateChunkCanvas } from '../render/terrain.ts';
+import { CHUNK_PIXELS, chunkOf } from '../world/terrain.ts';
+import { generateChunkCanvas } from './terrain.ts';
 /** Cache LRU limitado. O mundo é definido por seed + coordenadas, não por mapas gigantes na RAM. */
-export class World {
+export class WorldRenderer {
   private readonly cache = new Map<string, HTMLCanvasElement>();
   constructor(public readonly seed: number) {}
   private chunk(cx: number, cy: number): HTMLCanvasElement {
@@ -17,7 +16,6 @@ export class World {
     }
     return canvas;
   }
-  canMove(x: number, y: number): boolean { return canMoveOnSeed(x, y, this.seed); }
   render(ctx: CanvasRenderingContext2D, cameraX: number, cameraY: number, width: number, height: number): void {
     const left = cameraX - width / 2, top = cameraY - height / 2;
     const firstX = chunkOf(left), lastX = chunkOf(left + width);
