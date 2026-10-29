@@ -1,0 +1,66 @@
+name: Publicar Terrania no Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+# Não sobrepor publicações consecutivas da produção.
+concurrency:
+  group: terrania-cloudflare-pages-production
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Baixar o projeto
+        uses: actions/checkout@v4
+
+      - name: Verificar configuração sem revelar segredos
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+        shell: bash
+        run: |
+          if [[ -z "$CF_TOKEN" || -z "$CF_ACCOUNT" || -z "$CF_PROJECT" ]]; then
+            echo "::error::Configure os secrets CLOUDFLARE_API_TOKEN e CLOUDFLARE_ACCOUNT_ID e a variable CLOUDFLARE_PAGES_PROJECT em Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          if [[ ! "$CF_PROJECT" =~ ^[a-z0-9-]+$ ]]; then
+            echo "::error::CLOUDFLARE_PAGES_PROJECT deve ser apenas o nome exato do projeto Pages (letras minúsculas, números, hífen)."
+            exit 1
+          fi
+
+      - name: Preparar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci --no-audit --no-fund
+
+      - name: Verificar código e testes
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Compilar site e jogo com endpoint online
+        env:
+          VITE_MULTIPLAYER_URL: wss://api-rpg.analysepro.com/ws
+        run: npm run build
+
+      - name: Publicar na conta e no projeto Pages existentes
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }} --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
