@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#142920" />
+    <meta
+      name="description"
+      content="Jogue Terrania: Origins. Explore a clareira, enfrente slimes e aventure-se em um RPG medieval 2D no navegador."
+    />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href="/art/crest.svg" />
+    <title>Jogar · Terrania: Origins</title>
+  </head>
+  <body>
+    <main id="app" aria-label="Jogo Terrania: Origins">
+      <canvas
+        id="game"
+        tabindex="0"
+        aria-label="Mundo de Terrania. Mova-se com WASD ou setas e ataque com Espaço ou J."
+      ></canvas>
+      <header class="hud">
+        <a class="game-brand" href="/" aria-label="Voltar ao site Terrania"
+          ><img src="/art/crest.svg" width="36" height="42" alt="" /><span
+            >TERRANIA<small>ORIGINS · ALFA 0.3</small></span
+          ></a
+        >
+        <div class="vitals">
+          <div class="stat-heading">
+            <span>AVENTUREIRO</span><b id="hpText">100 / 100</b>
+          </div>
+          <div class="meter" role="img" aria-label="Barra de vida">
+            <div id="hpFill"></div>
+          </div>
+        </div>
+        <div class="quest">
+          <span class="stat-heading">MISSÃO DA CLAREIRA</span
+          ><b id="quest">Proteja a clareira</b>
+          <div class="quest-bottom">
+            <div class="quest-meter"><div id="questFill"></div></div>
+            <span id="questProgress">0 / 5 slimes</span>
+          </div>
+        </div>
+      </header>
+      <nav class="game-tools" aria-label="Opções do jogo">
+        <button id="helpButton" type="button" title="Como jogar">Ajuda</button
+        ><button id="settingsButton" type="button">Ajustes</button
+        ><button id="fullscreenButton" type="button">Tela cheia</button>
+      </nav>
+      <aside class="connection">
+        <i id="connectionDot" aria-hidden="true"></i
+        ><span
+          ><b id="multiplayerStatus" role="status">Preparando aventura…</b
+          ><small id="playerCount">Modo solo</small></span
+        >
+      </aside>
+      <div class="bottom-info">
+        <span id="coords">X 0 · Y 0</span><span>Mundo <b id="seed">—</b></span
+        ><small id="saveMode">Aventura local</small>
+      </div>
+      <p id="gameNotice" role="status"></p>
+      <div id="joystick" aria-label="Arraste para caminhar">
+        <div id="stick"></div>
+      </div>
+      <button
+        id="attack"
+        type="button"
+        aria-label="Atacar; mantenha pressionado para repetir"
+      >
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <path d="m8 24 15-19 4-1-1 5-17 16M4 22l7 6M5 28l-2 2" /></svg
+        ><span>ATACAR</span>
+      </button>
+      <div class="keyboard-hint" aria-hidden="true">
+        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar
+      </div>
+      <dialog id="settingsDialog" aria-labelledby="settingsTitle">
+        <button class="dialog-x" data-close-dialog aria-label="Fechar ajustes">
+          ×</button
+        ><span class="dialog-kicker">SUA AVENTURA, SEU RITMO</span>
+        <h1 id="settingsTitle">Ajustes do jogo</h1>
+        <label class="range-label" for="zoom"
+          >Distância da câmera
+          <output id="zoomValue" for="zoom">1.65×</output></label
+        ><input
+          id="zoom"
+          type="range"
+          min="1"
+          max="2.5"
+          step=".05"
+          value="1.65"
+        />
+        <div class="range-hint">
+          <span>Mais mundo</span><span>Mais perto</span>
+        </div>
+        <label class="toggle"
+          ><input id="effects" type="checkbox" checked /><span
+            >Partículas e água animada<small
+              >Desative para reduzir efeitos visuais.</small
+            ></span
+          ></label
+        >
+        <label class="toggle"
+          ><input id="cameraMotion" type="checkbox" checked /><span
+            >Movimento da câmera<small
+              >Antecipação da caminhada e impacto dos golpes.</small
+            ></span
+          ></label
+        >
+        <button id="newWorld" class="secondary-button" type="button">
+          Gerar outro mundo local
+        </button>
+        <p id="menuMode" class="dialog-note"></p>
+        <button class="primary-button" data-close-dialog type="button">
+          Voltar à aventura
+        </button>
+      </dialog>
+      <dialog id="helpDialog" aria-labelledby="helpTitle">
+        <button class="dialog-x" data-close-dialog aria-label="Fechar ajuda">
+          ×</button
+        ><span class="dialog-kicker">PRIMEIROS PASSOS</span>
+        <h1 id="helpTitle">Encontre seu caminho.</h1>
+        <p>
+          Siga as trilhas, explore as margens do rio e encontre slimes fora da
+          clareira inicial. Derrote cinco para concluir sua primeira missão.
+        </p>
+        <dl class="control-list">
+          <div>
+            <dt>WASD ou setas</dt>
+            <dd>Caminhar em oito direções</dd>
+          </div>
+          <div>
+            <dt>Espaço ou J</dt>
+            <dd>Atacar na direção em que você olha. Segure para repetir.</dd>
+          </div>
+          <div>
+            <dt>No celular</dt>
+            <dd>Arraste o controle esquerdo e toque ou segure a espada.</dd>
+          </div>
+          <div>
+            <dt>Vida zerada</dt>
+            <dd>Você retorna à clareira. A contagem da missão é mantida.</dd>
+          </div>
+        </dl>
+        <p class="dialog-note">
+          O modo solo usa progresso local. As salas online são experimentais e
+          temporárias.
+        </p>
+        <button class="primary-button" data-close-dialog type="button">
+          Entendi, vamos explorar
+        </button>
+      </dialog>
+      <dialog id="worldDialog" aria-labelledby="worldTitle">
+        <span class="dialog-kicker">UMA NOVA PARTIDA</span>
+        <h1 id="worldTitle">Gerar outro mundo?</h1>
+        <p>
+          O mundo local atual será substituído, incluindo sua posição e missão.
+          Essa ação não altera uma sala online.
+        </p>
+        <div class="dialog-actions">
+          <button class="secondary-button" data-close-dialog type="button">
+            Manter minha aventura</button
+          ><button id="confirmWorld" class="primary-button" type="button">
+            Gerar mundo
+          </button>
+        </div>
+      </dialog>
+    </main>
+    <noscript
+      >Ative o JavaScript para jogar.
+      <a href="/guia/">Consulte o guia do aventureiro.</a></noscript
+    >
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -26,9 +26,16 @@ Substituir o exemplo pelo domínio real. A variável é incorporada no bundle Ja
 No servidor, `ALLOWED_ORIGINS` deve listar a origem HTTPS exata do site (por exemplo, seu domínio Pages e eventual domínio próprio), não o endereço WSS do backend.
 
 ## Testes
-- Abrir site com `?room=origins` em dois dispositivos.
+- Abrir `/jogar/?room=origins` em dois dispositivos.
+- Verificar páginas do site na raiz e o botão Jogar apontando para `/jogar/`.
 - Verificar carregamento, movimento, combate e jogadores remotos.
 - Verificar controles touch, save e opção Novo mundo offline.
 - Desligar o backend de teste para conferir fallback local.
 
 Documentação oficial: https://developers.cloudflare.com/pages/configuration/build-configuration/
+
+## Alfa 0.3
+
+O build gera nove HTMLs, incluindo `/jogar/index.html` e `/404.html`. O comando continua `npm run build`, com saída `dist`. `scripts/verify-build.mjs` falha se uma página, asset, âncora ou link interno estiver faltando.
+
+Atualize também o servidor da VPS para o protocolo 2 antes de validar o online da nova física. Um backend antigo mantém o novo cliente em modo solo com aviso explícito. Consulte [site e alfa 0.3](SITE_E_ALFA_03.md).
