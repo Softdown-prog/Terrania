@@ -21,3 +21,18 @@ jobs:
       - run: npm run typecheck --prefix server
       - run: npm test --prefix server
       - run: npm run build --prefix server
+
+      - name: Validar imagem Docker e endpoint /health
+        run: |
+          docker build -f server/Dockerfile -t terrania-ci:smoke .
+          docker run -d --name terrania-smoke -p 127.0.0.1:18787:8787 \
+            -e ALLOWED_ORIGINS=https://terrania-origins.pages.dev terrania-ci:smoke
+          trap 'docker rm -f terrania-smoke >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 20); do
+            if curl --silent --fail http://127.0.0.1:18787/health | grep -q '"status":"ok"'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs terrania-smoke
+          exit 1

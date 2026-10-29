@@ -70,3 +70,21 @@ Desfazer apenas o subdomínio do jogo no Caddy e a variável do frontend, se apl
 - Estratégia de atualização segura e de perda/reconexão de salas.
 
 Nenhuma instalação remota foi realizada por esta documentação.
+
+## Diagnóstico: reinício por módulos ESM/CommonJS
+
+Se o contêiner reiniciar com `does not provide an export named 'CHUNK_PIXELS'`, o build gerou módulos compartilhados como CommonJS enquanto o runtime interpreta os arquivos como ES Modules. O Dockerfile deve copiar o `package.json` da raiz para `/work/package.json` **antes** de executar `tsc`, pois o modo `NodeNext` decide como emitir arquivos TypeScript conforme o `type` do pacote mais próximo.
+
+O build do Docker agora executa uma importação real de `Room.js` e `terrain.js`. O CI inicia a imagem produzida e consulta `/health` para detectar erros que a checagem de tipos não revela.
+
+Para atualizar **somente** o Terrania na VPS:
+
+```bash
+cd /root/Terrania
+git pull --ff-only origin main
+docker compose --env-file server/.env -f server/compose.yml up -d --build multiplayer
+docker compose --env-file server/.env -f server/compose.yml ps
+curl -fsS http://127.0.0.1:8787/health
+```
+
+Não execute `docker system prune` nem reinicie Caddy, Painel ou Softload.
