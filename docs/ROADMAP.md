@@ -7,20 +7,21 @@
 - [x] Slimes, colisão, missão inicial e save offline
 - [x] WebSocket, salas experimentais, simulação server-authoritative
 - [x] Docker isolado e CI de verificação
-- [ ] Validar build real com dependências instaladas e fluxo entre dois navegadores
+- [x] Validar build real com dependências instaladas e fluxo entre dois navegadores
 
 ## Fase 1 — Vertical slice de RPG
 - [x] Melhorar herói procedural e animações em oito direções
 - [x] Separar site de apresentação e entrada do jogo
 - [x] Profundidade no cenário, movimento com aceleração e câmera ajustável
 - [x] Integração local com dois clientes WebSocket e build multipágina validado
-- [ ] Cidade inicial com NPCs, placas, interiores e diálogos
+- [x] Primeiro NPC procedural (Aela) com diálogos conforme a missão, teclado e toque
+- [ ] Cidade inicial com outros NPCs, placas, interiores e diálogos encadeados
 - [ ] Inventário, equipamentos, loot e itens consumíveis
 - [ ] Sistema de quests com estados e recompensas
 - [ ] Três tipos de monstros e dois tipos de ataque
 
 ## Fase 2 — Multiplayer de teste
-- [ ] Testar VPS em staging e configurar WSS via Caddy
+- [x] Testar WSS público via Caddy e sincronizar dois clientes numa sala temporária
 - [ ] Autenticação, reconexão com sessão, validação e controle de abusos
 - [ ] Persistência autoritativa (SQLite/PostgreSQL) e backup externo
 - [ ] Latência simulada, interpolação, observabilidade e testes de carga
