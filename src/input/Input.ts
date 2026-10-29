@@ -3,6 +3,7 @@ export class Input {
   private joyX = 0;
   private joyY = 0;
   private attackQueued = false;
+  private talkQueued = false;
   private attackHeld = false;
   private stickPointer: number | null = null;
   constructor() {
@@ -26,6 +27,7 @@ export class Input {
       )
         event.preventDefault();
       this.keys.add(event.code);
+      if (!event.repeat && event.code === "KeyE") this.talkQueued = true;
       if (!event.repeat && (event.code === "Space" || event.code === "KeyJ"))
         this.attackQueued = true;
     });
@@ -85,6 +87,7 @@ export class Input {
     this.keys.clear();
     this.joyX = this.joyY = 0;
     this.attackHeld = this.attackQueued = false;
+    this.talkQueued = false;
     this.stickPointer = null;
     const thumb = document.getElementById("stick");
     if (thumb) thumb.style.transform = "translate(0,0)";
@@ -100,6 +103,11 @@ export class Input {
       this.joyY;
     const d = Math.hypot(x, y);
     return d > 1 ? { x: x / d, y: y / d } : { x, y };
+  }
+  consumeTalk(): boolean {
+    const talk = this.talkQueued;
+    this.talkQueued = false;
+    return talk;
   }
   consumeAttack(): boolean {
     const attack =
