@@ -4,7 +4,7 @@ Escopo congelado: sem novas classes, economia, missões, itens, portais ou conta
 
 - Leste da clareira: praça navegável em qualquer seed, três casas e três moradores com diálogos condicionais ao progresso de Aela.
 - Placas legíveis e portas que permitem entrar em mapas internos caminháveis pelo mesmo teclado e joystick do mundo exterior.
-- Interiores são mapas locais caminháveis, com mobília sólida e saída pela porta ou tecla E. Não há comércio, saque ou cura.
+- Interiores são mapas locais caminháveis, com mobília diferente em cada edifício, colisão correspondente ao desenho e saída pela porta ou tecla E. Não há comércio, saque ou cura.
 - As interações são locais, sem alterar estado autoritativo online.
 - As fachadas são sólidas e compartilham colisão com o backend; protocolo 3 requer publicação coordenada do cliente e servidor.
 

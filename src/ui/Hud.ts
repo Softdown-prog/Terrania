@@ -156,7 +156,7 @@ export class Hud {
     this.talkButton.title = "Voltar para a vila (E)";
     this.talkButton.setAttribute("aria-label", "Sair do interior para a vila");
     this.quest.textContent = name;
-    element("questProgress").textContent = "Interior · caminhe ou pressione E para sair";
+    element("questProgress").textContent = "E ou porta: sair";
     element("coords").textContent = "Interior · Vila da Travessia";
   }
   onNewWorld(cb: () => void): void {
