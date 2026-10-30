@@ -1,5 +1,5 @@
-/** Version 2 shares acceleration, knockback, strike timing and landmark collision. */
-export const PROTOCOL_VERSION = 2;
+/** Version 3 shares village building collision with clients and the server. */
+export const PROTOCOL_VERSION = 3;
 export interface HeroState {
   id: string;
   name: string;

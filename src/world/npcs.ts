@@ -1,6 +1,8 @@
+import { BUILDINGS, SIGNS } from "./village.ts";
 /** NPCs e diálogos locais. Não modificam o estado autoritativo do multiplayer. */
 export interface Npc {
   readonly id: string;
+  readonly kind?: "character" | "sign" | "door";
   readonly name: string;
   readonly role: string;
   readonly x: number;
@@ -9,6 +11,12 @@ export interface Npc {
 export const NPC_TALK_RANGE = 82;
 export const NPCS: readonly Npc[] = [
   { id: "aela", name: "Aela", role: "Guardiã da clareira", x: 80, y: -16 },
+  { id: "mira", name: "Mira", role: "Cartógrafa", x: 304, y: 16 },
+  { id: "toren", name: "Toren", role: "Ferreiro", x: 538, y: 32 },
+  { id: "lina", name: "Lina", role: "Anfitriã", x: 448, y: 250 },
+  ...SIGNS.map(s => ({ ...s, kind: "sign" as const, role: "Aviso da vila" })),
+  ...BUILDINGS.map(b => ({ id: b.id, name: b.name, role: "Interior", x: b.x, y: b.y + 29, kind: "door" as const })),
+
 ];
 
 /** Seleciona somente NPCs próximos; rejeita coordenadas inválidas. */
@@ -29,6 +37,18 @@ export function nearestNpc(x: number, y: number): Npc | null {
 /** Falas de orientação; sem conceder itens nem mutar a missão. */
 export function npcDialogue(npc: Npc, kills: number): readonly string[] {
   const progress = Number.isFinite(kills) ? Math.max(0, Math.floor(kills)) : 0;
+  if (npc.id === "mira") return progress >= 5
+    ? ["Aela me contou sobre sua vitória!", "Há ruínas e cavernas além da floresta. Por enquanto, conheça a vila."]
+    : ["Sou Mira, cartógrafa da Vila da Travessia.", "Siga para leste, leia as placas e conheça os moradores.", "Aela ainda precisa de ajuda com os slimes."];
+  if (npc.id === "toren") return progress >= 5
+    ? ["Parabéns por proteger a clareira!", "Minha oficina está aberta para visitas. Equipamentos serão adicionados depois."]
+    : ["Sou Toren, ferreiro.", "Chegue perto da porta e pressione E para visitar a oficina.", "Ainda não ofereço comércio."];
+  if (npc.id === "lina") return progress >= 5
+    ? ["Obrigado por ajudar Aela!", "Visite a hospedaria. Mais histórias e tarefas chegarão depois."]
+    : ["Sou Lina, anfitriã da Travessia.", "Entre na hospedaria pela porta atrás de mim.", "Por enquanto não há serviço de descanso."];
+  if (npc.id === "entrance") return ["Vila da Travessia — bem-vindo!", "Ao leste fica a praça. Ao sul, a hospedaria."];
+  if (npc.id === "square") return ["Aviso: cuidado com os monstros fora da vila!", "Ajude Aela na clareira. Outras tarefas virão em etapas futuras."];
+  if (npc.kind === "door") return ["Você entrou em " + npc.name + ".", "Este é um interior ilustrado. Ainda não é possível andar ou negociar dentro dele."];
   if (npc.id === "aela" && progress >= 5) {
     return [
       "Você conseguiu! Cinco slimes derrotados. A clareira pode descansar por enquanto.",

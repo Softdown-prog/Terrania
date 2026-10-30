@@ -135,7 +135,7 @@
           </div>
           <div>
             <dt>E ou botão Conversar</dt>
-            <dd>Converse com a guardiã quando estiver perto dela.</dd>
+            <dd>Converse com moradores, leia placas e visite interiores quando estiver perto da porta.</dd>
           </div>
           <div>
             <dt>Espaço ou J</dt>
@@ -162,6 +162,10 @@
         <button class="dialog-x" data-close-dialog type="button" aria-label="Fechar conversa">×</button>
         <span class="dialog-kicker" id="npcRole"></span>
         <h1 id="npcName"></h1>
+        <div id="interiorRoom" class="interior-room" hidden role="img" aria-label="Vista ilustrada do interior da construção">
+          <span class="interior-window"></span><span class="interior-rug"></span>
+          <span class="interior-table"></span><span class="interior-shelf"></span>
+        </div>
         <p id="npcSpeech" aria-live="polite"></p>
         <small class="dialog-note" id="npcStep"></small>
         <button id="npcNext" class="primary-button" type="button">Continuar</button>

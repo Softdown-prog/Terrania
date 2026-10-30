@@ -129,8 +129,10 @@ export class Hud {
   setNearbyNpc(npc: Npc | null): void {
     this.talkButton.hidden = npc === null;
     if (npc) {
-      this.talkButton.title = "Conversar com " + npc.name + " (E)";
-      this.talkButton.setAttribute("aria-label", "Conversar com " + npc.name);
+      const action = npc.kind === "door" ? "Entrar" : npc.kind === "sign" ? "Ler" : "Conversar";
+      this.talkButton.textContent = action + " (E)";
+      this.talkButton.title = action + ": " + npc.name + " (E)";
+      this.talkButton.setAttribute("aria-label", action + ": " + npc.name);
     }
   }
   private updateNpcPage(): void {
@@ -143,6 +145,9 @@ export class Hud {
   showNpcDialogue(npc: Npc, kills: number): void {
     this.npcLines = npcDialogue(npc, kills);
     this.npcPage = 0;
+    const interior = element("interiorRoom");
+    interior.hidden = npc.kind !== "door";
+    interior.setAttribute("data-variant", npc.id === "forge" ? "1" : npc.id === "inn" ? "2" : "0");
     element("npcName").textContent = npc.name;
     element("npcRole").textContent = npc.role;
     this.updateNpcPage();

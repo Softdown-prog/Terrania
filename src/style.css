@@ -245,6 +245,15 @@ input:focus-visible {
 }
 #npcSpeech { min-height: 68px; }
 #npcStep { display: block; color: #c7b888; }
+.interior-room { height: 174px; position: relative; overflow: hidden; margin: 12px 0 20px; border: 8px solid #66533d; background: repeating-linear-gradient(90deg, #927757 0 21px, #826749 21px 24px); box-shadow: inset 0 28px #4d624f, inset 0 32px #c6ab76; }
+.interior-room[hidden] { display: none !important; }
+.interior-room[data-variant="1"] { background: repeating-linear-gradient(90deg, #5a5b55 0 21px, #484d47 21px 24px); }
+.interior-room[data-variant="2"] { background: repeating-linear-gradient(90deg, #a07d62 0 21px, #8b6c54 21px 24px); }
+.interior-room span { position: absolute; display: block; }
+.interior-window { top: 4px; left: 46%; width: 42px; height: 29px; background: #9abdb7; border: 6px solid #d9c395; }
+.interior-rug { bottom: 11px; left: 27%; width: 47%; height: 42px; background: #5e3937; border: 4px solid #bba175; transform: skew(-14deg); }
+.interior-table { bottom: 32px; left: 40%; width: 26%; height: 28px; background: #a38158; border: 5px solid #574531; box-shadow: 0 14px #46382f; }
+.interior-shelf { top: 38px; left: 15px; width: 65px; height: 58px; background: repeating-linear-gradient(0deg, #60422f 0 12px, #b39a6b 12px 15px); border: 5px solid #46382f; }
 #gameNotice {
   position: absolute;
   bottom: 55px;

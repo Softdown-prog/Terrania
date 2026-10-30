@@ -1,5 +1,6 @@
 import { getTile, isWalkable, TILE_SIZE } from "./terrain.ts";
 import { landmarkBlocks } from "./landmarks.ts";
+import { villageBlocks } from "./village.ts";
 /** Interface sem dependência de DOM, compartilhada entre navegador e servidor. */
 export interface CollisionMap {
   canMove(x: number, y: number): boolean;
@@ -30,7 +31,7 @@ export function canMoveOnSeed(x: number, y: number, seed: number): boolean {
   )
     return false;
   const radius = 7;
-  if (landmarkBlocks(x, y, radius)) return false;
+  if (landmarkBlocks(x, y, radius) || villageBlocks(x, y, radius)) return false;
   return [
     [-radius, -radius],
     [radius, -radius],

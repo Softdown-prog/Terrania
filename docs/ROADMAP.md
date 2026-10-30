@@ -15,7 +15,7 @@
 - [x] Profundidade no cenário, movimento com aceleração e câmera ajustável
 - [x] Integração local com dois clientes WebSocket e build multipágina validado
 - [x] Primeiro NPC procedural (Aela) com diálogos conforme a missão, teclado e toque
-- [ ] Cidade inicial com outros NPCs, placas, interiores e diálogos encadeados
+- [ ] Cidade inicial com outros NPCs, placas, interiores e diálogos encadeados (primeiro recorte: vila/NPCs/placas/interiores ilustrados; interiores caminháveis pendentes)
 - [ ] Inventário, equipamentos, loot e itens consumíveis
 - [ ] Sistema de quests com estados e recompensas
 - [ ] Três tipos de monstros e dois tipos de ataque

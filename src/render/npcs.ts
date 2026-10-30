@@ -11,6 +11,7 @@ function ellipse(ctx: CanvasRenderingContext2D, x: number, y: number,
 /** Personagem desenhada em Canvas; sem imagens ou dependências externas. */
 export function renderNpc(ctx: CanvasRenderingContext2D, npc: Npc,
   sx: number, sy: number, nearby: boolean): void {
+  if (npc.kind === "sign" || npc.kind === "door") return;
   ctx.save();
   ctx.translate(sx, sy);
   ellipse(ctx, 0, 3, 12, 4, "#142f2a88");
@@ -19,7 +20,7 @@ export function renderNpc(ctx: CanvasRenderingContext2D, npc: Npc,
   ctx.moveTo(-8, -26); ctx.lineTo(8, -26);
   ctx.lineTo(13, 0); ctx.lineTo(-13, 0);
   ctx.closePath(); ctx.fill();
-  ctx.fillStyle = "#547561";
+  ctx.fillStyle = npc.id === "toren" ? "#855d43" : npc.id === "lina" ? "#956d64" : npc.id === "mira" ? "#527a86" : "#547561";
   ctx.beginPath();
   ctx.moveTo(-7, -25); ctx.lineTo(7, -25);
   ctx.lineTo(10, -1); ctx.lineTo(-9, -1);
