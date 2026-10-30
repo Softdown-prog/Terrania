@@ -12,6 +12,9 @@
     "skipLibCheck": true,
     "lib": [
       "ES2022"
+    ],
+    "types": [
+      "node"
     ]
   },
   "include": [
