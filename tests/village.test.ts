@@ -34,3 +34,18 @@ test("moradores e placas respondem perto sem recompensas novas", () => {
   }
   assert.equal(nearestNpc(SIGNS[0].x, SIGNS[0].y)?.id, SIGNS[0].id);
 });
+
+test("criaturas não atacam viajantes na vila e não nascem na praça", async () => {
+  const { Slime, slimeSpawns } = await import("../src/actors/Slime.ts");
+  const { Player } = await import("../src/actors/Player.ts");
+  const hero = new Player();
+  hero.x = 448; hero.y = 64;
+  const slime = new Slime("test", 448, 70);
+  slime.update(1, hero, { canMove: () => true });
+  assert.equal(hero.hp, 100);
+  for (const seed of [42, 842136])
+    for (let cx = 0; cx <= 1; cx++)
+      for (let cy = -1; cy <= 1; cy++)
+        for (const mob of slimeSpawns(cx, cy, seed))
+          assert.equal(mob.x >= 192 && mob.x < 704 && mob.y >= -224 && mob.y < 320, false);
+});

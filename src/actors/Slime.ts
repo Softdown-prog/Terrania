@@ -1,6 +1,7 @@
 import { moveBody, type CollisionMap } from "../world/collision.ts";
 import { hash2 } from "../world/random.ts";
 import { CHUNK_TILES, TILE_SIZE } from "../world/terrain.ts";
+import { villageGround } from "../world/village.ts";
 import type { Player } from "./Player.ts";
 export class Slime {
   hp = 2;
@@ -24,6 +25,8 @@ export class Slime {
     this.knockX *= Math.exp(-10 * dt);
     this.knockY *= Math.exp(-10 * dt);
     this.contactCooldown = Math.max(0, this.contactCooldown - dt);
+    // A cidade inicial é segura também na simulação autoritativa do servidor.
+    if (villageGround(Math.floor(player.x / TILE_SIZE), Math.floor(player.y / TILE_SIZE))) return;
     const dx = player.x - this.x,
       dy = player.y - this.y,
       d = Math.hypot(dx, dy);
@@ -60,7 +63,7 @@ export function slimeSpawns(cx: number, cy: number, seed: number): Slime[] {
     const ty =
       cy * CHUNK_TILES +
       Math.floor(hash2(cx, cy * 4 + index, seed + 97) * CHUNK_TILES);
-    if (Math.hypot(tx, ty) < 9 || !worldTileWalkable(tx, ty, seed)) continue;
+    if (Math.hypot(tx, ty) < 9 || villageGround(tx, ty) || !worldTileWalkable(tx, ty, seed)) continue;
     result.push(
       new Slime(
         cx + "," + cy + "," + index,
