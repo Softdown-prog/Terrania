@@ -25,6 +25,8 @@ export function nearestNpc(x: number, y: number): Npc | null {
   let nearest: Npc | null = null;
   let distance = NPC_TALK_RANGE;
   for (const npc of NPCS) {
+    // Não permitir entrar pela lateral do prédio: E só funciona diante da porta.
+    if (npc.kind === "door" && (Math.abs(npc.x - x) > 25 || Math.abs(npc.y - y) > 28)) continue;
     const d = Math.hypot(npc.x - x, npc.y - y);
     if (d <= distance) {
       nearest = npc;

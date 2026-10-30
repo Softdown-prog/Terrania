@@ -23,6 +23,13 @@ test("colisão da fachada mantém porta acessível", () => {
   }
   assert.equal(PROTOCOL_VERSION, 3);
 });
+test("portas só podem ser acionadas diante da entrada, nunca pela parede lateral", () => {
+  for (const building of BUILDINGS) {
+    assert.equal(nearestNpc(building.x, building.y + 29)?.id, building.id);
+    assert.notEqual(nearestNpc(building.x + 54, building.y + 29)?.id, building.id);
+    assert.notEqual(nearestNpc(building.x, building.y + 60)?.id, building.id);
+  }
+});
 test("moradores e placas respondem perto sem recompensas novas", () => {
   assert.equal(SIGNS.length, 2);
   for (const id of ["aela", "mira", "toren", "lina"]) {
