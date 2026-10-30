@@ -11,7 +11,7 @@
     "test": "node --test --experimental-strip-types tests/*.test.ts"
   },
   "devDependencies": {
-    "typescript": "~5.9.3",
+    "typescript": "7.0.2",
     "vite": "^7.1.10"
   }
 }
