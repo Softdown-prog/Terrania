@@ -4,6 +4,7 @@ export const BUILDINGS = [
   { id: "forge", name: "Oficina de Toren", x: 544, y: -72, variant: 1 },
   { id: "inn", name: "Hospedaria da Travessia", x: 448, y: 176, variant: 2 },
 ] as const;
+export type Building = (typeof BUILDINGS)[number];
 export const SIGNS = [
   { id: "entrance", name: "Placa da vila", x: 240, y: 64 },
   { id: "square", name: "Quadro de avisos", x: 448, y: 48 },
