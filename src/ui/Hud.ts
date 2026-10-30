@@ -129,8 +129,10 @@ export class Hud {
   setNearbyNpc(npc: Npc | null): void {
     this.talkButton.hidden = npc === null;
     if (npc) {
-      this.talkButton.title = "Conversar com " + npc.name + " (E)";
-      this.talkButton.setAttribute("aria-label", "Conversar com " + npc.name);
+      const action = npc.kind === "door" ? "Entrar" : npc.kind === "sign" ? "Ler" : "Conversar";
+      this.talkButton.textContent = action + " (E)";
+      this.talkButton.title = action + ": " + npc.name + " (E)";
+      this.talkButton.setAttribute("aria-label", action + ": " + npc.name);
     }
   }
   private updateNpcPage(): void {
@@ -147,6 +149,15 @@ export class Hud {
     element("npcRole").textContent = npc.role;
     this.updateNpcPage();
     this.npcDialog.showModal();
+  }
+  setInterior(name: string): void {
+    this.talkButton.hidden = false;
+    this.talkButton.textContent = "Sair (E)";
+    this.talkButton.title = "Voltar para a vila (E)";
+    this.talkButton.setAttribute("aria-label", "Sair do interior para a vila");
+    this.quest.textContent = name;
+    element("questProgress").textContent = "E ou porta: sair";
+    element("coords").textContent = "Interior · Vila da Travessia";
   }
   onNewWorld(cb: () => void): void {
     element("confirmWorld").addEventListener("click", () => {

@@ -1,4 +1,5 @@
 import { hash2, valueNoise } from './random.ts';
+import { villageGround } from './village.ts';
 export const TILE_SIZE = 32;
 export const CHUNK_TILES = 16;
 export const CHUNK_PIXELS = TILE_SIZE * CHUNK_TILES;
@@ -7,6 +8,8 @@ export interface Tile { ground: Ground; tree: boolean; rock: boolean; decoration
 /** Terreno indexado por coordenadas globais: chunks vizinhos sempre encaixam. */
 export function getTile(tx: number, ty: number, seed: number): Tile {
   const detail = hash2(tx, ty, seed + 31);
+  const village = villageGround(tx, ty);
+  if (village) return { ground: village, tree: false, rock: false, decoration: detail };
   const forest = valueNoise(tx / 15 + 13.7, ty / 15, seed + 9);
   const terrain = valueNoise(tx / 32, ty / 32, seed + 71);
   const river = Math.sin(tx * 0.04 + seed * 0.0001) * 7 + 15;

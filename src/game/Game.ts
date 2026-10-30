@@ -12,6 +12,8 @@ import { loadLocalSave, saveLocal } from "../storage/localSave.ts";
 import { CanvasScene } from "../ui/CanvasScene.ts";
 import { Hud, type Preferences } from "../ui/Hud.ts";
 import { nearestNpc } from "../world/npcs.ts";
+import { InteriorRoom } from "../engine/InteriorRoom.ts";
+import { BUILDINGS } from "../world/village.ts";
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
@@ -23,6 +25,7 @@ export class Game {
   private sim = new OfflineSimulation(842136);
   private world = new WorldRenderer(842136);
   private multiplayer: MultiplayerClient | null = null;
+  private interior: InteriorRoom | null = null;
   private networkClock = 0;
   private pendingAttack = false;
   private offlineSnapshot: OfflineSave | null = null;
@@ -82,6 +85,7 @@ export class Game {
     this.effects.enabled = p.effects;
   }
   private replaceWorld(seed: number, saved?: OfflineSave): void {
+    this.interior = null;
     this.world.clear();
     this.world = new WorldRenderer(seed);
     this.sim = new OfflineSimulation(seed, saved);
@@ -123,11 +127,26 @@ export class Game {
   }
   private talkToNpc(): void {
     if (this.hud.menuOpen) return;
+    if (this.interior) {
+      this.leaveInterior();
+      return;
+    }
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
     if (!npc) return;
     this.input.clear();
     this.multiplayer?.sendInput(0, 0, false);
-    this.hud.showNpcDialogue(npc, this.sim.kills);
+    if (npc.kind === "door" && BUILDINGS.some(b => b.id === npc.id)) {
+      this.interior = new InteriorRoom(npc.id);
+      this.accumulator = 0;
+      this.pendingAttack = false;
+    } else this.hud.showNpcDialogue(npc, this.sim.kills);
+  }
+  private leaveInterior(): void {
+    this.interior = null;
+    this.input.clear();
+    this.accumulator = 0;
+    this.pendingAttack = false;
+    this.camera.snap(this.sim.player.x, this.sim.player.y);
   }
   private newWorld(): void {
     if (this.multiplayer?.connected) return;
@@ -157,6 +176,31 @@ export class Game {
     const movement = paused ? { x: 0, y: 0 } : this.input.movement();
     const attack = !paused && this.input.consumeAttack();
     this.pendingAttack ||= attack;
+    if (this.interior) {
+      const room = this.interior;
+      this.pendingAttack = false; // combate indisponível em locais seguros
+      this.accumulator = 0;
+      if (!paused) room.update(dt, movement);
+      if (room.reachedExit) this.leaveInterior();
+      if (this.interior) {
+        if (online && this.multiplayer) {
+          this.networkClock += dt;
+          if (this.networkClock >= 0.05) {
+            this.networkClock %= 0.05;
+            this.multiplayer.sendInput(0, 0, false);
+          }
+          this.multiplayer.interpolate(dt);
+        } else {
+          this.saveClock += dt;
+          if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
+        }
+        this.hud.update(this.sim.player, this.sim.kills);
+        this.hud.setInterior(room.building.name);
+        this.scene.renderInterior(room);
+        requestAnimationFrame((next) => this.frame(next));
+        return;
+      }
+    }
     if (!paused || online) {
       this.accumulator += dt;
       while (this.accumulator >= 1 / 60) {

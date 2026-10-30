@@ -1,5 +1,5 @@
 export interface Scenery {
-  kind: "tree" | "rock" | "arch" | "sign" | "fire";
+  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house";
   x: number;
   y: number;
   variant: number;
@@ -81,6 +81,23 @@ export function renderScenery(
       ctx.quadraticCurveTo(-17 + i * 3, -8, -18 + i * 5, -3);
       ctx.stroke();
     }
+  } else if (prop.kind === "house") {
+    const walls = ["#bda477", "#987b60", "#b4a28a"];
+    const roofs = ["#6c4440", "#4c6261", "#6b604d"];
+    ellipse(ctx, 0, 0, 51, 10, "#20352d66");
+    ctx.fillStyle = walls[prop.variant % 3]; ctx.fillRect(-44, -58, 88, 59);
+    ctx.fillStyle = "#73563c"; ctx.fillRect(-10, -36, 20, 37);
+    ctx.fillStyle = "#e4c78c"; ctx.fillRect(5, -18, 2, 3);
+    for (const xx of [-30, 26]) {
+      ctx.fillStyle = "#3a5149"; ctx.fillRect(xx - 8, -43, 16, 19);
+      ctx.fillStyle = "#afd3bb"; ctx.fillRect(xx - 5, -40, 10, 13);
+      ctx.fillStyle = "#73563c"; ctx.fillRect(xx - 1, -42, 2, 18);
+    }
+    ctx.fillStyle = roofs[prop.variant % 3];
+    ctx.beginPath(); ctx.moveTo(-54, -58); ctx.lineTo(0, -98); ctx.lineTo(54, -58); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#e4c99a"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(-49, -58); ctx.lineTo(0, -92); ctx.lineTo(49, -58); ctx.stroke();
+    ctx.fillStyle = "#493b31"; ctx.fillRect(24, -103, 12, 33);
   } else if (prop.kind === "rock") {
     ctx.fillStyle = "#45554b";
     ctx.beginPath();

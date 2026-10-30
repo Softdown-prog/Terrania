@@ -3,6 +3,8 @@ export const LANDMARKS = [
   { kind: "arch" as const, x: -176, y: -96, variant: 0.4 },
   { kind: "sign" as const, x: 128, y: -16, variant: 0.2 },
   { kind: "fire" as const, x: 176, y: -112, variant: 0.6 },
+  { kind: "sign" as const, x: 240, y: 64, variant: 0.3 },
+  { kind: "sign" as const, x: 448, y: 48, variant: 0.7 },
 ];
 export function landmarkBlocks(x: number, y: number, radius: number): boolean {
   return LANDMARKS.some((prop) => {

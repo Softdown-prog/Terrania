@@ -6,6 +6,7 @@ import {
   getTile,
 } from "../world/terrain.ts";
 import { LANDMARKS } from "../world/landmarks.ts";
+import { BUILDINGS } from "../world/village.ts";
 import { generateChunkCanvas } from "./terrain.ts";
 import type { Scenery } from "./scenery.ts";
 interface ChunkVisual {
@@ -115,6 +116,9 @@ export class WorldRenderer {
           )
             result.push(prop);
       }
+    for (const b of BUILDINGS)
+      if (b.x > left - 60 && b.x < right + 60 && b.y > top - 110 && b.y < bottom + 20)
+        result.push({ kind: "house", x: b.x, y: b.y, variant: b.variant });
     for (const prop of LANDMARKS)
       if (
         prop.x > left - 40 &&
