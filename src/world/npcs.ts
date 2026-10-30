@@ -48,7 +48,7 @@ export function npcDialogue(npc: Npc, kills: number): readonly string[] {
     : ["Sou Lina, anfitriã da Travessia.", "Entre na hospedaria pela porta atrás de mim.", "Por enquanto não há serviço de descanso."];
   if (npc.id === "entrance") return ["Vila da Travessia — bem-vindo!", "Ao leste fica a praça. Ao sul, a hospedaria."];
   if (npc.id === "square") return ["Aviso: cuidado com os monstros fora da vila!", "Ajude Aela na clareira. Outras tarefas virão em etapas futuras."];
-  if (npc.kind === "door") return ["Você entrou em " + npc.name + ".", "Este é um interior ilustrado. Ainda não é possível andar ou negociar dentro dele."];
+  if (npc.kind === "door") return ["Use E perto da porta para entrar em " + npc.name + "."];
   if (npc.id === "aela" && progress >= 5) {
     return [
       "Você conseguiu! Cinco slimes derrotados. A clareira pode descansar por enquanto.",

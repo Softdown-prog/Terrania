@@ -145,13 +145,19 @@ export class Hud {
   showNpcDialogue(npc: Npc, kills: number): void {
     this.npcLines = npcDialogue(npc, kills);
     this.npcPage = 0;
-    const interior = element("interiorRoom");
-    interior.hidden = npc.kind !== "door";
-    interior.setAttribute("data-variant", npc.id === "forge" ? "1" : npc.id === "inn" ? "2" : "0");
     element("npcName").textContent = npc.name;
     element("npcRole").textContent = npc.role;
     this.updateNpcPage();
     this.npcDialog.showModal();
+  }
+  setInterior(name: string): void {
+    this.talkButton.hidden = false;
+    this.talkButton.textContent = "Sair (E)";
+    this.talkButton.title = "Voltar para a vila (E)";
+    this.talkButton.setAttribute("aria-label", "Sair do interior para a vila");
+    this.quest.textContent = name;
+    element("questProgress").textContent = "Interior · caminhe ou pressione E para sair";
+    element("coords").textContent = "Interior · Vila da Travessia";
   }
   onNewWorld(cb: () => void): void {
     element("confirmWorld").addEventListener("click", () => {

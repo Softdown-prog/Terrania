@@ -6,6 +6,8 @@ import { renderScenery } from '../render/scenery.ts';
 import { NPCS, NPC_TALK_RANGE } from '../world/npcs.ts';
 import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
+import { drawInterior } from '../render/interior.ts';
+import { ROOM_WIDTH, ROOM_HEIGHT, type InteriorRoom } from '../engine/InteriorRoom.ts';
 import type { Effects } from '../render/Effects.ts';
 import type { Camera } from '../render/Camera.ts';
 
@@ -59,6 +61,17 @@ export class CanvasScene {
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.width = Math.max(1, window.innerWidth); this.height = Math.max(1, window.innerHeight);
     this.canvas.width = Math.ceil(this.width * this.dpr); this.canvas.height = Math.ceil(this.height * this.dpr);
+  }
+  renderInterior(room: InteriorRoom): void {
+    const scale = Math.min(1.7, this.width / (ROOM_WIDTH + 70), this.height / (ROOM_HEIGHT + 130));
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.ctx.fillStyle = '#102822';
+    this.ctx.fillRect(0, 0, this.width, this.height);
+    this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale,
+      this.dpr * (this.width - ROOM_WIDTH * scale) / 2,
+      this.dpr * (this.height - ROOM_HEIGHT * scale) / 2);
+    drawInterior(this.ctx, room);
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
   }
   render(world: WorldRenderer, camera: Camera, player: Player, mobs: ReadonlyArray<Slime | MobState>,
     remotePlayers: ReadonlyArray<HeroState>, selfId: string | null, time: number, effects: Effects): void {
