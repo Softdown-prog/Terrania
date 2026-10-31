@@ -25,7 +25,7 @@ jobs:
         with:
           go-version-file: server-go/go.mod
           cache-dependency-path: server-go/go.sum
-      - name: Enforce gofmt for cluster code
+      - name: Enforce gofmt for new cluster and codec code
         run: |
           set -euo pipefail
           gofmt -w server-go/cluster/handoff.go server-go/cluster/region.go server-go/cluster/region_handoff_test.go server-go/cluster/transfer_wire.go server-go/cluster/transfer_wire_test.go server-go/cluster/room_codec_test.go server-go/engine/room_state.go server-go/engine/room_state_test.go
@@ -50,11 +50,7 @@ jobs:
         working-directory: server-go
         run: |
           set -euo pipefail
-          go test -race -count=3 ./cluster -run '^(TestParallelProvinceTransfersRemainIsolated|TestConcurrentPrivateSnapshotsBoundedByStagingBudget|TestPrivateSnapshotHTTPSMutualTLSAndCommit|TestPrivateWireCarriesRestorableGoRoom)
+          go test -race -count=3 ./cluster -run '^(TestParallelProvinceTransfersRemainIsolated|TestConcurrentPrivateSnapshotsBoundedByStagingBudget|TestPrivateSnapshotHTTPSMutualTLSAndCommit|TestPrivateWireCarriesRestorableGoRoom)$' -v
           echo '### Region ownership prototype — local only' >> "$GITHUB_STEP_SUMMARY"
-          echo '512 regions x 3 repeated concurrent transfer tests, with the Go race detector.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Private HTTPS/mTLS with engine.Room full state codec, offline. No live worker activation, durable consensus, gRPC or VPS deploy.' >> "$GITHUB_STEP_SUMMARY"
- -v
-          echo '### Region ownership prototype — local only' >> "$GITHUB_STEP_SUMMARY"
-          echo '512 regions x 3 repeated concurrent transfer tests, with the Go race detector.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Private HTTPS/mTLS only in isolated test servers. No live gateway integration, state durability, gRPC or VPS deploy.' >> "$GITHUB_STEP_SUMMARY"
+          echo '512 regions x 3 concurrent transfer tests and live engine state roundtrip, with the Go race detector.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Private HTTPS/mTLS in isolated test servers; no worker activation, durable consensus, gRPC or VPS deploy.' >> "$GITHUB_STEP_SUMMARY"
