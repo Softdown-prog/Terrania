@@ -103,3 +103,13 @@ CGO_ENABLED=1 go test -tags rustmonsters ./engine -run '^$' -bench '^BenchmarkMo
 O build normal **nao** usa `rustmonsters` nem `rustspatial`. Se o planner Rust rejeitar a entrada, nenhuma entidade Go e alterada e o processamento usa a logica Go original. A CI verifica Rustfmt, Clippy `-D warnings`, `pedantic` e `cargo`, formatacao, teste Rust, paridade Go/Rust, race detector e benchmark dedicado a 96 monstros. A unica area Rust com `unsafe` e `src/ffi.rs`; `src/monsters.rs` usa `#![forbid(unsafe_code)]`.
 
 Proximos passos: reduzir copia de buffers e alocacoes; migrar colisao espacial para dados de tiles compartilhados em batch, com paridade deterministica; testar o design de arena/handles persistentes; verificar latencia de tick e memoria antes de habilitar na VPS, mantendo operacao Go puro como fallback.
+
+## Preparacao de escala — 1.024, 4.096 e 16.384 entidades (experimental)
+
+O novo `src/entity_arena.rs` e um **gerenciador Rust genérico e reutilizável** que suporta monstros, NPCs, projéteis, recursos e entidades ambientais. Usa armazenamento denso, remoção por troca, IDs com geração (handles que não podem apontar para uma entidade substituta após despawn), verificação de coordenadas e limites de memória. O limite configurável da arena experimental e **65.536 entidades ativas por arena/sala**, não por conexão. Novos tipos podem usar `EntityKind(u16)` sem alterar a estrutura. Não há `unsafe` nem rede nesse módulo.
+
+Os testes Rust exercitam 16.384 entidades de tipos mistos, remoção/reutilização, handles expirados e limite de memória; o planner executa lotes de 1.024, 4.096 e 16.384 monstros. A CI também executa paridade Go/Rust em 1.024/4.096 monstros e benchmarks completos de tick. **Esses são testes de capacidade funcional e custo local no GitHub Actions; não garantem TPS, 65.536 NPCs simultâneos em produção, nem 1.000 jogadores conectados.**
+
+A arena **ainda não é dona do estado vivo do jogo**: o Go mantém `Room.mobs` e `MaxMobs=96`, e o adaptador Rust continua recebendo buffers por tick. O armazenamento Rust está preparado e testado isoladamente; migrar ownership e oferecer um contrato FFI de arena persistente, com isolamento por sala e limpeza explícita, será uma etapa posterior, junto a perfil de memória e benchmark sem rede.
+
+Sem mudanças no Docker, na VPS ou na `main`.

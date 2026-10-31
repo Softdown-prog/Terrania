@@ -4,6 +4,7 @@ package engine
 
 import (
     "math"
+    "fmt"
     "testing"
 )
 
@@ -62,4 +63,48 @@ func TestRustMonsterBatchFallbackIsAtomic(t *testing.T) {
         t.Fatal("invalid batch should request Go fallback")
     }
     if m.X!=20 || m.Y!=0 {t.Fatal("failed batch mutated the mob")}
+}
+
+func TestRustMonsterBatchMoreThan1000(t *testing.T) {
+    world := World{Seed: 842136}
+    for _, count := range []int{1024, 4096} {
+        t.Run(fmt.Sprintf("%d", count), func(t *testing.T) {
+            makeGuests := func() []*Guest {
+                gs := make([]*Guest, 0, 12)
+                for i := 0; i < 12; i++ {
+                    player := NewPlayer()
+                    player.X = 1500 + float64(i%4)*35
+                    player.Y = 1400 + float64(i/4)*35
+                    gs = append(gs, &Guest{Actor: player})
+                }
+                return gs
+            }
+            makeMobs := func() []*Slime {
+                ms := make([]*Slime, 0, count)
+                for i := 0; i < count; i++ {
+                    ms = append(ms, NewSlime(fmt.Sprintf("stress-%d", i),
+                        1400 + float64(i%64)*4, 1370 + float64(i/64)*4))
+                }
+                return ms
+            }
+            goGuests, rustGuests := makeGuests(), makeGuests()
+            goMobs, rustMobs := makeMobs(), makeMobs()
+            runGoMonsterStep(goGuests, goMobs, .05, world)
+            if !tryRustMonsterStep(rustGuests, rustMobs, .05, world) {
+                t.Fatalf("Rust declined %d-monster batch", count)
+            }
+            for i := range goMobs {
+                if math.Abs(goMobs[i].X-rustMobs[i].X) > 1e-6 ||
+                    math.Abs(goMobs[i].Y-rustMobs[i].Y) > 1e-6 ||
+                    goMobs[i].HP != rustMobs[i].HP {
+                    t.Fatalf("monster %d differs in %d-monster batch", i, count)
+                }
+            }
+            for i := range goGuests {
+                if goGuests[i].Actor.HP != rustGuests[i].Actor.HP {
+                    t.Fatalf("player %d HP differs in %d-monster batch", i, count)
+                }
+            }
+        })
+    }
 }

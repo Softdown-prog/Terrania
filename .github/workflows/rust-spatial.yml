@@ -112,6 +112,97 @@ jobs:
             grep '^BenchmarkMonsterStep96' /tmp/rust-monsters.txt
             echo 'Comparacao exploratoria: nao mede conexoes, throughput da VPS ou 1000 jogadores.'
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Stress Go/Rust com 1024 e 4096 monstros (sem rede)
+        working-directory: server-go
+        env:
+          CGO_ENABLED: '1'
+        run: |
+          set -euo pipefail
+          go test -tags rustmonsters ./engine -run '^TestRustMonsterBatchMoreThan1000        run: |
+          set -euo pipefail
+          (cd server-go && go run ./cmd/spatial-reference) | tee /tmp/terrania-spatial-go.txt
+          cargo run --manifest-path rust/spatial-kernel/Cargo.toml --release --locked --bin spatial-check --quiet | tee /tmp/terrania-spatial-rust.txt
+          diff -u /tmp/terrania-spatial-go.txt /tmp/terrania-spatial-rust.txt
+          echo "Rust e Go: mesmas entidades visiveis e mesmo alvo selecionado."
+      - name: Benchmark exploratorio de CPU local (nao e medicao da VPS)
+        run: |
+          set -euo pipefail
+          (cd server-go && go build -o /tmp/terrania-spatial-go ./cmd/spatial-reference)
+          /tmp/terrania-spatial-go --bench 2>&1 | tee /tmp/go-bench.log
+          rust/spatial-kernel/target/release/spatial-check --bench 2>&1 | tee /tmp/rust-bench.log
+          echo "### Kernel Rust x Go - GitHub runner, nao VPS" >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/go-bench.log >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/rust-bench.log >> "$GITHUB_STEP_SUMMARY"
+ -count=1 -v
+          go test ./engine -run '^        run: |
+          set -euo pipefail
+          (cd server-go && go run ./cmd/spatial-reference) | tee /tmp/terrania-spatial-go.txt
+          cargo run --manifest-path rust/spatial-kernel/Cargo.toml --release --locked --bin spatial-check --quiet | tee /tmp/terrania-spatial-rust.txt
+          diff -u /tmp/terrania-spatial-go.txt /tmp/terrania-spatial-rust.txt
+          echo "Rust e Go: mesmas entidades visiveis e mesmo alvo selecionado."
+      - name: Benchmark exploratorio de CPU local (nao e medicao da VPS)
+        run: |
+          set -euo pipefail
+          (cd server-go && go build -o /tmp/terrania-spatial-go ./cmd/spatial-reference)
+          /tmp/terrania-spatial-go --bench 2>&1 | tee /tmp/go-bench.log
+          rust/spatial-kernel/target/release/spatial-check --bench 2>&1 | tee /tmp/rust-bench.log
+          echo "### Kernel Rust x Go - GitHub runner, nao VPS" >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/go-bench.log >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/rust-bench.log >> "$GITHUB_STEP_SUMMARY"
+ -bench '^BenchmarkMonsterStep(1024|4096)        run: |
+          set -euo pipefail
+          (cd server-go && go run ./cmd/spatial-reference) | tee /tmp/terrania-spatial-go.txt
+          cargo run --manifest-path rust/spatial-kernel/Cargo.toml --release --locked --bin spatial-check --quiet | tee /tmp/terrania-spatial-rust.txt
+          diff -u /tmp/terrania-spatial-go.txt /tmp/terrania-spatial-rust.txt
+          echo "Rust e Go: mesmas entidades visiveis e mesmo alvo selecionado."
+      - name: Benchmark exploratorio de CPU local (nao e medicao da VPS)
+        run: |
+          set -euo pipefail
+          (cd server-go && go build -o /tmp/terrania-spatial-go ./cmd/spatial-reference)
+          /tmp/terrania-spatial-go --bench 2>&1 | tee /tmp/go-bench.log
+          rust/spatial-kernel/target/release/spatial-check --bench 2>&1 | tee /tmp/rust-bench.log
+          echo "### Kernel Rust x Go - GitHub runner, nao VPS" >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/go-bench.log >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/rust-bench.log >> "$GITHUB_STEP_SUMMARY"
+ -benchtime=150ms -count=2 -benchmem | tee /tmp/go-scale.txt
+          go test -tags rustmonsters ./engine -run '^        run: |
+          set -euo pipefail
+          (cd server-go && go run ./cmd/spatial-reference) | tee /tmp/terrania-spatial-go.txt
+          cargo run --manifest-path rust/spatial-kernel/Cargo.toml --release --locked --bin spatial-check --quiet | tee /tmp/terrania-spatial-rust.txt
+          diff -u /tmp/terrania-spatial-go.txt /tmp/terrania-spatial-rust.txt
+          echo "Rust e Go: mesmas entidades visiveis e mesmo alvo selecionado."
+      - name: Benchmark exploratorio de CPU local (nao e medicao da VPS)
+        run: |
+          set -euo pipefail
+          (cd server-go && go build -o /tmp/terrania-spatial-go ./cmd/spatial-reference)
+          /tmp/terrania-spatial-go --bench 2>&1 | tee /tmp/go-bench.log
+          rust/spatial-kernel/target/release/spatial-check --bench 2>&1 | tee /tmp/rust-bench.log
+          echo "### Kernel Rust x Go - GitHub runner, nao VPS" >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/go-bench.log >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/rust-bench.log >> "$GITHUB_STEP_SUMMARY"
+ -bench '^BenchmarkMonsterStep(1024|4096)        run: |
+          set -euo pipefail
+          (cd server-go && go run ./cmd/spatial-reference) | tee /tmp/terrania-spatial-go.txt
+          cargo run --manifest-path rust/spatial-kernel/Cargo.toml --release --locked --bin spatial-check --quiet | tee /tmp/terrania-spatial-rust.txt
+          diff -u /tmp/terrania-spatial-go.txt /tmp/terrania-spatial-rust.txt
+          echo "Rust e Go: mesmas entidades visiveis e mesmo alvo selecionado."
+      - name: Benchmark exploratorio de CPU local (nao e medicao da VPS)
+        run: |
+          set -euo pipefail
+          (cd server-go && go build -o /tmp/terrania-spatial-go ./cmd/spatial-reference)
+          /tmp/terrania-spatial-go --bench 2>&1 | tee /tmp/go-bench.log
+          rust/spatial-kernel/target/release/spatial-check --bench 2>&1 | tee /tmp/rust-bench.log
+          echo "### Kernel Rust x Go - GitHub runner, nao VPS" >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/go-bench.log >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/rust-bench.log >> "$GITHUB_STEP_SUMMARY"
+ -benchtime=150ms -count=2 -benchmem | tee /tmp/rust-scale.txt
+          {
+            echo '### Stress 1024 e 4096 monstros por tick (runner, sem rede)'
+            echo 'Go:'
+            grep '^BenchmarkMonsterStep' /tmp/go-scale.txt
+            echo 'Rust opt-in:'
+            grep '^BenchmarkMonsterStep' /tmp/rust-scale.txt
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Comparar 200 consultas e 4096 objetos com Go, bit a bit
         run: |
           set -euo pipefail

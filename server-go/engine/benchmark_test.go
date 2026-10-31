@@ -83,3 +83,34 @@ func BenchmarkMonsterStep96(b *testing.B) {
         stepMonsters(guests,mobs,.05,world)
     }
 }
+
+// BenchmarkMonsterStep1024 is a pre-production CPU stress scenario.
+// The live Room.MaxMobs limit remains 96; this does not simulate network users.
+func BenchmarkMonsterStep1024(b *testing.B) {
+    benchmarkMonsterBatch(b, 1024)
+}
+
+func BenchmarkMonsterStep4096(b *testing.B) {
+    benchmarkMonsterBatch(b, 4096)
+}
+
+func benchmarkMonsterBatch(b *testing.B, count int) {
+    world := World{Seed: 842136}
+    guests := make([]*Guest, 0, 12)
+    for i := 0; i < 12; i++ {
+        g := &Guest{Actor: NewPlayer()}
+        g.Actor.X = 1500 + float64(i%4)*35
+        g.Actor.Y = 1400 + float64(i/4)*35
+        guests = append(guests, g)
+    }
+    mobs := make([]*Slime, 0, count)
+    for i := 0; i < count; i++ {
+        mobs = append(mobs, NewSlime(fmt.Sprintf("benchmark-%d", i),
+            1400 + float64(i%64)*4, 1370 + float64(i/64)*4))
+    }
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        stepMonsters(guests, mobs, .05, world)
+    }
+}
