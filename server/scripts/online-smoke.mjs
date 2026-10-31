@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import { setTimeout as sleep } from "node:timers/promises";
 import WebSocket from "ws";
+import { PROTOCOL_VERSION } from "../../src/shared/protocol.ts";
 
 // Read-only public smoke test. Two short-lived guests in a unique room.
 const origin = "https://rpg.analysepro.com";
@@ -68,9 +69,9 @@ await check("dois jogadores e movimento autoritativo por WSS público", async ()
       await once(ws, "open");
     }
     await until(() => streams.every(messages =>
-      messages.some(m => m.type === "welcome" && m.version === 2) &&
+      messages.some(m => m.type === "welcome" && m.version === PROTOCOL_VERSION) &&
       messages.some(m => m.type === "state" && m.players?.length === 2)
-    ), "dois jogadores no mesmo mundo, protocolo 2");
+    ), "dois jogadores no mesmo mundo, protocolo " + PROTOCOL_VERSION);
     const welcomes = streams.map(messages => messages.find(m => m.type === "welcome"));
     assert.equal(welcomes[0].room, room);
     assert.equal(welcomes[1].room, room);
