@@ -79,3 +79,13 @@ O componente `SnapshotArchive` mantém **snapshots completos e imutáveis** em u
 `InspectRecoveredProvince` cruza, em modo **somente leitura**, o journal reiniciado (`recovery-required`) com a cópia persistida. Confere token, worker, epoch, checksum e se `engine.RestoreRoomState` aceitaria o payload. O retorno é um relatório sem dados de jogadores ou tokens e marca `SafeToResume=false` em qualquer situação. Ele não elege líder, remove lock, desfaz freeze, prova que o antigo worker está desligado ou restaura sessões WebSocket.
 
 **Ainda falta:** coordenação distribuída, isolamento de worker remoto confirmado, serialização por província em vez de sala inteira, ativação autoritativa no loop de jogo, transferência de conexões e política de expiração/limpeza da coleção de snapshots. Não foi instalado armazenamento na VPS e nenhum snapshot real de jogadores foi coletado.
+
+## Fase 6 — bloqueio de ticks por província e restauração controlada (experimental)
+
+A camada `cluster.GuardedRoom` controla um único `engine.Room` no laboratório sem expor ponteiros mutáveis: `Tick`, `Input`, `Join`, `Leave` e leitura de estado passam pela verificação do `workerID + epoch` do diretório. Nenhum comando de jogador deve ser aceito se a região estiver congelada, com epoch antigo ou em recuperação.
+
+O coordenador passou a ter um **gate `sync.RWMutex` por província**: `WithAuthority` usa leitura enquanto um tick roda; `FreezeSource` e `Abort` exigem exclusividade. Assim, o congelamento espera ticks locais em andamento e regiões distintas não compartilham uma trava longa de simulação. `CaptureAndFreeze` mantém a exclusividade durante `engine.Room.ExportState`, reserva do ticket e gravação da fase congelada no journal. O destino usa `NewStagedGuardedRoom` para restaurar os dados **sem simular** e só pode chamar `Activate` depois do commit do epoch novo.
+
+Os testes cobrem rejeição de inputs após congelamento, rejeição de ticks de epochs antigos, espera por ticks anteriores, progresso independente em províncias distintas, rejeição de snapshots alterados, proteção após reiniciar o coordenador e envio real em servidor de teste HTTPS/mTLS antes de ativação.
+
+**Limites decisivos:** `GuardedRoom` ainda é um *sandbox local de uma sala por província*, não substitui `roomSession` de produção. Workers em máquinas diferentes **não compartilham** essas travas Go. `RegionDirectory` não implementa leases ou consenso distribuído, e um `Close`/falha abrupta não interrompe imediatamente callbacks de tick já em execução. Integração multiplayer, streaming de estado de várias salas, sessões e isolamento remoto precisam ser tratados separadamente. Sem endpoint aberto, PR, merge ou deploy.
