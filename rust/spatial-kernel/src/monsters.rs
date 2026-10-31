@@ -215,4 +215,25 @@ mod tests {
         assert!(plan_into(&[m], &[], 0.05, &mut out).is_err());
         assert_eq!(out[0].target_index, 42);
     }
+
+    #[test]
+    fn handles_1024_4096_and_16384_monsters_per_batch() {
+        let players = [
+            MonsterPlayer { x: 20.0, y: 0.0, in_village: 0 },
+            MonsterPlayer { x: 120.0, y: 40.0, in_village: 0 },
+            MonsterPlayer { x: -100.0, y: -40.0, in_village: 0 },
+        ];
+        for count in [1_024, 4_096, 16_384] {
+            let monsters: Vec<_> = (0..count)
+                .map(|i| monster(f64::from(u32::try_from(i % 200).unwrap()), 0.0))
+                .collect();
+            let mut output = vec![MonsterPlan::default(); count];
+            assert_eq!(plan_into(&monsters, &players, 0.05, &mut output), Ok(count));
+            assert!(output.iter().all(|p| p.target_index >= 0));
+            assert_eq!(output[0].target_index, 0);
+            assert_eq!(output[0].attack, 1);
+            assert_eq!(output[count - 1].target_index >= 0, true);
+            assert!(plan_into(&monsters, &players, 0.05, &mut output[..count - 1]).is_err());
+        }
+    }
 }

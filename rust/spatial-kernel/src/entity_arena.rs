@@ -112,6 +112,9 @@ impl EntityArena {
         let slot = if let Some(free) = self.free.pop() {
             free
         } else {
+            if self.slots.len() >= self.max_entities {
+                return Err("slot capacity reached");
+            }
             self.slots.try_reserve(1).map_err(|_| "allocation failed")?;
             let id = u32::try_from(self.slots.len()).map_err(|_| "slot overflow")?;
             self.slots.push(Slot {
