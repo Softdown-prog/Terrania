@@ -59,3 +59,6 @@ func (r *Router) Pick(room string) Backend {
 	return winner
 }
 func (r *Router) Count() int {return len(r.nodes)}
+
+// Return a copy: HTTP status aggregation cannot mutate room ownership.
+func (r *Router) Backends() []Backend { return append([]Backend(nil), r.nodes...) }

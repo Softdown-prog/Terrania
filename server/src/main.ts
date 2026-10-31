@@ -22,7 +22,24 @@ const send = (socket: WebSocket, msg: ServerMessage): void => {
   socket.send(JSON.stringify(msg));
 };
 const server = createServer((req, res) => {
-  if (new URL(req.url ?? '/', 'http://localhost').pathname === '/health' && req.method === 'GET') {
+  const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
+  if (pathname === '/presence') {
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Vary', 'Origin');
+    const origin = req.headers.origin;
+    if (origin && !originList.includes(origin)) { res.writeHead(403); res.end(); return; }
+    if (origin) res.setHeader('Access-Control-Allow-Origin', origin);
+    if (req.method !== 'GET') { res.writeHead(405, { Allow: 'GET' }); res.end(); return; }
+    const activeRooms = new Set<string>();
+    let online = 0;
+    for (const [socket, client] of clients) {
+      if (socket.readyState !== WebSocket.OPEN) continue;
+      online++;
+      activeRooms.add(client.room.id);
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ online, rooms: activeRooms.size, updatedAt: new Date().toISOString(), scope: 'server' }));
+  } else if (pathname === '/health' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
     res.end(JSON.stringify({ status: 'ok', revision: /^[0-9a-f]{40}$/.test(process.env.GIT_SHA ?? '') ? process.env.GIT_SHA : null }));
   } else { res.writeHead(404); res.end(); }

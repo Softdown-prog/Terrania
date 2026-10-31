@@ -1,0 +1,56 @@
+<a class="skip-link" [routerLink]="[]" fragment="conteudo">Pular para o conteúdo</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" routerLink="/" aria-label="Terrania: Origins — início"
+          ><img src="/art/crest.svg" alt="" width="37" height="44" /><span
+            >TERRANIA<small>O R I G I N S</small></span
+          ></a
+        ><button
+          class="nav-toggle"
+          type="button"
+          [attr.aria-expanded]="navOpen()" (click)="navOpen.set(!navOpen())"
+          aria-controls="main-nav"
+          aria-label="Abrir navegação"
+        >
+          <span></span><span></span>
+        </button>
+        <nav [class.open]="navOpen()" (click)="navOpen.set(false)" id="main-nav" aria-label="Navegação principal">
+          <a routerLink="/mundo/" routerLinkActive="active" ariaCurrentWhenActive="page">O mundo</a><a routerLink="/guia/" routerLinkActive="active" ariaCurrentWhenActive="page">Como jogar</a
+          ><a routerLink="/novidades/" routerLinkActive="active" ariaCurrentWhenActive="page">Novidades</a
+          ><a routerLink="/comunidade/" routerLinkActive="active" ariaCurrentWhenActive="page">Comunidade</a
+          ><a class="button button-small nav-play" routerLink="/jogar/"
+            >Jogar agora <span aria-hidden="true">↗</span></a
+          >
+        </nav>
+      </div>
+    </header>
+<router-outlet />
+<footer class="site-footer">
+      <div class="footer-main">
+        <a class="brand" routerLink="/"
+          ><img src="/art/crest.svg" alt="" width="34" height="40" /><span
+            >TERRANIA<small>O R I G I N S</small></span
+          ></a
+        >
+        <p>
+          O caminho começa com você.<br />Um RPG independente em construção.
+        </p>
+        <a routerLink="/jogar/" class="text-link"
+          >Sua aventura espera <span aria-hidden="true">↗</span></a
+        >
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Terrania: Origins · Softdown</span>
+        <nav aria-label="Informações do site">
+          <a routerLink="/privacidade/">Privacidade</a
+          ><a routerLink="/termos/">Termos de uso</a
+          ><a
+            href="https://github.com/Softdown-prog/Terrania"
+            target="_blank"
+            rel="noopener noreferrer"
+            >GitHub ↗</a
+          >
+        </nav>
+        <span class="alpha-label"><i></i> ALFA EM DESENVOLVIMENTO</span>
+      </div>
+    </footer>

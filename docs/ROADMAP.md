@@ -1,7 +1,7 @@
 # Roadmap — Terrania: Origins
 
 ## Fase 0 — Fundamentos (protótipo 0.2)
-- [x] Estrutura TypeScript/Vite e build para Cloudflare Pages
+- [x] Estrutura TypeScript/Angular e build estático para Cloudflare
 - [x] World seed determinística, chunks e cache limitado
 - [x] Herói procedural, caminhada e ataque
 - [x] Slimes, colisão, missão inicial e save offline
@@ -34,3 +34,7 @@
 
 ## Regras
 Entrega pequena com testes e plano de reversão. Não misturar o antigo C++/SDL com o frontend. Só colocar o backend na VPS após verificar rede, porta, origem HTTPS e conflito com os demais containers.
+
+## Migração isolada Angular + Phaser 3
+
+Ver [estado, validação e continuidade](MIGRACAO_ANGULAR_PHASER3.md). A branch `feat/angular-ui-phaser3` exige decisão posterior do usuário antes de PR ou merge.

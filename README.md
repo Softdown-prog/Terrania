@@ -1,6 +1,6 @@
 # Terrania: Origins
 
-RPG **2D top-down e procedural** para navegador, desenhado em **HTML5 + TypeScript + Canvas 2D** sem PNG, spritesheets ou React. Inspirado em ideias de mundo/RPG do antigo Terranium (`Softdown-prog/2d2`), sem transportar o motor C++/SDL3.
+RPG **2D top-down e procedural** para navegador, com **Angular 22 na interface e Phaser 3.90 no jogo**. A arte procedural continua em Canvas 2D, convertida em textura Phaser em memória, sem sprites externos. Inspirado em ideias de mundo/RPG do antigo Terranium (`Softdown-prog/2d2`), sem transportar o motor C++/SDL3.
 
 ## Versão 0.3 — site, mundo e movimento
 
@@ -10,7 +10,7 @@ O cenário ganhou vegetação com profundidade, texturas, margens de água e mar
 
 ### Primeira personagem não jogável
 
-**Aela, guardiã da clareira**, está perto do ponto inicial e oferece pistas sobre a missão dos cinco slimes. Aproxime-se e pressione **E** ou toque em **Conversar**. As falas mudam conforme os slimes derrotados, sem mudar o protocolo ou o estado autoritativo da VPS. É o primeiro passo dos NPCs do mundo — ainda não concede recompensas.
+**Aela, guardiã da clareira**, está perto do ponto inicial e oferece pistas sobre a missão dos cinco slimes. Aproxime-se e pressione **E** ou toque em **Conversar**. As falas mudam conforme os slimes derrotados, sem mudar o protocolo ou o estado autoritativo da VPS. É o primeiro passo dos NPCs do mundo — no modo solo, entrega duas poções após a missão.
 
 ### Multiplayer experimental
 
@@ -26,7 +26,7 @@ O cenário ganhou vegetação com profundidade, texturas, margens de água e mar
 
 ## Executar localmente
 
-Node.js 22+ recomendado.
+Node.js 24 LTS (24.15+); TypeScript 6 no Angular e TypeScript 7 no servidor Node. Veja [compatibilidade e continuidade da migração](docs/MIGRACAO_ANGULAR_PHASER3.md).
 
 **Somente navegador (offline):**
 
@@ -45,7 +45,7 @@ cd server && npm ci && npm run dev
 VITE_MULTIPLAYER_URL=ws://localhost:8787/ws npm run dev
 ```
 
-Abrir duas abas em `http://localhost:5173/jogar/?room=origins`. O servidor aceita a origem `http://localhost:5173` para desenvolvimento.
+Abrir duas abas em `http://127.0.0.1:5173/jogar/?room=origins`. O servidor aceita a origem `http://127.0.0.1:5173` para desenvolvimento.
 
 ## Verificações
 
@@ -63,7 +63,7 @@ Os `npm ci` devem ser feitos antes. O build da interface produz `dist/`. `server
 
 ## Produção
 
-- **Cloudflare Pages:** Vite, `npm run build`, pasta `dist`, variável `VITE_MULTIPLAYER_URL=wss://DOMINIO-REAL/ws`.
+- **Cloudflare Worker com assets estáticos:** Angular CLI, `npm run build`, pasta `dist`, variável `VITE_MULTIPLAYER_URL=wss://DOMINIO-REAL/ws`.
 - **VPS:** Docker Compose isolado (`server/compose.yml`) com orçamento inicial de 256 MiB e 0,5 CPU, com `ALLOWED_ORIGINS` restrito à origem HTTPS real.
 - **Caddy:** TLS/WSS na frente do backend. Se o Caddy é um contêiner, configure a rede compartilhada: `localhost` dentro dele não aponta para a VPS.
 
@@ -74,8 +74,21 @@ Os `npm ci` devem ser feitos antes. O build da interface produz `dist/`. `server
 Repositório oficial: [`Softdown-prog/Terrania`](https://github.com/Softdown-prog/Terrania). O repositório do Terranium original (`Softdown-prog/2d2`) permanece separado. A disponibilidade do backend depende da configuração externa; esta alteração não instala nem atualiza serviços na VPS. Veja os documentos em `docs/` e o roteiro em `docs/ROADMAP.md`.
 ## Motor e interface separados
 
-`src/main.ts` só inicializa a aplicação. O motor local em `src/engine/OfflineSimulation.ts` não depende de DOM, Canvas, armazenamento nem WebSocket; o controlador `src/game/Game.ts` integra motor, renderizador, HUD e rede. A simulação autoritativa online fica em `server/src/Room.ts` e compartilha atores, colisão e protocolo.
+`src/main.ts` inicializa o Angular; a rota `/jogar/` carrega o Phaser sob demanda. O motor local em `src/engine/OfflineSimulation.ts` não depende de DOM, Canvas, armazenamento nem WebSocket; o controlador `src/game/Game.ts` integra motor, renderizador, HUD e rede. A simulação autoritativa online fica em `server/src/Room.ts` e compartilha atores, colisão e protocolo.
 
 **Cloudflare Pages não precisa de Dockerfile:** build `npm run build`, saída `dist`. A VPS usa o Dockerfile existente em `server/Dockerfile`. Consulte [arquitetura](docs/ARQUITETURA.md) e [custos/deploy](docs/ESTRUTURA_E_CUSTOS.md).
 
-**Compatibilidade da alfa 0.3:** publique também o backend desta revisão; o protocolo 2 impede misturar o cliente novo com as regras físicas antigas. Sem backend compatível, o solo permanece utilizável. O save local existente é mantido.
+**Compatibilidade da alfa 0.3:** publique também o backend desta revisão; o protocolo 3 impede misturar o cliente novo com as regras físicas antigas. Sem backend compatível, o solo permanece utilizável. O save local existente é mantido.
+
+## Interface Angular + Phaser 3
+
+Desenvolvida e validada em `feat/angular-ui-phaser3`. Em 31/10/2026, Rodrigo autorizou a integração na `main`. A combinação preserva os commits Go/Rust existentes; o modo Go puro permanece como padrão do backend.
+
+- Angular controla rotas, painéis, opções, diálogos, bolsa e HUD com sinais.
+- Phaser 3 controla cena, loop, textura procedural, renderização e redimensionamento do jogo.
+- O painel de jogadores online consulta `GET /presence` a cada 5 segundos: conexões reais no Node, worker Go ou cluster Go; falhas mostram contagem indisponível.
+- As seis verificações solicitadas estão ligadas: `strict`, `strictTemplates`, `strictInjectionParameters`, `noImplicitOverride`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`.
+
+Para testes de navegador: `npm ci --prefix server`, `npx playwright install chromium` e `npm run test:browser`. Os testes usam servidores locais e emulação de tela Android.
+
+Leia [o estado da migração e como continuar](docs/MIGRACAO_ANGULAR_PHASER3.md).

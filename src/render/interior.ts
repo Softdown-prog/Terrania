@@ -44,7 +44,7 @@ export function drawInterior(ctx: CanvasRenderingContext2D, room: InteriorRoom):
     { wall: "#586b5c", floor: "#8e7859", wood: "#b39a6c" },
     { wall: "#69645a", floor: "#6c685e", wood: "#a68a6b" },
     { wall: "#765e50", floor: "#a08160", wood: "#c5a07a" },
-  ][room.building.variant];
+  ][room.building.variant] ?? { wall: "#586b5c", floor: "#8e7859", wood: "#b39a6c" };
   ctx.fillStyle = "#172a26"; ctx.fillRect(-16, -16, ROOM_WIDTH + 32, ROOM_HEIGHT + 32);
   ctx.fillStyle = palette.floor; ctx.fillRect(0, 0, ROOM_WIDTH, ROOM_HEIGHT);
   for (let x = 0; x < ROOM_WIDTH; x += 24) {

@@ -7,6 +7,8 @@ import type {
 import { PROTOCOL_VERSION, validRoom } from "../shared/protocol.ts";
 
 export class MultiplayerClient {
+  private closed = false;
+  private reconnectTimer: ReturnType<typeof setTimeout> | undefined;
   private socket: WebSocket | null = null;
   private backoff = 1500;
   id: string | null = null;
@@ -26,6 +28,7 @@ export class MultiplayerClient {
     this.connect();
   }
   private connect(): void {
+    if (this.closed) return;
     try {
       const url = new URL(this.endpoint);
       const local =
@@ -114,7 +117,7 @@ export class MultiplayerClient {
         );
         const delay = this.backoff;
         this.backoff = Math.min(30_000, this.backoff * 2);
-        setTimeout(() => {
+        this.reconnectTimer = setTimeout(() => {
           if (this.socket === socket) this.connect();
         }, delay);
       };
@@ -123,6 +126,20 @@ export class MultiplayerClient {
       };
     } catch {
       this.onStatus("Multiplayer não configurado");
+    }
+  }
+  disconnect(): void {
+    this.closed = true;
+    clearTimeout(this.reconnectTimer);
+    const socket = this.socket;
+    this.socket = null;
+    this.connected = false;
+    this.id = null;
+    this.players = []; this.mobs = [];
+    this.targetPlayers = []; this.targetMobs = [];
+    if (socket) {
+      socket.onmessage = socket.onclose = socket.onopen = socket.onerror = null;
+      socket.close(1000, "Saindo da aventura");
     }
   }
   sendInput(x: number, y: number, attack: boolean): void {

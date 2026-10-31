@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/Softdown-prog/Terrania/server-go/cluster"
 	"github.com/Softdown-prog/Terrania/server-go/engine"
+	"github.com/Softdown-prog/Terrania/server-go/presence"
 )
 
 func gatewayHandler(router *cluster.Router, allowed map[string]bool) http.Handler {
@@ -21,6 +23,11 @@ func gatewayHandler(router *cluster.Router, allowed map[string]bool) http.Handle
 
 func gatewayHandlerWithLobby(router *cluster.Router,allowed map[string]bool,l *lobby) http.Handler {
 	mux:=http.NewServeMux()
+	mux.HandleFunc("/presence", presence.Handler(allowed, "cluster", func(ctx context.Context) (int, int, error) {
+		workers := make([]string, 0, router.Count())
+		for _, node := range router.Backends() { workers = append(workers, node.URL.String()) }
+		return presence.Collect(ctx, workers)
+	}))
 	mux.HandleFunc("/health",func(w http.ResponseWriter,r *http.Request){
 		w.Header().Set("Content-Type","application/json")
 		w.Header().Set("Cache-Control","no-store")

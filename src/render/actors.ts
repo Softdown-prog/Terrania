@@ -146,7 +146,7 @@ export function renderHero(
     const angle = facing - 1.25 + sweep * 2.5;
     if (progress > 0.08 && progress < 0.96) {
       for (let i = 0; i < 3; i++) {
-        ctx.strokeStyle = ["#f9ebbaaa", "#e1c98a66", "#fbf5da33"][i];
+        ctx.strokeStyle = (["#f9ebbaaa", "#e1c98a66", "#fbf5da33"][i] ?? "#fbf5da33");
         ctx.lineWidth = 2.4 + i * 1.8;
         ctx.beginPath();
         ctx.arc(0, 0, 37 - i * 4, angle - 0.7, angle);

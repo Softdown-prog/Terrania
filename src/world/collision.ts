@@ -32,12 +32,12 @@ export function canMoveOnSeed(x: number, y: number, seed: number): boolean {
     return false;
   const radius = 7;
   if (landmarkBlocks(x, y, radius) || villageBlocks(x, y, radius)) return false;
-  return [
+  return ([
     [-radius, -radius],
     [radius, -radius],
     [-radius, radius],
     [radius, radius],
-  ].every(([dx, dy]) =>
+  ] as const).every(([dx, dy]) =>
     isWalkable(
       Math.floor((x + dx) / TILE_SIZE),
       Math.floor((y + dy) / TILE_SIZE),

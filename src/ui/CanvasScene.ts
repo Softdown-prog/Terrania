@@ -104,17 +104,17 @@ export class CanvasScene {
   private readonly ctx: CanvasRenderingContext2D;
   private width = 1; private height = 1; private dpr = 1;
   private readonly canvas: HTMLCanvasElement;
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, width: number, height: number) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('Seu navegador não disponibilizou Canvas 2D.');
-    this.ctx = ctx; this.resize();
+    this.ctx = ctx; this.resize(width, height);
   }
-  resize(): void {
+  resize(viewWidth: number, viewHeight: number): void {
     // Chrome Android altera a viewport visível quando as barras e a orientação mudam.
-    // Medir o elemento evita distorção entre a área tocada e a área renderizada.
-    const width = Math.max(1, Math.round(this.canvas.clientWidth));
-    const height = Math.max(1, Math.round(this.canvas.clientHeight));
+    // A Scene Phaser fornece as dimensões CSS do elemento, evitando distorção do toque.
+    const width = Math.max(1, Math.round(viewWidth));
+    const height = Math.max(1, Math.round(viewHeight));
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     if (width === this.width && height === this.height && dpr === this.dpr) return;
     this.width = width; this.height = height; this.dpr = dpr;
