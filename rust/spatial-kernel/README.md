@@ -12,7 +12,7 @@ Arquivo: `rust/spatial-kernel/src/lib.rs`
 - **Sem dependências externas:** `Cargo.toml` não exige crates de terceiros.
 - **C ABI v1:** o cabeçalho `include/terrania_spatial.h` define duas funções exportadas. Sua chamada exige ponteiro de memória válido e uso coordenado de buffers; a ponte Go/cgo é experimental, opt-in, e não faz parte do build padrão de produção.
 
-O Rust calcula exclusivamente índices. A identidade das entidades, dados de jogadores, decisões de gameplay e autoridade continuam sob controle do Go.
+Na integracao original o Rust calculava exclusivamente indices. O modulo `src/monsters.rs` agora tambem calcula **decisoes de monstros em lote**. A identidade das entidades, os dados de jogadores, o estado autoritativo e o motor de rede continuam sob controle do Go.
 
 ## Por que ainda não ligar em produção?
 
@@ -83,3 +83,23 @@ O PR #32 passou nos testes de formato, Clippy, paridade, race detector e compila
 Essas medicoes antigas utilizaram `-benchtime=250x -count=3` e **nao** sao provas estatisticas nem de carga em producao. A CI foi estendida para executar tres repeticoes mais longas de `BenchmarkRoomTick12Players`, `BenchmarkRoomSnapshot12Players` e `BenchmarkRoomSnapshot1000Players`, alem das consultas espaciais. A tabela com medianas e alocacoes aparece no resumo do workflow. O teste de 1.000 entidades visiveis em **uma sala** e apenas um estresse do calculo de snapshots; nao simula 1.000 usuarios conectados, rede, gateway ou VPS.
 
 **Politica:** sem alteracao no Docker de producao, sem deploy automatizado de Rust, sem forcar Rust para o trafego. Manter a implementacao pura Go ate comparacoes de sala e de carga real mostrarem vantagem consistente da integracao. Se o custo da FFI continuar maior, parar de otimizar esse caminho e manter o Rust como laboratorio isolado.
+
+## Modulo de monstros em Rust (experimental, nao ativar na VPS)
+
+Arquitetura pretendida: **Go = networking, gateway, salas, sincronia, autoritativo. Rust = processamento massivo da IA e estados de monstros e entidades no futuro.** Uma unica aplicacao, sem segundo servidor nem outra porta.
+
+Na etapa atual `server-go/engine/monsters_rust.go` faz **uma chamada FFI por tick da sala**, nunca uma chamada por slime. A biblioteca Rust `src/monsters.rs` recebe snapshots simples de monstros e jogadores e calcula alvo, temporizadores, perseguicao e intencao de ataque em um unico batch. O Go continua dono da colisao com o mapa, aplicacao de dano e da memoria persistente das entidades — a migracao completa da memoria dos monstros para um gerenciador Rust com handles estaveis ainda **nao foi implementada**. Nao ha prometido ganho sem medicao.
+
+Para compilar **somente em Linux amd64 experimental**:
+
+```bash
+cargo build --manifest-path rust/spatial-kernel/Cargo.toml --release --locked
+cd server-go
+CGO_ENABLED=1 go test -race -tags rustmonsters ./...
+CGO_ENABLED=1 go test -race -tags 'rustmonsters rustspatial' ./...
+CGO_ENABLED=1 go test -tags rustmonsters ./engine -run '^$' -bench '^BenchmarkMonsterStep96$' -benchmem
+```
+
+O build normal **nao** usa `rustmonsters` nem `rustspatial`. Se o planner Rust rejeitar a entrada, nenhuma entidade Go e alterada e o processamento usa a logica Go original. A CI verifica Rustfmt, Clippy `-D warnings`, `pedantic` e `cargo`, formatacao, teste Rust, paridade Go/Rust, race detector e benchmark dedicado a 96 monstros. A unica area Rust com `unsafe` e `src/ffi.rs`; `src/monsters.rs` usa `#![forbid(unsafe_code)]`.
+
+Proximos passos: reduzir copia de buffers e alocacoes; migrar colisao espacial para dados de tiles compartilhados em batch, com paridade deterministica; testar o design de arena/handles persistentes; verificar latencia de tick e memoria antes de habilitar na VPS, mantendo operacao Go puro como fallback.

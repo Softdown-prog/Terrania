@@ -59,3 +59,27 @@ func BenchmarkRoomSnapshot1000Players(b *testing.B) {
 		}
 	}
 }
+
+// BenchmarkMonsterStep96 measures the complete 96-monster update path,
+// including the optional one-call Rust batch, Go collision, and hit handling.
+// This is a CPU microbenchmark, NOT a 1000-player server load test.
+func BenchmarkMonsterStep96(b *testing.B) {
+    world := World{Seed:842136}
+    guests := make([]*Guest,0,12)
+    for i:=0;i<12;i++ {
+        g:=&Guest{Actor:NewPlayer()}
+        g.Actor.X=float64((i%4)*100-200)
+        g.Actor.Y=float64((i/4)*90-100)
+        guests=append(guests,g)
+    }
+    mobs:=make([]*Slime,0,96)
+    for i:=0;i<96;i++ {
+        mobs=append(mobs,NewSlime(fmt.Sprintf("bench-slime-%d",i),
+            float64((i%12)*40-240),float64((i/12)*35-140)))
+    }
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i:=0;i<b.N;i++ {
+        stepMonsters(guests,mobs,.05,world)
+    }
+}
