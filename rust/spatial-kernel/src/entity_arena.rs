@@ -157,9 +157,10 @@ impl EntityArena {
         if handles.len() < entities.len() {
             return Err("insufficient capacity");
         }
-        if entities.iter().any(|e| {
-            e.kind.0 == 0 || !e.x.is_finite() || !e.y.is_finite()
-        }) {
+        if entities
+            .iter()
+            .any(|e| e.kind.0 == 0 || !e.x.is_finite() || !e.y.is_finite())
+        {
             return Err("invalid entity");
         }
         if entities.len() > self.max_entities - self.entries.len() {
