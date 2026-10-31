@@ -1,0 +1,9 @@
+# golangci-lint v2 — servidor, gateway e motor Go do Terrânia.
+# Aplicado apenas no módulo server-go, nunca no frontend TS ou no Node legado.
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: standard
