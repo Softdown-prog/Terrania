@@ -233,6 +233,9 @@ func (c *GrantCoordinator) grantLocked(p Province,worker,boot string,ttl time.Du
 	issued:=now.UnixMilli()
 	expires:=issued+int64(ttl/time.Millisecond)
 	if expires<=issued{return WorkerLeasePermit{},ErrWorkerLeaseInvalid}
+	// A new sequence must never shorten a previously issued permit. The
+	// coordinator always retains the maximum possible old-worker deadline.
+	if s.Sequence>1&&expires<s.ExpiresAt{return WorkerLeasePermit{},ErrGrantNotReady}
 	s.WorkerID=worker
 	s.BootID=boot
 	s.IssuedAt=issued
