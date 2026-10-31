@@ -26,7 +26,13 @@ export class GamePageComponent implements AfterViewInit {
   }
   open(dialog: HTMLDialogElement): void {
     this.hud.menuOpen = true;
-    if (!dialog.open) dialog.showModal();
+    if (!dialog.open) {
+      try { dialog.showModal(); }
+      catch {
+        this.hud.menuOpen = !!this.host.nativeElement.querySelector('dialog[open]');
+        this.notice.set('Não foi possível abrir este painel.');
+      }
+    }
   }
   close(event: Event): void {
     if (event.target instanceof Element) event.target.closest('dialog')?.close();
@@ -37,7 +43,11 @@ export class GamePageComponent implements AfterViewInit {
     if (!this.hud.menuOpen) document.getElementById('game')?.focus({ preventScroll: true });
   }
   nextNpc(dialog: HTMLDialogElement): void { if (!this.hud.nextNpc()) dialog.close(); }
-  newWorld(dialog: HTMLDialogElement): void { dialog.close(); this.hud.newWorld(); }
+  newWorld(dialog: HTMLDialogElement): void {
+    dialog.close();
+    this.hud.menuOpen = !!this.host.nativeElement.querySelector('dialog[open]');
+    this.hud.newWorld();
+  }
   zoom(event: Event): void {
     if (event.target instanceof HTMLInputElement)
       this.hud.changePreferences({ ...this.hud.preferences(), zoom: Number(event.target.value) });
