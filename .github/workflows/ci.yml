@@ -15,13 +15,7 @@ jobs:
         run: npm ci && npm ci --prefix server
       - run: npm run check:ai-index
       - name: Instalar MCP de navegação isolado
-        run: npm install --prefix tools/mcp-navigation --ignore-scripts --no-audit --no-fund
-      - name: Exportar lockfile MCP para versionamento (temporario)
-        run: |
-          test -s tools/mcp-navigation/package-lock.json
-          printf 'MCP_LOCK_BEGIN\n'
-          base64 -w 192 tools/mcp-navigation/package-lock.json | sed 's/^/MCP_LOCK64:/'
-          printf 'MCP_LOCK_END\n'
+        run: npm ci --prefix tools/mcp-navigation --ignore-scripts --no-audit --no-fund
       - name: Validar MCP de navegação (tipos, ferramentas e protocolo)
         run: npm run check:mcp
       - run: npm run typecheck

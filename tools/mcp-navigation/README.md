@@ -7,13 +7,13 @@ Servidor MCP v2 com transporte **stdio**, isolado do Angular, Phaser, Node multi
 Requisitos: Node.js 24+ e npm. Na **raiz do Terrania**:
 
 ```bash
-npm install --prefix tools/mcp-navigation
+npm ci --prefix tools/mcp-navigation
 npm run typecheck --prefix tools/mcp-navigation
 npm test --prefix tools/mcp-navigation
 npm start --prefix tools/mcp-navigation
 ```
 
-O processo aguarda clientes MCP no stdin; o stdout é reservado ao JSON-RPC. Para testar manualmente com o MCP Inspector, execute `npx @modelcontextprotocol/inspector node --experimental-strip-types tools/mcp-navigation/src/server.mts` a partir da raiz do repositório. A instalação tem um `package.json` separado; ainda é necessário gerar e versionar o `package-lock.json` desse pacote para adotar `npm ci` reprodutível.
+O processo aguarda clientes MCP no stdin; o stdout é reservado ao JSON-RPC. Para testar manualmente com o MCP Inspector, execute `npx @modelcontextprotocol/inspector node --experimental-strip-types tools/mcp-navigation/src/server.mts` a partir da raiz do repositório. A instalação usa o `package-lock.json` versionado deste pacote isolado e o comando `npm ci` para reproduzir as dependências exatas validadas no CI.
 
 ## Exemplo de configuração do agente
 
