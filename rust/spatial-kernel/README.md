@@ -47,3 +47,25 @@ A última e a penúltima linhas devem imprimir a **mesma** assinatura das 200 co
 - **Sem alteração do Node público**, DNS, Caddy, Cloudflare, painel da VPS ou banco de dados.
 - Não se deve atribuir a Rust um ganho de FPS, conexões ou memória antes de medir o mesmo workload com e sem integração.
 - O motor Go continua responsável pela meta de 1.000 jogadores e pelo roteamento de salas.
+
+## Ponte Go ↔ Rust experimental (opt-in)
+
+A branch de integração agora inclui **duas implementações mutuamente exclusivas** do mesmo contrato usado diretamente por `Room.Tick` e `Room.SnapshotFor`:
+
+- `server-go/engine/spatial_default.go`: **padrão**, sem cgo e sem Rust; mantém a escolha de monstros e a área de visão com os algoritmos Go originais.
+- `server-go/engine/spatial_rust.go`: selecionada **somente** usando a build tag `rustspatial`, `CGO_ENABLED=1` e ambiente Linux AMD64. Usa batches de posições em vez de chamar Rust para cada entidade. Se a ABI sinalizar erro inesperado, preserva fallback Go.
+
+**Build experimental em Linux AMD64 (não usar na VPS pública):**
+
+```bash
+cargo build --manifest-path rust/spatial-kernel/Cargo.toml --release --locked
+cd server-go
+CGO_ENABLED=1 go test -race -tags rustspatial ./...
+CGO_ENABLED=1 go build -tags rustspatial -o /tmp/terrania-go-ffi ./cmd/terrania
+```
+
+A biblioteca Rust é vinculada **estaticamente** no binário Go experimental. Não é outro container ou serviço; não expõe rede. O Dockerfile padrão fixa `CGO_ENABLED=0` e **continua puramente Go**, incluindo o deploy staging atual.
+
+O workflow `.github/workflows/rust-spatial.yml` roda os dois modos no **mesmo runner** e compara benchmarks Go puro vs Go com chamada FFI, incluindo custo de montagem de buffers, travessia Go→C→Rust e conversão de índices. Ele também executa os testes de invariantes, paridade determinística, race detector, Clippy e rustfmt.
+
+**Critério de habilitação:** Rust só será considerado quando a integração completa trouxer ganho consistente e relevante em carga representativa, sem diferença de snapshots, IA ou risco no deploy. Benchmarks isolados e tempos obtidos no GitHub não medem a VPS nem comprovam capacidade de 1.000 jogadores ativos.
