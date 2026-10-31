@@ -53,3 +53,21 @@ jobs:
           done
           docker logs terrania-go-ci
           exit 1
+      - name: Comparar duas implementacoes em carga local identica (NAO VPS)
+        run: |
+          set -euo pipefail
+          npm ci --prefix server --no-audit --no-fund
+          docker build -f server/Dockerfile -t terrania-node:perf .
+          docker run -d --name terrania-go-performance --network bridge \
+            -p 127.0.0.1:18788:8788 --memory 128m --cpus 0.50 \
+            -e NODE_ENV=production -e GIT_SHA="$GITHUB_SHA" \
+            -e ALLOWED_ORIGINS=https://rpg.analysepro.com terrania-go:ci
+          docker run -d --name terrania-node-performance --network bridge \
+            -p 127.0.0.1:18787:8787 --memory 256m --cpus 0.50 \
+            -e NODE_ENV=production -e GIT_SHA="$GITHUB_SHA" \
+            -e ALLOWED_ORIGINS=https://rpg.analysepro.com terrania-node:perf
+          trap 'docker rm -f terrania-go-performance terrania-node-performance >/dev/null 2>&1 || true' EXIT
+          node server-go/scripts/perf-compare.mjs | tee /tmp/terrania-ci-performance.log
+          echo '### CI runner benchmark (12 clients each; not VPS)' >> "$GITHUB_STEP_SUMMARY"
+          grep '^CI_PERFORMANCE_RESULT=' /tmp/terrania-ci-performance.log \
+            | sed 's/^CI_PERFORMANCE_RESULT=//' >> "$GITHUB_STEP_SUMMARY"
