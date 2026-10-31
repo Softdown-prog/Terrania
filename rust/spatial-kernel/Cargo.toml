@@ -1,0 +1,19 @@
+[package]
+name = "terrania-spatial-kernel"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Optional standalone spatial calculation kernel for Terrânia Go"
+
+[lib]
+name = "terrania_spatial"
+crate-type = ["rlib", "staticlib", "cdylib"]
+
+[[bin]]
+name = "spatial-check"
+path = "src/bin/spatial_check.rs"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+panic = "abort"

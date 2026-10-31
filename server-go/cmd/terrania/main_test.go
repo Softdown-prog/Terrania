@@ -18,7 +18,7 @@ func TestHealthAndOrigin(t *testing.T) {
 	defer server.Close()
 	res,err:=http.Get(server.URL+"/health")
 	if err!=nil { t.Fatal(err) }
-	defer res.Body.Close()
+	defer func(){_ = res.Body.Close()}()
 	if res.StatusCode!=200 { t.Fatalf("health: %d",res.StatusCode) }
 	var health map[string]any
 	if err:=json.NewDecoder(res.Body).Decode(&health);err!=nil { t.Fatal(err) }
@@ -48,7 +48,7 @@ func TestRealWebSocketV3(t *testing.T) {
 	headers:=http.Header{"Origin":[]string{"http://localhost:5173"}}
 	ws,_,err:=websocket.DefaultDialer.Dial(wsURL,headers)
 	if err!=nil { t.Fatal(err) }
-	defer ws.Close()
+	defer func(){_ = ws.Close()}()
 	_ = ws.SetReadDeadline(time.Now().Add(2*time.Second))
 	var welcome struct {
 		Type string `json:"type"`

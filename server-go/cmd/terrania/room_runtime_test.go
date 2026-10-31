@@ -20,9 +20,9 @@ func TestSlowRoomDoesNotStallOtherRooms(t *testing.T) {
 	server:=httptest.NewServer(s.handler())
 	defer server.Close()
 	slowClient:=connectLoad(t,server.URL,"slow")
-	defer slowClient.Close()
+	defer func(){_ = slowClient.Close()}()
 	fastClient:=connectLoad(t,server.URL,"fast")
-	defer fastClient.Close()
+	defer func(){_ = fastClient.Close()}()
 	s.mu.Lock()
 	slow,fast:=s.rooms["slow"],s.rooms["fast"]
 	s.mu.Unlock()
@@ -42,7 +42,7 @@ func TestSlowRoomDoesNotStallOtherRooms(t *testing.T) {
 	other:=connectLoad(t,server.URL,"third")
 	res,err:=http.Get(server.URL+"/status")
 	if err!=nil {
-		slow.mu.Unlock();other.Close()
+		slow.mu.Unlock();_ = other.Close()
 		t.Fatal(err)
 	}
 	var status struct {
@@ -52,10 +52,10 @@ func TestSlowRoomDoesNotStallOtherRooms(t *testing.T) {
 	}
 	err=json.NewDecoder(res.Body).Decode(&status)
 	_ = res.Body.Close()
-	if err!=nil {slow.mu.Unlock();other.Close();t.Fatal(err)}
+	if err!=nil {slow.mu.Unlock();_ = other.Close();t.Fatal(err)}
 	if res.StatusCode!=http.StatusOK||status.Connected!=3||status.Rooms!=3||
 		status.TickScope!="completed-room-ticks" {
-		slow.mu.Unlock();other.Close()
+		slow.mu.Unlock();_ = other.Close()
 		t.Fatalf("unexpected status during stalled room: %+v HTTP=%d",status,res.StatusCode)
 	}
 	time.Sleep(290*time.Millisecond)

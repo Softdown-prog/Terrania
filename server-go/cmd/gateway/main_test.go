@@ -17,7 +17,7 @@ func TestGatewayPreservesRoomAffinityOverRealWebSockets(t *testing.T) {
 		return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){
 			ws,err:=up.Upgrade(w,r,nil)
 			if err!=nil{return}
-			defer ws.Close()
+			defer func(){_ = ws.Close()}()
 			_ = ws.WriteMessage(websocket.TextMessage,[]byte(name+":"+r.URL.Query().Get("room")))
 		}))
 	}
@@ -31,7 +31,7 @@ func TestGatewayPreservesRoomAffinityOverRealWebSockets(t *testing.T) {
 		wsURL:="ws"+strings.TrimPrefix(gateway.URL,"http")+"/ws?room="+room
 		ws,_,err:=websocket.DefaultDialer.Dial(wsURL,http.Header{"Origin":[]string{"http://localhost:5173"}})
 		if err!=nil{return "",err}
-		defer ws.Close()
+		defer func(){_ = ws.Close()}()
 		_,data,err:=ws.ReadMessage()
 		return string(data),err
 	}
