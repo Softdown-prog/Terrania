@@ -59,11 +59,21 @@ test('MCP stdio aceita handshake, descobre 6 ferramentas e chama find_files', as
     arguments:{path:'../.env',maxLines:100}});
   assert.equal((rejected.result as {isError?:boolean})?.isError,true);
   const located=await response(5,'tools/call',{name:'locate_symbol',
-    arguments:{symbol:'PhaserGame',scope:'src',language:'typescript',limit:5}});
+    arguments:{symbol:'mountGame',scope:'src/game',language:'typescript',limit:5}});
   const result=(located.result as {content?:Array<{text:string}>})?.content?.[0]?.text??'';
   const navigation=JSON.parse(result) as {results:Array<{path:string;matchType:string}>};
   assert.ok(navigation.results.some(x=>x.path==='src/game/PhaserGame.ts' && x.matchType==='definition'));
-  const bad=await response(6,'tools/call',{name:'locate_symbol',
+  const go=await response(6,'tools/call',{name:'locate_symbol',
+    arguments:{symbol:'NewRoom',scope:'server-go/engine',language:'go',limit:5}});
+  const goText=(go.result as {content?:Array<{text:string}>})?.content?.[0]?.text??'';
+  const goResult=JSON.parse(goText) as {results:Array<{path:string;matchType:string}>};
+  assert.ok(goResult.results.some(x=>x.path==='server-go/engine/room.go' && x.matchType==='definition'));
+  const rust=await response(7,'tools/call',{name:'locate_symbol',
+    arguments:{symbol:'Point',scope:'rust/spatial-kernel/src',language:'rust',limit:5}});
+  const rustText=(rust.result as {content?:Array<{text:string}>})?.content?.[0]?.text??'';
+  const rustResult=JSON.parse(rustText) as {results:Array<{path:string;matchType:string}>};
+  assert.ok(rustResult.results.some(x=>x.path==='rust/spatial-kernel/src/lib.rs' && x.matchType==='definition'));
+  const bad=await response(8,'tools/call',{name:'locate_symbol',
     arguments:{symbol:'../secret'}});
   assert.equal((bad.result as {isError?:boolean})?.isError,true);
 });

@@ -39,7 +39,7 @@ npm run ai:audit -- --json
 
 A auditoria conta somente fontes e documentos versionados, excluindo builds e dependências. Mostra até 15 diretórios por padrão, seus arquivos diretos/totais, presença de `INDEX.md` local e pastas candidatas acima do limite (20 arquivos por padrão). **É um relatório, não modifica arquivos nem falha o CI:** criar e manter os índices depende da revisão humana. O teste automatizado cobre uma árvore sintética de 15 mil fontes.
 
-## Consultas JSON para o futuro MCP (sem servidor MCP ainda)
+## Consultas JSON reutilizadas pelo servidor MCP
 
 O adaptador **somente leitura** expõe três operações consistentes, sem dependências de rede ou modificações no projeto:
 
@@ -54,11 +54,15 @@ Cada chamada retorna **um objeto JSON** com `schemaVersion: 1` e `kind: "find" |
 - `audit`: contadores e pastas candidatas a `INDEX.md`, limitados por página de saída.
 - `guide`: conteúdo truncado (até 16 mil caracteres) do `INDEX.md` versionado mais próximo; na ausência, usa `AGENTS.md`. Apenas guias versionados são lidos.
 
-A implementação reutilizável está em [scripts/ai-navigation-api.mjs](../scripts/ai-navigation-api.mjs), sem importar SDK de MCP. Uma integração futura poderá chamar essas funções diretamente e adicionar autenticação/controle de acesso, sem iniciar portas ou serviços agora. A saída **não** é protocolo MCP por si só, apenas um contrato local testável.
+A implementação reutilizável está em [scripts/ai-navigation-api.mjs](../scripts/ai-navigation-api.mjs), sem importar SDK de MCP. O servidor MCP local já reutiliza essas funções, sem abrir portas HTTP nem implantar serviços na VPS. A saída JSON desse adaptador isolado **não** é protocolo MCP por si só.
 
 ## Servidor MCP local de navegação
 
 A implementação isolada de MCP está em [tools/mcp-navigation/README.md](../tools/mcp-navigation/README.md). Expondo somente leitura por `stdio`, ela reutiliza `ai:find`, `ai:audit` e os `INDEX.md`, e adiciona busca literal de símbolos e leitura limitada de linhas. **Não é um servidor HTTP, não faz deploy e não altera a simulação.** O MCP relê a lista versionada do Git em cada chamada para acompanhar novas inclusões e remoções sem reiniciar o processo. A instalação npm do pacote MCP é independente do frontend.
+
+## Busca de definições e referências
+
+O MCP local também oferece `locate_symbol`: busca lexical por **identificador exato** em TypeScript/JavaScript, Go e Rust. Mostra declarações primeiro e depois referências, com arquivo, linha e tipo de ocorrência. Aceita escopo e linguagem; não substitui um LSP nem garante resolução semântica. Veja os [detalhes e limites](../tools/mcp-navigation/README.md).
 
 ## Navegação eficiente
 1. Leia [AGENTS.md](../AGENTS.md) e o índice local **somente** da tarefa atual.
