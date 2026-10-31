@@ -37,3 +37,25 @@ func BenchmarkRoomSnapshot12Players(b *testing.B) {
         if state:=r.SnapshotFor("player-00");state==nil {b.Fatal("snapshot missing")}
     }
 }
+
+
+// BenchmarkRoomSnapshot1000Players is a deliberately adversarial single-room
+// snapshot with 1000 visible entities. It is NOT a 1000-concurrent-user load test.
+// The normal room size and networking behavior are measured separately.
+func BenchmarkRoomSnapshot1000Players(b *testing.B) {
+	r := NewRoom("origins")
+	for i := 0; i < 1000; i++ {
+		id := fmt.Sprintf("bench-%04d", i)
+		g := r.Add(id, "Aventureiro")
+		g.Actor.X = float64(i%25) * 24
+		g.Actor.Y = float64(i/25) * 20
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		snapshot := r.SnapshotFor("bench-0000")
+		if snapshot == nil || len(snapshot.Players) != 1000 {
+			b.Fatalf("expected 1000 visible players, got %+v", snapshot)
+		}
+	}
+}
