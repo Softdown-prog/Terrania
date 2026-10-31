@@ -64,10 +64,21 @@ O build emite `dist/` com dez entradas HTML, incluindo 404 e o antigo laboratór
 
 - 55 testes Node de regras, saves, navegação e protocolo de presença: passaram.
 - 4 testes do backend Node, incluindo dois WebSockets reais e presença 0/2/1/0, CORS e cache: passaram.
-- 6 cenários Playwright em Chromium, desktop e emulação Pixel 5: passaram (rotas, interface, ciclo Phaser e contagem real 2→1→0, falha e recuperação).
+- 12 cenários Playwright em Chromium, desktop e emulação Pixel 5: passaram (rotas, interface, ciclo Phaser, contagem real 2→1→0, falha/recuperação, desmontagem do contador e preservação do save solo).
 - Compilação estrita Angular, build de produção e verificador local de rotas/assets: passaram.
 - Testes Go com detector de corrida e `go vet`: passaram; worker/gateway compilam.
 - Build inicial do site: cerca de 265 kB brutos; Phaser/jogo em chunk separado, carregado apenas ao jogar. Não foi medido ganho de FPS.
+
+## Continuidade — navegação e save solo (31/10/2026)
+
+A revisão seguinte encontrou e reproduziu dois problemas que os testes anteriores não cobriam:
+
+- O serviço global do contador continuava consultando a API após navegar para uma página sem painel. Agora cada componente registra sua presença e a última desmontagem cancela temporizadores e requisições. Ao voltar, uma consulta nova começa imediatamente; respostas antigas não substituem a consulta atual. Abas ocultas continuam sem polling.
+- Ao receber o primeiro welcome online, o jogo guardava o estado solo só na memória. Uma posição recente ainda não salva podia se perder ao sair/recarregar. Agora a entrada online salva imediatamente o snapshot solo e a saída de uma sala salva esse mesmo snapshot, preservando seed, posição, vida, missão e inventário. O mundo online temporário não substitui o save solo.
+
+Os dois cenários falharam antes da correção e passaram depois. A cobertura nova também testa sair/voltar enquanto há uma consulta de presença pendente. O total de navegador passou de 6 para 12 cenários, incluindo desktop e emulação Pixel 5; todos passaram com `CI=true`. Os 55 testes de regras/saves também passaram. Configuração estrita permanece ativa.
+
+O CI da revisão anterior `df1e8e4` terminou aprovado. Conferir novamente os checks do novo head após esta correção; não abrir PR, merge ou deploy automaticamente.
 
 ## Verificações externas restantes
 

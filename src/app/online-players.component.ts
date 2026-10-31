@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, input } from '@angular/core';
 import { PresenceService } from './presence.service.ts';
 
 @Component({
@@ -36,5 +36,6 @@ import { PresenceService } from './presence.service.ts';
 export class OnlinePlayersComponent {
   readonly compact = input(false);
   readonly presence = inject(PresenceService);
+  constructor() { inject(DestroyRef).onDestroy(this.presence.watch()); }
   time(iso: string): string { return new Date(iso).toLocaleTimeString('pt-BR'); }
 }

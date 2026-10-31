@@ -112,6 +112,7 @@ export class Game {
   }
   private setOnlineWorld(seed: number): void {
     if (!this.offlineSnapshot) this.offlineSnapshot = this.sim.snapshot();
+    this.save();
     this.networkClock = 0;
     this.pendingAttack = false;
     this.replaceWorld(seed);
@@ -176,8 +177,10 @@ export class Game {
     this.save();
   }
   private save(): void {
-    if (this.multiplayer?.connected || this.offlineSnapshot) return;
-    saveLocal(this.sim.snapshot());
+    // The temporary online world must never overwrite the player's solo save.
+    // Persist its last solo checkpoint even when leaving an active online room.
+    const solo = this.offlineSnapshot ?? (this.multiplayer?.connected ? null : this.sim.snapshot());
+    if (solo) saveLocal(solo);
   }
   /** Called exclusively by the Phaser Scene; there is no second animation loop. */
   update(deltaSeconds: number): void {
