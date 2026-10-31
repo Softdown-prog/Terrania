@@ -114,7 +114,7 @@ func (s *gameServer) handleWS(w http.ResponseWriter,r *http.Request) {
 	room:=s.rooms[roomID]
 	full:=len(s.clients)>=s.limits.clients||
 		(room==nil&&len(s.rooms)>=s.limits.rooms)||
-		(room!=nil&&len(room.clients)>=s.limits.perRoom)
+		(room!=nil&&room.members>=s.limits.perRoom)
 	s.mu.Unlock()
 	if full { http.Error(w,"capacity reached",http.StatusServiceUnavailable);return }
 	upgrader:=websocket.Upgrader{
@@ -131,7 +131,7 @@ func (s *gameServer) handleWS(w http.ResponseWriter,r *http.Request) {
 	room=s.rooms[roomID]
 	if len(s.clients)>=s.limits.clients||
 		(room==nil&&len(s.rooms)>=s.limits.rooms)||
-		(room!=nil&&len(room.clients)>=s.limits.perRoom) {
+		(room!=nil&&room.members>=s.limits.perRoom) {
 		s.mu.Unlock()
 		_ = ws.WriteControl(websocket.CloseMessage,websocket.FormatCloseMessage(1013,"capacity"),time.Now().Add(time.Second))
 		_ = ws.Close()
@@ -142,14 +142,19 @@ func (s *gameServer) handleWS(w http.ResponseWriter,r *http.Request) {
 		s.rooms[roomID]=room
 		if s.ctx!=nil {go s.runRoom(s.ctx,room)}
 	}
+	// Reserve the seat atomically under the *short* registry lock, then
+	// release it BEFORE taking the room lock. A slow room must not delay
+	// admissions, disconnections or status checks in unrelated rooms.
+	room.members++
 	s.nextName++
-	room.mu.Lock()
-	room.room.Add(id,"Aventureiro "+strconv.Itoa(s.nextName))
 	c:=&client{socket:ws,id:id,room:room,welcome:engine.NewWelcome(id,roomID,room.room.Seed),out:make(chan *engine.Snapshot,1),done:make(chan struct{}),windowStart:time.Now()}
+	s.clients[ws]=c
+	name:="Aventureiro "+strconv.Itoa(s.nextName)
+	s.mu.Unlock()
+	room.mu.Lock()
+	room.room.Add(id,name)
 	room.clients[c]=struct{}{}
 	room.mu.Unlock()
-	s.clients[ws]=c
-	s.mu.Unlock()
 	go s.writePump(c)
 	s.readPump(c)
 }
@@ -189,17 +194,17 @@ func (s *gameServer) readPump(c *client) {
 func (s *gameServer) leave(c *client) {
 	s.mu.Lock()
 	delete(s.clients,c.socket)
+	c.room.members--
+	if c.room.members==0 && s.rooms[c.room.room.ID]==c.room {
+		delete(s.rooms,c.room.room.ID)
+		close(c.room.stop) // no active/reserved seats remain
+	}
+	s.mu.Unlock()
 	c.room.mu.Lock()
 	c.room.room.Remove(c.id)
 	delete(c.room.clients,c)
-	empty:=len(c.room.clients)==0
 	c.room.mu.Unlock()
-	if empty && s.rooms[c.room.room.ID]==c.room {
-		delete(s.rooms,c.room.room.ID)
-		close(c.room.stop) // the room loop stops; no idle-room ticker leaks
-	}
 	close(c.done)
-	s.mu.Unlock()
 	_ = c.socket.Close()
 }
 
