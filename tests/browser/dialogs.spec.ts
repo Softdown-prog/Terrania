@@ -17,8 +17,11 @@ test('gerar mundo mantém ajustes modal e retoma o jogo apenas após fechar o ú
   await page.locator('#confirmWorld').click();
   await expect(page.locator('#worldDialog')).not.toBeVisible();
   await expect(page.locator('#settingsDialog')).toBeVisible();
-  const newSeed = await page.locator('#seed').textContent();
-  await expect.poll(() => page.evaluate(() => new URL(location.href).searchParams.get('seed'))).toBe(newSeed);
+  // A URL é atualizada de forma síncrona; o HUD Angular pode renderizar no frame seguinte.
+  await expect(page).toHaveURL(/[?&]seed=\d+/);
+  const newSeed = await page.evaluate(() => new URL(location.href).searchParams.get('seed'));
+  expect(newSeed).toMatch(/^\d+$/);
+  await expect(page.locator('#seed')).toHaveText(newSeed!);
 
   const coords = await page.locator('#coords').textContent();
   await page.keyboard.down('d');
