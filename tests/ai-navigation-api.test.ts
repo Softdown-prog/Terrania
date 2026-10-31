@@ -50,7 +50,7 @@ test('guide limita textos e não lê conteúdo quando índice não existe', () =
   const result = huge.guide({ scope: 'docs', maxChars: 100 });
   assert.equal(result.content.length, 100);
   assert.equal(result.truncated, true);
-  assert.equal(huge.guide({ scope: 'missing' }).found, true);
+  assert.equal(huge.guide({ scope: 'missing' }).found, false);
   const none = createNavigationApi(['src/misc.ts'], { readGuide: () => { throw Error('not allowed'); } });
   assert.equal(none.guide({ scope: 'src/misc.ts' }).found, false);
   assert.throws(() => api.guide({ scope: '../hidden' }));
@@ -69,10 +69,7 @@ test('CLI rejeita modos perigosos, flags incoerentes e entradas ambíguas', () =
     ['delete', 'src'], ['find', 'Player', '--exec'], ['guide', '../secret'],
     ['audit', 'unexpected'], ['find', 'player', '--min-files', '2'],
     ['guide', 'src', 'server'], ['guide', 'src', '--scope', 'server'],
-  ]) {
-    if (args[0] === 'guide' && args[1] === '../secret') continue;
-    assert.throws(() => parseQueryArgs(args));
-  }
+  ]) assert.throws(() => parseQueryArgs(args));
   assert.throws(() => api.guide({ scope: '../secret' }));
 });
 
