@@ -261,3 +261,30 @@ func TestJournalRejectsUnsafePathsAndPermissions(t *testing.T) {
 		t.Fatal("symlink journal accepted")
 	}
 }
+
+func TestJournalSingleWriterExclusiveOwnership(t *testing.T){
+	path:=filepath.Join(t.TempDir(),"regions.wal")
+	first:=persistentDirectory(t,path)
+	r,err:=NewRouter(nodes);if err!=nil{t.Fatal(err)}
+	if other,err:=NewPersistentRegionDirectory(r,path);err==nil||other!=nil{
+		t.Fatalf("two coordinators opened one journal: %+v %v",other,err)
+	}
+	if _,err:=first.Register(Province{100,200},"east");err!=nil{t.Fatal(err)}
+	if err:=first.Close();err!=nil{t.Fatal(err)}
+	if _,err:=os.Stat(path+".lock");!errors.Is(err,os.ErrNotExist){
+		t.Fatalf("clean close failed to release exclusive marker: %v",err)
+	}
+	next:=persistentDirectory(t,path)
+	defer next.Close()
+	status,err:=next.Status(Province{100,200})
+	if err!=nil||status.Phase!="recovery-required"{t.Fatalf("reopened improperly: %+v %v",status,err)}
+}
+
+func TestJournalRefusesUnreconciledStaleLock(t *testing.T){
+	path:=filepath.Join(t.TempDir(),"regions.wal")
+	if err:=os.WriteFile(path+".lock",[]byte("stale"),0600);err!=nil{t.Fatal(err)}
+	r,err:=NewRouter(nodes);if err!=nil{t.Fatal(err)}
+	if d,err:=NewPersistentRegionDirectory(r,path);err==nil||d!=nil {
+		t.Fatalf("stale lock must block startup: %v",err)
+	}
+}

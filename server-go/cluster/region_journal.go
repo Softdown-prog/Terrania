@@ -46,6 +46,7 @@ type journalEntry struct {
 // This log is not replicated consensus and must never be mounted concurrently.
 type regionJournal struct {
 	file     *os.File
+	lockPath string
 	sequence uint64
 }
 
@@ -62,18 +63,31 @@ func openRegionJournal(path string, d *RegionDirectory) (*regionJournal, error) 
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return nil, err
 	}
-	// The parent must be created by the caller; no implicit root filesystem writes.
+	// The parent must be created by the caller. The exclusive lock marker
+	// deliberately remains after a crash: removing it requires an operator
+	// to prove no other process still owns this file. It is NOT distributed
+	// fencing or a replicated lease.
+	lockPath := path+".lock"
+	lock, err := os.OpenFile(lockPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("journal already locked or lock unavailable: %w",err)
+	}
+	_ = lock.Close()
+	release := func(){_ = os.Remove(lockPath)}
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
+		release()
 		return nil, err
 	}
-	j := &regionJournal{file: f}
+	j := &regionJournal{file: f,lockPath: lockPath}
 	if err := j.replay(d); err != nil {
 		_ = f.Close()
+		release()
 		return nil, err
 	}
 	if _, err = f.Seek(0, io.SeekEnd); err != nil {
 		_ = f.Close()
+		release()
 		return nil, err
 	}
 	return j, nil
@@ -189,7 +203,10 @@ func (j *regionJournal) append(p Province, s *regionState) error {
 }
 
 func (j *regionJournal) close() error {
-	return j.file.Close()
+	if err:=j.file.Close();err!=nil{return err}
+	// Release only on deliberate clean close. A crash leaves the marker,
+	// so a second process cannot casually claim recovered authority.
+	return os.Remove(j.lockPath)
 }
 
 // NewPersistentRegionDirectory is deliberately NOT wired into gameplay.
