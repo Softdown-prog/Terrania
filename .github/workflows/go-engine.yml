@@ -1,0 +1,52 @@
+name: Terrania Go engine (shadow, sem deploy)
+on:
+  pull_request:
+    paths:
+      - "server-go/**"
+      - ".github/workflows/go-engine.yml"
+  push:
+    branches: [main]
+    paths:
+      - "server-go/**"
+      - ".github/workflows/go-engine.yml"
+permissions:
+  contents: read
+jobs:
+  go-engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/go.mod
+          cache-dependency-path: server-go/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Compilar e executar testes Go com detector de corrida
+        working-directory: server-go
+        run: |
+          go mod verify
+          go test -race -count=1 ./...
+          go vet ./...
+          go build ./cmd/terrania
+      - name: Comparar mundo e movimento com o TypeScript de produção
+        run: |
+          node --experimental-strip-types server-go/scripts/ts-reference.mjs > /tmp/ts.json
+          (cd server-go && go run ./cmd/parity) > /tmp/go.json
+          node server-go/scripts/compare.mjs /tmp/ts.json /tmp/go.json
+      - name: Imagem independente e resposta de saúde
+        run: |
+          docker build -f server-go/Dockerfile -t terrania-go:ci .
+          docker run -d --name terrania-go-ci -p 127.0.0.1:18788:8788 \
+            -e NODE_ENV=production -e ALLOWED_ORIGINS=http://localhost:5173 terrania-go:ci
+          trap 'docker rm -f terrania-go-ci >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:18788/health | grep -q '"engine":"go"'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs terrania-go-ci
+          exit 1
