@@ -1,0 +1,54 @@
+name: Terrania Rust spatial kernel (isolado, sem deploy)
+on:
+  pull_request:
+    paths:
+      - "rust/spatial-kernel/**"
+      - "server-go/cmd/spatial-reference/**"
+      - ".github/workflows/rust-spatial.yml"
+  push:
+    branches: [main]
+    paths:
+      - "rust/spatial-kernel/**"
+      - "server-go/cmd/spatial-reference/**"
+      - ".github/workflows/rust-spatial.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  rust-spatial:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/go.mod
+          cache-dependency-path: server-go/go.sum
+      - name: Verificar formatacao Rust
+        run: cargo fmt --manifest-path rust/spatial-kernel/Cargo.toml --all --check
+      - name: Clippy estrito (warnings sao erros)
+        run: cargo clippy --manifest-path rust/spatial-kernel/Cargo.toml --locked --all-targets -- -D warnings
+      - name: Testes Rust sem dependencia do motor Go
+        run: cargo test --manifest-path rust/spatial-kernel/Cargo.toml --locked --all-targets
+      - name: Compilar bibliotecas Rust isoladas (rlib/staticlib/cdylib)
+        run: cargo build --manifest-path rust/spatial-kernel/Cargo.toml --locked --release
+      - name: Comparar 200 consultas e 4096 objetos com Go, bit a bit
+        run: |
+          set -euo pipefail
+          (cd server-go && go run ./cmd/spatial-reference) | tee /tmp/terrania-spatial-go.txt
+          cargo run --manifest-path rust/spatial-kernel/Cargo.toml --release --locked --bin spatial-check --quiet | tee /tmp/terrania-spatial-rust.txt
+          diff -u /tmp/terrania-spatial-go.txt /tmp/terrania-spatial-rust.txt
+          echo "Rust e Go: mesmas entidades visiveis e mesmo alvo selecionado."
+      - name: Benchmark exploratorio de CPU local (nao e medicao da VPS)
+        run: |
+          set -euo pipefail
+          (cd server-go && go build -o /tmp/terrania-spatial-go ./cmd/spatial-reference)
+          /tmp/terrania-spatial-go --bench 2>&1 | tee /tmp/go-bench.log
+          rust/spatial-kernel/target/release/spatial-check --bench 2>&1 | tee /tmp/rust-bench.log
+          echo "### Kernel Rust x Go - GitHub runner, nao VPS" >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/go-bench.log >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/rust-bench.log >> "$GITHUB_STEP_SUMMARY"
