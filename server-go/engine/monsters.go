@@ -1,10 +1,16 @@
 package engine
 
-// Go remains authoritative for collision, damage, player state and room ownership.
-// Rust (when explicitly enabled) calculates monster decisions in ONE batch per
-// room tick, without creating a new network server or a separate gameplay clock.
+// Go stays authoritative for rooms, players, combat, collisions and networking.
+// The opt-in Rust planner only returns decisions for one batch of monsters.
 func stepMonsters(guests []*Guest, mobs []*Slime, dt float64, world World) {
-    if tryRustMonsterStep(guests, mobs, dt, world) {
+    var scratch monsterScratch
+    stepMonstersWithScratch(guests, mobs, dt, world, &scratch)
+}
+
+// Scratch belongs to the calling room goroutine. A separate scratch is used by
+// standalone tests; no shared writable state or hidden background worker.
+func stepMonstersWithScratch(guests []*Guest, mobs []*Slime, dt float64, world World, scratch *monsterScratch) {
+    if tryRustMonsterStepWithScratch(guests, mobs, dt, world, scratch) {
         return
     }
     runGoMonsterStep(guests, mobs, dt, world)

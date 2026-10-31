@@ -9,86 +9,141 @@ package engine
 */
 import "C"
 
-import (
-    "math"
-    "unsafe"
-)
+import "math"
 
-// Go owns and validates the buffers; Rust retains no pointers. One C call per
-// room, not one C call per monster. Collision remains in Go.
-func tryRustMonsterStep(guests []*Guest, mobs []*Slime, dt float64, world World) bool {
-    if len(mobs) == 0 {
-        return true
+// Experimental Rust batch upper bound, matching the bounded entity arena.
+// This is NOT a live spawn limit or an assertion of production throughput.
+const maxRustMonsterBatch = 65_536
+
+// Room-local scratch keeps pointer-free C buffers across ticks, avoiding the
+// five per-tick allocations of the original adapter. Never use it concurrently.
+type monsterScratch struct {
+    players []C.TerraniaMonsterPlayer
+    input   []C.TerraniaMonsterInput
+    output  []C.TerraniaMonsterPlan
+}
+
+func (s *monsterScratch) ensure(playerCount, monsterCount int) {
+    if cap(s.players) < playerCount {
+        s.players = make([]C.TerraniaMonsterPlayer, playerCount)
+    } else {
+        s.players = s.players[:playerCount]
     }
-    if len(mobs) > 1000000 || len(guests) > 1000000 {
+    if cap(s.input) < monsterCount {
+        s.input = make([]C.TerraniaMonsterInput, monsterCount)
+    } else {
+        s.input = s.input[:monsterCount]
+    }
+    if cap(s.output) < monsterCount {
+        s.output = make([]C.TerraniaMonsterPlan, monsterCount)
+    } else {
+        s.output = s.output[:monsterCount]
+    }
+}
+
+// Retained for standalone parity tests. Production calls with a per-room
+// scratch so there is no allocation once a room reaches steady capacity.
+func tryRustMonsterStep(guests []*Guest, mobs []*Slime, dt float64, world World) bool {
+    var scratch monsterScratch
+    return tryRustMonsterStepWithScratch(guests, mobs, dt, world, &scratch)
+}
+
+// One FFI invocation per tick per room. Go still controls collision, damage,
+// despawn, identity, and the online clock. All Go inputs and outputs are
+// pointer-free C-layout records; Rust stores no pointers between calls.
+func tryRustMonsterStepWithScratch(guests []*Guest, mobs []*Slime, dt float64, world World, scratch *monsterScratch) bool {
+    if len(mobs) == 0 || len(guests) == 0 {
+        return true // No target means the original Go behavior is a no-op.
+    }
+    if scratch == nil || len(mobs) > maxRustMonsterBatch ||
+        len(guests) > maxRustMonsterBatch || dt <= 0 || dt > 0.05 ||
+        math.IsNaN(dt) || math.IsInf(dt, 0) {
         return false
     }
-    points := make([]C.TerraniaMonsterPlayer, len(guests))
+
+    scratch.ensure(len(guests), len(mobs))
     for i, g := range guests {
         if g == nil || g.Actor == nil {
             return false
         }
-        village := C.uint32_t(0)
-        if villageGround(int(math.Floor(g.Actor.X/TileSize)), int(math.Floor(g.Actor.Y/TileSize))) != "" {
-            village = 1
-        }
-        points[i] = C.TerraniaMonsterPlayer{x:C.double(g.Actor.X), y:C.double(g.Actor.Y), in_village:village}
-    }
-    input := make([]C.TerraniaMonsterInput, len(mobs))
-    afterX := make([]float64, len(mobs))
-    afterY := make([]float64, len(mobs))
-    for i, s := range mobs {
-        if s == nil {
+        a := g.Actor
+        if math.IsNaN(a.X) || math.IsInf(a.X, 0) || math.IsNaN(a.Y) || math.IsInf(a.Y, 0) {
             return false
         }
-        // Predict the collision-resolved knockback without changing the mob:
-        // Rust selects its target at the ORIGINAL position and plans chase at
-        // the knockback-resolved position, preserving Go's movement order.
-        x, y := s.X, s.Y
-        MoveBody(&x, &y, s.knockX*dt, s.knockY*dt, world)
-        afterX[i], afterY[i] = x, y
-        input[i] = C.TerraniaMonsterInput{
-            x:C.double(s.X), y:C.double(s.Y), after_x:C.double(x), after_y:C.double(y),
-            pulse:C.double(s.pulse), hurt_time:C.double(s.HurtTime), cooldown:C.double(s.ContactCooldown),
-            knock_x:C.double(s.knockX), knock_y:C.double(s.knockY),
+        village := C.uint32_t(0)
+        if villageGround(int(math.Floor(a.X/TileSize)), int(math.Floor(a.Y/TileSize))) != "" {
+            village = 1
+        }
+        scratch.players[i] = C.TerraniaMonsterPlayer{
+            x: C.double(a.X), y: C.double(a.Y), in_village: village,
         }
     }
-    output := make([]C.TerraniaMonsterPlan, len(mobs))
-    var playersPtr *C.TerraniaMonsterPlayer
-    if len(points) != 0 {
-        playersPtr = (*C.TerraniaMonsterPlayer)(unsafe.Pointer(&points[0]))
+
+    for i, mob := range mobs {
+        if mob == nil {
+            return false
+        }
+        // Rust chooses targets using original X/Y, then chase movement starts
+        // after knockback. Predict collision only for mobs with actual impulse.
+        x, y := mob.X, mob.Y
+        if mob.knockX != 0 || mob.knockY != 0 {
+            MoveBody(&x, &y, mob.knockX*dt, mob.knockY*dt, world)
+        }
+        scratch.input[i] = C.TerraniaMonsterInput{
+            x: C.double(mob.X), y: C.double(mob.Y),
+            after_x: C.double(x), after_y: C.double(y),
+            pulse: C.double(mob.pulse), hurt_time: C.double(mob.HurtTime),
+            cooldown: C.double(mob.ContactCooldown),
+            knock_x: C.double(mob.knockX), knock_y: C.double(mob.knockY),
+        }
     }
+
     n := int(C.terrania_monsters_plan(
-        (*C.TerraniaMonsterInput)(unsafe.Pointer(&input[0])), C.uint32_t(len(input)),
-        playersPtr, C.uint32_t(len(points)), C.double(dt),
-        (*C.TerraniaMonsterPlan)(unsafe.Pointer(&output[0])), C.uint32_t(len(output)),
+        &scratch.input[0], C.uint32_t(len(mobs)),
+        &scratch.players[0], C.uint32_t(len(guests)),
+        C.double(dt),
+        &scratch.output[0], C.uint32_t(len(mobs)),
     ))
     if n != len(mobs) {
         return false
     }
-    // Validate ALL results before modifying any Go entity, so fallback is safe.
-    for _, p := range output {
-        i := int(p.target_index)
-        if i < -1 || i >= len(guests) || (p.attack != 0 && p.attack != 1) ||
-           math.IsNaN(float64(p.move_x)) || math.IsNaN(float64(p.move_y)) ||
-           math.IsInf(float64(p.move_x),0) || math.IsInf(float64(p.move_y),0) {
+
+    // Validate every record before mutating any gameplay state, preserving
+    // atomic fallback even with thousands of entities.
+    for _, p := range scratch.output {
+        target := int(p.target_index)
+        if target < -1 || target >= len(guests) || (p.attack != 0 && p.attack != 1) ||
+            (target == -1 && p.attack != 0) {
             return false
         }
+        for _, v := range [...]float64{
+            float64(p.pulse), float64(p.hurt_time), float64(p.cooldown),
+            float64(p.knock_x), float64(p.knock_y),
+            float64(p.move_x), float64(p.move_y),
+        } {
+            if math.IsNaN(v) || math.IsInf(v, 0) {
+                return false
+            }
+        }
     }
-    for i, p := range output {
+
+    for i, p := range scratch.output {
         target := int(p.target_index)
         if target == -1 {
-            continue // Monsters without a nearby player are not updated.
+            continue
         }
-        s := mobs[i]
-        s.X, s.Y = afterX[i], afterY[i]
-        s.pulse = float64(p.pulse)
-        s.HurtTime = float64(p.hurt_time)
-        s.ContactCooldown = float64(p.cooldown)
-        s.knockX, s.knockY = float64(p.knock_x), float64(p.knock_y)
-        MoveBody(&s.X, &s.Y, float64(p.move_x), float64(p.move_y), world)
+        mob := mobs[i]
+        mob.X = float64(scratch.input[i].after_x)
+        mob.Y = float64(scratch.input[i].after_y)
+        mob.pulse = float64(p.pulse)
+        mob.HurtTime = float64(p.hurt_time)
+        mob.ContactCooldown = float64(p.cooldown)
+        mob.knockX, mob.knockY = float64(p.knock_x), float64(p.knock_y)
+        if p.move_x != 0 || p.move_y != 0 {
+            MoveBody(&mob.X, &mob.Y, float64(p.move_x), float64(p.move_y), world)
+        }
         if p.attack != 0 {
-            guests[target].Actor.TakeDamage(9, s.X, s.Y)
+            guests[target].Actor.TakeDamage(9, mob.X, mob.Y)
         }
     }
     return true

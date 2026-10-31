@@ -77,10 +77,11 @@ func BenchmarkMonsterStep96(b *testing.B) {
         mobs=append(mobs,NewSlime(fmt.Sprintf("bench-slime-%d",i),
             float64((i%12)*40-240),float64((i/12)*35-140)))
     }
+    var scratch monsterScratch
     b.ReportAllocs()
     b.ResetTimer()
     for i:=0;i<b.N;i++ {
-        stepMonsters(guests,mobs,.05,world)
+        stepMonstersWithScratch(guests,mobs,.05,world,&scratch)
     }
 }
 
@@ -108,9 +109,10 @@ func benchmarkMonsterBatch(b *testing.B, count int) {
         mobs = append(mobs, NewSlime(fmt.Sprintf("benchmark-%d", i),
             1400 + float64(i%64)*4, 1370 + float64(i/64)*4))
     }
+    var scratch monsterScratch
     b.ReportAllocs()
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
-        stepMonsters(guests, mobs, .05, world)
+        stepMonstersWithScratch(guests, mobs, .05, world, &scratch)
     }
 }

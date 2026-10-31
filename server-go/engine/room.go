@@ -27,6 +27,7 @@ type Room struct {
 	defeated map[string]bool
 	defeatedOrder []string
 	spawnClock float64
+	monsterBuffers monsterScratch // only the room's Tick goroutine may use this
 }
 
 func NewRoom(id string) *Room {
@@ -107,7 +108,7 @@ func (r *Room) Tick(dt float64,now time.Time) {
 		}
 	}
 	mobs := r.mobsInOrder()
-	stepMonsters(guests, mobs, dt, r.World)
+	stepMonstersWithScratch(guests, mobs, dt, r.World, &r.monsterBuffers)
 	for _,mob:=range mobs {
 		keep:=false
 		for _,g:=range guests {
