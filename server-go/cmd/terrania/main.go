@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"regexp"
 	"strconv"
 	"strings"
@@ -242,10 +244,30 @@ func main() {
 		allowed=[]string{"http://localhost:5173","http://127.0.0.1:5173"}
 	}
 	s:=newGameServer(allowed,os.Getenv("GIT_SHA"))
-	ctx,cancel:=context.WithCancel(context.Background())
-	defer cancel()
+	ctx,stop:=signal.NotifyContext(context.Background(),syscall.SIGTERM,syscall.SIGINT)
+	defer stop()
 	go s.run(ctx)
 	server:=&http.Server{Addr:":"+port,Handler:s.handler(),ReadHeaderTimeout:5*time.Second}
+	errs:=make(chan error,1)
+	go func(){ errs<-server.ListenAndServe() }()
 	log.Print("Terrania Go shadow server listening on ",port)
-	if err:=server.ListenAndServe();err!=nil&&!errors.Is(err,http.ErrServerClosed) { log.Fatal(err) }
+	select {
+	case <-ctx.Done():
+		log.Print("Terrania Go: stopping shadow server")
+	case err:=<-errs:
+		if err!=nil&&!errors.Is(err,http.ErrServerClosed) { log.Print("HTTP failed: ",err);os.Exit(1) }
+		return
+	}
+	shutdownCtx,cancel:=context.WithTimeout(context.Background(),5*time.Second)
+	defer cancel()
+	if err:=server.Shutdown(shutdownCtx);err!=nil { log.Print("HTTP shutdown: ",err) }
+	// http.Server.Shutdown does not manage upgraded WebSocket sessions.
+	s.mu.Lock()
+	sockets:=make([]*websocket.Conn,0,len(s.clients))
+	for ws:=range s.clients {sockets=append(sockets,ws)}
+	s.mu.Unlock()
+	for _,ws:=range sockets {
+		_ = ws.WriteControl(websocket.CloseMessage,websocket.FormatCloseMessage(websocket.CloseGoingAway,"server restarting"),time.Now().Add(time.Second))
+		_ = ws.Close()
+	}
 }
