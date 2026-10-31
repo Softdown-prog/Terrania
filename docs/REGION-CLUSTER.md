@@ -6,8 +6,8 @@
 ## Implementado nesta branch
 - `cluster.ProvinceAt(x,y)`: mapeamento determinístico do mundo para províncias de 16×16 chunks (8192 px de largura, mantendo `engine.ChunkPixels=512`). As coordenadas negativas usam `math.Floor` e são rejeitados NaN, infinito e valores fora dos limites do motor.
 - `Router.PickProvince(province)`: rendezvous hashing por província, independente da ordem declarada dos workers. É distinto de `Pick(room)`; **não muda o roteamento atual do gateway**, que continua distribuindo salas.
-- `RegionDirectory`: coordenador **apenas em memória e processo único, para testes**. `Register` recusa transferências de autoridade implícitas; `Begin` cria token criptograficamente aleatório e reserva uma transferência por região; `StageDestination` compara o digest do snapshot; `QuiesceSource` suspende a autoridade de escrita; `Commit` transfere para um worker com epoch incrementado; `Abort` cancela com epoch incrementado.
-- `CanSimulate` permite que testes demonstrem o *fencing*: a origem pode simular até ser quiescida, nenhum lado pode simular durante a barreira, e somente o destino com epoch novo pode simular após o commit.
+- `RegionDirectory`: coordenador **apenas em memória e processo único, para testes**. `Register` recusa transferências de autoridade implícitas; `Begin` cria token criptograficamente aleatório e reserva uma transferência por região; `FreezeSource` bloqueia novos ticks na origem; `StageDestination` compara o digest do snapshot; `QuiesceSource` confirma a suspensão; `Commit` transfere para um worker com epoch incrementado; `Abort` cancela com epoch incrementado.
+- `CanSimulate` permite que testes demonstrem o *fencing*: a origem pode simular até ser congelada, nenhum lado pode simular durante a barreira, e somente o destino com epoch novo pode simular após o commit.
 - Tokens de transferência têm validade de 30 segundos para operações normais; timeout **não** reativa automaticamente ninguém. Recuperação requer decisão explícita e reconciliada. Os tokens nunca devem aparecer em logs.
 
 ## Fluxo proposto (próxima integração controlada)
@@ -36,3 +36,14 @@ Source Go worker (epoch N)       Coordinator              Target Go worker
 A CI dedicada roda `go test -race` para todos os cenários de transferência: negativo de posição, distribuição, token adulterado, digest divergente, commit antecipado, exclusividade de autoridade, timeout, recuperação, stale epoch e 512 províncias migrando concorrentemente, repetidas 3 vezes. Também executa regressões de gateway e motor Go.
 
 **Não incluído:** persistência, failover confiável, gRPC, trânsito de jogadores em produção, suporte multi-gateway com coordenação distribuída, Kubernetes, abertura de portas, Docker/VPS, merge ou deploy.
+
+## Fase 2 — transporte privado autenticado de snapshots (experimental)
+
+A biblioteca `server-go/cluster/transfer_wire.go` agora contém um **receptor HTTP separado, destinado a redes internas com HTTPS/mTLS**, e um remetente que valida a confirmação do destino. O receptor não é registrado no `cmd/terrania` nem no `cmd/gateway`, portanto **não há endpoint novo na VPS**.
+
+- **Identidade de serviço**: exige certificado de cliente validado pela CA interna no handshake TLS, com URI SAN `spiffe://terrania.internal/worker/<id>`, sem confiar em cabeçalhos fornecidos pelo usuário. O destino deve corresponder ao ID do ticket do coordenador. O cliente também verifica o certificado do servidor pela CA configurada. Esta etapa usa testes com CA temporária; não instala nem distribui chaves de produção.
+- **Formato e integridade**: `RegionSnapshot` versionado; SHA-256 com separação de domínio vincula província, epoch, tick, sequência, tamanho e bytes opacos. Dados serializados são **opacos** nesta fase, ainda não há exportador/importador real de `engine.Room`.
+- **Tamanho e pressão de memória**: máximo de 8 MiB de dados por mensagem, 12 MiB de envelope HTTP, no máximo 16 snapshots em preparação por worker, com cópia defensiva do payload.
+- **Ordem segura**: sob o lock do tick da origem, produzir o estado e seu digest; registrar `Begin` e `FreezeSource` sem liberar o lock; depois enviar o payload via HTTPS/mTLS; o receptor valida e guarda em memória; o remetente confere a confirmação; só então o coordenador chama `QuiesceSource` e `Commit`.
+- **Falhas**: rejeita alterações de snapshot, versão inválida, certificado de worker errado, sessão sem mTLS, token inválido, reenvio após commit, destino em preparação lotado e HTTP redirecionado. O receptor só marca `StageDestination` depois de guardar o payload e valida o ticket ativo.
+- **Não é alta disponibilidade pronta**: tickets, registros e snapshots ainda são **voláteis**. Um processo encerrado perde os registros de controle e a cópia do estado. Persistência transacional e reconciliação de epochs, aplicação do snapshot em uma sala inativa, inspeção de sucesso e ativação sincronizada no motor são próximas fases obrigatórias.

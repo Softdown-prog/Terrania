@@ -114,7 +114,7 @@ func NewSnapshotReceiver(d *RegionDirectory, worker string) (*SnapshotReceiver,e
 // SPIFFE-style URI SAN signed by the trusted internal CA. Headers and CNs are
 // intentionally ignored; the HTTP TLS server must verify the client cert.
 func peerWorkerID(r *http.Request) (string,bool) {
-	if r.TLS==nil || len(r.TLS.VerifiedChains)==0 || len(r.TLS.PeerCertificates)!=1 {
+	if r.TLS==nil || len(r.TLS.VerifiedChains)==0 || len(r.TLS.PeerCertificates)==0 {
 		return "",false
 	}
 	uris:=r.TLS.PeerCertificates[0].URIs
@@ -225,7 +225,11 @@ func SendRegionSnapshot(ctx context.Context,client *http.Client,endpoint string,
 	req,err:=http.NewRequestWithContext(ctx,http.MethodPost,endpoint,bytes.NewReader(wire))
 	if err!=nil{return RegionSnapshotReceipt{},err}
 	req.Header.Set("Content-Type","application/json")
-	resp,err:=client.Do(req)
+	// Never follow a 307/308 redirect carrying a private transfer token.
+	// A compromised destination must not forward region state to another host.
+	safeClient:=*client
+	safeClient.CheckRedirect=func(*http.Request,[]*http.Request)error{return http.ErrUseLastResponse}
+	resp,err:=safeClient.Do(req)
 	if err!=nil{return RegionSnapshotReceipt{},err}
 	defer resp.Body.Close()
 	if resp.StatusCode!=http.StatusOK{

@@ -26,10 +26,10 @@ jobs:
       - name: Enforce gofmt for cluster code
         run: |
           set -euo pipefail
-          gofmt -w server-go/cluster/region.go server-go/cluster/handoff.go server-go/cluster/region_handoff_test.go
+          gofmt -w server-go/cluster/*.go
           if ! git diff --quiet -- server-go/cluster; then
             echo 'Go source requires gofmt; generated formatting follows:'
-            for file in server-go/cluster/region.go server-go/cluster/handoff.go server-go/cluster/region_handoff_test.go; do
+            for file in $(git diff --name-only -- server-go/cluster); do
               echo "FORMATTED_FILE=${file} BASE64=$(base64 -w0 "$file")"
             done
             exit 1
@@ -48,7 +48,11 @@ jobs:
         working-directory: server-go
         run: |
           set -euo pipefail
-          go test -race -count=3 ./cluster -run '^TestParallelProvinceTransfersRemainIsolated$' -v
+          go test -race -count=3 ./cluster -run '^(TestParallelProvinceTransfersRemainIsolated|TestConcurrentPrivateSnapshotsBoundedByStagingBudget|TestPrivateSnapshotHTTPSMutualTLSAndCommit)
+          echo '### Region ownership prototype — local only' >> "$GITHUB_STEP_SUMMARY"
+          echo '512 regions x 3 repeated concurrent transfer tests, with the Go race detector.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Private HTTPS/mTLS only in isolated in-process test servers. No live gateway integration, state durability, gRPC or VPS deploy.' >> "$GITHUB_STEP_SUMMARY"
+ -v
           echo '### Region ownership prototype — local only' >> "$GITHUB_STEP_SUMMARY"
           echo '512 regions x 3 repeated concurrent transfer tests, with the Go race detector.' >> "$GITHUB_STEP_SUMMARY"
           echo 'No gRPC, network sockets, state persistence, production routing or VPS deployment.' >> "$GITHUB_STEP_SUMMARY"

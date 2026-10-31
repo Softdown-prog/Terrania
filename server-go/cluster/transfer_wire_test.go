@@ -228,8 +228,7 @@ func TestConcurrentPrivateSnapshotsBoundedByStagingBudget(t *testing.T){
 	const count=MaxStagedRegionSnapshots+1
 	var wg sync.WaitGroup
 	results:=make(chan error,count)
-	now:=time.Now()
-	_ = now
+
 	for i:=0;i<count;i++ {
 		wg.Add(1)
 		go func(i int){
