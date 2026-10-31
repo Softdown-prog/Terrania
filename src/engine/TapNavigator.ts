@@ -79,6 +79,9 @@ export function findWalkingPath(from: Point, target: Point, collision: Collision
         cursor = previous;
       }
       points.reverse();
+      // Começar no centro alcançável é necessário quando o primeiro desvio
+      // não é visível diretamente da posição exata do herói.
+      points.unshift(start.point);
       points.push(target);
       // Remove curvas desnecessárias sem atravessar colisões.
       const result: Point[] = [];
