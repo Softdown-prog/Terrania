@@ -2030,3 +2030,34 @@ details p {
 .not-found .hero-actions {
   margin-top: 30px;
 }
+
+
+/* Android: navegação completa sem scroll do documento por baixo do menu. */
+@media (max-width: 800px) {
+  .nav-toggle {
+    width: 44px;
+    height: 44px;
+    touch-action: manipulation;
+  }
+  #main-nav {
+    top: 78px;
+    max-height: calc(100dvh - 78px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  #main-nav > a:not(.button) { min-height: 44px; display: flex; align-items: center; }
+}
+@media (max-width: 480px) {
+  .hero { min-height: max(640px, calc(100svh - 78px)); }
+  .hero-actions > .button { width: 100%; justify-content: space-between; }
+  .hero-content { padding-bottom: 165px; }
+  .hero-art { right: -24%; }
+  .room-input { min-width: 0; }
+  .room-input > input { min-width: 0; }
+  .site-footer a { overflow-wrap: anywhere; }
+}
+@media (max-width: 360px) {
+  .hero h1 { font-size: clamp(41px, 13vw, 50px); }
+  .section-shell { width: calc(100% - 32px); }
+  .hero-note { letter-spacing: .7px; }
+}
