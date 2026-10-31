@@ -41,7 +41,9 @@ func signedTestCertificate(t *testing.T, ca *x509.Certificate, key *ecdsa.Privat
 	} else {
 		spec.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}
 		identity := "spiffe://terrania.internal/worker/" + worker
-		if worker == "control" { identity = "spiffe://terrania.internal/coordinator/control" }
+		if worker == "control" {
+			identity = "spiffe://terrania.internal/coordinator/control"
+		}
 		uri, err := url.Parse(identity)
 		if err != nil {
 			t.Fatal(err)
@@ -88,9 +90,9 @@ func testMutualTLS(t *testing.T, h http.Handler) (*httptest.Server, func(string)
 	roots.AddCert(parsed)
 	serverCert := signedTestCertificate(t, parsed, caKey, 2, "", true)
 	clients := map[string]tls.Certificate{
-		"east":   signedTestCertificate(t, parsed, caKey, 3, "east", false),
-		"west":   signedTestCertificate(t, parsed, caKey, 4, "west", false),
-		"center": signedTestCertificate(t, parsed, caKey, 5, "center", false),
+		"east":    signedTestCertificate(t, parsed, caKey, 3, "east", false),
+		"west":    signedTestCertificate(t, parsed, caKey, 4, "west", false),
+		"center":  signedTestCertificate(t, parsed, caKey, 5, "center", false),
 		"control": signedTestCertificate(t, parsed, caKey, 6, "control", false),
 	}
 	server := httptest.NewUnstartedServer(h)
