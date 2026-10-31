@@ -31,6 +31,59 @@ jobs:
           go test -race -count=1 ./...
           go vet ./...
           go build ./cmd/terrania
+          go build ./cmd/gateway
+      - name: Validar admissao de 1000 conexoes WebSocket sem afetar a VPS
+        working-directory: server-go
+        timeout-minutes: 3
+        env:
+          TEST_1000_CONNECTIONS: '1'
+        run: go test -count=1 -timeout=120s ./cmd/terrania -run '^TestThousandConnectionsAdmission
+      - name: Registrar benchmark de simulacao (sem limiar artificial)
+        working-directory: server-go
+        run: go test ./engine -run '^$' -bench '^BenchmarkRoom' -benchtime=50x -benchmem
+      - name: Comparar mundo e movimento com o TypeScript de produção
+        run: |
+          node --experimental-strip-types server-go/scripts/ts-reference.mjs > /tmp/ts.json
+          (cd server-go && go run ./cmd/parity) > /tmp/go.json
+          node server-go/scripts/compare.mjs /tmp/ts.json /tmp/go.json
+      - name: Comparar combate e IA frame a frame com TypeScript
+        run: |
+          node --experimental-strip-types server-go/scripts/gameplay-reference.mjs > /tmp/terrania-gameplay-ts.json
+          (cd server-go && go run ./cmd/gameplay-parity) > /tmp/terrania-gameplay-go.json
+          node server-go/scripts/compare.mjs /tmp/terrania-gameplay-ts.json /tmp/terrania-gameplay-go.json
+      - name: Imagem independente e resposta de saúde
+        run: |
+          docker build -f server-go/Dockerfile -t terrania-go:ci .
+          docker run -d --name terrania-go-ci -p 127.0.0.1:18788:8788 \
+            -e NODE_ENV=production -e ALLOWED_ORIGINS=http://localhost:5173 terrania-go:ci
+          trap 'docker rm -f terrania-go-ci >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:18788/health | grep -q '"engine":"go"'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs terrania-go-ci
+          exit 1
+      - name: Comparar duas implementacoes em carga local identica (NAO VPS)
+        run: |
+          set -euo pipefail
+          npm ci --prefix server --no-audit --no-fund
+          docker build -f server/Dockerfile -t terrania-node:perf .
+          docker run -d --name terrania-go-performance --network bridge \
+            -p 127.0.0.1:18788:8788 --memory 128m --cpus 0.50 \
+            -e NODE_ENV=production -e GIT_SHA="$GITHUB_SHA" \
+            -e ALLOWED_ORIGINS=https://rpg.analysepro.com terrania-go:ci
+          docker run -d --name terrania-node-performance --network bridge \
+            -p 127.0.0.1:18787:8787 --memory 256m --cpus 0.50 \
+            -e NODE_ENV=production -e GIT_SHA="$GITHUB_SHA" \
+            -e ALLOWED_ORIGINS=https://rpg.analysepro.com terrania-node:perf
+          trap 'docker rm -f terrania-go-performance terrania-node-performance >/dev/null 2>&1 || true' EXIT
+          node server-go/scripts/perf-compare.mjs | tee /tmp/terrania-ci-performance.log
+          echo '### CI runner benchmark (12 clients each; not VPS)' >> "$GITHUB_STEP_SUMMARY"
+          grep '^CI_PERFORMANCE_RESULT=' /tmp/terrania-ci-performance.log \
+            | sed 's/^CI_PERFORMANCE_RESULT=//' >> "$GITHUB_STEP_SUMMARY"
+ -v
       - name: Registrar benchmark de simulacao (sem limiar artificial)
         working-directory: server-go
         run: go test ./engine -run '^$' -bench '^BenchmarkRoom' -benchtime=50x -benchmem
