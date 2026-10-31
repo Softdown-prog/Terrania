@@ -24,11 +24,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Compilar e executar testes Go com detector de corrida
+      - name: Instalar golangci-lint v2.15.0
+        uses: golangci/golangci-lint-action@v9.3.0
+        with:
+          version: v2.15.0
+          working-directory: server-go
+          install-only: true
+      - name: Run Linters & Race Detector
         working-directory: server-go
         run: |
+          set -euo pipefail
           go mod verify
-          go test -race -count=1 ./...
+          golangci-lint run
+          go test -v -race -count=1 ./...
           go vet ./...
           go build ./cmd/terrania
           go build ./cmd/gateway
