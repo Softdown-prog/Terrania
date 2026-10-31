@@ -599,7 +599,7 @@ noscript a {
     bottom: 153px;
   }
 }
-@media (max-height: 500px) and (pointer: coarse) {
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
   .quest {
     top: 90px;
   }
@@ -691,7 +691,7 @@ noscript a {
   .game-tools button { padding-inline: 8px; }
   #joystick { width: 104px; height: 104px; }
 }
-@media (pointer: coarse) and (max-height: 500px) {
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
   .quest { display: none; }
   .hud { padding-top: max(8px, env(safe-area-inset-top)); }
   .game-tools {
