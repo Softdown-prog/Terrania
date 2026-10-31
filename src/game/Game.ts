@@ -81,6 +81,18 @@ export class Game {
     });
     this.hud.onNewWorld(() => this.newWorld());
     this.hud.onTalk(() => this.talkToNpc());
+    this.hud.onPotionUse(() => {
+      if (this.multiplayer?.connected) return "A bolsa está disponível apenas no modo solo.";
+      if (!this.sim.inventory.usePotion(this.sim.player))
+        return this.sim.player.hp >= this.sim.player.maxHp
+          ? "Sua vida já está completa."
+          : "Você não possui poções de cura.";
+      this.save();
+      this.hud.update(this.sim.player, this.sim.kills);
+      this.hud.updateInventory(this.sim.inventory, false);
+      return "Poção utilizada! Vida restaurada em até 35 pontos.";
+    });
+    this.hud.updateInventory(this.sim.inventory, false);
     requestAnimationFrame((t) => this.frame(t));
   }
   private configure(p: Preferences): void {
@@ -143,7 +155,13 @@ export class Game {
       this.interior = new InteriorRoom(npc.id);
       this.accumulator = 0;
       this.pendingAttack = false;
-    } else this.hud.showNpcDialogue(npc, this.sim.kills);
+    } else {
+      const rewarded = npc.id === "aela" && !this.multiplayer?.connected &&
+        this.sim.inventory.claimAelaReward(this.sim.kills);
+      if (rewarded) this.save();
+      this.hud.showNpcDialogue(npc, this.sim.kills,
+        rewarded ? "Recompensa de Aela: 2 poções de cura guardadas na sua bolsa!" : undefined);
+    }
   }
   private leaveInterior(): void {
     this.interior = null;
@@ -199,6 +217,7 @@ export class Game {
           if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
         }
         this.hud.update(this.sim.player, this.sim.kills);
+        this.hud.updateInventory(this.sim.inventory, online);
         this.hud.setInterior(room.building.name);
         this.scene.renderInterior(room);
         requestAnimationFrame((next) => this.frame(next));
@@ -251,6 +270,7 @@ export class Game {
     if (feedback.hurt) this.camera.shake(0.65);
     this.camera.update(dt, this.sim.player);
     this.hud.update(this.sim.player, this.sim.kills);
+    this.hud.updateInventory(this.sim.inventory, online);
     this.hud.setNearbyNpc(nearestNpc(this.sim.player.x, this.sim.player.y));
     this.scene.render(
       this.world,
@@ -261,6 +281,7 @@ export class Game {
       online ? (this.multiplayer?.id ?? null) : null,
       this.clock,
       this.effects,
+      online ? [] : [...this.sim.drops.values()],
     );
     requestAnimationFrame((next) => this.frame(next));
   }
