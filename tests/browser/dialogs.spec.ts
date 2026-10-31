@@ -64,7 +64,8 @@ test('menu Android informa estado e fecha ao tocar fora ou pressionar Escape', a
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect(toggle).toHaveAttribute('aria-label', 'Fechar navegação');
-  await page.locator('#conteudo').click({ position: { x: 12, y: 12 } });
+  // Clique real abaixo do menu aberto: o próprio menu cobre o topo do conteúdo.
+  await page.mouse.click(12, page.viewportSize()!.height - 12);
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await toggle.click();
   await page.keyboard.press('Escape');
