@@ -29,6 +29,28 @@ int32_t terrania_spatial_visible(const TerraniaPoint *points, uint32_t count,
 int32_t terrania_spatial_nearest(const TerraniaPoint *points, uint32_t count,
                                 double x, double y, double radius);
 
+/* Monster decisions are calculated in one call per room tick. Go owns
+ * movement collision, entity identities, HP, networking and world state.
+ * Each pointer must reference initialized disjoint arrays of the specified
+ * length. No memory is retained by Rust after returning. */
+typedef struct {
+    double x, y, after_x, after_y;
+    double pulse, hurt_time, cooldown, knock_x, knock_y;
+} TerraniaMonsterInput;
+typedef struct {
+    double x, y;
+    uint32_t in_village;
+} TerraniaMonsterPlayer;
+typedef struct {
+    double pulse, hurt_time, cooldown, knock_x, knock_y, move_x, move_y;
+    int32_t target_index;
+    uint32_t attack;
+} TerraniaMonsterPlan;
+/* Returns count >= 0 or -1 for invalid input, -2 for insufficient output. */
+int32_t terrania_monsters_plan(const TerraniaMonsterInput *monsters, uint32_t count,
+                              const TerraniaMonsterPlayer *players, uint32_t player_count,
+                              double dt, TerraniaMonsterPlan *out, uint32_t capacity);
+
 #ifdef __cplusplus
 }
 #endif

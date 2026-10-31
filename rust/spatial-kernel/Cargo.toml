@@ -3,7 +3,10 @@ name = "terrania-spatial-kernel"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Optional standalone spatial calculation kernel for Terrânia Go"
+description = "Safe batched monster AI and optional spatial C ABI for Terrânia Go"
+readme = "README.md"
+keywords = ["game", "simulation", "spatial", "ffi"]
+categories = ["game-engines", "simulation"]
 
 [lib]
 name = "terrania_spatial"
@@ -17,3 +20,12 @@ path = "src/bin/spatial_check.rs"
 lto = "thin"
 codegen-units = 1
 panic = "abort"
+
+[lints.rust]
+unsafe_code = "deny"
+unused_variables = "deny"
+dead_code = "warn"
+
+[lints.clippy]
+pedantic = "warn"
+cargo = "warn"
