@@ -1,7 +1,7 @@
 //! The sole module allowed to use unsafe Rust. Strictly bounded C ABI.
 #![allow(unsafe_code)]
-use crate::{nearest, visible_into, Point, MAX_POINTS, valid_query};
-use crate::monsters::{plan_into, MonsterInput, MonsterPlayer, MonsterPlan};
+use crate::monsters::{plan_into, MonsterInput, MonsterPlan, MonsterPlayer};
+use crate::{nearest, valid_query, visible_into, Point, MAX_POINTS};
 
 /// FFI: returns visible count, -1 invalid arguments, -2 insufficient buffer.
 ///
@@ -74,7 +74,6 @@ pub unsafe extern "C" fn terrania_spatial_nearest(
     }
 }
 
-
 /// Batch-monster ABI: 0..count on success; -1 invalid input; -2 insufficient output.
 /// Input and output buffers must be initialized, aligned, disjoint, and remain valid
 /// until the function returns. The function retains no external memory.
@@ -95,7 +94,9 @@ pub unsafe extern "C" fn terrania_monsters_plan(
         || (count > 0 && monsters.is_null())
         || (players_count > 0 && players.is_null())
         || (capacity > 0 && out.is_null())
-        || !dt.is_finite() || dt <= 0.0 || dt > 0.05
+        || !dt.is_finite()
+        || dt <= 0.0
+        || dt > 0.05
     {
         return -1;
     }
@@ -178,19 +179,42 @@ mod tests {
     }
     #[test]
     fn monster_ffi_checks_pointers_and_capacity() {
-        let m = MonsterInput { x: 0.0, y: 0.0, after_x: 0.0, after_y: 0.0,
-            pulse: 0.0, hurt_time: 0.0, cooldown: 0.0, knock_x: 0.0, knock_y: 0.0 };
+        let m = MonsterInput {
+            x: 0.0,
+            y: 0.0,
+            after_x: 0.0,
+            after_y: 0.0,
+            pulse: 0.0,
+            hurt_time: 0.0,
+            cooldown: 0.0,
+            knock_x: 0.0,
+            knock_y: 0.0,
+        };
         // SAFETY: invalid pointer calls return before dereference; valid call uses
         // live non-overlapping stack allocations with matching lengths.
         unsafe {
-            assert_eq!(terrania_monsters_plan(std::ptr::null(),1,std::ptr::null(),0,0.05,
-                std::ptr::null_mut(),0),-1);
-            assert_eq!(terrania_monsters_plan(&m,1,std::ptr::null(),0,0.05,
-                std::ptr::null_mut(),0),-2);
+            assert_eq!(
+                terrania_monsters_plan(
+                    std::ptr::null(),
+                    1,
+                    std::ptr::null(),
+                    0,
+                    0.05,
+                    std::ptr::null_mut(),
+                    0
+                ),
+                -1
+            );
+            assert_eq!(
+                terrania_monsters_plan(&m, 1, std::ptr::null(), 0, 0.05, std::ptr::null_mut(), 0),
+                -2
+            );
             let mut out = [MonsterPlan::default()];
-            assert_eq!(terrania_monsters_plan(&m,1,std::ptr::null(),0,0.05,
-                out.as_mut_ptr(),1),1);
-            assert_eq!(out[0].target_index,-1);
+            assert_eq!(
+                terrania_monsters_plan(&m, 1, std::ptr::null(), 0, 0.05, out.as_mut_ptr(), 1),
+                1
+            );
+            assert_eq!(out[0].target_index, -1);
         }
     }
 }

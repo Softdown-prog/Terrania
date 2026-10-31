@@ -5,7 +5,7 @@
 #[allow(unsafe_code)]
 mod ffi;
 pub mod monsters;
-pub use ffi::{terrania_spatial_nearest, terrania_spatial_visible, terrania_monsters_plan};
+pub use ffi::{terrania_monsters_plan, terrania_spatial_nearest, terrania_spatial_visible};
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]

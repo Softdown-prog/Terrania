@@ -43,8 +43,19 @@ pub struct MonsterPlan {
 }
 
 fn valid_monster(m: &MonsterInput) -> bool {
-    [m.x, m.y, m.after_x, m.after_y, m.pulse, m.hurt_time, m.cooldown,
-        m.knock_x, m.knock_y].iter().all(|v| v.is_finite())
+    [
+        m.x,
+        m.y,
+        m.after_x,
+        m.after_y,
+        m.pulse,
+        m.hurt_time,
+        m.cooldown,
+        m.knock_x,
+        m.knock_y,
+    ]
+    .iter()
+    .all(|v| v.is_finite())
 }
 fn valid_player(p: &MonsterPlayer) -> bool {
     p.x.is_finite() && p.y.is_finite() && p.in_village <= 1
@@ -59,8 +70,11 @@ pub fn plan_into(
     dt: f64,
     out: &mut [MonsterPlan],
 ) -> Result<usize, &'static str> {
-    if !dt.is_finite() || !(0.0..=0.05).contains(&dt) || dt == 0.0
-        || monsters.len() > 1_000_000 || players.len() > 1_000_000
+    if !dt.is_finite()
+        || !(0.0..=0.05).contains(&dt)
+        || dt == 0.0
+        || monsters.len() > 1_000_000
+        || players.len() > 1_000_000
         || out.len() < monsters.len()
         || !monsters.iter().all(valid_monster)
         || !players.iter().all(valid_player)
@@ -79,7 +93,10 @@ pub fn plan_into(
         }
         let Some(target) = winner else {
             // Old Go motor does not advance idle monsters without targets.
-            *out = MonsterPlan { target_index: -1, ..MonsterPlan::default() };
+            *out = MonsterPlan {
+                target_index: -1,
+                ..MonsterPlan::default()
+            };
             continue;
         };
         let p = &players[target];
@@ -104,10 +121,13 @@ pub fn plan_into(
             }
         }
         *out = MonsterPlan {
-            pulse, hurt_time, cooldown,
+            pulse,
+            hurt_time,
+            cooldown,
             knock_x: m.knock_x * (-10.0 * dt).exp(),
             knock_y: m.knock_y * (-10.0 * dt).exp(),
-            move_x, move_y,
+            move_x,
+            move_y,
             target_index: target as i32,
             attack,
         };
@@ -120,49 +140,77 @@ mod tests {
     use super::*;
 
     fn monster(x: f64, y: f64) -> MonsterInput {
-        MonsterInput { x, y, after_x: x, after_y: y, pulse: 0.0,
-            hurt_time: 0.0, cooldown: 0.0, knock_x: 0.0, knock_y: 0.0 }
+        MonsterInput {
+            x,
+            y,
+            after_x: x,
+            after_y: y,
+            pulse: 0.0,
+            hurt_time: 0.0,
+            cooldown: 0.0,
+            knock_x: 0.0,
+            knock_y: 0.0,
+        }
     }
     #[test]
     fn targets_first_player_on_tie_and_chases() {
         let monsters = [monster(0.0, 0.0)];
         let players = [
-            MonsterPlayer { x: 30.0, y: 0.0, in_village: 0 },
-            MonsterPlayer { x: -30.0, y: 0.0, in_village: 0 },
+            MonsterPlayer {
+                x: 30.0,
+                y: 0.0,
+                in_village: 0,
+            },
+            MonsterPlayer {
+                x: -30.0,
+                y: 0.0,
+                in_village: 0,
+            },
         ];
         let mut out = [MonsterPlan::default()];
-        assert_eq!(plan_into(&monsters,&players,0.05,&mut out),Ok(1));
-        assert_eq!(out[0].target_index,0);
-        assert!(out[0].move_x>0.0);
-        assert_eq!(out[0].attack,0);
+        assert_eq!(plan_into(&monsters, &players, 0.05, &mut out), Ok(1));
+        assert_eq!(out[0].target_index, 0);
+        assert!(out[0].move_x > 0.0);
+        assert_eq!(out[0].attack, 0);
     }
     #[test]
     fn no_target_skips_timers_and_village_prevents_attack() {
-        let monsters = [monster(0.0, 0.0),monster(1_000.0, 1_000.0)];
-        let players = [MonsterPlayer { x: 20.0, y: 0.0, in_village: 1 }];
-        let mut out = [MonsterPlan::default();2];
-        plan_into(&monsters,&players,0.05,&mut out).unwrap();
-        assert_eq!(out[0].attack,0);
-        assert_eq!(out[0].move_x,0.0);
-        assert_eq!(out[1].target_index,-1);
+        let monsters = [monster(0.0, 0.0), monster(1_000.0, 1_000.0)];
+        let players = [MonsterPlayer {
+            x: 20.0,
+            y: 0.0,
+            in_village: 1,
+        }];
+        let mut out = [MonsterPlan::default(); 2];
+        plan_into(&monsters, &players, 0.05, &mut out).unwrap();
+        assert_eq!(out[0].attack, 0);
+        assert_eq!(out[0].move_x, 0.0);
+        assert_eq!(out[1].target_index, -1);
     }
     #[test]
     fn contact_cooldown_and_hurt_guard() {
-        let mut m=monster(0.0,0.0);
-        m.hurt_time=0.2;
-        let p=[MonsterPlayer{x:20.0,y:0.0,in_village:0}];
-        let mut out=[MonsterPlan::default()];
-        plan_into(&[m],&p,0.05,&mut out).unwrap();
-        assert_eq!(out[0].attack,1);
-        assert_eq!(out[0].cooldown,1.2);
-        assert_eq!(out[0].move_x,0.0);
+        let mut m = monster(0.0, 0.0);
+        m.hurt_time = 0.2;
+        let p = [MonsterPlayer {
+            x: 20.0,
+            y: 0.0,
+            in_village: 0,
+        }];
+        let mut out = [MonsterPlan::default()];
+        plan_into(&[m], &p, 0.05, &mut out).unwrap();
+        assert_eq!(out[0].attack, 1);
+        assert_eq!(out[0].cooldown, 1.2);
+        assert_eq!(out[0].move_x, 0.0);
     }
     #[test]
     fn rejected_batch_does_not_mutate_output() {
-        let mut m=monster(0.0,0.0);
-        m.pulse=f64::NAN;
-        let mut out=[MonsterPlan { target_index:42,..MonsterPlan::default() }];
-        assert!(plan_into(&[m],&[],0.05,&mut out).is_err());
-        assert_eq!(out[0].target_index,42);
+        let mut m = monster(0.0, 0.0);
+        m.pulse = f64::NAN;
+        let mut out = [MonsterPlan {
+            target_index: 42,
+            ..MonsterPlan::default()
+        }];
+        assert!(plan_into(&[m], &[], 0.05, &mut out).is_err());
+        assert_eq!(out[0].target_index, 42);
     }
 }
