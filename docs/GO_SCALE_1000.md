@@ -70,9 +70,18 @@ Teste em `ws://127.0.0.1:8790/ws?room=origins`; não publique diretamente em HTT
 ## Próximas fases antes de liberar 1000 em produção
 
 1. Carga progressiva de 100/250/500/1000 jogadores movendo-se, atacando e gerando mobs, com p95/p99 de tick, latência, CPU/RAM e reconexões.
-2. Execução independente das salas (remover mutex global), controle de interesse/visibilidade nos snapshots e limites de uso por sala e por worker.
+2. **Execução independente por sala implementada:** cada sala tem mutex e ticker próprios, sem manter o registro global bloqueado ao calcular física, IA ou snapshots; ainda falta orçamento de interesse/visibilidade nos snapshots e limite de CPU por worker.
 3. Capacidade por worker e roteamento que evite sobrecarregar um único worker, métricas de cluster, alertas, TLS e isolamento de rede.
 4. Persistência de personagens/itens, autenticação e antifraude; preparar transferência entre áreas e drenagem de workers.
 5. Homologar num host isolado ou VPS maior, preservar Node e realizar cutover reversível somente após teste end-to-end e aprovação.
 
 A ideia é deixar as **cadeiras previstas e a estrutura ampliável**, sem oferecer mil lugares fictícios numa máquina pequena.
+
+
+## Fase 2 — isolamento dos ticks do motor Go
+
+- Runtime por sala em `server-go/cmd/terrania/room_runtime.go`. Cada sala tem simulação 20 Hz, snapshots 10 Hz, mutex e cancelamento próprios.
+- `gameServer.mu` agora protege só o registro/assentos e troca de salas; não acompanha física, combate, IA ou serialização de snapshots. Ingressos são **reservados antes** do lock da sala, de modo que uma sala lenta não atrasa conexões de outras salas.
+- Métricas em `/status`: `ticks` soma ticks concluídos de salas, `tickOverruns` soma ticks de sala acima de 50 ms, `maxRoomTickMs` indica a maior duração de último tick dentre salas ativas. Não é métrica de latência externa, nem percentil.
+- Teste de isolamento com WebSockets reais bloqueia propositalmente o mutex de uma sala por 290 ms e verifica que outra sala segue executando ticks, que o status e a admissão continuam respondendo, e que o ticker é encerrado quando a sala esvazia.
+- **Sem alterar o Node público ou instalar essa revisão na VPS**; a próxima etapa inclui carga real progressiva com usuários simultaneamente movimentando e atacando.
