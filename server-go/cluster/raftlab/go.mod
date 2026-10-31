@@ -2,7 +2,10 @@ module github.com/Softdown-prog/Terrania/server-go/cluster/raftlab
 
 go 1.23.0
 
-require github.com/hashicorp/raft v1.7.3
+require (
+	github.com/hashicorp/raft v1.7.3
+	github.com/hashicorp/raft-boltdb/v2 v2.3.1
+)
 
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
