@@ -65,7 +65,7 @@ type RegionDirectory struct {
 	mu      sync.Mutex
 	workers map[string]struct{}
 	regions map[Province]*regionState
-	gates map[Province]*sync.RWMutex
+	gates   map[Province]*sync.RWMutex
 	journal *regionJournal
 	faulted bool
 }
@@ -77,7 +77,7 @@ func NewRegionDirectory(router *Router) (*RegionDirectory, error) {
 	d := &RegionDirectory{
 		workers: make(map[string]struct{}, router.Count()),
 		regions: make(map[Province]*regionState),
-		gates: make(map[Province]*sync.RWMutex),
+		gates:   make(map[Province]*sync.RWMutex),
 	}
 	for _, b := range router.Backends() {
 		d.workers[b.ID] = struct{}{}
@@ -219,8 +219,10 @@ func validTicket(s *regionState, t TransferTicket, now time.Time) error {
 func (d *RegionDirectory) FreezeSource(t TransferTicket, now time.Time) error {
 	// Wait until ALL in-flight authoritative mutations for this province
 	// have left their read-locked critical section.
-	gate,err:=d.gateForProvince(t.Province)
-	if err!=nil{return err}
+	gate, err := d.gateForProvince(t.Province)
+	if err != nil {
+		return err
+	}
 	gate.Lock()
 	defer gate.Unlock()
 	d.mu.Lock()
@@ -340,8 +342,10 @@ func (d *RegionDirectory) Commit(t TransferTicket, now time.Time) (Ownership, er
 func (d *RegionDirectory) Abort(t TransferTicket) (Ownership, error) {
 	// Abort may increment the epoch even before FreezeSource; it must wait
 	// for an in-flight old-epoch tick before switching the authority.
-	gate,err:=d.gateForProvince(t.Province)
-	if err!=nil{return Ownership{},err}
+	gate, err := d.gateForProvince(t.Province)
+	if err != nil {
+		return Ownership{}, err
+	}
 	gate.Lock()
 	defer gate.Unlock()
 	d.mu.Lock()
