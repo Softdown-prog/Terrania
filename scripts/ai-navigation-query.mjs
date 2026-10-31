@@ -3,6 +3,7 @@ import { readFileSync, realpathSync, statSync } from 'node:fs';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createNavigationApi } from './ai-navigation-api.mjs';
+import { normalizeScope } from './find-ai-files.mjs';
 
 const MAX_GUIDE_FILE_BYTES = 128 * 1024;
 const knownKinds = new Set(['find', 'audit', 'guide']);
@@ -35,18 +36,18 @@ export function parseQueryArgs(args) {
   if (kind === 'find') {
     if (minFiles !== undefined || depth !== undefined || maxChars !== undefined)
       throw new Error('Parâmetro não aceito por find.');
-    return { kind, args: { query: words.join(' '), scope, ...(limit === undefined ? {} : { limit }) } };
+    return { kind, args: { query: words.join(' '), scope: normalizeScope(scope), ...(limit === undefined ? {} : { limit }) } };
   }
   if (kind === 'audit') {
     if (words.length || maxChars !== undefined)
       throw new Error('audit não recebe busca posicional nem max-chars.');
-    return { kind, args: { scope, ...(limit === undefined ? {} : { limit }),
+    return { kind, args: { scope: normalizeScope(scope), ...(limit === undefined ? {} : { limit }),
       ...(minFiles === undefined ? {} : { minFiles }),
       ...(depth === undefined ? {} : { depth }) } };
   }
   if (words.length > 1 || limit !== undefined || minFiles !== undefined || depth !== undefined ||
       (scope && words.length)) throw new Error('guide aceita um único caminho e --max-chars.');
-  return { kind, args: { scope: scope || words[0] || '',
+  return { kind, args: { scope: normalizeScope(scope || words[0] || ''),
     ...(maxChars === undefined ? {} : { maxChars }) } };
 }
 
