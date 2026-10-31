@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { test } from 'node:test';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 test('MCP stdio aceita handshake, descobre 5 ferramentas e chama find_files', async t => {
   const child = spawn(process.execPath, ['--experimental-strip-types',
-    resolve('tools/mcp-navigation/src/server.mts')], {
+    fileURLToPath(new URL('../src/server.mts', import.meta.url))], {
     cwd: resolve('.'), stdio: ['pipe','pipe','pipe'], env: process.env,
   });
   t.after(() => child.kill());
