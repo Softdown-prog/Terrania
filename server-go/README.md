@@ -42,3 +42,20 @@ Nenhum cliente pode mandar HP, posição, kills ou seed. O servidor rejeita inpu
 ### Estado da migração
 
 O protocolo JSON permanece v3 para evitar exigir deploy simultâneo do cliente. O código Go não compartilha imports com TypeScript. O objetivo é garantir a mesma simulação por testes de paridade, não presumir que os resultados serão idênticos apenas por compilar.
+
+### Linters e detecção de condições de corrida
+
+O módulo Go é verificado automaticamente no GitHub Actions tanto na CI de PR/branch quanto **antes de qualquer deploy do shadow na VPS**. A versão do `golangci-lint` é fixada em `v2.15.0` e sua configuração fica em `server-go/.golangci.yml`.
+
+Para executar localmente com Go 1.23+ e `golangci-lint` v2 instalado:
+
+```bash
+cd server-go
+golangci-lint run
+go test -v -race -count=1 ./...
+ALLOWED_ORIGINS=http://localhost:5173 go run -race ./cmd/terrania
+```
+
+**Não usar `go run -race main.go` neste repositório:** o programa é dividido entre `main.go`, `room_runtime.go`, `live_probe.go`, `limits.go` e outros arquivos; o caminho correto é executar o **pacote** `./cmd/terrania`. O gateway pode ser executado com `go run -race ./cmd/gateway`.
+
+O `-race` identifica acessos concorrentes inseguros **nos caminhos realmente executados**; ele não prova ausência de todas as corridas. Para ampliar a cobertura, a CI executa os testes do módulo inteiro e um smoke que inicializa o WebSocket verdadeiro com o detector ativo. O `-race` e o linter rodam no GitHub runner, **não dentro da VPS de produção**, para evitar overhead em partidas de jogadores.
