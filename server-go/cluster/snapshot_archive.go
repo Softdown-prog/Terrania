@@ -51,7 +51,7 @@ func validateArchiveRequest(req RegionSnapshotRequest) error {
 	t,s:=req.Ticket,req.Snapshot
 	if err:=s.Validate();err!=nil{return fmt.Errorf("%w: snapshot",ErrSnapshotArchiveInvalid)}
 	if s.Province!=t.Province || s.OldEpoch!=t.OldEpoch ||
-		t.NewEpoch!=t.OldEpoch+1 || t.OldEpoch==0 ||
+		t.NewEpoch!=t.OldEpoch+1 || t.OldEpoch==0 || t.NewEpoch==0 ||
 		t.From=="" || t.To=="" || t.From==t.To || t.ExpiresAt.IsZero() {
 		return ErrSnapshotArchiveInvalid
 	}
@@ -112,8 +112,8 @@ func (a *SnapshotArchive) SaveDurable(req RegionSnapshotRequest)error {
 	return closeErr
 }
 
-func (a *SnapshotArchive) readLocked(t TransferTicket)(RegionSnapshotRequest,error){
-	path:=a.filename(t)
+func (a *SnapshotArchive) readByKeyLocked(p Province,token string)(RegionSnapshotRequest,error){
+	path:=a.filename(TransferTicket{Province:p,Token:token})
 	info,err:=os.Lstat(path)
 	if errors.Is(err,os.ErrNotExist){return RegionSnapshotRequest{},ErrSnapshotArchiveMissing}
 	if err!=nil{return RegionSnapshotRequest{},err}
@@ -133,13 +133,22 @@ func (a *SnapshotArchive) readLocked(t TransferTicket)(RegionSnapshotRequest,err
 	}
 	if err:=validateArchiveRequest(frame.Request);err!=nil{return RegionSnapshotRequest{},err}
 	loaded:=frame.Request.Ticket
-	if loaded.Province!=t.Province||loaded.Token!=t.Token||
-		loaded.From!=t.From||loaded.To!=t.To||loaded.OldEpoch!=t.OldEpoch||
+	if loaded.Province!=p||loaded.Token!=token {
+		return RegionSnapshotRequest{},ErrSnapshotArchiveInvalid
+	}
+	return frame.Request,nil
+}
+
+func (a *SnapshotArchive) readLocked(t TransferTicket)(RegionSnapshotRequest,error){
+	req,err:=a.readByKeyLocked(t.Province,t.Token)
+	if err!=nil{return RegionSnapshotRequest{},err}
+	loaded:=req.Ticket
+	if loaded.From!=t.From||loaded.To!=t.To||loaded.OldEpoch!=t.OldEpoch||
 		loaded.NewEpoch!=t.NewEpoch||loaded.Digest!=t.Digest||
 		!loaded.ExpiresAt.Equal(t.ExpiresAt) {
 		return RegionSnapshotRequest{},ErrSnapshotArchiveInvalid
 	}
-	return frame.Request,nil
+	return req,nil
 }
 
 // LoadVerified is read-only, returns owned bytes, and NEVER unfreezes or
@@ -152,4 +161,15 @@ func (a *SnapshotArchive) LoadVerified(t TransferTicket)(RegionSnapshotRequest,e
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	return a.readLocked(t)
+}
+
+// inspectByToken is for read-only offline recovery only. The journal owner and
+// epoch MUST be checked by the caller; no returned snapshot is authoritative.
+func (a *SnapshotArchive) inspectByToken(p Province,token string)(RegionSnapshotRequest,error){
+	if a==nil{return RegionSnapshotRequest{},ErrSnapshotArchiveInvalid}
+	decoded,err:=hex.DecodeString(token)
+	if err!=nil||len(decoded)!=16||hex.EncodeToString(decoded)!=token{return RegionSnapshotRequest{},ErrSnapshotArchiveInvalid}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.readByKeyLocked(p,token)
 }

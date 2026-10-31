@@ -104,6 +104,7 @@ type SnapshotReceiver struct {
 	mu        sync.Mutex
 	directory *RegionDirectory
 	workerID  string
+	archive   *SnapshotArchive
 	staged    map[Province]stagedRecord
 }
 
@@ -112,6 +113,17 @@ func NewSnapshotReceiver(d *RegionDirectory, worker string) (*SnapshotReceiver, 
 		return nil, ErrWorkerUnknown
 	}
 	return &SnapshotReceiver{directory: d, workerID: worker, staged: make(map[Province]stagedRecord)}, nil
+}
+
+// NewArchivedSnapshotReceiver persists the full authenticated frame BEFORE
+// an acknowledgment or directory staging is published. This remains an
+// opt-in control-plane component and is NOT mounted in production.
+func NewArchivedSnapshotReceiver(d *RegionDirectory,worker string,a *SnapshotArchive)(*SnapshotReceiver,error){
+	if a==nil{return nil,ErrSnapshotArchiveInvalid}
+	h,err:=NewSnapshotReceiver(d,worker)
+	if err!=nil{return nil,err}
+	h.archive=a
+	return h,nil
 }
 
 // peerWorkerID requires an authenticated client certificate with exactly one
@@ -209,6 +221,19 @@ func (h *SnapshotReceiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if _, exists := h.staged[t.Province]; !exists && len(h.staged) >= MaxStagedRegionSnapshots {
 		http.Error(w, "staging capacity reached", http.StatusServiceUnavailable)
 		return
+	}
+	// Validate against the live coordinator before writing an archive. The
+	// directory may still change while fsync runs; the final StageDestination
+	// rechecks and rejects an outdated ticket without activating anything.
+	if err:=h.directory.ValidateStaging(t,hash,time.Now());err!=nil {
+		http.Error(w,"transfer ticket not active or source not frozen",http.StatusConflict)
+		return
+	}
+	if h.archive!=nil {
+		if err:=h.archive.SaveDurable(transfer);err!=nil {
+			http.Error(w,"durable snapshot unavailable",http.StatusServiceUnavailable)
+			return
+		}
 	}
 	old, exists := h.staged[t.Province]
 	payload := append([]byte(nil), s.Payload...)
