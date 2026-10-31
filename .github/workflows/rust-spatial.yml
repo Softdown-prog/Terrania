@@ -6,6 +6,7 @@ on:
       - "server-go/cmd/spatial-reference/**"
       - "server-go/engine/spatial_*.go"
       - "server-go/engine/room.go"
+      - "server-go/engine/monsters*.go"
       - "server-go/engine/benchmark_test.go"
       - ".github/workflows/rust-spatial.yml"
   push:
@@ -15,6 +16,7 @@ on:
       - "server-go/cmd/spatial-reference/**"
       - "server-go/engine/spatial_*.go"
       - "server-go/engine/room.go"
+      - "server-go/engine/monsters*.go"
       - "server-go/engine/benchmark_test.go"
       - ".github/workflows/rust-spatial.yml"
 
@@ -50,8 +52,11 @@ jobs:
           set -euo pipefail
           go test -race -count=1 ./engine ./cmd/terrania
           go test -race -count=1 -tags rustspatial ./...
+          go test -race -count=1 -tags rustmonsters ./...
+          go test -race -count=1 -tags 'rustspatial rustmonsters' ./...
           go vet -tags rustspatial ./...
           go build -tags rustspatial -o /tmp/terrania-go-ffi ./cmd/terrania
+          go build -tags rustmonsters -o /tmp/terrania-go-monsters ./cmd/terrania
       - name: Benchmarks reais de ticks e snapshots (Go puro vs FFI Rust)
         working-directory: server-go
         env:

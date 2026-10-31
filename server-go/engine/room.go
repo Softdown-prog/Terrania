@@ -106,9 +106,9 @@ func (r *Room) Tick(dt float64,now time.Time) {
 			}
 		}
 	}
-	for _,mob:=range r.mobsInOrder() {
-		near:=closestGuest(guests,mob.X,mob.Y)
-		if near!=nil { mob.Update(dt,near.Actor,r.World) }
+	mobs := r.mobsInOrder()
+	stepMonsters(guests, mobs, dt, r.World)
+	for _,mob:=range mobs {
 		keep:=false
 		for _,g:=range guests {
 			if math.Hypot(g.Actor.X-mob.X,g.Actor.Y-mob.Y)<ChunkPixels*2.5 { keep=true;break }
