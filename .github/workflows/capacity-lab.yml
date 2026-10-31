@@ -1,0 +1,62 @@
+name: Terrania capacity lab (synthetic only, no deploy)
+on:
+  push:
+    branches: [main, 'feat/go-rust-ffi-*']
+    paths:
+      - 'server-go/cmd/capacity-lab/**'
+      - 'docs/CAPACITY-LAB.md'
+      - '.github/workflows/capacity-lab.yml'
+  pull_request:
+    paths:
+      - 'server-go/cmd/capacity-lab/**'
+      - 'docs/CAPACITY-LAB.md'
+      - '.github/workflows/capacity-lab.yml'
+permissions:
+  contents: read
+jobs:
+  synthetic-capacity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/go.mod
+          cache-dependency-path: server-go/go.sum
+      - name: Test projection, safety guards and deterministic synthetic scans
+        working-directory: server-go
+        run: go test -race -count=1 ./cmd/capacity-lab
+      - name: Materialize 100k, 1m, and 10m entity virtual scenarios
+        working-directory: server-go
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/terrania-capacity
+          go run ./cmd/capacity-lab -entities=100000 -players=10000 -ticks=3 -target-samples=10000 -report=/tmp/terrania-capacity/100k-10k.json >/dev/null
+          go run ./cmd/capacity-lab -entities=1000000 -players=100000 -ticks=3 -target-samples=25000 -report=/tmp/terrania-capacity/1m-100k.json >/dev/null
+          go run ./cmd/capacity-lab -entities=10000000 -players=1000000 -ticks=3 -target-samples=100000 -memory-guard-mib=768 -report=/tmp/terrania-capacity/10m-1m.json >/dev/null
+      - name: Summarize synthetic measurements with explicit limitations
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          folder = Path('/tmp/terrania-capacity')
+          print('### Offline capacity lab: virtual entities and players, NOT live sockets')
+          print('| Virtual players | Entities | Modeled rooms | Go heap MiB | Mean simplified scan ms | Sampled target search ms |')
+          print('|---:|---:|---:|---:|---:|---:|')
+          for path in sorted(folder.glob('*.json')):
+              report = json.loads(path.read_text())
+              c, p, m = report['scenario'], report['projection'], report['measured_on_this_machine']
+              print(f"| {c['players']:,} | {c['entities']:,} | {p['minimum_rooms_at_room_size']:,} | {m['observed_go_heap_alloc_bytes']/1048576:.1f} | {m['mean_full_array_motion_scan_ms']:.2f} | {m['measured_target_search_ms']:.2f} |")
+          maxed = json.loads((folder / '10m-1m.json').read_text())
+          c, p = maxed['scenario'], maxed['projection']
+          assert c['entities'] == 10_000_000 and c['players'] == 1_000_000
+          assert p['minimum_rooms_at_room_size'] == 83_334
+          assert p['min_workers_by_configured_limits_only'] == 100
+          print(f"\nModeled payload under 2048 bytes/snapshot and 48 bytes/input assumptions: {p['assumed_combined_payload_gbps']:.2f} Gbit/s.")
+          print('**These are synthetic array scans and hypothetical network arithmetic; no WebSocket connections, Go game physics or multiplayer server load.**')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: terrania-capacity-synthetic-reports
+          path: /tmp/terrania-capacity/*.json
+          retention-days: 14
