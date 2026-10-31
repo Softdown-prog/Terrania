@@ -28,9 +28,10 @@ func TestRustMonsterBatchParityWithGo(t *testing.T) {
         return ms
     }
     goMobs, rustMobs := makeMobs(),makeMobs()
+    var scratch monsterScratch
     for frame:=0;frame<26;frame++ {
         runGoMonsterStep(goGuests,goMobs,0.05,w)
-        if !tryRustMonsterStep(rustGuests,rustMobs,0.05,w) {
+        if !tryRustMonsterStepWithScratch(rustGuests,rustMobs,0.05,w,&scratch) {
             t.Fatalf("rust batch failed at frame %d",frame)
         }
         for i:=range goMobs {
@@ -90,7 +91,8 @@ func TestRustMonsterBatchMoreThan1000(t *testing.T) {
             goGuests, rustGuests := makeGuests(), makeGuests()
             goMobs, rustMobs := makeMobs(), makeMobs()
             runGoMonsterStep(goGuests, goMobs, .05, world)
-            if !tryRustMonsterStep(rustGuests, rustMobs, .05, world) {
+            var scratch monsterScratch
+            if !tryRustMonsterStepWithScratch(rustGuests, rustMobs, .05, world, &scratch) {
                 t.Fatalf("Rust declined %d-monster batch", count)
             }
             for i := range goMobs {
@@ -106,5 +108,81 @@ func TestRustMonsterBatchMoreThan1000(t *testing.T) {
                 }
             }
         })
+    }
+}
+
+// Test buffer lifetime and reuse across changing room population, including
+// a rejected batch: Rust must neither own Go memory nor corrupt old outputs.
+func TestRustMonsterScratchReusedAcrossTicks(t *testing.T) {
+    world := World{Seed:842136}
+    player := NewPlayer()
+    player.X, player.Y = 1400, 1400
+    guests := []*Guest{{Actor:player}}
+    scratch := &monsterScratch{}
+    makeMobs := func(count int) []*Slime {
+        mobs := make([]*Slime, count)
+        for i := range mobs {
+            mobs[i] = NewSlime(fmt.Sprintf("reuse-%d",i),
+                1430+float64(i%32), 1430+float64(i/32))
+        }
+        return mobs
+    }
+    mobs := makeMobs(1024)
+    if !tryRustMonsterStepWithScratch(guests,mobs,.05,world,scratch) {
+        t.Fatal("1024-monster batch rejected")
+    }
+    inputCap, outputCap := cap(scratch.input), cap(scratch.output)
+    inputPtr, outputPtr := &scratch.input[0], &scratch.output[0]
+    for i:=0;i<10;i++ {
+        if !tryRustMonsterStepWithScratch(guests,mobs,.05,world,scratch) {
+            t.Fatalf("repeated batch rejected at iteration %d",i)
+        }
+    }
+    if &scratch.input[0]!=inputPtr || &scratch.output[0]!=outputPtr {
+        t.Fatal("FFI buffers reallocated during stable room ticks")
+    }
+    if cap(scratch.input)!=inputCap || cap(scratch.output)!=outputCap {
+        t.Fatal("FFI buffers unexpectedly grew")
+    }
+    // Shrinking, then expanding a room must not reuse stale active results.
+    small := makeMobs(32)
+    if !tryRustMonsterStepWithScratch(guests,small,.05,world,scratch) ||
+        !tryRustMonsterStepWithScratch(guests,mobs,.05,world,scratch) {
+        t.Fatal("variable-size batch failed")
+    }
+    if &scratch.input[0]!=inputPtr || &scratch.output[0]!=outputPtr {
+        t.Fatal("buffer shrinks must reuse capacity")
+    }
+    bad := makeMobs(3)
+    bad[2].pulse = math.NaN()
+    x, y := bad[0].X, bad[0].Y
+    if tryRustMonsterStepWithScratch(guests,bad,.05,world,scratch) {
+        t.Fatal("nonfinite state accepted")
+    }
+    if bad[0].X != x || bad[0].Y != y {
+        t.Fatal("failed batch partially committed")
+    }
+    if !tryRustMonsterStepWithScratch(guests,small,.05,world,scratch) {
+        t.Fatal("buffer not reusable after a failed batch")
+    }
+}
+
+func TestRustMonsterScratchSteadyStateAllocations(t *testing.T) {
+    world := World{Seed:842136}
+    g := &Guest{Actor:NewPlayer()}
+    g.Actor.X, g.Actor.Y = 1400, 1400
+    mobs := []*Slime{NewSlime("perf",2000,2000)}
+    scratch := &monsterScratch{}
+    if !tryRustMonsterStepWithScratch([]*Guest{g},mobs,.05,world,scratch) {
+        t.Fatal("warmup failed")
+    }
+    guests := []*Guest{g}
+    allocs := testing.AllocsPerRun(100,func() {
+        if !tryRustMonsterStepWithScratch(guests,mobs,.05,world,scratch) {
+            panic("Rust FFI returned error after warmup")
+        }
+    })
+    if allocs != 0 {
+        t.Fatalf("expected zero allocations with room-local scratch: %.2f",allocs)
     }
 }

@@ -113,3 +113,9 @@ Os testes Rust exercitam 16.384 entidades de tipos mistos, remoção/reutilizaç
 A arena **ainda não é dona do estado vivo do jogo**: o Go mantém `Room.mobs` e `MaxMobs=96`, e o adaptador Rust continua recebendo buffers por tick. O armazenamento Rust está preparado e testado isoladamente; migrar ownership e oferecer um contrato FFI de arena persistente, com isolamento por sala e limpeza explícita, será uma etapa posterior, junto a perfil de memória e benchmark sem rede.
 
 Sem mudanças no Docker, na VPS ou na `main`.
+
+## Backend: buffers por sala e caminho FFI sem alocacao por tick
+
+O backend Go agora mantém buffers de entrada, jogadores e saída **dentro de cada `Room`**, reutilizados pelo único goroutine proprietário da sala. Não há cache global compartilhado nem ponteiros preservados no Rust entre ticks. O `room.Tick` utiliza `stepMonstersWithScratch`; chamadas de teste avulsas podem usar um scratch local. O adaptador elimina os vetores temporários `afterX`/`afterY`, lê essas coordenadas dos registros já enviados ao Rust e evita recalcular colisão quando não há impulso de knockback ou movimento. Lotes inválidos retornam para o caminho Go antes de qualquer mutação de entidades.
+
+O objetivo é reduzir o custo da ponte, sobretudo em 1.024 e 4.096 monstros. O CI mede novamente essas cargas e verifica paridade, reutilização de capacidade, rejeição atômica e ausência de alocações após o aquecimento dos buffers. **O limite ativo da sala continua em 96 e a integração Rust continua opt-in.** A capacidade da arena Rust não implica desempenho garantido, nem muda Go como motor de rede.
