@@ -16,7 +16,7 @@
 - [x] Integração local com dois clientes WebSocket e build multipágina validado
 - [x] Primeiro NPC procedural (Aela) com diálogos conforme a missão, teclado e toque
 - [ ] Cidade inicial com outros NPCs, placas, interiores e diálogos encadeados (primeiro recorte: vila/NPCs/placas/interiores ilustrados; interiores caminháveis implementados; revisão visual e QA de navegação pendentes)
-- [ ] Inventário, equipamentos, loot e itens consumíveis
+- [ ] Inventário, equipamentos, loot e itens consumíveis (primeiro recorte: bolsa offline, gel de slime no chão, poção de cura e recompensa única de Aela; equipamentos/crafting/online pendentes)
 - [ ] Sistema de quests com estados e recompensas
 - [ ] Três tipos de monstros e dois tipos de ataque
 

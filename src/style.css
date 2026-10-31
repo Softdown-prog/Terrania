@@ -713,3 +713,40 @@ noscript a {
   #talkButton { bottom: max(98px, calc(env(safe-area-inset-bottom) + 95px)); }
   #gameNotice { bottom: max(110px, calc(env(safe-area-inset-bottom) + 104px)); }
 }
+
+/* Bolsa do aventureiro: alvos confortáveis e contraste no Android. */
+.inventory-item {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 0;
+  border-top: 1px solid var(--line);
+}
+.inventory-item strong,
+.inventory-item small { display: block; }
+.inventory-item strong { font-size: 14px; color: #f1e5cd; }
+.inventory-item small { font-size: 11px; color: #b9c7b9; margin-top: 5px; line-height: 1.5; }
+.inventory-item b { font-size: 12px; font-variant-numeric: tabular-nums; }
+.item-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #e7d2ab70;
+  border-radius: 9px;
+  font-size: 22px;
+}
+.item-gel { color: #91ecbd; background: #195544; }
+.item-potion { color: #ffc6ce; background: #65364f; }
+#inventoryDialog .primary-button,
+#inventoryDialog .secondary-button { min-height: 48px; }
+#inventoryFeedback:not(:empty) { min-height: 2em; color: #e8d6ab; }
+@media (pointer: coarse), (max-width: 650px) {
+  #inventoryDialog { width: min(440px, calc(100% - 24px)); padding: 28px 20px; }
+  #inventoryDialog .dialog-x { min-width: 44px; min-height: 44px; }
+  #inventoryDialog .inventory-item { gap: 9px; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  #inventoryDialog { max-height: calc(100dvh - 16px); padding: 20px; }
+}

@@ -46,7 +46,8 @@
         </div>
       </header>
       <nav class="game-tools" aria-label="Opções do jogo">
-        <button id="helpButton" type="button" title="Como jogar">Ajuda</button
+        <button id="inventoryButton" type="button" aria-haspopup="dialog" aria-controls="inventoryDialog">Bolsa</button
+        ><button id="helpButton" type="button" title="Como jogar">Ajuda</button
         ><button id="settingsButton" type="button">Ajustes</button
         ><button id="fullscreenButton" type="button">Tela cheia</button>
       </nav>
@@ -78,6 +79,25 @@
       <div class="keyboard-hint" aria-hidden="true">
         <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar <span>·</span> <kbd>E</kbd> conversar
       </div>
+      <dialog id="inventoryDialog" aria-labelledby="inventoryTitle">
+        <button class="dialog-x" data-close-dialog type="button" aria-label="Fechar bolsa">×</button>
+        <span class="dialog-kicker">SEUS ITENS · AVENTURA SOLO</span>
+        <h1 id="inventoryTitle">Bolsa do aventureiro</h1>
+        <p class="dialog-note">Os slimes derrotados deixam gel no chão. Aproxime-se para recolher. Aela entrega poções após você proteger a clareira.</p>
+        <div class="inventory-item">
+          <span class="item-icon item-gel" aria-hidden="true">◆</span>
+          <span><strong>Gel de slime</strong><small>Material coletável · guardado na bolsa</small></span>
+          <b id="gelCount">0 / 99</b>
+        </div>
+        <div class="inventory-item">
+          <span class="item-icon item-potion" aria-hidden="true">✚</span>
+          <span><strong>Poção de cura</strong><small>Restaura 35 pontos de vida</small></span>
+          <b id="potionCount">0 / 99</b>
+        </div>
+        <button id="usePotion" class="primary-button" type="button">Usar poção</button>
+        <p id="inventoryFeedback" class="dialog-note" role="status" aria-live="polite"></p>
+        <button data-close-dialog class="secondary-button" type="button">Voltar à aventura</button>
+      </dialog>
       <dialog id="settingsDialog" aria-labelledby="settingsTitle">
         <button class="dialog-x" data-close-dialog aria-label="Fechar ajustes">
           ×</button
@@ -144,6 +164,10 @@
           <div>
             <dt>No celular</dt>
             <dd>Arraste o joystick para caminhar, ou toque em um ponto livre do cenário para ir até lá automaticamente no modo solo. O controle manual ou um ataque cancela a rota. Use outro dedo para atacar.</dd>
+          </div>
+          <div>
+            <dt>Bolsa e itens (modo solo)</dt>
+            <dd>Slimes deixam gel ao serem derrotados. Aproxime-se para recolher; converse com Aela depois de vencer cinco slimes para ganhar poções de cura.</dd>
           </div>
           <div>
             <dt>Vida zerada</dt>

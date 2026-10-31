@@ -3,6 +3,8 @@ import { Slime, slimeSpawns } from "../actors/Slime.ts";
 import { SeedCollision } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { canStrike } from "./combat.ts";
+import { Inventory, type InventoryState } from "./Inventory.ts";
+import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
 export interface OfflineSave {
@@ -12,6 +14,9 @@ export interface OfflineSave {
   hp: number;
   kills: number;
   defeated: string[];
+  /** Campos opcionais mantêm compatibilidade com saves antigos. */
+  inventory?: InventoryState;
+  drops?: LootDrop[];
 }
 
 /** Motor puro: nenhuma dependência de Canvas, DOM, UI, rede ou localStorage. */
@@ -19,6 +24,8 @@ export class OfflineSimulation {
   player = new Player();
   readonly slimes = new Map<string, Slime>();
   readonly defeated = new Set<string>();
+  readonly inventory: Inventory;
+  readonly drops = new Map<string, LootDrop>();
   readonly collision: SeedCollision;
   readonly seed: number;
   kills = 0;
@@ -27,6 +34,7 @@ export class OfflineSimulation {
   constructor(seed: number, saved?: OfflineSave) {
     this.seed = seed;
     this.collision = new SeedCollision(seed);
+    this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined);
     if (saved && saved.seed === seed) {
       // A previous save may now overlap a newly introduced solid landmark.
       if (this.collision.canMove(saved.x, saved.y)) {
@@ -36,6 +44,10 @@ export class OfflineSimulation {
       this.player.hp = saved.hp;
       this.kills = saved.kills;
       for (const id of saved.defeated) this.defeated.add(id);
+      for (const drop of normalizeDrops(saved.drops)) {
+        // Não carregar itens incompatíveis com a lista de monstros derrotados.
+        if (this.defeated.has(drop.id)) this.drops.set(drop.id, drop);
+      }
     }
   }
 
@@ -83,9 +95,26 @@ export class OfflineSimulation {
             this.slimes.delete(id);
             this.defeated.add(id);
             this.kills++;
+            if (this.drops.size < MAX_WORLD_DROPS) {
+              this.drops.set(slime.id, {
+                id: slime.id,
+                item: "gel",
+                x: slime.x,
+                y: slime.y,
+              });
+            }
             changed = true;
           }
         }
+      }
+    }
+    // O jogador recolhe automaticamente o gel ao se aproximar. Se a bolsa
+    // estiver cheia, o item permanece visível no chão até haver espaço.
+    for (const [id, drop] of this.drops) {
+      if (Math.hypot(this.player.x - drop.x, this.player.y - drop.y) <= PICKUP_DISTANCE &&
+          this.inventory.addGel()) {
+        this.drops.delete(id);
+        changed = true;
       }
     }
     if (this.player.hp <= 0) {
@@ -103,6 +132,8 @@ export class OfflineSimulation {
       hp: this.player.hp,
       kills: this.kills,
       defeated: [...this.defeated].slice(-2000),
+      inventory: this.inventory.snapshot(),
+      drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),
     };
   }
 }
