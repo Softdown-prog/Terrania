@@ -64,7 +64,11 @@ export class Game {
         (status) => this.updateConnectionStatus(status),
       );
     } else this.hud.setStatus("Offline · aventura local");
-    window.addEventListener("resize", () => this.scene.resize());
+    const resizeScene = () => this.scene.resize();
+    window.addEventListener("resize", resizeScene);
+    window.visualViewport?.addEventListener("resize", resizeScene);
+    window.addEventListener("orientationchange", () =>
+      requestAnimationFrame(resizeScene));
     window.addEventListener("pagehide", () => this.save());
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {

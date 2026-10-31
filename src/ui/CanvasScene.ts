@@ -58,9 +58,15 @@ export class CanvasScene {
     this.ctx = ctx; this.resize();
   }
   resize(): void {
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-    this.width = Math.max(1, window.innerWidth); this.height = Math.max(1, window.innerHeight);
-    this.canvas.width = Math.ceil(this.width * this.dpr); this.canvas.height = Math.ceil(this.height * this.dpr);
+    // Chrome Android altera a viewport visível quando as barras e a orientação mudam.
+    // Medir o elemento evita distorção entre a área tocada e a área renderizada.
+    const width = Math.max(1, Math.round(this.canvas.clientWidth));
+    const height = Math.max(1, Math.round(this.canvas.clientHeight));
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (width === this.width && height === this.height && dpr === this.dpr) return;
+    this.width = width; this.height = height; this.dpr = dpr;
+    this.canvas.width = Math.ceil(width * dpr);
+    this.canvas.height = Math.ceil(height * dpr);
   }
   renderInterior(room: InteriorRoom): void {
     const scale = Math.min(1.7, this.width / (ROOM_WIDTH + 70), this.height / (ROOM_HEIGHT + 130));
