@@ -174,6 +174,7 @@ func (d *RegionDirectory) Begin(p Province, from, to string, epoch uint64, diges
 		Token: hex.EncodeToString(nonce[:])}
 	next:=cloneRegionState(s)
 	next.pending=&pendingTransfer{ticket:t}
+	next.lastCommitted=""
 	if err:=d.persistLocked(p,next);err!=nil{return TransferTicket{},err}
 	d.regions[p]=next
 	return t, nil

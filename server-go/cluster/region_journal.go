@@ -82,7 +82,7 @@ func validJournalEntry(d *RegionDirectory, e journalEntry) error {
 		if err!=nil||len(token)!=16 ||
 			t.Province!=e.Province || t.From!=e.Owner ||
 			!d.validWorker(t.To) || t.From==t.To ||
-			t.OldEpoch!=e.Epoch || t.NewEpoch!=e.Epoch+1 ||
+			t.OldEpoch!=e.Epoch || e.Epoch==^uint64(0) || t.NewEpoch!=e.Epoch+1 ||
 			t.Digest==([32]byte{}) || t.ExpiresAt.IsZero() ||
 			(p.Quiesced && (!p.Frozen || !p.Staged)) ||
 			(p.Staged && !p.Frozen) || e.LastCommitted!="" {
@@ -170,7 +170,12 @@ func NewPersistentRegionDirectory(router *Router,path string)(*RegionDirectory,e
 func (d *RegionDirectory) Close()error{
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	if d.faulted{return nil}
+	if d.faulted {
+		if d.journal==nil{return nil}
+		err:=d.journal.close()
+		d.journal=nil
+		return err
+	}
 	d.faulted=true
 	if d.journal==nil{return nil}
 	err:=d.journal.close()
