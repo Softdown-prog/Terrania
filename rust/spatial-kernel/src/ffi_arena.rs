@@ -99,7 +99,10 @@ pub unsafe extern "C" fn terrania_arena_update_batch(
         }
     }
     for (&handle, &entity) in handles.iter().zip(entities) {
-        if arena.update(EntityHandle::from_raw(handle), entity).is_err() {
+        if arena
+            .update(EntityHandle::from_raw(handle), entity)
+            .is_err()
+        {
             return -2;
         }
     }
@@ -111,10 +114,7 @@ pub unsafe extern "C" fn terrania_arena_update_batch(
 /// # Safety
 /// `arena` must be live, exclusively borrowed, and not concurrently freed.
 #[no_mangle]
-pub unsafe extern "C" fn terrania_arena_despawn(
-    arena: *mut EntityArena,
-    handle: u64,
-) -> i32 {
+pub unsafe extern "C" fn terrania_arena_despawn(arena: *mut EntityArena, handle: u64) -> i32 {
     if arena.is_null() {
         return -1;
     }
@@ -173,7 +173,13 @@ mod tests {
     use crate::entity_arena::EntityKind;
 
     fn monster(x: f64) -> Entity {
-        Entity {kind: EntityKind::MONSTER, x, y: 1.0, hp: 2, state: 0 }
+        Entity {
+            kind: EntityKind::MONSTER,
+            x,
+            y: 1.0,
+            hp: 2,
+            state: 0,
+        }
     }
 
     #[test]
@@ -185,24 +191,37 @@ mod tests {
         let mut record = monster(0.0);
         // SAFETY: stack-owned buffers and live arena with single-thread access.
         unsafe {
-            assert_eq!(terrania_arena_spawn(arena, monster(10.0), &raw mut first), 0);
-            assert_eq!(terrania_arena_spawn(arena, monster(20.0), &raw mut second), 0);
+            assert_eq!(
+                terrania_arena_spawn(arena, monster(10.0), &raw mut first),
+                0
+            );
+            assert_eq!(
+                terrania_arena_spawn(arena, monster(20.0), &raw mut second),
+                0
+            );
             assert_ne!(first, second);
             assert_eq!(terrania_arena_len(arena), 2);
             let handles = [first, second];
             let entities = [monster(99.0), monster(77.0)];
-            assert_eq!(terrania_arena_update_batch(arena, handles.as_ptr(),
-                entities.as_ptr(), 2), 0);
+            assert_eq!(
+                terrania_arena_update_batch(arena, handles.as_ptr(), entities.as_ptr(), 2),
+                0
+            );
             assert_eq!(terrania_arena_get(arena, first, &raw mut record), 0);
             assert_eq!(record.x, 99.0);
             assert_eq!(terrania_arena_despawn(arena, first), 0);
             assert_eq!(terrania_arena_despawn(arena, first), -2);
             assert_eq!(terrania_arena_get(arena, first, &raw mut record), -2);
             let mut reused = 0;
-            assert_eq!(terrania_arena_spawn(arena, monster(7.0), &raw mut reused), 0);
+            assert_eq!(
+                terrania_arena_spawn(arena, monster(7.0), &raw mut reused),
+                0
+            );
             assert_ne!(reused, first);
-            assert_eq!(terrania_arena_update_batch(arena, &raw const first,
-                &raw const record, 1), -2);
+            assert_eq!(
+                terrania_arena_update_batch(arena, &raw const first, &raw const record, 1),
+                -2
+            );
             assert_eq!(terrania_arena_get(arena, reused, &raw mut record), 0);
             assert_eq!(record.x, 7.0);
             assert_eq!(terrania_arena_len(arena), 2);
@@ -217,15 +236,22 @@ mod tests {
         let mut out = monster(0.0);
         // SAFETY: locally allocated arena/stack buffers, no concurrent calls.
         unsafe {
-            assert_eq!(terrania_arena_spawn(arena, monster(1.0), &raw mut handle), 0);
+            assert_eq!(
+                terrania_arena_spawn(arena, monster(1.0), &raw mut handle),
+                0
+            );
             let bad = [monster(55.0), monster(f64::NAN)];
-            let handles = [handle,handle];
-            assert_eq!(terrania_arena_update_batch(arena, handles.as_ptr(),
-                bad.as_ptr(), 2), -1);
+            let handles = [handle, handle];
+            assert_eq!(
+                terrania_arena_update_batch(arena, handles.as_ptr(), bad.as_ptr(), 2),
+                -1
+            );
             assert_eq!(terrania_arena_get(arena, handle, &raw mut out), 0);
             assert_eq!(out.x, 1.0);
-            assert_eq!(terrania_arena_update_batch(arena, std::ptr::null(),
-                std::ptr::null(), 0), 0);
+            assert_eq!(
+                terrania_arena_update_batch(arena, std::ptr::null(), std::ptr::null(), 0),
+                0
+            );
             assert_eq!(terrania_arena_get(arena, handle, std::ptr::null_mut()), -1);
             terrania_arena_free(arena);
         }

@@ -182,8 +182,8 @@ impl EntityArena {
         if entity.kind.0 == 0 || !entity.x.is_finite() || !entity.y.is_finite() {
             return Err("invalid entity");
         }
-        let index = usize::try_from(handle.raw() & u64::from(u32::MAX))
-            .map_err(|_| "invalid handle")?;
+        let index =
+            usize::try_from(handle.raw() & u64::from(u32::MAX)).map_err(|_| "invalid handle")?;
         let slot = self.slots.get(index).ok_or("invalid handle")?;
         if u64::from(slot.generation) != handle.raw() >> 32 {
             return Err("stale handle");
