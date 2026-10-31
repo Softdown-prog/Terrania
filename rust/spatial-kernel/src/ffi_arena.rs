@@ -281,7 +281,12 @@ mod tests {
             assert_eq!(terrania_arena_spawn(arena, extra, &raw mut unused), -3);
             let started = Instant::now();
             assert_eq!(
-                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), u32::try_from(COUNT).unwrap()),
+                terrania_arena_update_batch(
+                    arena,
+                    handles.as_ptr(),
+                    values.as_ptr(),
+                    u32::try_from(COUNT).unwrap()
+                ),
                 0
             );
             let batch_time = started.elapsed();
@@ -307,7 +312,12 @@ mod tests {
             values[0].x = 600.0;
             values[COUNT - 1].x = f64::NAN;
             assert_eq!(
-                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), u32::try_from(COUNT).unwrap()),
+                terrania_arena_update_batch(
+                    arena,
+                    handles.as_ptr(),
+                    values.as_ptr(),
+                    u32::try_from(COUNT).unwrap()
+                ),
                 -1
             );
             assert_eq!(terrania_arena_get(arena, handles[0], &raw mut check), 0);
