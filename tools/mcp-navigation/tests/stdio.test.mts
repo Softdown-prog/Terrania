@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-test('MCP stdio aceita handshake, descobre 5 ferramentas e chama find_files', async t => {
+test('MCP stdio aceita handshake, descobre 6 ferramentas e chama find_files', async t => {
   const child = spawn(process.execPath, ['--experimental-strip-types',
     fileURLToPath(new URL('../src/server.mts', import.meta.url))], {
     cwd: resolve('.'), stdio: ['pipe','pipe','pipe'], env: process.env,
@@ -49,7 +49,7 @@ test('MCP stdio aceita handshake, descobre 5 ferramentas e chama find_files', as
   const listed=await response(2,'tools/list',{});
   const names=((listed.result as {tools?:Array<{name:string}>})?.tools??[]).map(x=>x.name);
   assert.deepEqual(names.sort(),[
-    'audit_modules','find_files','get_module_guide','read_source_lines','search_symbols',
+    'audit_modules','find_files','get_module_guide','locate_symbol','read_source_lines','search_symbols',
   ]);
   const found=await response(3,'tools/call',{name:'find_files',
     arguments:{query:'PhaserGame',scope:'src',limit:3}});
@@ -58,4 +58,12 @@ test('MCP stdio aceita handshake, descobre 5 ferramentas e chama find_files', as
   const rejected=await response(4,'tools/call',{name:'read_source_lines',
     arguments:{path:'../.env',maxLines:100}});
   assert.equal((rejected.result as {isError?:boolean})?.isError,true);
+  const located=await response(5,'tools/call',{name:'locate_symbol',
+    arguments:{symbol:'PhaserGame',scope:'src',language:'typescript',limit:5}});
+  const result=(located.result as {content?:Array<{text:string}>})?.content?.[0]?.text??'';
+  const navigation=JSON.parse(result) as {results:Array<{path:string;matchType:string}>};
+  assert.ok(navigation.results.some(x=>x.path==='src/game/PhaserGame.ts' && x.matchType==='definition'));
+  const bad=await response(6,'tools/call',{name:'locate_symbol',
+    arguments:{symbol:'../secret'}});
+  assert.equal((bad.result as {isError?:boolean})?.isError,true);
 });

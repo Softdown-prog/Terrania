@@ -104,3 +104,78 @@ test('falhas ao reler o índice Git nunca reabilitam cache desatualizado', () =>
     assert.throws(() => repo.audit(), /Falha na leitura/);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+
+
+test('localiza definições e referências exatas em TS, Go e Rust', t => {
+  const root = mkdtempSync(join(tmpdir(), 'terrania-mcp-symbol-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  for (const folder of ['src', 'server-go/engine', 'rust/spatial-kernel/src'])
+    mkdirSync(join(root, folder), { recursive: true });
+  const ts = 'export class Monster {}\nconst target = new Monster();\n' +
+    'const MonsterExtra = true;\n// Monster is described in a comment\n' +
+    '/* Monster is inside a block comment\nMonster also appears here */\n' +
+    'const quoted = "Monster";\n';
+  const go = 'package game\ntype Monster struct{}\nfunc (m *Monster) Move() {}\n' +
+    'var enemy = Monster{}\n';
+  const rust = 'pub struct Monster {}\nimpl Monster {\n' +
+    '  pub fn move_monster(&self) {}\n}\n';
+  writeFileSync(join(root, 'src/Monster.ts'), ts);
+  writeFileSync(join(root, 'server-go/engine/monster.go'), go);
+  writeFileSync(join(root, 'rust/spatial-kernel/src/monster.rs'), rust);
+  const repo = createRepository(root, [
+    'src/Monster.ts','server-go/engine/monster.go','rust/spatial-kernel/src/monster.rs',
+  ]);
+  const all = repo.locateSymbol('Monster');
+  assert.deepEqual(all.results.map(x => [x.path, x.matchType, x.line]), [
+    ['rust/spatial-kernel/src/monster.rs','definition',1],
+    ['server-go/engine/monster.go','definition',2],
+    ['src/Monster.ts','definition',1],
+    ['rust/spatial-kernel/src/monster.rs','reference',2],
+    ['server-go/engine/monster.go','reference',3],
+    ['server-go/engine/monster.go','reference',4],
+    ['src/Monster.ts','reference',2],
+  ]);
+  assert.equal(all.definitionCount, 3);
+  assert.equal(all.referenceCount, 4);
+  assert.equal(all.partial, false);
+  assert.deepEqual(repo.locateSymbol('Monster','src',2,'typescript').results.map(x=>x.matchType),
+    ['definition','reference']);
+  assert.deepEqual(repo.locateSymbol('Monster','server-go',1,'go').results.map(x=>x.matchType),
+    ['definition']);
+  assert.equal(repo.locateSymbol('Monster','rust',5,'rust').definitionCount,1);
+  assert.equal(repo.locateSymbol('MonsterExtra','src').definitionCount,1);
+  assert.equal(repo.locateSymbol('Monst','src').count,0);
+  for (const symbol of ['', 'new Monster()', '../secret', 'm.on', '🕹️'])
+    assert.throws(() => repo.locateSymbol(symbol));
+  assert.throws(() => repo.locateSymbol('Monster','src',0));
+  assert.throws(() => repo.locateSymbol('Monster','src',20,'python' as 'all'));
+});
+
+test('localização lexical respeita troca do índice Git e exclusão de arquivos', t => {
+  const root = mkdtempSync(join(tmpdir(), 'terrania-mcp-symbol-index-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(join(root, 'src'), { recursive: true });
+  writeFileSync(join(root, 'src/Present.ts'), 'class Player {}\n');
+  writeFileSync(join(root, 'src/Hidden.ts'), 'class Player {}\n');
+  let tracked = ['src/Present.ts'];
+  const repo = createRepository(root, tracked, () => tracked);
+  assert.equal(repo.locateSymbol('Player').definitionCount, 1);
+  tracked = ['src/Hidden.ts'];
+  assert.equal(repo.locateSymbol('Player').definitionCount, 1);
+  assert.equal(repo.locateSymbol('Player').results[0]?.path, 'src/Hidden.ts');
+  assert.equal(repo.locateSymbol('Player','src',1).results.length,1);
+});
+
+test('varredura de símbolos tem teto e indica resultado parcial', t => {
+  const root = mkdtempSync(join(tmpdir(), 'terrania-mcp-symbol-scale-'));
+  t.after(() => rmSync(root, { recursive:true, force:true }));
+  const paths = Array.from({ length: 1800 }, (_, i) =>
+    'src/mod-' + String(i).padStart(4, '0') + '.ts');
+  const repo = createRepository(root, paths);
+  const result = repo.locateSymbol('Player');
+  assert.equal(result.scannedFiles,1500);
+  assert.equal(result.totalEligible,1800);
+  assert.equal(result.partial,true);
+  assert.equal(result.skippedFiles,1500);
+  assert.deepEqual(result.results,[]);
+});

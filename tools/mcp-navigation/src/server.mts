@@ -59,6 +59,17 @@ export function createServer(): McpServer {
   }, async ({query, scope, limit}) => safeCall(() =>
     repository.searchSymbols(query, scope, limit)));
 
+  server.registerTool('locate_symbol', {
+    description: 'Encontra definições e referências de um identificador exato em TS/JS, Go ou Rust. Definições primeiro; análise lexical, não LSP.',
+    inputSchema: z.object({
+      symbol: z.string().min(1).max(80),
+      scope: z.string().max(256).optional(),
+      language: z.enum(['all', 'typescript', 'go', 'rust']).optional(),
+      limit: z.number().int().min(1).max(50).optional(),
+    }), annotations: readOnly,
+  }, async ({symbol, scope, language, limit}) => safeCall(() =>
+    repository.locateSymbol(symbol, scope, limit, language)));
+
   server.registerTool('read_source_lines', {
     description: 'Lê até 100 linhas de um arquivo-fonte versionado, sem sair do repositório.',
     inputSchema: z.object({

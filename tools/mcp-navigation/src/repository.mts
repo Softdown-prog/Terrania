@@ -4,6 +4,8 @@ import { extname, dirname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url';
 import { createNavigationApi } from '../../../scripts/ai-navigation-api.mjs';
 import { normalizeScope } from '../../../scripts/find-ai-files.mjs';
+import { languageForPath, scanSymbolSource, validSymbol } from './symbol-navigation.mts';
+import type { SymbolFilter, SymbolOccurrence } from './symbol-navigation.mts';
 
 const SOURCE_EXTS = new Set(['.ts','.tsx','.mts','.cts','.js','.mjs','.cjs','.jsx',
   '.go','.rs','.py','.java','.c','.h','.cpp','.hpp','.cs','.sql','.proto',
@@ -109,6 +111,45 @@ export function createRepository(
           number: startLine + index, text: text.slice(0, MAX_LINE_WIDTH),
           truncated: text.length > MAX_LINE_WIDTH,
         })) };
+    },
+    locateSymbol(symbol: string, scope = '', limit = 20, language: SymbolFilter = 'all') {
+      if (!validSymbol(symbol))
+        throw new Error('Símbolo inválido: informe um identificador ASCII de 1 a 80 caracteres.');
+      ensurePositive(limit, MAX_SEARCH_HITS, 'limit');
+      if (!['all', 'typescript', 'go', 'rust'].includes(language))
+        throw new Error('Linguagem inválida: use all, typescript, go ou rust.');
+      const folder = normalizeScope(scope);
+      const candidates = current().tracked.filter(path => {
+        const detected = languageForPath(path);
+        return detected !== null && (language === 'all' || detected === language) &&
+          (!folder || path === folder || path.startsWith(folder + '/'));
+      });
+      const definitions: SymbolOccurrence[] = [];
+      const references: SymbolOccurrence[] = [];
+      let scannedFiles = 0;
+      let skippedFiles = 0;
+      for (const path of candidates) {
+        if (scannedFiles >= MAX_SEARCH_FILES) break;
+        scannedFiles++;
+        let content: string;
+        try { content = readInside(root, path, MAX_SOURCE_BYTES); }
+        catch { skippedFiles++; continue; }
+        const found = scanSymbolSource(path, content, symbol, limit);
+        for (const occurrence of found.definitions) {
+          if (definitions.length < limit) definitions.push(occurrence);
+        }
+        for (const occurrence of found.references) {
+          if (references.length < limit) references.push(occurrence);
+        }
+      }
+      const results = [...definitions, ...references.slice(0, Math.max(0, limit - definitions.length))];
+      return { schemaVersion: 1, kind: 'locate_symbol', symbol, language, scope: folder,
+        limit, results, count: results.length,
+        definitionCount: definitions.length, referenceCount: references.length,
+        scannedFiles, totalEligible: candidates.length, skippedFiles,
+        partial: scannedFiles < candidates.length || skippedFiles > 0,
+        note: 'Busca lexical heurística: não resolve escopos, tipos ou imports como LSP.',
+      };
     },
     searchSymbols(query: string, scope = '', limit = 20) {
       if (typeof query !== 'string' || query.trim().length < 2 || query.length > 128 || /[\r\n\0]/.test(query))
