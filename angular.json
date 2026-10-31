@@ -29,18 +29,18 @@
             ],
             "styles": [
               "src/site/site.css"
-            ],
-            "budgets": [
-              {
-                "type": "initial",
-                "maximumWarning": "700kB",
-                "maximumError": "1MB"
-              }
             ]
           },
           "configurations": {
             "production": {
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "700kB",
+                  "maximumError": "1MB"
+                }
+              ]
             },
             "development": {
               "optimization": false,
