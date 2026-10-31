@@ -27,7 +27,9 @@ fn run_fixture(points: &[Point], out: &mut [u32]) -> (usize, usize, u64) {
             add_u32(&mut hash, index);
         }
         let nearest_index = nearest(points, x, y, 160.0).expect("valid fixture");
-        if nearest_index.is_some() { found += 1; }
+        if nearest_index.is_some() {
+            found += 1;
+        }
         add_u32(&mut hash, nearest_index.map_or(u32::MAX, |n| n as u32));
     }
     (hits, found, hash)
@@ -50,6 +52,9 @@ fn main() {
         for _ in 0..25 {
             check ^= run_fixture(&points, &mut out).2;
         }
-        eprintln!("rust_spatial_5000_queries_ns={} check={check}", start.elapsed().as_nanos());
+        eprintln!(
+            "rust_spatial_5000_queries_ns={} check={check}",
+            start.elapsed().as_nanos()
+        );
     }
 }
