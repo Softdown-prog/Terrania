@@ -6,6 +6,7 @@ on:
       - "server-go/cmd/spatial-reference/**"
       - "server-go/engine/spatial_*.go"
       - "server-go/engine/room.go"
+      - "server-go/engine/benchmark_test.go"
       - ".github/workflows/rust-spatial.yml"
   push:
     branches: [main]
@@ -14,6 +15,7 @@ on:
       - "server-go/cmd/spatial-reference/**"
       - "server-go/engine/spatial_*.go"
       - "server-go/engine/room.go"
+      - "server-go/engine/benchmark_test.go"
       - ".github/workflows/rust-spatial.yml"
 
 permissions:
@@ -50,20 +52,46 @@ jobs:
           go test -race -count=1 -tags rustspatial ./...
           go vet -tags rustspatial ./...
           go build -tags rustspatial -o /tmp/terrania-go-ffi ./cmd/terrania
-      - name: Comparar desempenho do Go puro com Go+Rust pela FFI
+      - name: Benchmarks reais de ticks e snapshots (Go puro vs FFI Rust)
         working-directory: server-go
         env:
           CGO_ENABLED: '1'
         run: |
           set -euo pipefail
-          go test ./engine -run '^$' -bench '^BenchmarkSpatial' -benchtime=250x -count=3 -benchmem | tee /tmp/go-only.txt
-          go test -tags rustspatial ./engine -run '^$' -bench '^BenchmarkSpatial' -benchtime=250x -count=3 -benchmem | tee /tmp/go-rust.txt
-          {
-            echo '### Go puro (CI runner, nao VPS)'
-            grep '^BenchmarkSpatial' /tmp/go-only.txt
-            echo '### Go + Rust FFI (CI runner, nao VPS)'
-            grep '^BenchmarkSpatial' /tmp/go-rust.txt
-          } >> "$GITHUB_STEP_SUMMARY"
+          go test ./engine -run '^$' -bench '^(BenchmarkRoom|BenchmarkSpatial)' -benchtime=400ms -count=3 -benchmem | tee /tmp/go-only.txt
+          go test -tags rustspatial ./engine -run '^$' -bench '^(BenchmarkRoom|BenchmarkSpatial)' -benchtime=400ms -count=3 -benchmem | tee /tmp/go-rust.txt
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          from collections import defaultdict
+          from statistics import median
+
+          def read_benchmarks(path):
+              results = defaultdict(list)
+              with open(path, encoding="utf-8") as output:
+                  for line in output:
+                      fields = line.split()
+                      if len(fields) < 8 or not fields[0].startswith("Benchmark"):
+                          continue
+                      if fields[3] != "ns/op" or fields[5] != "B/op" or fields[7] != "allocs/op":
+                          continue
+                      name = fields[0].rsplit("-", 1)[0]
+                      results[name].append((float(fields[2]), int(fields[4]), int(fields[6])))
+              return {name: tuple(median(v[i] for v in values) for i in range(3))
+                      for name, values in results.items()}
+
+          go = read_benchmarks("/tmp/go-only.txt")
+          ffi = read_benchmarks("/tmp/go-rust.txt")
+          if not go or set(go) != set(ffi):
+              raise SystemExit(f"Benchmark incompleto: Go={sorted(go)}, FFI={sorted(ffi)}")
+          print("### Go puro x Rust FFI — mediana de 3 execucoes no mesmo runner")
+          print("| Benchmark | Go ns/op | FFI ns/op | FFI / Go | Alocacoes Go / FFI |")
+          print("|---|---:|---:|---:|---:|")
+          for name in sorted(go):
+              go_ns, _, go_allocs = go[name]
+              ffi_ns, _, ffi_allocs = ffi[name]
+              print(f"| {name} | {go_ns:,.0f} | {ffi_ns:,.0f} | {ffi_ns/go_ns:.2f}x | {go_allocs:.0f} / {ffi_allocs:.0f} |")
+          print("")
+          print("**Nota:** >1.00x significa FFI mais lenta. Runner CI nao mede VPS nem comprova 1000 conexoes. O teste de 1000 entidades e apenas estresse de um snapshot.")
+          PY
       - name: Comparar 200 consultas e 4096 objetos com Go, bit a bit
         run: |
           set -euo pipefail
