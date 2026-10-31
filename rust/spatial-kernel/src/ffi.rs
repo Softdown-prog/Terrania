@@ -1,5 +1,4 @@
 //! The sole module allowed to use unsafe Rust. Strictly bounded C ABI.
-#![allow(unsafe_code)]
 use crate::monsters::{plan_into, MonsterInput, MonsterPlan, MonsterPlayer};
 use crate::{nearest, valid_query, visible_into, Point, MAX_POINTS};
 
@@ -39,7 +38,7 @@ pub unsafe extern "C" fn terrania_spatial_visible(
         unsafe { std::slice::from_raw_parts_mut(out, capacity as usize) }
     };
     match visible_into(input, cx, cy, half, output) {
-        Ok(n) => n as i32,
+        Ok(n) => i32::try_from(n).unwrap_or(-1),
         Err("insufficient capacity") => -2,
         Err(_) => -1,
     }
@@ -68,7 +67,7 @@ pub unsafe extern "C" fn terrania_spatial_nearest(
         unsafe { std::slice::from_raw_parts(points, count as usize) }
     };
     match nearest(input, x, y, radius) {
-        Ok(Some(n)) => n as i32,
+        Ok(Some(n)) => i32::try_from(n).unwrap_or(-2),
         Ok(None) => -1,
         Err(_) => -2,
     }
@@ -122,7 +121,7 @@ pub unsafe extern "C" fn terrania_monsters_plan(
         unsafe { std::slice::from_raw_parts_mut(out, count as usize) }
     };
     match plan_into(monster_slice, player_slice, dt, output_slice) {
-        Ok(n) => n as i32,
+        Ok(n) => i32::try_from(n).unwrap_or(-1),
         Err(_) => -1,
     }
 }
@@ -206,12 +205,12 @@ mod tests {
                 -1
             );
             assert_eq!(
-                terrania_monsters_plan(&m, 1, std::ptr::null(), 0, 0.05, std::ptr::null_mut(), 0),
+                terrania_monsters_plan(&raw const m, 1, std::ptr::null(), 0, 0.05, std::ptr::null_mut(), 0),
                 -2
             );
             let mut out = [MonsterPlan::default()];
             assert_eq!(
-                terrania_monsters_plan(&m, 1, std::ptr::null(), 0, 0.05, out.as_mut_ptr(), 1),
+                terrania_monsters_plan(&raw const m, 1, std::ptr::null(), 0, 0.05, out.as_mut_ptr(), 1),
                 1
             );
             assert_eq!(out[0].target_index, -1);

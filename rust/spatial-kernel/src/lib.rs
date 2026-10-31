@@ -23,6 +23,10 @@ fn is_visible(p: Point, x: f64, y: f64, half: f64) -> bool {
 }
 
 /// Keep original insertion order, matching Go room snapshot filtering.
+///
+/// # Errors
+/// Returns an error for invalid query coordinates, unsupported point count,
+/// or insufficient output capacity.
 pub fn visible_into(
     points: &[Point],
     x: f64,
@@ -43,7 +47,7 @@ pub fn visible_into(
     let mut n = 0;
     for (i, &p) in points.iter().enumerate() {
         if is_visible(p, x, y, half) {
-            out[n] = i as u32;
+            out[n] = u32::try_from(i).map_err(|_| "index too large")?;
             n += 1;
         }
     }
@@ -51,6 +55,10 @@ pub fn visible_into(
 }
 
 /// Nearest candidate strictly inside radius. Ties keep earliest inserted.
+///
+/// # Errors
+/// Returns an error if the query is nonfinite, radius is negative,
+/// or the requested point count exceeds the supported capacity.
 pub fn nearest(
     points: &[Point],
     x: f64,

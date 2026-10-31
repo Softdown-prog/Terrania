@@ -5,6 +5,7 @@ edition = "2021"
 license = "MIT"
 description = "Safe batched monster AI and optional spatial C ABI for Terrânia Go"
 readme = "README.md"
+repository = "https://github.com/Softdown-prog/Terrania"
 keywords = ["game", "simulation", "spatial", "ffi"]
 categories = ["game-engines", "simulation"]
 

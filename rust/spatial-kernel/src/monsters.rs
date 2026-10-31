@@ -1,8 +1,6 @@
 //! Deterministic, allocation-free monster decisions for one room tick.
 //! No network, global state, heap ownership crossing FFI, or unsafe code.
 #![forbid(unsafe_code)]
-use std::f64;
-
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct MonsterInput {
@@ -64,6 +62,10 @@ fn valid_player(p: &MonsterPlayer) -> bool {
 /// Plan all monsters in insertion order, without mutating the Go world.
 /// A collision-aware Go pass applies move vectors and contact damage afterward.
 /// Return an error without writing if the input or capacity is invalid.
+///
+/// # Errors
+/// Returns an error for invalid time, nonfinite coordinates, excessive counts,
+/// malformed village flags, or output buffers smaller than the monster batch.
 pub fn plan_into(
     monsters: &[MonsterInput],
     players: &[MonsterPlayer],
@@ -128,7 +130,7 @@ pub fn plan_into(
             knock_y: m.knock_y * (-10.0 * dt).exp(),
             move_x,
             move_y,
-            target_index: target as i32,
+            target_index: i32::try_from(target).map_err(|_| "too many players")?,
             attack,
         };
     }
