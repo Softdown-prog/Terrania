@@ -63,7 +63,7 @@ test('atualiza o índice Git sem reiniciar e revoga arquivos removidos', t => {
   execFileSync('git', ['add', '--', 'AGENTS.md', 'src/old.ts'], { cwd: root });
   const readIndex = () => execFileSync('git', ['ls-files', '-z'], {
     cwd: root, encoding: 'utf8',
-  }).split('\\0').filter(Boolean);
+  }).split('\0').filter(Boolean);
   const repo = createRepository(root, readIndex(), readIndex);
   assert.deepEqual(repo.find('old').files, ['src/old.ts']);
   assert.equal(repo.readLines('src/old.ts').lines.length, 1);
