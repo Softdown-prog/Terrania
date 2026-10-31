@@ -219,9 +219,21 @@ mod tests {
     #[test]
     fn handles_1024_4096_and_16384_monsters_per_batch() {
         let players = [
-            MonsterPlayer { x: 20.0, y: 0.0, in_village: 0 },
-            MonsterPlayer { x: 120.0, y: 40.0, in_village: 0 },
-            MonsterPlayer { x: -100.0, y: -40.0, in_village: 0 },
+            MonsterPlayer {
+                x: 20.0,
+                y: 0.0,
+                in_village: 0,
+            },
+            MonsterPlayer {
+                x: 120.0,
+                y: 40.0,
+                in_village: 0,
+            },
+            MonsterPlayer {
+                x: -100.0,
+                y: -40.0,
+                in_village: 0,
+            },
         ];
         for count in [1_024, 4_096, 16_384] {
             let monsters: Vec<_> = (0..count)

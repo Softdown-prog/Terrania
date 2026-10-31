@@ -2,9 +2,9 @@
 #![deny(unused_variables)]
 //! Spatial calculations and batched monster decisions. Go handles the network.
 
+pub mod entity_arena;
 #[allow(unsafe_code)]
 mod ffi;
-pub mod entity_arena;
 pub mod monsters;
 pub use ffi::{terrania_monsters_plan, terrania_spatial_nearest, terrania_spatial_visible};
 

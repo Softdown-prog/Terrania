@@ -108,7 +108,9 @@ impl EntityArena {
         if self.entries.len() >= self.max_entities {
             return Err("entity limit reached");
         }
-        self.entries.try_reserve(1).map_err(|_| "allocation failed")?;
+        self.entries
+            .try_reserve(1)
+            .map_err(|_| "allocation failed")?;
         let slot = if let Some(free) = self.free.pop() {
             free
         } else {
@@ -128,7 +130,9 @@ impl EntityArena {
         self.slots[usize::try_from(slot).map_err(|_| "slot overflow")?].dense_index =
             Some(dense_index);
         self.entries.push(Entry { slot, entity });
-        Ok(EntityHandle((u64::from(generation) << 32) | u64::from(slot)))
+        Ok(EntityHandle(
+            (u64::from(generation) << 32) | u64::from(slot),
+        ))
     }
 
     #[must_use]
@@ -138,7 +142,9 @@ impl EntityArena {
         if u64::from(slot.generation) != (handle.0 >> 32) {
             return None;
         }
-        self.entries.get(slot.dense_index?).map(|entry| &entry.entity)
+        self.entries
+            .get(slot.dense_index?)
+            .map(|entry| &entry.entity)
     }
 
     /// # Errors
@@ -147,8 +153,8 @@ impl EntityArena {
         if !x.is_finite() || !y.is_finite() {
             return Err("invalid position");
         }
-        let slot_index = usize::try_from(handle.0 & u64::from(u32::MAX))
-            .map_err(|_| "invalid handle")?;
+        let slot_index =
+            usize::try_from(handle.0 & u64::from(u32::MAX)).map_err(|_| "invalid handle")?;
         let Some(slot) = self.slots.get(slot_index) else {
             return Err("invalid handle");
         };
@@ -187,7 +193,8 @@ impl EntityArena {
     /// Dense iteration is suitable for mixed-type batched systems.
     pub fn iter(&self) -> impl Iterator<Item = (EntityHandle, &Entity)> {
         self.entries.iter().map(|entry| {
-            let generation = self.slots[usize::try_from(entry.slot).expect("bounded slot")].generation;
+            let generation =
+                self.slots[usize::try_from(entry.slot).expect("bounded slot")].generation;
             (
                 EntityHandle((u64::from(generation) << 32) | u64::from(entry.slot)),
                 &entry.entity,
@@ -229,7 +236,10 @@ mod tests {
         assert!(arena.allocated_bytes() < 4 * 1024 * 1024);
         assert_eq!(arena.iter().count(), 16_384);
         for (i, handle) in handles.iter().enumerate().step_by(2) {
-            assert_eq!(arena.despawn(*handle).unwrap().x, entity(EntityKind::MONSTER, i).x);
+            assert_eq!(
+                arena.despawn(*handle).unwrap().x,
+                entity(EntityKind::MONSTER, i).x
+            );
             assert!(arena.get(*handle).is_none());
         }
         assert_eq!(arena.len(), 8_192);
@@ -238,7 +248,11 @@ mod tests {
         }
         assert_eq!(arena.len(), 16_384);
         assert!(handles.iter().step_by(2).all(|&h| arena.get(h).is_none()));
-        assert!(handles.iter().skip(1).step_by(2).all(|&h| arena.get(h).is_some()));
+        assert!(handles
+            .iter()
+            .skip(1)
+            .step_by(2)
+            .all(|&h| arena.get(h).is_some()));
     }
 
     #[test]
