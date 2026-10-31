@@ -4,7 +4,7 @@ package engine
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/../../rust/spatial-kernel/include
-#cgo LDFLAGS: -L${SRCDIR}/../../rust/spatial-kernel/target/release -lterrania_spatial -ldl -lm -lpthread
+#cgo LDFLAGS: -L${SRCDIR}/../../rust/spatial-kernel/target/release -l:libterrania_spatial.a -ldl -lm -lpthread
 #include "terrania_spatial.h"
 */
 import "C"
