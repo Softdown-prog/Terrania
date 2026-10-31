@@ -3,6 +3,15 @@
 A CI garante matemática do joystick, TypeScript, build e regressões. **Não substitui testes de toque em dispositivo real.**
 
 ## Jogo — Chrome Android
+- [ ] Toque curto em solo livre: personagem chega ao destino e exibe marcador púrpura, sem ficar oscilando.
+- [ ] Toque atrás de casa/árvore: personagem contorna obstáculos sem atravessar paredes, quando houver passagem.
+- [ ] Toque na água, dentro de mobília ou a mais de 650 unidades: destino recusado sem travar a interface.
+- [ ] Arrastar dedo sobre Canvas não cria rota; toque curto com dois dedos no Canvas não ativa rota.
+- [ ] Após toque para caminhar, mover joystick, usar WASD ou atacar cancela imediatamente o destino.
+- [ ] Abrir ajuda, ajustes, diálogo, perder foco, trocar de mundo ou conectar ao servidor cancela destino.
+- [ ] Em interior, tocar em piso acessível move o herói respeitando mesas, forja e camas.
+- [ ] Modo multiplayer no exterior mantém controle manual (tap-to-walk desabilitado).
+
 - [ ] Em 320, 360, 390 e 412 px, iniciar `/jogar/?modo=solo` sem zoom horizontal e com HUD/controles acessíveis.
 - [ ] Joystick: toque breve próximo ao centro não move; arrasto gradual dá controle fino; arrasto até a borda dá velocidade normal.
 - [ ] Girar o joystick em oito direções, caminhar encostado às casas/árvores e soltar: sem deriva ou atravessar colisão.

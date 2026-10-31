@@ -14,6 +14,7 @@ import { Hud, type Preferences } from "../ui/Hud.ts";
 import { nearestNpc } from "../world/npcs.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { BUILDINGS } from "../world/village.ts";
+import { TapNavigator } from "../engine/TapNavigator.ts";
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
@@ -22,6 +23,7 @@ export class Game {
   private readonly hud = new Hud();
   private readonly camera = new Camera();
   private readonly effects = new Effects();
+  private readonly navigator = new TapNavigator();
   private sim = new OfflineSimulation(842136);
   private world = new WorldRenderer(842136);
   private multiplayer: MultiplayerClient | null = null;
@@ -74,6 +76,7 @@ export class Game {
       if (document.hidden) {
         this.save();
         this.input.clear();
+        this.navigator.cancel();
         this.multiplayer?.sendInput(0, 0, false);
       }
       this.lastTime = 0;
@@ -89,6 +92,7 @@ export class Game {
     this.effects.enabled = p.effects;
   }
   private replaceWorld(seed: number, saved?: OfflineSave): void {
+    this.navigator.cancel();
     this.interior = null;
     this.world.clear();
     this.world = new WorldRenderer(seed);
@@ -131,6 +135,7 @@ export class Game {
   }
   private talkToNpc(): void {
     if (this.hud.menuOpen) return;
+    this.navigator.cancel();
     if (this.interior) {
       this.leaveInterior();
       return;
@@ -146,6 +151,7 @@ export class Game {
     } else this.hud.showNpcDialogue(npc, this.sim.kills);
   }
   private leaveInterior(): void {
+    this.navigator.cancel();
     this.interior = null;
     this.input.clear();
     this.accumulator = 0;
@@ -177,8 +183,23 @@ export class Game {
     if (this.input.consumeTalk() && !this.hud.menuOpen) this.talkToNpc();
     const paused = this.hud.menuOpen || document.hidden;
     if (paused) this.input.clear();
-    const movement = paused ? { x: 0, y: 0 } : this.input.movement();
+    const manual = paused ? { x: 0, y: 0 } : this.input.movement();
     const attack = !paused && this.input.consumeAttack();
+    const manualActive = Math.hypot(manual.x, manual.y) > 0.02;
+    if (paused || manualActive || attack || (online && !this.interior))
+      this.navigator.cancel();
+    const tap = this.input.consumeTap();
+    if (tap && !paused && !manualActive && !attack && (!online || this.interior)) {
+      const destination = this.interior
+        ? this.scene.interiorPoint(tap)
+        : this.scene.worldPoint(tap, this.camera);
+      const player = this.interior?.player ?? this.sim.player;
+      const collision = this.interior?.collision ?? this.sim.collision;
+      if (destination) this.navigator.go(player, destination, collision);
+    }
+    const controlled = this.interior?.player ?? this.sim.player;
+    const movement = paused ? { x: 0, y: 0 } :
+      manualActive ? manual : this.navigator.direction(controlled, dt);
     this.pendingAttack ||= attack;
     if (this.interior) {
       const room = this.interior;
@@ -200,7 +221,7 @@ export class Game {
         }
         this.hud.update(this.sim.player, this.sim.kills);
         this.hud.setInterior(room.building.name);
-        this.scene.renderInterior(room);
+        this.scene.renderInterior(room, this.navigator.target, this.clock);
         requestAnimationFrame((next) => this.frame(next));
         return;
       }
@@ -213,7 +234,11 @@ export class Game {
           this.sim.player.update(1 / 60, movement, this.sim.collision);
           if (this.pendingAttack) this.sim.player.startAttack();
         } else {
+          const before = this.sim.player;
           const changed = this.sim.update(1 / 60, movement, this.pendingAttack);
+          // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
+          if (this.sim.player !== before || this.sim.player.hurtTime > 0)
+            this.navigator.cancel();
           this.pendingAttack = false;
           if (changed) this.save();
         }
@@ -261,6 +286,7 @@ export class Game {
       online ? (this.multiplayer?.id ?? null) : null,
       this.clock,
       this.effects,
+      this.navigator.target,
     );
     requestAnimationFrame((next) => this.frame(next));
   }
