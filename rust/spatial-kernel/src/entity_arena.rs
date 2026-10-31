@@ -191,6 +191,9 @@ impl EntityArena {
     }
 
     /// Dense iteration is suitable for mixed-type batched systems.
+    ///
+    /// # Panics
+    /// Only if internal slot invariants are corrupted (never by a valid public handle).
     pub fn iter(&self) -> impl Iterator<Item = (EntityHandle, &Entity)> {
         self.entries.iter().map(|entry| {
             let generation =

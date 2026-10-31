@@ -244,7 +244,7 @@ mod tests {
             assert!(output.iter().all(|p| p.target_index >= 0));
             assert_eq!(output[0].target_index, 0);
             assert_eq!(output[0].attack, 1);
-            assert_eq!(output[count - 1].target_index >= 0, true);
+            assert!(output[count - 1].target_index >= 0);
             assert!(plan_into(&monsters, &players, 0.05, &mut output[..count - 1]).is_err());
         }
     }
