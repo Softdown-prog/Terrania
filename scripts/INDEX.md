@@ -4,6 +4,8 @@
 - [find-ai-files.mjs](find-ai-files.mjs): busca limitada de arquivos versionados pelo nome/caminho (`npm run ai:find`).
 - [audit-ai-navigation.mjs](audit-ai-navigation.mjs): contagem de arquivos, módulos maiores e sugestões de índices (`npm run ai:audit`).
 - [check-ai-navigation.mjs](check-ai-navigation.mjs): verifica links locais dos guias (`npm run check:ai-index`).
+- [ai-navigation-api.mjs](ai-navigation-api.mjs): funções puras e contrato JSON estável para futuros adaptadores MCP.
+- [ai-navigation-query.mjs](ai-navigation-query.mjs): consultas `find`, `audit` e `guide` em JSON via `npm run ai:query`, sem abrir portas.
 
 ## Publicação e verificação
 - [write-runtime-config.mjs](write-runtime-config.mjs): configurações públicas usadas no build.

@@ -12,7 +12,8 @@
     "test:browser": "playwright test",
     "check:ai-index": "node scripts/check-ai-navigation.mjs",
     "ai:find": "node scripts/find-ai-files.mjs",
-    "ai:audit": "node scripts/audit-ai-navigation.mjs"
+    "ai:audit": "node scripts/audit-ai-navigation.mjs",
+    "ai:query": "node scripts/ai-navigation-query.mjs"
   },
   "devDependencies": {
     "typescript": "6.0.3",

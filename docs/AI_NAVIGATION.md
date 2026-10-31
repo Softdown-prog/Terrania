@@ -39,6 +39,23 @@ npm run ai:audit -- --json
 
 A auditoria conta somente fontes e documentos versionados, excluindo builds e dependências. Mostra até 15 diretórios por padrão, seus arquivos diretos/totais, presença de `INDEX.md` local e pastas candidatas acima do limite (20 arquivos por padrão). **É um relatório, não modifica arquivos nem falha o CI:** criar e manter os índices depende da revisão humana. O teste automatizado cobre uma árvore sintética de 15 mil fontes.
 
+## Consultas JSON para o futuro MCP (sem servidor MCP ainda)
+
+O adaptador **somente leitura** expõe três operações consistentes, sem dependências de rede ou modificações no projeto:
+
+```bash
+npm run ai:query -- find PhaserGame --scope src --limit 5
+npm run ai:query -- audit --scope server-go --min-files 20
+npm run ai:query -- guide src/app/game-page.component.ts --max-chars 4000
+```
+
+Cada chamada retorna **um objeto JSON** com `schemaVersion: 1` e `kind: "find" | "audit" | "guide"`:
+- `find`: lista limitada de caminhos, com escopo, consulta e contagem retornada.
+- `audit`: contadores e pastas candidatas a `INDEX.md`, limitados por página de saída.
+- `guide`: conteúdo truncado (até 16 mil caracteres) do `INDEX.md` versionado mais próximo; na ausência, usa `AGENTS.md`. Apenas guias versionados são lidos.
+
+A implementação reutilizável está em [scripts/ai-navigation-api.mjs](../scripts/ai-navigation-api.mjs), sem importar SDK de MCP. Uma integração futura poderá chamar essas funções diretamente e adicionar autenticação/controle de acesso, sem iniciar portas ou serviços agora. A saída **não** é protocolo MCP por si só, apenas um contrato local testável.
+
 ## Navegação eficiente
 1. Leia [AGENTS.md](../AGENTS.md) e o índice local **somente** da tarefa atual.
 2. Busque símbolos com `rg -n 'NomeDoSimbolo' src server server-go rust` e caminhos com `rg --files src/engine` (ajuste a pasta).
