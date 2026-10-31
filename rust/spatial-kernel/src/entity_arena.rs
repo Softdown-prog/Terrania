@@ -6,7 +6,7 @@
 use std::mem::size_of;
 
 /// Current experimental per-room limit. This does not change Go's spawn cap.
-pub const MAX_ARENA_ENTITIES: usize = 65_536;
+pub const MAX_ARENA_ENTITIES: usize = 200_000;
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -309,4 +309,61 @@ mod tests {
         assert!(arena.spawn(entity(EntityKind(0), 0)).is_err());
         assert!(arena.is_empty());
     }
+    #[test]
+    fn arena_200k_mixed_lifecycle_and_bounded_memory() {
+        use std::time::Instant;
+        let kinds = [
+            EntityKind::MONSTER,
+            EntityKind::NPC,
+            EntityKind::PROJECTILE,
+            EntityKind::RESOURCE,
+            EntityKind::AMBIENT,
+        ];
+        assert!(EntityArena::new(MAX_ARENA_ENTITIES + 1).is_err());
+        let mut arena = EntityArena::new(MAX_ARENA_ENTITIES).unwrap();
+        let mut handles = Vec::with_capacity(MAX_ARENA_ENTITIES);
+        let started = Instant::now();
+        for i in 0..MAX_ARENA_ENTITIES {
+            handles.push(arena.spawn(entity(kinds[i % kinds.len()], i)).unwrap());
+        }
+        let spawn_time = started.elapsed();
+        assert_eq!(arena.len(), MAX_ARENA_ENTITIES);
+        assert!(arena.spawn(entity(EntityKind::MONSTER, 0)).is_err());
+        let bytes = arena.allocated_bytes();
+        assert!(bytes < 48 * 1024 * 1024, "native arena allocated {bytes} bytes");
+        let started = Instant::now();
+        for (i, &handle) in handles.iter().enumerate() {
+            let updated = Entity {
+                kind: kinds[i % kinds.len()],
+                x: (i as f64) + 0.25,
+                y: -2.0,
+                hp: 4,
+                state: 42,
+            };
+            arena.update(handle, updated).unwrap();
+        }
+        let update_time = started.elapsed();
+        assert_eq!(arena.get(handles[199_999]).unwrap().state, 42);
+        let started = Instant::now();
+        for &handle in handles.iter().step_by(2) {
+            assert!(arena.despawn(handle).is_some());
+            assert!(arena.get(handle).is_none());
+        }
+        let despawn_time = started.elapsed();
+        assert_eq!(arena.len(), 100_000);
+        for i in 0..100_000 {
+            arena.spawn(entity(EntityKind::PROJECTILE, i)).unwrap();
+        }
+        assert_eq!(arena.len(), MAX_ARENA_ENTITIES);
+        assert!(handles.iter().step_by(2).all(|&h| arena.get(h).is_none()));
+        assert!(handles.iter().skip(1).step_by(2).all(|&h| arena.get(h).is_some()));
+        println!(
+            "arena_200k: spawn_200k_ms={} update_200k_ms={} despawn_100k_ms={} native_capacity_bytes={}",
+            spawn_time.as_millis(),
+            update_time.as_millis(),
+            despawn_time.as_millis(),
+            bytes
+        );
+    }
+
 }

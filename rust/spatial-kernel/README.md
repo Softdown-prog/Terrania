@@ -136,3 +136,11 @@ CGO_ENABLED=1 go test -race -tags 'rustmonsters rustarena' ./...
 ```
 
 As arenas pertencem a cada sala individualmente, nunca a um processo global nem a um segundo servidor. Sem deploy, sem merge.
+
+## Limite experimental ampliado para 200.000 (31/10/2026)
+
+O teto *configurável* do `EntityArena` e do espelho opt-in `rustarena` agora é **200.000 entidades ativas por arena**, com crescimento de memória **sob demanda** (não há pré-alocação de 200 mil objetos em cada sala). O adaptador experimental `rustmonsters` também aceita lotes de até 200 mil monstros, mas **não ativa esse número no jogo** e não garante processamento em um tick de 50 ms. O `Room.MaxMobs` Go continua em **96**.
+
+A ABI `terrania_arena_update_batch` valida no máximo **200.000 atualizações em uma única chamada**, sem aplicação parcial para dados inválidos. Dois testes de escala verificam 200 mil entidades mistas, gerações/handles, atualização, remoção/reutilização, teto de capacidade, limite de memória alocada e 200 mil operações de atualização em uma chamada FFI. A CI executa os testes funcionais e publica os tempos observados no *runner* GitHub, mas **eles não são uma certificação de throughput de 200 mil operações por tick, 200 mil jogadores, nem desempenho da VPS**. Multiplicar 200 mil pelo número máximo de salas pode estourar a RAM; o limite da arena não deve ser aplicado automaticamente como configuração de produção.
+
+O limite de memória de 48 MiB no teste cobre somente os vetores internos Rust da arena e suas capacidades, não as entidades/mapas no Go, buffers C, alocador ou uso global do processo. Nenhum merge nem deploy.

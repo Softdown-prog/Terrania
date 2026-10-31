@@ -20,7 +20,7 @@ import (
 type arenaOwner struct{ ptr *C.TerraniaArena }
 
 func newArenaOwner() *arenaOwner {
-    p := C.terrania_arena_new(C.uint32_t(65_536))
+    p := C.terrania_arena_new(C.uint32_t(200_000))
     if p == nil {
         return nil
     }
@@ -97,7 +97,7 @@ func (s *roomEntityArena) readHandle(handle uint64) (arenaSnapshot,bool) {
 func (s *roomEntityArena) syncRoom(r *Room) bool {
     if r == nil {return false}
     if len(r.mobs)==0 && s.owner==nil {return true}
-    if len(r.mobs)>65_536 {return false}
+    if len(r.mobs)>200_000 {return false}
     if s.owner == nil {
         s.owner = newArenaOwner()
         if s.owner == nil {return false}

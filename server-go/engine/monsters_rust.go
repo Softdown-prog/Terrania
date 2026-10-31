@@ -13,7 +13,7 @@ import "math"
 
 // Experimental Rust batch upper bound, matching the bounded entity arena.
 // This is NOT a live spawn limit or an assertion of production throughput.
-const maxRustMonsterBatch = 65_536
+const maxRustMonsterBatch = 200_000
 
 // Room-local scratch keeps pointer-free C buffers across ticks, avoiding the
 // five per-tick allocations of the original adapter. Never use it concurrently.

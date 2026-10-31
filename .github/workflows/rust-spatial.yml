@@ -46,6 +46,17 @@ jobs:
         run: cargo clippy --manifest-path rust/spatial-kernel/Cargo.toml --locked --all-targets -- -D warnings
       - name: Testes Rust sem dependencia do motor Go
         run: cargo test --manifest-path rust/spatial-kernel/Cargo.toml --locked --all-targets
+      - name: Verificar 200 mil entidades e 200 mil operacoes FFI sem deploy
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path rust/spatial-kernel/Cargo.toml --locked --release arena_200k -- --nocapture | tee /tmp/arena-200k.log
+          cargo test --manifest-path rust/spatial-kernel/Cargo.toml --locked --release ffi_200k -- --nocapture | tee /tmp/ffi-200k.log
+          {
+            echo '### Rust experimental: 200.000 entidades / atualizacoes (runner, nao VPS)'
+            grep 'arena_200k: ' /tmp/arena-200k.log
+            grep 'ffi_200k: ' /tmp/ffi-200k.log
+            echo 'Tempos exploratorios: nao significam 200 mil operacoes a cada 50 ms.'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Compilar bibliotecas Rust isoladas (rlib/staticlib/cdylib)
         run: cargo build --manifest-path rust/spatial-kernel/Cargo.toml --locked --release
       - name: Verificar ponte Go-Rust com detector de corrida

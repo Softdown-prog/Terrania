@@ -256,4 +256,57 @@ mod tests {
             terrania_arena_free(arena);
         }
     }
+    #[test]
+    fn ffi_200k_atomic_single_batch_and_capacity() {
+        use std::time::Instant;
+        const COUNT: usize = 200_000;
+        assert!(terrania_arena_new((COUNT + 1) as u32).is_null());
+        let arena = terrania_arena_new(COUNT as u32);
+        assert!(!arena.is_null());
+        let mut handles = Vec::with_capacity(COUNT);
+        let mut values = Vec::with_capacity(COUNT);
+        // SAFETY: the arena is exclusively owned until the final free; the
+        // vectors and stack variables are valid, disjoint, initialized buffers.
+        unsafe {
+            for i in 0..COUNT {
+                let mut handle = 0;
+                let entity = monster(i as f64);
+                assert_eq!(terrania_arena_spawn(arena, entity, &raw mut handle), 0);
+                handles.push(handle);
+                values.push(monster(i as f64 + 1.0));
+            }
+            assert_eq!(terrania_arena_len(arena), COUNT as i32);
+            let extra = monster(999.0);
+            let mut unused = 0u64;
+            assert_eq!(terrania_arena_spawn(arena, extra, &raw mut unused), -3);
+            let started = Instant::now();
+            assert_eq!(
+                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), COUNT as u32),
+                0
+            );
+            let batch_time = started.elapsed();
+            let mut check = monster(0.0);
+            assert_eq!(terrania_arena_get(arena, handles[0], &raw mut check), 0);
+            assert_eq!(check.x, 1.0);
+            assert_eq!(terrania_arena_get(arena, handles[COUNT - 1], &raw mut check), 0);
+            assert_eq!(check.x, COUNT as f64);
+            // Out-of-range count must be rejected before accessing any buffer.
+            assert_eq!(
+                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), (COUNT + 1) as u32),
+                -1
+            );
+            // Invalid final element must not partially apply earlier updates.
+            values[0].x = 600.0;
+            values[COUNT - 1].x = f64::NAN;
+            assert_eq!(
+                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), COUNT as u32),
+                -1
+            );
+            assert_eq!(terrania_arena_get(arena, handles[0], &raw mut check), 0);
+            assert_eq!(check.x, 1.0);
+            println!("ffi_200k: single_batch_update_200k_ms={}", batch_time.as_millis());
+            terrania_arena_free(arena);
+        }
+    }
+
 }
