@@ -18,9 +18,9 @@ fn run_fixture(points: &[Point], out: &mut [u32]) -> (usize, usize, u64) {
     let mut found = 0;
     let mut hash: u64 = 14_695_981_039_346_656_037;
     for q in 0..200 {
-        let x = ((q * 37) % 401 - 200) as f64;
-        let y = ((q * 53) % 401 - 200) as f64;
-        let half = 64.0 + (q % 5 * 24) as f64;
+        let x = f64::from((q * 37) % 401 - 200);
+        let y = f64::from((q * 53) % 401 - 200);
+        let half = 64.0 + f64::from(q % 5 * 24);
         let count = visible_into(points, x, y, half, out).expect("valid fixture");
         hits += count;
         for &index in &out[..count] {
@@ -30,7 +30,7 @@ fn run_fixture(points: &[Point], out: &mut [u32]) -> (usize, usize, u64) {
         if nearest_index.is_some() {
             found += 1;
         }
-        add_u32(&mut hash, nearest_index.map_or(u32::MAX, |n| n as u32));
+        add_u32(&mut hash, nearest_index.map_or(u32::MAX, |n| u32::try_from(n).expect("fixture bounded to 4096")));
     }
     (hits, found, hash)
 }
@@ -38,8 +38,8 @@ fn main() {
     let mut seed: u32 = 0x1234_5678;
     let mut points = Vec::with_capacity(4096);
     for _ in 0..4096 {
-        let x = ((rand_next(&mut seed) % 4096) as i32 - 2048) as f64 * 0.5;
-        let y = ((rand_next(&mut seed) % 4096) as i32 - 2048) as f64 * 0.5;
+        let x = f64::from(i32::try_from(rand_next(&mut seed) % 4096).expect("bounded modulo") - 2048) * 0.5;
+        let y = f64::from(i32::try_from(rand_next(&mut seed) % 4096).expect("bounded modulo") - 2048) * 0.5;
         points.push(Point { x, y });
     }
     let mut out = vec![0u32; points.len()];
