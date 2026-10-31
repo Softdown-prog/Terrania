@@ -269,7 +269,7 @@ func main() {
 		c:=&http.Client{Timeout:2*time.Second}
 		resp,e:=c.Get("http://127.0.0.1:"+port+"/health")
 		if e!=nil { os.Exit(1) }
-		defer resp.Body.Close()
+		defer func(){_ = resp.Body.Close()}()
 		if resp.StatusCode!=http.StatusOK { os.Exit(1) }
 		return
 	}
