@@ -67,19 +67,19 @@ func openRegionJournal(path string, d *RegionDirectory) (*regionJournal, error) 
 	// deliberately remains after a crash: removing it requires an operator
 	// to prove no other process still owns this file. It is NOT distributed
 	// fencing or a replicated lease.
-	lockPath := path+".lock"
+	lockPath := path + ".lock"
 	lock, err := os.OpenFile(lockPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
-		return nil, fmt.Errorf("journal already locked or lock unavailable: %w",err)
+		return nil, fmt.Errorf("journal already locked or lock unavailable: %w", err)
 	}
 	_ = lock.Close()
-	release := func(){_ = os.Remove(lockPath)}
+	release := func() { _ = os.Remove(lockPath) }
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		release()
 		return nil, err
 	}
-	j := &regionJournal{file: f,lockPath: lockPath}
+	j := &regionJournal{file: f, lockPath: lockPath}
 	if err := j.replay(d); err != nil {
 		_ = f.Close()
 		release()
@@ -203,7 +203,9 @@ func (j *regionJournal) append(p Province, s *regionState) error {
 }
 
 func (j *regionJournal) close() error {
-	if err:=j.file.Close();err!=nil{return err}
+	if err := j.file.Close(); err != nil {
+		return err
+	}
 	// Release only on deliberate clean close. A crash leaves the marker,
 	// so a second process cannot casually claim recovered authority.
 	return os.Remove(j.lockPath)
