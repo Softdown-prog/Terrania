@@ -7,6 +7,7 @@ export function normalizeScope(scope = '') {
   let value = scope.trim().replaceAll('\\', '/');
   if (value.startsWith('./')) value = value.slice(2);
   if (value.endsWith('/')) value = value.slice(0, -1);
+  if (value === '') return '';
   if (value.startsWith('/') || /^[A-Za-z]:/.test(value) ||
       value.split('/').some(part => part === '..' || part === '' || part === '.'))
     throw new Error('Escopo inválido: use caminho relativo dentro do repositório.');
