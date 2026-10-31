@@ -1,0 +1,90 @@
+name: Deploy verified Terrania multiplayer to VPS
+on:
+  push:
+    branches: [main]
+    paths: ['server/**', 'src/actors/**', 'src/world/**', 'src/shared/**', 'src/engine/combat.ts', 'package.json', '.github/workflows/deploy-vps.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: vps-project-terrania
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci && npm run typecheck && npm test && npm run build
+      - run: npm ci --prefix server && npm run typecheck --prefix server && npm test --prefix server && npm run build --prefix server
+      - name: Test candidate image without production access
+        run: |
+          docker build -f server/Dockerfile -t terrania-test .
+          docker run -d --name candidate --network none -e GIT_SHA="$GITHUB_SHA" -e ALLOWED_ORIGINS=https://rpg.analysepro.com terrania-test
+          trap 'docker rm -f candidate >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 30); do
+            if docker exec candidate node -e 'fetch("http://localhost:8787/health").then(r=>r.json()).then(h=>process.exit(h.status==="ok" && h.revision===process.env.GIT_SHA?0:1)).catch(()=>process.exit(1))'; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+  deploy:
+    needs: verify
+    if: github.repository == 'Softdown-prog/Terrania' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        id: image
+        with:
+          context: .
+          file: server/Dockerfile
+          push: true
+          tags: ghcr.io/softdown-prog/terrania-multiplayer:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/Softdown-prog/Terrania
+          cache-from: type=gha,scope=terrania-multiplayer
+          cache-to: type=gha,mode=max,scope=terrania-multiplayer
+      - name: Obtain pinned central executor client
+        uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Painel
+          ref: 95655f3614c7c267270ab09128b25a608dbb75b1
+          path: operations-client
+          persist-credentials: false
+      - name: Install only Terrania multiplayer and verify public SHA
+        env:
+          VPS_OPERATION: deploy
+          VPS_PROJECT: terrania
+          VPS_IMAGES: '{"multiplayer":"ghcr.io/softdown-prog/terrania-multiplayer@${{ steps.image.outputs.digest }}"}'
+          VPS_SSH_KEY: ${{ secrets.VPS_OPERATIONS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_OPERATIONS_KNOWN_HOSTS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 operations-client/operations/client.py
+      - name: Verify two players over public HTTPS/WSS
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          npm ci --prefix server --no-audit --no-fund
+          node server/scripts/online-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: installed-vps-terrania-${{ github.sha }}
+          path: vps-result.json
+          if-no-files-found: warn
+          retention-days: 30
