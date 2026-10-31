@@ -140,22 +140,24 @@ func (g *WorkerLeaseGate) Install(p WorkerLeasePermit)error{
 		expires.Sub(now)>MaxWorkerLease+leaseFutureTolerance {
 		return ErrWorkerLeaseExpired
 	}
-	// Conservative local monotonic expiry. A wall clock adjustment after
-	// installation cannot lengthen a lease in a running process.
-	remaining:=expires.Sub(now)-leaseClockMargin
+	// Compute remaining time AFTER acquiring the write gate. An in-flight
+	// tick can hold the read gate for an arbitrary duration; extending the
+	// deadline using pre-lock time would silently prolong an expired lease.
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	if g.closed||g.revoked{return ErrWorkerLeaseRevoked}
+	lockedAt:=time.Now()
 	if g.initialized {
 		if p.Epoch!=g.epoch||p.Sequence<=g.sequence {
 			return ErrWorkerLeaseInvalid
 		}
-		if !time.Now().Before(g.deadline){
+		if !lockedAt.Before(g.deadline){
 			return ErrWorkerLeaseExpired // no silent resume after lease loss
 		}
 	}
+	remaining:=expires.Sub(lockedAt)-leaseClockMargin
 	if remaining<=0{return ErrWorkerLeaseExpired}
-	g.deadline=time.Now().Add(remaining)
+	g.deadline=lockedAt.Add(remaining)
 	g.initialized=true
 	g.epoch=p.Epoch
 	g.sequence=p.Sequence
