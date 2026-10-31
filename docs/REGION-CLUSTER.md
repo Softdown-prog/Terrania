@@ -161,3 +161,11 @@ O laboratório mantém `members.json` versionado e imutável, com a ordem e iden
 Os novos testes checam persistência de commits e snapshots durante shutdown/restart completo dos três membros, recusa de membros trocados, stores ausentes/corrompidos, permissões inseguras e manifestos em symlink. As verificações são executadas separadamente na CI do módulo experimental com `go test -race`.
 
 **Limitação:** persistência local não equivale a implantação em múltiplas máquinas. Faltam transporte mTLS autenticado, provisionamento seguro de identidade de cada nó, inicialização de cluster por operações coordenadas, proteção de armazenamento contra perda do disco e integração do estado comprometido ao fencing dos workers. O teste não conecta `GrantCoordinator`, não abre portas, não usa PostgreSQL da VPS e não autoriza failover automático.
+
+## Fase 14 — camada de transporte Raft TLS mútuo (laboratório de loopback)
+
+`raftlab.TLSLayer` implementa `raft.StreamLayer` da biblioteca HashiCorp, com `tls.Config` configurado para **TLS 1.3**, verificação obrigatória de certificado de cliente, cadeia de confiança em CA explícita, nome DNS fixado ao ID do servidor e SAN URI SPIFFE `spiffe://terrania.internal/raft/<membro>`. Apenas membros previamente cadastrados podem fazer o handshake; um certificado de CA confiável emitido para outro membro ou intruso não basta. Não há fallback para Common Name, cookies ou cabeçalhos HTTP. A camada não aceita ouvintes fora de loopback e não descobre peers por DNS.
+
+Os testes locais geram uma CA de laboratório e certificados por nó, verificam comunicação autenticada de ida e volta, recusa de endereços fora do cadastro, certificado válido de servidor com identidade diferente da esperada, clientes não cadastrados, CA ausente e endereços públicos. A implementação requer certificados externamente fornecidos e não cria credenciais nem expõe uma rota do serviço multiplayer.
+
+**Limites:** o StreamLayer está isolado; não existe ainda programa de produção que passe esse transporte ao servidor Raft nem política real de rotatividade/revogação de certificados, proteção contra invasão de uma CA, orquestração de múltiplos processos, autenticação de administração ou aplicação de permissões dos workers. Testar em loopback não equivale a autorizar comunicação externa da VPS. Sem merge ou deploy.
