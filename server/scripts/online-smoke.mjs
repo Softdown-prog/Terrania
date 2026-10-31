@@ -32,7 +32,8 @@ async function verifyPublishedMultiplayerBundle(html, publicOrigin) {
   const entryAssets = [...html.matchAll(/(?:src|href)="([^"]+\.js)"/g)].map(m => m[1]);
   assert.ok(entryAssets.length, "HTML do jogo não referencia scripts Angular");
   const seen = new Set();
-  const queue = entryAssets.map(path => new URL(path, publicOrigin + "/jogar/"));
+  // Angular declares <base href="/">; entry scripts resolve from the site root.
+  const queue = entryAssets.map(path => new URL(path, publicOrigin + "/"));
   const maxAssets = 60;
   while (queue.length && seen.size < maxAssets) {
     const asset = queue.shift();
