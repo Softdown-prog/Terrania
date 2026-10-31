@@ -210,6 +210,14 @@ func main() {
 	if port=="" { port="8788" } // nao toma a porta 8787 do Node.
 	n,err:=strconv.Atoi(port)
 	if err!=nil||n<1||n>65535 { log.Fatal("invalid PORT") }
+	if len(os.Args)>1 && os.Args[1]=="--healthcheck" {
+		c:=&http.Client{Timeout:2*time.Second}
+		resp,e:=c.Get("http://127.0.0.1:"+port+"/health")
+		if e!=nil { os.Exit(1) }
+		defer resp.Body.Close()
+		if resp.StatusCode!=http.StatusOK { os.Exit(1) }
+		return
+	}
 	allowed:=strings.Split(os.Getenv("ALLOWED_ORIGINS"),",")
 	if os.Getenv("ALLOWED_ORIGINS")=="" {
 		if os.Getenv("NODE_ENV")=="production" { log.Fatal("ALLOWED_ORIGINS mandatory in production") }
