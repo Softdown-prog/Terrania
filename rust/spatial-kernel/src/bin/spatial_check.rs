@@ -30,7 +30,12 @@ fn run_fixture(points: &[Point], out: &mut [u32]) -> (usize, usize, u64) {
         if nearest_index.is_some() {
             found += 1;
         }
-        add_u32(&mut hash, nearest_index.map_or(u32::MAX, |n| u32::try_from(n).expect("fixture bounded to 4096")));
+        add_u32(
+            &mut hash,
+            nearest_index.map_or(u32::MAX, |n| {
+                u32::try_from(n).expect("fixture bounded to 4096")
+            }),
+        );
     }
     (hits, found, hash)
 }
@@ -38,8 +43,12 @@ fn main() {
     let mut seed: u32 = 0x1234_5678;
     let mut points = Vec::with_capacity(4096);
     for _ in 0..4096 {
-        let x = f64::from(i32::try_from(rand_next(&mut seed) % 4096).expect("bounded modulo") - 2048) * 0.5;
-        let y = f64::from(i32::try_from(rand_next(&mut seed) % 4096).expect("bounded modulo") - 2048) * 0.5;
+        let x =
+            f64::from(i32::try_from(rand_next(&mut seed) % 4096).expect("bounded modulo") - 2048)
+                * 0.5;
+        let y =
+            f64::from(i32::try_from(rand_next(&mut seed) % 4096).expect("bounded modulo") - 2048)
+                * 0.5;
         points.push(Point { x, y });
     }
     let mut out = vec![0u32; points.len()];
