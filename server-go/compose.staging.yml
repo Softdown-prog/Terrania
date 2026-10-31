@@ -1,0 +1,25 @@
+# OPT-IN. Container Go isolado: nao altera servidor Node, Caddy nem rotas.
+name: terrania-go-shadow
+services:
+  engine-go:
+    build:
+      context: ..
+      dockerfile: server-go/Dockerfile
+    image: terrania-engine-go:shadow
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "8788"
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?origens exatas sao obrigatorias}
+    ports:
+      - "127.0.0.1:18788:8788"
+    mem_limit: 128m
+    cpus: "0.50"
+    pids_limit: 64
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    # Nenhum acesso a Docker socket, rede do painel, containers ou banco.
