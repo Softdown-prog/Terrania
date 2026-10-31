@@ -25,6 +25,19 @@ async function get(url) {
   assert.equal(res.status, 200, url + " returned HTTP " + res.status);
   return await res.text();
 }
+// The public smoke validates the Angular entry bundle and the real WSS
+// connection below. Cloudflare build checks the configured endpoint across
+// all built JS chunks (the Angular runtime can lazy-load game modules).
+async function verifyPublishedScripts(html, publicOrigin) {
+  const entryAssets = [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+\.js)"/g)].map(m => m[1]);
+  assert.ok(entryAssets.length, "HTML do jogo não referencia script Angular");
+  for (const asset of entryAssets) {
+    const js = await get(new URL(asset, publicOrigin + "/").href);
+    assert.ok(js.length > 256 && !/^\s*</.test(js), "bundle Angular inválido: " + asset);
+    console.log("  bundle Angular publicado:", asset);
+  }
+}
+
 async function until(predicate, label, ms = 8_000) {
   const deadline = Date.now() + ms;
   while (!predicate()) {
@@ -37,15 +50,16 @@ for (const publicOrigin of [origin]) {
     const site = await get(publicOrigin + "/");
     const pageTitle = site.match(/<title>([^<]*)<\/title>/i)?.[1] ?? "(sem titulo)";
     console.log("  homepage:", pageTitle);
-    assert.ok(site.includes("/jogar/"), "homepage ainda não é site de apresentação alfa 0.3");
+    // Angular renders its route links/game text on the client. The server-side
+    // HTML now contains <app-root>, not the old static /jogar/ or ALFA labels.
+    assert.match(site, /<app-root\b[^>]*>/i, "homepage não contém raiz Angular");
+    assert.match(pageTitle, /Terrania: Origins/i, "título da homepage inesperado");
     const game = await get(publicOrigin + "/jogar/");
     const gameTitle = game.match(/<title>([^<]*)<\/title>/i)?.[1] ?? "(sem titulo)";
     console.log("  jogo:", gameTitle);
-    assert.ok(game.includes("ALFA 0.3"), "jogo publicado não é alfa 0.3");
-    const assets = [...game.matchAll(/<script[^>]*src="([^"]+\.js)"/g)].map(m => m[1]);
-    assert.ok(assets.length, "HTML do jogo não referencia bundle JS");
-    const scripts = await Promise.all(assets.map(asset => get(new URL(asset, publicOrigin).href)));
-    assert.ok(scripts.some(code => code.includes(endpoint)), "variável WSS não aparece no bundle publicado");
+    assert.match(game, /<app-root\b[^>]*>/i, "rota de jogo não contém raiz Angular");
+    assert.match(gameTitle, /Jogar.*Terrania: Origins/i, "shell da rota /jogar/ inesperado");
+    await verifyPublishedScripts(game, publicOrigin);
   });
 }
 await check("health público da VPS", async () => {
