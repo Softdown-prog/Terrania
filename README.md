@@ -80,9 +80,9 @@ Repositório oficial: [`Softdown-prog/Terrania`](https://github.com/Softdown-pro
 
 **Compatibilidade da alfa 0.3:** publique também o backend desta revisão; o protocolo 3 impede misturar o cliente novo com as regras físicas antigas. Sem backend compatível, o solo permanece utilizável. O save local existente é mantido.
 
-## Interface Angular + Phaser 3 (branch em desenvolvimento)
+## Interface Angular + Phaser 3
 
-Trabalho isolado em `feat/angular-ui-phaser3`: não abrir PR, publicar ou mesclar sem nova autorização do Rodrigo.
+Desenvolvida e validada em `feat/angular-ui-phaser3`. Em 31/10/2026, Rodrigo autorizou a integração na `main`. A combinação preserva os commits Go/Rust existentes; o modo Go puro permanece como padrão do backend.
 
 - Angular controla rotas, painéis, opções, diálogos, bolsa e HUD com sinais.
 - Phaser 3 controla cena, loop, textura procedural, renderização e redimensionamento do jogo.
