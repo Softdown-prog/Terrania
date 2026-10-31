@@ -1,5 +1,8 @@
 name: Terrania Go staging na VPS (somente shadow)
 on:
+  # Restrict issue bridge to the account owner and this exact title; no arbitrary commands.
+  issues:
+    types: [opened]
   workflow_dispatch:
     inputs:
       operation:
@@ -22,7 +25,7 @@ concurrency:
 
 jobs:
   validate:
-    if: github.repository == 'Softdown-prog/Terrania' && github.ref == 'refs/heads/main'
+    if: github.repository == 'Softdown-prog/Terrania' && github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'issues' && github.event.issue.user.id == 189416996 && github.event.issue.title == '[Terrania Go] deploy shadow'))
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -47,7 +50,7 @@ jobs:
           (cd server-go && go run ./cmd/parity) > /tmp/terrania-go.json
           node server-go/scripts/compare.mjs /tmp/terrania-ts.json /tmp/terrania-go.json
       - name: Testar o Docker do Go sem contato com a VPS
-        if: inputs.operation == 'deploy'
+        if: inputs.operation == 'deploy' || (github.event_name == 'issues' && github.event.issue.user.id == 189416996 && github.event.issue.title == '[Terrania Go] deploy shadow')
         run: |
           docker build -f server-go/Dockerfile -t terrania-go:staging-ci .
           docker run -d --name go-smoke --network none -e GIT_SHA="$GITHUB_SHA" \
@@ -61,7 +64,7 @@ jobs:
           exit 1
 
   publish:
-    if: inputs.operation == 'deploy'
+    if: inputs.operation == 'deploy' || (github.event_name == 'issues' && github.event.issue.user.id == 189416996 && github.event.issue.title == '[Terrania Go] deploy shadow')
     needs: validate
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -113,7 +116,7 @@ jobs:
           node -e 'const fs=require("fs");const h=JSON.parse(fs.readFileSync("/tmp/node-before.json"));if(h.status!=="ok"||!h.revision)process.exit(1)'
       - name: Deploy ou verificacao autorizada do shadow (sem shell remoto)
         env:
-          VPS_OPERATION: ${{ inputs.operation }}
+          VPS_OPERATION: ${{ github.event_name == 'issues' && 'deploy' || inputs.operation }}
           VPS_PROJECT: terrania-go-shadow
           VPS_SHA: ${{ inputs.expected_sha || github.sha }}
           VPS_IMAGES: '{"engine-go":"ghcr.io/softdown-prog/terrania-go@${{ needs.publish.outputs.digest }}"}'
