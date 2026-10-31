@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 const (
@@ -162,6 +163,7 @@ func (j *regionJournal) replay(d *RegionDirectory) error {
 			s.pending = &pendingTransfer{ticket: p.Ticket, frozen: p.Frozen, staged: p.Staged, quiesced: p.Quiesced}
 		}
 		d.regions[e.Province] = s
+		if d.gates[e.Province] == nil { d.gates[e.Province] = &sync.RWMutex{} }
 		j.sequence = e.Sequence
 	}
 }

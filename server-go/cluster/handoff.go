@@ -65,6 +65,7 @@ type RegionDirectory struct {
 	mu      sync.Mutex
 	workers map[string]struct{}
 	regions map[Province]*regionState
+	gates map[Province]*sync.RWMutex
 	journal *regionJournal
 	faulted bool
 }
@@ -76,6 +77,7 @@ func NewRegionDirectory(router *Router) (*RegionDirectory, error) {
 	d := &RegionDirectory{
 		workers: make(map[string]struct{}, router.Count()),
 		regions: make(map[Province]*regionState),
+		gates: make(map[Province]*sync.RWMutex),
 	}
 	for _, b := range router.Backends() {
 		d.workers[b.ID] = struct{}{}
@@ -110,6 +112,7 @@ func (d *RegionDirectory) Register(p Province, worker string) (Ownership, error)
 		return Ownership{}, err
 	}
 	d.regions[p] = next
+	d.gates[p] = &sync.RWMutex{}
 	return ownership(p, next), nil
 }
 
@@ -214,6 +217,12 @@ func validTicket(s *regionState, t TransferTicket, now time.Time) error {
 // Begin + FreezeSource; otherwise the digest may describe stale gameplay state.
 // Once frozen, neither source nor destination may simulate until Commit/Abort.
 func (d *RegionDirectory) FreezeSource(t TransferTicket, now time.Time) error {
+	// Wait until ALL in-flight authoritative mutations for this province
+	// have left their read-locked critical section.
+	gate,err:=d.gateForProvince(t.Province)
+	if err!=nil{return err}
+	gate.Lock()
+	defer gate.Unlock()
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	s, ok := d.regions[t.Province]
@@ -329,6 +338,12 @@ func (d *RegionDirectory) Commit(t TransferTicket, now time.Time) (Ownership, er
 // if the original worker never stopped; old in-flight commands stay fenced.
 // No automatic abort on timeout: an operator/coordinator must reconcile first.
 func (d *RegionDirectory) Abort(t TransferTicket) (Ownership, error) {
+	// Abort may increment the epoch even before FreezeSource; it must wait
+	// for an in-flight old-epoch tick before switching the authority.
+	gate,err:=d.gateForProvince(t.Province)
+	if err!=nil{return Ownership{},err}
+	gate.Lock()
+	defer gate.Unlock()
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	s, ok := d.regions[t.Province]
