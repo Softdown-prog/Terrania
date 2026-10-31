@@ -50,6 +50,10 @@ type roomEntityArena struct {
     handles map[string]uint64
     batchHandles []C.uint64_t
     batchEntities []C.TerraniaEntity
+    newEntities []C.TerraniaEntity
+    newHandles []C.uint64_t
+    newIDs []string
+    newIndices []int
 }
 
 func (s *roomEntityArena) close() {
@@ -61,6 +65,10 @@ func (s *roomEntityArena) close() {
     s.handles = nil
     s.batchHandles = nil
     s.batchEntities = nil
+    s.newEntities = nil
+    s.newHandles = nil
+    s.newIDs = nil
+    s.newIndices = nil
 }
 
 func (s *roomEntityArena) ensure(count int) {
@@ -112,35 +120,63 @@ func (s *roomEntityArena) syncRoom(r *Room) bool {
         delete(s.handles,id)
     }
     s.ensure(len(r.mobs))
-    next:=0
-    for _,id:=range r.mobOrder {
-        mob:=r.mobs[id]
-        if mob==nil {continue}
-        if math.IsNaN(mob.X)||math.IsInf(mob.X,0)||
-            math.IsNaN(mob.Y)||math.IsInf(mob.Y,0) {
+    s.newEntities = s.newEntities[:0]
+    s.newHandles = s.newHandles[:0]
+    s.newIDs = s.newIDs[:0]
+    s.newIndices = s.newIndices[:0]
+    next := 0
+    for _, id := range r.mobOrder {
+        mob := r.mobs[id]
+        if mob == nil { continue }
+        if math.IsNaN(mob.X) || math.IsInf(mob.X, 0) ||
+            math.IsNaN(mob.Y) || math.IsInf(mob.Y, 0) {
             s.close()
             return false
         }
-        entity:=C.TerraniaEntity{kind:1,x:C.double(mob.X),y:C.double(mob.Y),
-            hp:C.int32_t(mob.HP),state:0}
-        handle,exists:=s.handles[id]
-        if !exists {
-            var h C.uint64_t
-            if C.terrania_arena_spawn(s.owner.ptr,entity,&h)!=0 {
-                s.close()
-                return false
-            }
-            handle=uint64(h)
-            s.handles[id]=handle
+        entity := C.TerraniaEntity{
+            kind: 1, x: C.double(mob.X), y: C.double(mob.Y),
+            hp: C.int32_t(mob.HP), state: 0,
         }
-        if next>=len(s.batchHandles) {s.close();return false}
-        s.batchHandles[next]=C.uint64_t(handle)
-        s.batchEntities[next]=entity
+        if next >= len(s.batchHandles) {
+            s.close()
+            return false
+        }
+        s.batchEntities[next] = entity
+        if handle, exists := s.handles[id]; exists {
+            s.batchHandles[next] = C.uint64_t(handle)
+        } else {
+            s.newEntities = append(s.newEntities, entity)
+            s.newIDs = append(s.newIDs, id)
+            s.newIndices = append(s.newIndices, next)
+        }
         next++
     }
-    if next!=len(r.mobs) {
+    if next != len(r.mobs) {
         s.close()
         return false
+    }
+    if len(s.newEntities) > 0 {
+        count := len(s.newEntities)
+        if cap(s.newHandles) < count {
+            s.newHandles = make([]C.uint64_t, count)
+        } else {
+            s.newHandles = s.newHandles[:count]
+        }
+        // One FFI call for all newly spawned monsters, not one call per mob.
+        // Invalid batches leave native contents unchanged.
+        n := int(C.terrania_arena_spawn_batch(
+            s.owner.ptr, &s.newEntities[0], C.uint32_t(count),
+            &s.newHandles[0], C.uint32_t(count),
+        ))
+        if n != count {
+            s.close()
+            return false
+        }
+        for i, id := range s.newIDs {
+            handle := uint64(s.newHandles[i])
+            s.handles[id] = handle
+            s.batchHandles[s.newIndices[i]] = C.uint64_t(handle)
+        }
     }
     if next>0 {
         if C.terrania_arena_update_batch(s.owner.ptr,

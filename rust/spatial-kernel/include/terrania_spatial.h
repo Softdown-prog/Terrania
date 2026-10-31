@@ -70,6 +70,12 @@ void terrania_arena_free(TerraniaArena *arena);
 /* Returns 0 success, -1 invalid data, -2 stale handle, -3 full. */
 int32_t terrania_arena_spawn(TerraniaArena *arena, TerraniaEntity entity,
                             uint64_t *out_handle);
+/* Batch insert: returns count on success, -1 invalid, -2 output too small,
+ * -3 arena full, -4 allocation failure. Neither input nor output is retained.
+ * Invalid data/capacity does not partially insert records. */
+int32_t terrania_arena_spawn_batch(TerraniaArena *arena,
+                                  const TerraniaEntity *entities, uint32_t count,
+                                  uint64_t *out_handles, uint32_t capacity);
 int32_t terrania_arena_update_batch(TerraniaArena *arena, const uint64_t *handles,
                                    const TerraniaEntity *entities, uint32_t count);
 int32_t terrania_arena_despawn(TerraniaArena *arena, uint64_t handle);

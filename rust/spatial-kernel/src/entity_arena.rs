@@ -142,6 +142,46 @@ impl EntityArena {
         ))
     }
 
+    /// Insert a batch atomically for invalid inputs and capacity, using one
+    /// reservation for the dense vectors instead of one allocation per entry.
+    /// A failed reservation leaves the arena contents unchanged.
+    ///
+    /// # Errors
+    /// Returns an error for invalid entities, output capacity, exhausted slots
+    /// or memory allocation failure.
+    pub fn spawn_many(
+        &mut self,
+        entities: &[Entity],
+        handles: &mut [u64],
+    ) -> Result<usize, &'static str> {
+        if handles.len() < entities.len() {
+            return Err("insufficient capacity");
+        }
+        if entities.iter().any(|e| {
+            e.kind.0 == 0 || !e.x.is_finite() || !e.y.is_finite()
+        }) {
+            return Err("invalid entity");
+        }
+        if entities.len() > self.max_entities - self.entries.len() {
+            return Err("entity limit reached");
+        }
+        let new_slots = entities.len().saturating_sub(self.free.len());
+        if new_slots > self.max_entities - self.slots.len() {
+            return Err("slot capacity reached");
+        }
+        self.entries
+            .try_reserve(entities.len())
+            .map_err(|_| "allocation failed")?;
+        self.slots
+            .try_reserve(new_slots)
+            .map_err(|_| "allocation failed")?;
+        for (i, &entity) in entities.iter().enumerate() {
+            // All inputs, slots, and allocations were checked above.
+            handles[i] = self.spawn(entity)?.raw();
+        }
+        Ok(entities.len())
+    }
+
     #[must_use]
     pub fn get(&self, handle: EntityHandle) -> Option<&Entity> {
         let slot_index = usize::try_from(handle.0 & u64::from(u32::MAX)).ok()?;

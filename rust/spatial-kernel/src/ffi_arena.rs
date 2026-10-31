@@ -55,6 +55,56 @@ pub unsafe extern "C" fn terrania_arena_spawn(
     }
 }
 
+/// Insert a batch with one C call. Invalid input or lack of capacity
+/// rejects the whole batch without creating entities or writing handles.
+/// Returns count on success, -1 invalid input, -2 output too small,
+/// -3 no free slots, -4 allocation failure.
+///
+/// # Safety
+/// Arena must be exclusively owned and alive. For nonzero counts, entities
+/// and handles are valid initialized, disjoint arrays of their respective
+/// lengths. They must not alias the arena's memory.
+#[no_mangle]
+pub unsafe extern "C" fn terrania_arena_spawn_batch(
+    arena: *mut EntityArena,
+    entities: *const Entity,
+    count: u32,
+    handles: *mut u64,
+    capacity: u32,
+) -> i32 {
+    if arena.is_null()
+        || count as usize > crate::entity_arena::MAX_ARENA_ENTITIES
+        || (count > 0 && entities.is_null())
+        || (capacity > 0 && handles.is_null())
+    {
+        return -1;
+    }
+    if capacity < count {
+        return -2;
+    }
+    // SAFETY: caller guarantees live exclusive arena and disjoint input/output.
+    let arena = unsafe { &mut *arena };
+    let input = if count == 0 {
+        &[]
+    } else {
+        // SAFETY: caller guarantees valid readable records for the whole call.
+        unsafe { std::slice::from_raw_parts(entities, count as usize) }
+    };
+    let output = if count == 0 {
+        &mut []
+    } else {
+        // SAFETY: caller guarantees valid writable u64 entries for the call.
+        unsafe { std::slice::from_raw_parts_mut(handles, count as usize) }
+    };
+    match arena.spawn_many(input, output) {
+        Ok(n) => i32::try_from(n).unwrap_or(-1),
+        Err("insufficient capacity") => -2,
+        Err("entity limit reached" | "slot capacity reached") => -3,
+        Err("allocation failed") => -4,
+        Err(_) => -1,
+    }
+}
+
 /// Apply a collision-free batch of entity snapshots without retaining inputs.
 /// Validates the ENTIRE batch first to avoid partial updates on invalid data.
 /// Return 0 for success, -1 invalid input, -2 stale/unknown handle.
