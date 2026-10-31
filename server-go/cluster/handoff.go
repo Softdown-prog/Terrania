@@ -46,6 +46,7 @@ type TransferTicket struct {
 
 type pendingTransfer struct {
 	ticket   TransferTicket
+	frozen   bool
 	staged   bool
 	quiesced bool
 }
@@ -130,7 +131,7 @@ func (d *RegionDirectory) CanSimulate(p Province, worker string, epoch uint64) b
 	defer d.mu.Unlock()
 	s, ok := d.regions[p]
 	return ok && s.owner == worker && s.epoch == epoch &&
-		(s.pending == nil || !s.pending.quiesced)
+		(s.pending == nil || !s.pending.frozen)
 }
 
 // Begin reserves one move without changing authority. The destination must
@@ -183,6 +184,24 @@ func validTicket(s *regionState, t TransferTicket, now time.Time) error {
 	return nil
 }
 
+// FreezeSource must be called while holding the source simulator's tick lock.
+// The source must capture the exact snapshot in the same critical section as
+// Begin + FreezeSource; otherwise the digest may describe stale gameplay state.
+// Once frozen, neither source nor destination may simulate until Commit/Abort.
+func (d *RegionDirectory) FreezeSource(t TransferTicket, now time.Time) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	s, ok := d.regions[t.Province]
+	if !ok {
+		return ErrRegionUnknown
+	}
+	if err := validTicket(s, t, now); err != nil {
+		return err
+	}
+	s.pending.frozen = true
+	return nil
+}
+
 // StageDestination records that an inactive destination loaded a complete
 // snapshot whose SHA-256 matches the ticket. It is still NOT authoritative.
 func (d *RegionDirectory) StageDestination(t TransferTicket, digest [32]byte, now time.Time) error {
@@ -194,6 +213,9 @@ func (d *RegionDirectory) StageDestination(t TransferTicket, digest [32]byte, no
 	}
 	if err := validTicket(s, t, now); err != nil {
 		return err
+	}
+	if !s.pending.frozen {
+		return ErrHandoffNotReady
 	}
 	if digest != t.Digest {
 		return ErrHandoffInvalid
@@ -214,7 +236,7 @@ func (d *RegionDirectory) QuiesceSource(t TransferTicket, now time.Time) error {
 	if err := validTicket(s, t, now); err != nil {
 		return err
 	}
-	if !s.pending.staged {
+	if !s.pending.frozen || !s.pending.staged {
 		return ErrHandoffNotReady
 	}
 	s.pending.quiesced = true
@@ -236,7 +258,7 @@ func (d *RegionDirectory) Commit(t TransferTicket, now time.Time) (Ownership, er
 	if err := validTicket(s, t, now); err != nil {
 		return Ownership{}, err
 	}
-	if !s.pending.staged || !s.pending.quiesced {
+	if !s.pending.frozen || !s.pending.staged || !s.pending.quiesced {
 		return Ownership{}, ErrHandoffNotReady
 	}
 	s.owner = t.To

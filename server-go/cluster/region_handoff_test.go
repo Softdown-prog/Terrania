@@ -90,6 +90,7 @@ func TestHandoffRequiresDigestQuiescenceAndFencesOldEpoch(t *testing.T) {
 		t.Fatalf("committed before quiescence: %v", err)
 	}
 	wrong := sha256.Sum256([]byte("corrupted"))
+	if err := d.FreezeSource(ticket, now); err != nil { t.Fatal(err) }
 	if err := d.StageDestination(ticket, wrong, now); !errors.Is(err, ErrHandoffInvalid) {
 		t.Fatalf("accepted corrupt snapshot: %v", err)
 	}
@@ -139,6 +140,7 @@ func TestHandoffExpirationAndExplicitRecovery(t *testing.T) {
 	if err := d.StageDestination(ticket, h, now.Add(HandoffTTL+time.Nanosecond)); !errors.Is(err, ErrHandoffExpired) {
 		t.Fatalf("accepted expired stage: %v", err)
 	}
+	if err := d.FreezeSource(ticket, now); err != nil { t.Fatal(err) }
 	if err := d.StageDestination(ticket, h, now); err != nil {
 		t.Fatal(err)
 	}
@@ -221,6 +223,7 @@ func TestParallelProvinceTransfersRemainIsolated(t *testing.T) {
 				errorsCh <- err
 				return
 			}
+			if err := d.FreezeSource(ticket, now); err != nil { errorsCh <- err; return }
 			if err := d.StageDestination(ticket, h, now); err != nil {
 				errorsCh <- err
 				return
@@ -244,4 +247,21 @@ func TestParallelProvinceTransfersRemainIsolated(t *testing.T) {
 	for err := range errorsCh {
 		t.Error(err)
 	}
+}
+
+func TestSnapshotCannotStageUntilSourceIsFrozen(t *testing.T) {
+	d := testDirectory(t)
+	province := Province{X: 50, Y: -20}
+	now := time.Unix(5_000, 0)
+	_, _ = d.Register(province, "east")
+	digest := sha256.Sum256([]byte("snapshot must be stable"))
+	ticket, err := d.Begin(province, "east", "west", 1, digest, now)
+	if err != nil { t.Fatal(err) }
+	if err := d.StageDestination(ticket, digest, now); !errors.Is(err, ErrHandoffNotReady) {
+		t.Fatalf("staged a potentially stale source state: %v", err)
+	}
+	if !d.CanSimulate(province, "east", 1) { t.Fatal("source prematurely frozen") }
+	if err := d.FreezeSource(ticket, now); err != nil { t.Fatal(err) }
+	if d.CanSimulate(province, "east", 1) { t.Fatal("source was not fenced on freeze") }
+	if err := d.StageDestination(ticket, digest, now); err != nil { t.Fatal(err) }
 }
