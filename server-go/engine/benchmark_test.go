@@ -116,3 +116,31 @@ func benchmarkMonsterBatch(b *testing.B, count int) {
         stepMonstersWithScratch(guests, mobs, .05, world, &scratch)
     }
 }
+
+// BenchmarkMonsterActiveTargets1024 restores the SAME active-target state
+// before every measured tick. Unlike long-running drift scenarios, this keeps
+// real chase/collision work present in both Go and Rust implementations.
+// Reset overhead is intentionally identical on both paths.
+func BenchmarkMonsterActiveTargets1024(b *testing.B) {
+    world := World{Seed:842136}
+    player := NewPlayer()
+    player.X, player.Y = 1400,1400
+    guests := []*Guest{{Actor:player}}
+    mobs := make([]*Slime,1024)
+    base := make([]Slime,len(mobs))
+    for i := range mobs {
+        m := NewSlime(fmt.Sprintf("active-%d",i),
+            1435+float64(i%32)*2,1400+float64(i/32)*2)
+        mobs[i] = m
+        base[i] = *m
+    }
+    var scratch monsterScratch
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i:=0;i<b.N;i++ {
+        for j,m := range mobs {
+            *m = base[j]
+        }
+        stepMonstersWithScratch(guests,mobs,.05,world,&scratch)
+    }
+}
