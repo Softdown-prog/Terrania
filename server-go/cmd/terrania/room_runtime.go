@@ -16,6 +16,7 @@ type roomSession struct {
 	mu sync.Mutex
 	room *engine.Room
 	clients map[*client]struct{}
+	members int // reserved seats: only gameServer.mu, never wait for room.mu
 	stop chan struct{}
 	ticks atomic.Uint64
 	overruns atomic.Uint64
