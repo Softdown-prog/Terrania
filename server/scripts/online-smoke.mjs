@@ -29,11 +29,11 @@ async function get(url) {
 // connection below. Cloudflare build checks the configured endpoint across
 // all built JS chunks (the Angular runtime can lazy-load game modules).
 async function verifyPublishedScripts(html, publicOrigin) {
-  const entryAssets = [...html.matchAll(/<script\\b[^>]*\\bsrc="([^"]+\\.js)"/g)].map(m => m[1]);
+  const entryAssets = [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+\.js)"/g)].map(m => m[1]);
   assert.ok(entryAssets.length, "HTML do jogo não referencia script Angular");
   for (const asset of entryAssets) {
     const js = await get(new URL(asset, publicOrigin + "/").href);
-    assert.ok(js.length > 256 && !/^\\s*</.test(js), "bundle Angular inválido: " + asset);
+    assert.ok(js.length > 256 && !/^\s*</.test(js), "bundle Angular inválido: " + asset);
     console.log("  bundle Angular publicado:", asset);
   }
 }
