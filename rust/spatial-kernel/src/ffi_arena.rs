@@ -323,36 +323,18 @@ mod tests {
         // SAFETY: live arena and disjoint stack arrays, single thread owner.
         unsafe {
             assert_eq!(
-                terrania_arena_spawn_batch(
-                    arena,
-                    invalid.as_ptr(),
-                    3,
-                    handles.as_mut_ptr(),
-                    3
-                ),
+                terrania_arena_spawn_batch(arena, invalid.as_ptr(), 3, handles.as_mut_ptr(), 3),
                 -1
             );
             assert_eq!(terrania_arena_len(arena), 0);
             assert_eq!(handles, [0, 0, 0]);
             assert_eq!(
-                terrania_arena_spawn_batch(
-                    arena,
-                    valid.as_ptr(),
-                    3,
-                    handles.as_mut_ptr(),
-                    2
-                ),
+                terrania_arena_spawn_batch(arena, valid.as_ptr(), 3, handles.as_mut_ptr(), 2),
                 -2
             );
             assert_eq!(terrania_arena_len(arena), 0);
             assert_eq!(
-                terrania_arena_spawn_batch(
-                    arena,
-                    valid.as_ptr(),
-                    3,
-                    handles.as_mut_ptr(),
-                    3
-                ),
+                terrania_arena_spawn_batch(arena, valid.as_ptr(), 3, handles.as_mut_ptr(), 3),
                 3
             );
             assert_eq!(terrania_arena_len(arena), 3);
@@ -361,13 +343,7 @@ mod tests {
             assert_eq!(terrania_arena_despawn(arena, old), 0);
             let mut replacement = [0u64; 1];
             assert_eq!(
-                terrania_arena_spawn_batch(
-                    arena,
-                    valid.as_ptr(),
-                    1,
-                    replacement.as_mut_ptr(),
-                    1
-                ),
+                terrania_arena_spawn_batch(arena, valid.as_ptr(), 1, replacement.as_mut_ptr(), 1),
                 1
             );
             assert_ne!(old, replacement[0]);
