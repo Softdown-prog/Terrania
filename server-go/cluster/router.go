@@ -28,7 +28,7 @@ func NewRouter(spec string) (*Router,error) {
 		id:=parts[0]
 		if len(id)<1||len(id)>32 {return nil,errors.New("shard ID length must be 1..32")}
 		for _,c:=range id {
-			if !((c>='a'&&c<='z')||(c>='0'&&c<='9')||c=='-') {return nil,fmt.Errorf("invalid shard ID: %q",id)}
+			if (c<'a'||c>'z')&&(c<'0'||c>'9')&&c!='-' {return nil,fmt.Errorf("invalid shard ID: %q",id)}
 		}
 		if ids[id] {return nil,fmt.Errorf("duplicate shard ID: %s",id)}
 		u,err:=url.Parse(parts[1])

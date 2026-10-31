@@ -3,6 +3,8 @@ import { once } from "node:events";
 import { setTimeout as sleep } from "node:timers/promises";
 import WebSocket from "ws";
 import { PROTOCOL_VERSION } from "../../src/shared/protocol.ts";
+import { checkPublishedFrontend } from "../../scripts/check-published-frontend.mjs";
+import { parsePresence } from "../../src/net/presence.ts";
 
 // Read-only public smoke test. Two short-lived guests in a unique room.
 const origin = "https://rpg.analysepro.com";
@@ -32,26 +34,28 @@ async function until(predicate, label, ms = 8_000) {
     await sleep(50);
   }
 }
-for (const publicOrigin of [origin]) {
-  await check("frontend publicado em " + publicOrigin, async () => {
-    const site = await get(publicOrigin + "/");
-    const pageTitle = site.match(/<title>([^<]*)<\/title>/i)?.[1] ?? "(sem titulo)";
-    console.log("  homepage:", pageTitle);
-    assert.ok(site.includes("/jogar/"), "homepage ainda não é site de apresentação alfa 0.3");
-    const game = await get(publicOrigin + "/jogar/");
-    const gameTitle = game.match(/<title>([^<]*)<\/title>/i)?.[1] ?? "(sem titulo)";
-    console.log("  jogo:", gameTitle);
-    assert.ok(game.includes("ALFA 0.3"), "jogo publicado não é alfa 0.3");
-    const assets = [...game.matchAll(/<script[^>]*src="([^"]+\.js)"/g)].map(m => m[1]);
-    assert.ok(assets.length, "HTML do jogo não referencia bundle JS");
-    const scripts = await Promise.all(assets.map(asset => get(new URL(asset, publicOrigin).href)));
-    assert.ok(scripts.some(code => code.includes(endpoint)), "variável WSS não aparece no bundle publicado");
-  });
-}
+await check("frontend Angular publicado em " + origin, async () => {
+  const result = await checkPublishedFrontend({ origin, endpoint, get });
+  console.log("  homepage:", result.homepage);
+  console.log("  jogo:", result.game);
+  console.log("  bundles publicados:", result.bundles, "· WSS configurado");
+});
 await check("health público da VPS", async () => {
   const health = JSON.parse(await get(api + "/health"));
   assert.equal(health.status, "ok");
   if (process.env.EXPECTED_SHA) assert.equal(health.revision, process.env.EXPECTED_SHA);
+});
+await check("presença pública com CORS e dados atuais", async () => {
+  const res = await fetch(api + "/presence", { headers: { Origin: origin },
+    signal: AbortSignal.timeout(10_000), cache: "no-store" });
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("access-control-allow-origin"), origin);
+  assert.equal(res.headers.get("cache-control"), "no-store");
+  const presence = parsePresence(await res.json());
+  assert.ok(presence, "presença pública inválida");
+  const age = Date.now() - Date.parse(presence.updatedAt);
+  assert.ok(age <= 15_000 && age >= -60_000, "presença pública desatualizada");
+  console.log("  conexões ativas:", presence.online, "salas:", presence.rooms);
 });
 await check("dois jogadores e movimento autoritativo por WSS público", async () => {
   const streams = [[], []];
@@ -73,6 +77,9 @@ await check("dois jogadores e movimento autoritativo por WSS público", async ()
       messages.some(m => m.type === "state" && m.players?.length === 2)
     ), "dois jogadores no mesmo mundo, protocolo " + PROTOCOL_VERSION);
     const welcomes = streams.map(messages => messages.find(m => m.type === "welcome"));
+    const presence = parsePresence(JSON.parse(await get(api + "/presence")));
+    assert.ok(presence && presence.online >= 2 && presence.rooms >= 1,
+      "presença pública não inclui as duas conexões confirmadas");
     assert.equal(welcomes[0].room, room);
     assert.equal(welcomes[1].room, room);
     assert.equal(welcomes[0].seed, welcomes[1].seed);

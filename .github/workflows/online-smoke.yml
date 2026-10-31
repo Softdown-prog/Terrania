@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - "server/scripts/online-smoke.mjs"
+      - "scripts/check-published-frontend.mjs"
       - ".github/workflows/online-smoke.yml"
   workflow_dispatch:
 
