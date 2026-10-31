@@ -172,8 +172,10 @@ func (c *GrantCoordinator) replay() error {
 		}
 		old, exists := c.states[r.Province]
 		switch {
-		case !exists && (r.Epoch != 1 || r.Sequence != 1 || r.Fenced):
-			return ErrGrantCorrupt
+		case !exists:
+			if r.Epoch != 1 || r.Sequence != 1 || r.Fenced {
+				return ErrGrantCorrupt
+			}
 		case exists && r.Fenced:
 			if old.Fenced || r.WorkerID != old.WorkerID || r.BootID != old.BootID ||
 				r.Epoch != old.Epoch || r.Sequence != old.Sequence ||
