@@ -39,7 +39,7 @@ func fixture(points []point) (int, int, uint64) {
 			}
 		}
 		best := 160.0 * 160.0
-		nearest := uint32(math.MaxUint32)
+		nearest := uint32(^uint32(0))
 		for i, p := range points {
 			if !math.IsNaN(p.x) && !math.IsInf(p.x, 0) &&
 				!math.IsNaN(p.y) && !math.IsInf(p.y, 0) {
@@ -50,7 +50,7 @@ func fixture(points []point) (int, int, uint64) {
 				}
 			}
 		}
-		if nearest != math.MaxUint32 { found++ }
+		if nearest != ^uint32(0) { found++ }
 		digestU32(&digest, nearest)
 	}
 	return hits, found, digest
