@@ -40,6 +40,7 @@ async function verifyPublishedMultiplayerBundle(html, publicOrigin) {
     if (asset.origin !== publicOrigin || !asset.pathname.endsWith(".js") || seen.has(asset.href)) continue;
     seen.add(asset.href);
     const source = await get(asset.href);
+    console.log("  asset:", asset.pathname, "bytes:", source.length, "head:", source.slice(0, 120), "chunk refs:", (source.match(/chunk-[A-Za-z0-9_-]+\.js/g) ?? []).slice(0, 5));
     if (source.includes(endpoint)) {
       console.log("  WSS encontrado no bundle publicado:", asset.pathname);
       return;
