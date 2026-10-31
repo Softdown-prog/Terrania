@@ -1,5 +1,7 @@
 # Índice — scripts de build e ferramentas de desenvolvimento
 
+Servidor MCP local (pacote separado): [tools/mcp-navigation/README.md](../tools/mcp-navigation/README.md).
+
 ## Navegação entre modelos de IA
 - [find-ai-files.mjs](find-ai-files.mjs): busca limitada de arquivos versionados pelo nome/caminho (`npm run ai:find`).
 - [audit-ai-navigation.mjs](audit-ai-navigation.mjs): contagem de arquivos, módulos maiores e sugestões de índices (`npm run ai:audit`).

@@ -56,6 +56,10 @@ Cada chamada retorna **um objeto JSON** com `schemaVersion: 1` e `kind: "find" |
 
 A implementação reutilizável está em [scripts/ai-navigation-api.mjs](../scripts/ai-navigation-api.mjs), sem importar SDK de MCP. Uma integração futura poderá chamar essas funções diretamente e adicionar autenticação/controle de acesso, sem iniciar portas ou serviços agora. A saída **não** é protocolo MCP por si só, apenas um contrato local testável.
 
+## Servidor MCP local de navegação
+
+A implementação isolada de MCP está em [tools/mcp-navigation/README.md](../tools/mcp-navigation/README.md). Expondo somente leitura por `stdio`, ela reutiliza `ai:find`, `ai:audit` e os `INDEX.md`, e adiciona busca literal de símbolos e leitura limitada de linhas. **Não é um servidor HTTP, não faz deploy e não altera a simulação.** A instalação npm do pacote MCP é independente do frontend.
+
 ## Navegação eficiente
 1. Leia [AGENTS.md](../AGENTS.md) e o índice local **somente** da tarefa atual.
 2. Busque símbolos com `rg -n 'NomeDoSimbolo' src server server-go rust` e caminhos com `rg --files src/engine` (ajuste a pasta).

@@ -1,0 +1,22 @@
+{
+  "name": "@terrania/mcp-navigation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --experimental-strip-types src/server.mts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.mts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.4.0",
+    "zod": "4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "typescript": "6.0.3"
+  }
+}

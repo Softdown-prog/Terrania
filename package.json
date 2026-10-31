@@ -13,7 +13,8 @@
     "check:ai-index": "node scripts/check-ai-navigation.mjs",
     "ai:find": "node scripts/find-ai-files.mjs",
     "ai:audit": "node scripts/audit-ai-navigation.mjs",
-    "ai:query": "node scripts/ai-navigation-query.mjs"
+    "ai:query": "node scripts/ai-navigation-query.mjs",
+    "check:mcp": "npm run typecheck --prefix tools/mcp-navigation && npm test --prefix tools/mcp-navigation"
   },
   "devDependencies": {
     "typescript": "6.0.3",
