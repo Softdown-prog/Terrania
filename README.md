@@ -67,7 +67,7 @@ Os `npm ci` devem ser feitos antes. O build da interface produz `dist/`. `server
 - **VPS:** Docker Compose isolado (`server/compose.yml`) com orçamento inicial de 256 MiB e 0,5 CPU, com `ALLOWED_ORIGINS` restrito à origem HTTPS real.
 - **Caddy:** TLS/WSS na frente do backend. Se o Caddy é um contêiner, configure a rede compartilhada: `localhost` dentro dele não aponta para a VPS.
 
-**Leia antes de instalar:** [`docs/MULTIPLAYER_VPS.md`](docs/MULTIPLAYER_VPS.md). Não há deploy remoto automático nem modificação de serviços existentes nesta entrega.
+**Leia antes de instalar:** [`docs/MULTIPLAYER_VPS.md`](docs/MULTIPLAYER_VPS.md). A publicação do frontend está preparada em `.github/workflows/deploy-pages.yml` e exige credenciais Cloudflare Pages configuradas no GitHub. Nenhuma etapa deste fluxo modifica serviços da VPS.
 
 ## Escopo e repositório
 

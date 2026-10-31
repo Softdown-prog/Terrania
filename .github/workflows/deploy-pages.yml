@@ -1,0 +1,82 @@
+name: Publicar Terrania no Cloudflare Pages
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '404.html'
+      - '*/index.html'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.mjs'
+      - 'scripts/verify-build.mjs'
+      - 'scripts/resolve-pages-project.mjs'
+      - 'scripts/verify-live-theme.mjs'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terrania-pages-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'Softdown-prog/Terrania' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TERRANIA_PAGES_PROJECT: ${{ vars.TERRANIA_PAGES_PROJECT }}
+      VITE_MULTIPLAYER_URL: ${{ vars.TERRANIA_MULTIPLAYER_URL || 'wss://api-rpg.analysepro.com/ws' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Verificar credenciais e identificar o projeto Pages do domínio
+        id: pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$CLOUDFLARE_ACCOUNT_ID" || -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            echo "::error::Configure os secrets CLOUDFLARE_ACCOUNT_ID e CLOUDFLARE_API_TOKEN no repositório Terrania."
+            exit 1
+          fi
+          node scripts/resolve-pages-project.mjs >> "$GITHUB_OUTPUT"
+
+      - name: Instalar dependências
+        run: npm ci
+      - name: Validar tipos, regressões e gerar as nove páginas
+        run: |
+          npm run typecheck
+          npm test
+          npm run build
+
+      - name: Preservar endpoint multiplayer e tema no build
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '#0b0812' dist/index.html
+          grep -R -F -q '#b986ff' dist/assets --include='*.css'
+          grep -R -F -q "$VITE_MULTIPLAYER_URL" dist/assets --include='*.js'
+
+      - name: Publicar somente no projeto Pages vinculado a rpg.analysepro.com
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ steps.pages.outputs.project }} --branch=main --commit-hash=${{ github.sha }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Confirmar nova paleta publicada no domínio público
+        env:
+          TERRANIA_RELEASE_SHA: ${{ github.sha }}
+        run: node scripts/verify-live-theme.mjs

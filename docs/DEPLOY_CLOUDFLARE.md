@@ -39,3 +39,17 @@ Documentação oficial: https://developers.cloudflare.com/pages/configuration/bu
 O build gera nove HTMLs, incluindo `/jogar/index.html` e `/404.html`. O comando continua `npm run build`, com saída `dist`. `scripts/verify-build.mjs` falha se uma página, asset, âncora ou link interno estiver faltando.
 
 Atualize também o servidor da VPS para o protocolo 2 antes de validar o online da nova física. Um backend antigo mantém o novo cliente em modo solo com aviso explícito. Consulte [site e alfa 0.3](SITE_E_ALFA_03.md).
+
+## Publicação automática (a partir da correção de deploy)
+A CI de `.github/workflows/ci.yml` executa apenas verificações e **não publica** no Cloudflare. O workflow `.github/workflows/deploy-pages.yml` publica novas alterações de site na `main`, ou pode ser executado manualmente via Actions.
+
+**Configurar em Settings → Secrets and variables → Actions do repositório Terrania:**
+- Secret `CLOUDFLARE_ACCOUNT_ID`: ID de 32 caracteres da conta Cloudflare.
+- Secret `CLOUDFLARE_API_TOKEN`: token da conta com permissão de ler/editar projetos Pages.
+- Variable opcional `TERRANIA_PAGES_PROJECT`: nome exato do projeto Pages; o workflow também pode identificá-lo pela associação do domínio `rpg.analysepro.com`.
+
+O deploy **falha antes de publicar** se não conseguir confirmar que o domínio `rpg.analysepro.com` pertence ao projeto Pages selecionado. Caso o domínio esteja em um **Cloudflare Worker**, o fluxo deve ser adaptado para Worker; não apontar para um projeto Pages diferente.
+
+A variável pública `TERRANIA_MULTIPLAYER_URL` é opcional. O padrão é `wss://api-rpg.analysepro.com/ws`, endereço de multiplayer verificado no script de smoke. Se o endpoint mudar, atualize essa variável antes de publicar.
+
+Após o upload, o workflow busca a página inicial, o guia e os arquivos CSS **no domínio público** até confirmar a paleta `#0b0812`/`#b986ff`. Assim um CI verde não será confundido com um site realmente atualizado. O deploy não acessa ou reinicia a VPS.
