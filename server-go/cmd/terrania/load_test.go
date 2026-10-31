@@ -137,7 +137,7 @@ func TestInvalidAndRateLimitedMessages(t *testing.T) {
         srv:=httptest.NewServer(s.handler())
         defer srv.Close()
         ws:=connectLoad(t,srv.URL,"origins")
-        defer ws.Close()
+        defer func(){_ = ws.Close()}()
         for _,raw:=range tc.messages {
             if err:=ws.WriteMessage(websocket.TextMessage,[]byte(raw));err!=nil {break}
         }

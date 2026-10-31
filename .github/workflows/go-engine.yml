@@ -24,14 +24,52 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Compilar e executar testes Go com detector de corrida
+      - name: Instalar golangci-lint v2.15.0
+        uses: golangci/golangci-lint-action@v9.3.0
+        with:
+          version: v2.15.0
+          working-directory: server-go
+          install-only: true
+      - name: Run Linters & Race Detector
         working-directory: server-go
         run: |
+          set -euo pipefail
           go mod verify
-          go test -race -count=1 ./...
+          golangci-lint run
+          go test -v -race -count=1 ./...
           go vet ./...
           go build ./cmd/terrania
           go build ./cmd/gateway
+      - name: Iniciar servidor real Go com instrumentacao -race (runner isolado)
+        working-directory: server-go
+        timeout-minutes: 3
+        env:
+          PORT: '18888'
+          ALLOWED_ORIGINS: 'http://localhost:5173'
+          NODE_ENV: test
+        run: |
+          set -euo pipefail
+          go run -race ./cmd/terrania > /tmp/terrania-go-race.log 2>&1 &
+          go_run_pid=$!
+          cleanup() {
+            pkill -TERM -P "$go_run_pid" 2>/dev/null || true
+            kill "$go_run_pid" 2>/dev/null || true
+            wait "$go_run_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          for i in $(seq 1 60); do
+            if curl --fail --silent --max-time 1 http://127.0.0.1:18888/health | grep -q '"engine":"go"'; then
+              echo 'Go +race: WebSocket de dois jogadores e health aprovados.'
+              exit 0
+            fi
+            if ! kill -0 "$go_run_pid" 2>/dev/null; then
+              cat /tmp/terrania-go-race.log
+              exit 1
+            fi
+            sleep 1
+          done
+          cat /tmp/terrania-go-race.log
+          exit 1
       - name: Testar 1000 conexoes WebSocket sem acessar VPS
         working-directory: server-go
         timeout-minutes: 3

@@ -18,7 +18,7 @@ func TestConfigurableCapacityAndMetrics(t *testing.T){
 	defer server.Close()
 	res,err:=http.Get(server.URL+"/status")
 	if err!=nil {t.Fatal(err)}
-	defer res.Body.Close()
+	defer func(){_ = res.Body.Close()}()
 	var status map[string]any
 	if err:=json.NewDecoder(res.Body).Decode(&status);err!=nil {t.Fatal(err)}
 	if status["maxClients"]!=float64(1000)||status["maxRooms"]!=float64(84) {
