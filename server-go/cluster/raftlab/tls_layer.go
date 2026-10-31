@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"net/url"
 	"sync"
 	"time"
 
@@ -146,4 +145,3 @@ func (l *TLSLayer) Close()error {
 }
 
 var _ raft.StreamLayer=(*TLSLayer)(nil)
-var _ = url.URL{}
