@@ -36,6 +36,9 @@ type ElectionVote struct {
 	CandidateID string
 	Term        uint64
 	Signature   string
+	// Tip is included in the signed payload for log-aware votes.
+	// Nil means legacy/offline-only election evidence.
+	Tip         *ReplicaLogTip `json:",omitempty"`
 }
 
 type electionPayload struct {
@@ -44,12 +47,13 @@ type electionPayload struct {
 	MemberID    string
 	CandidateID string
 	Term        uint64
+	Tip         *ReplicaLogTip `json:",omitempty"`
 }
 
 func (v ElectionVote) payload() ([]byte, error) {
 	return json.Marshal(electionPayload{
 		Domain: "terrania/election-vote/v1", ClusterID: v.ClusterID, MemberID: v.MemberID,
-		CandidateID: v.CandidateID, Term: v.Term,
+		CandidateID: v.CandidateID, Term: v.Term, Tip: v.Tip,
 	})
 }
 
