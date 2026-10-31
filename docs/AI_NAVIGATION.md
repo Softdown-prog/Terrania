@@ -26,6 +26,18 @@ npm run ai:find -- 'room runtime' --limit 10
 
 Limite padrão: **20 caminhos**, máximo **100** por chamada. Para encontrar símbolos **dentro** do código, use `rg -n` no módulo já identificado. A busca por caminhos é complementar aos `INDEX.md`, não substitui os índices de arquitetura.
 
+## Auditoria de crescimento dos módulos
+
+Para identificar onde novos índices são úteis, sem criar dezenas de `INDEX.md` vazios:
+
+```bash
+npm run ai:audit
+npm run ai:audit -- --scope src --min-files 40 --limit 10
+npm run ai:audit -- --json
+```
+
+A auditoria conta somente fontes e documentos versionados, excluindo builds e dependências. Mostra até 15 diretórios por padrão, seus arquivos diretos/totais, presença de `INDEX.md` local e pastas candidatas acima do limite (20 arquivos por padrão). **É um relatório, não modifica arquivos nem falha o CI:** criar e manter os índices depende da revisão humana. O teste automatizado cobre uma árvore sintética de 15 mil fontes.
+
 ## Navegação eficiente
 1. Leia [AGENTS.md](../AGENTS.md) e o índice local **somente** da tarefa atual.
 2. Busque símbolos com `rg -n 'NomeDoSimbolo' src server server-go rust` e caminhos com `rg --files src/engine` (ajuste a pasta).

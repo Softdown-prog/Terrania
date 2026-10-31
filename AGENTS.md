@@ -17,6 +17,6 @@ Comece pelo [mapa de navegação](docs/AI_NAVIGATION.md) e abra **apenas o índi
 4. Node: `npm run typecheck --prefix server && npm test --prefix server && npm run build --prefix server`.
 5. Go: `cd server-go && go test -race -count=1 ./... && go vet ./...`.
 6. Rust: veja [índice Rust](rust/spatial-kernel/INDEX.md) para fmt, clippy e testes.
-7. Índices: `npm run check:ai-index`; atualize referências se arquivos forem movidos.
+7. Índices: `npm run check:ai-index` verifica links; `npm run ai:audit -- --min-files 40` mostra módulos candidatos à documentação. Atualize índices ao mover arquivos.
 
 Não faça merge na `main`, PR, deploy na Cloudflare ou alteração da VPS sem solicitação explícita. Não coloque segredos em variáveis `VITE_*`. Índices Markdown são documentos, não exports `index.ts`. Se a documentação divergir do código, confirme no código e corrija o índice.
