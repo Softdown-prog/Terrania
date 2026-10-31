@@ -71,13 +71,13 @@ func TestRoomLimitAndIsolation(t *testing.T) {
     }
     deniedLoad(t,srv.URL,"origins",http.StatusServiceUnavailable)
     s.mu.Lock()
-    if len(s.rooms)!=8||len(s.rooms["origins"].Guests)!=12 {
+    if len(s.rooms)!=8||len(s.rooms["origins"].room.Guests)!=12 {
         s.mu.Unlock();t.Fatal("room or room-client limits wrong")
     }
-    roomState:=s.rooms["room1"].SnapshotFor(
+    roomState:=s.rooms["room1"].room.SnapshotFor(
         // Snapshot must only reveal players of this room, not origins.
         func() string {
-            for id:=range s.rooms["room1"].Guests{return id}
+            for id:=range s.rooms["room1"].room.Guests{return id}
             return ""
         }(),
     )
