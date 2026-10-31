@@ -63,3 +63,45 @@ jobs:
           echo '### Region ownership prototype — local only' >> "$GITHUB_STEP_SUMMARY"
           echo '512 regions x 3 concurrent transfer tests and live engine state roundtrip, with the Go race detector.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Durable log-aware election safety and bounded same-term replica catch-up tested offline. Not Raft, no production leader/worker activation or VPS deploy.' >> "$GITHUB_STEP_SUMMARY"
+
+  raftlab-offline:
+    name: Raft library quorum laboratory (no deploy)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: server-go/cluster/raftlab
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/cluster/raftlab/go.mod
+          cache: false
+      - name: Verify pinned Raft module graph
+        run: |
+          set -euo pipefail
+          go mod tidy
+          if [[ -n "$(git status --porcelain -- go.mod go.sum)" ]]; then
+            echo 'Raft laboratory module graph is not committed'
+            for file in go.mod go.sum; do
+              echo "RAFT_MODULE_FILE=server-go/cluster/raftlab/$file BASE64=$(base64 -w0 "$file")"
+            done
+            exit 1
+          fi
+          go mod verify
+      - name: Enforce gofmt in isolated Raft module
+        run: |
+          set -euo pipefail
+          gofmt -w fsm.go cluster.go cluster_test.go
+          if [[ -n "$(git status --porcelain -- fsm.go cluster.go cluster_test.go)" ]]; then
+            for file in fsm.go cluster.go cluster_test.go; do
+              echo "RAFT_FORMATTED_FILE=server-go/cluster/raftlab/$file BASE64=$(base64 -w0 "$file")"
+            done
+            exit 1
+          fi
+      - name: Raft consensus and partition tests with race detector
+        run: |
+          set -euo pipefail
+          go vet ./...
+          go test -race -count=1 -timeout=120s ./...
+          go test -count=1 -timeout=120s ./...
