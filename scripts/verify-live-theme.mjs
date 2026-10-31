@@ -13,6 +13,10 @@ async function get(path) {
   return response.text();
 }
 async function verify() {
+  if (release !== "manual") {
+    const deployed = JSON.parse(await get("/release.json"));
+    if (deployed.sha !== release) throw new Error("O domínio ainda não serve o SHA esperado.");
+  }
   const home = await get("/");
   if (!/<meta\s+name="theme-color"\s+content="#0b0812"/.test(home)) {
     throw new Error("Página inicial ainda apresenta o tema antigo.");
@@ -42,4 +46,4 @@ for (let attempt = 1; attempt <= 12; attempt++) {
   }
 }
 throw new Error("O domínio não está servindo a revisão nova: " + last?.message +
-  ". Verifique o domínio vinculado ao projeto Pages e o cache na Cloudflare.");
+  ". Verifique o domínio vinculado ao Worker e o cache na Cloudflare.");
