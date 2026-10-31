@@ -330,7 +330,10 @@ mod tests {
         assert_eq!(arena.len(), MAX_ARENA_ENTITIES);
         assert!(arena.spawn(entity(EntityKind::MONSTER, 0)).is_err());
         let bytes = arena.allocated_bytes();
-        assert!(bytes < 48 * 1024 * 1024, "native arena allocated {bytes} bytes");
+        assert!(
+            bytes < 48 * 1024 * 1024,
+            "native arena allocated {bytes} bytes"
+        );
         let started = Instant::now();
         for (i, &handle) in handles.iter().enumerate() {
             let updated = Entity {
@@ -356,7 +359,11 @@ mod tests {
         }
         assert_eq!(arena.len(), MAX_ARENA_ENTITIES);
         assert!(handles.iter().step_by(2).all(|&h| arena.get(h).is_none()));
-        assert!(handles.iter().skip(1).step_by(2).all(|&h| arena.get(h).is_some()));
+        assert!(handles
+            .iter()
+            .skip(1)
+            .step_by(2)
+            .all(|&h| arena.get(h).is_some()));
         println!(
             "arena_200k: spawn_200k_ms={} update_200k_ms={} despawn_100k_ms={} native_capacity_bytes={}",
             spawn_time.as_millis(),
@@ -365,5 +372,4 @@ mod tests {
             bytes
         );
     }
-
 }

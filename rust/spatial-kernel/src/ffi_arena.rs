@@ -11,8 +11,7 @@ pub extern "C" fn terrania_arena_new(capacity: u32) -> *mut EntityArena {
     match EntityArena::new(capacity as usize) {
         Ok(arena) => Box::into_raw(Box::new(arena)),
         Err(_) => std::ptr::null_mut(),
-    }
-}
+    }}
 
 /// Release the opaque arena. The pointer becomes invalid immediately.
 ///
@@ -288,11 +287,19 @@ mod tests {
             let mut check = monster(0.0);
             assert_eq!(terrania_arena_get(arena, handles[0], &raw mut check), 0);
             assert_eq!(check.x, 1.0);
-            assert_eq!(terrania_arena_get(arena, handles[COUNT - 1], &raw mut check), 0);
+            assert_eq!(
+                terrania_arena_get(arena, handles[COUNT - 1], &raw mut check),
+                0
+            );
             assert_eq!(check.x, COUNT as f64);
             // Out-of-range count must be rejected before accessing any buffer.
             assert_eq!(
-                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), (COUNT + 1) as u32),
+                terrania_arena_update_batch(
+                    arena,
+                    handles.as_ptr(),
+                    values.as_ptr(),
+                    (COUNT + 1) as u32
+                ),
                 -1
             );
             // Invalid final element must not partially apply earlier updates.
@@ -304,7 +311,10 @@ mod tests {
             );
             assert_eq!(terrania_arena_get(arena, handles[0], &raw mut check), 0);
             assert_eq!(check.x, 1.0);
-            println!("ffi_200k: single_batch_update_200k_ms={}", batch_time.as_millis());
+            println!(
+                "ffi_200k: single_batch_update_200k_ms={}",
+                batch_time.as_millis()
+            );
             terrania_arena_free(arena);
         }
     }
