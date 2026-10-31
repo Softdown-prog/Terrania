@@ -100,6 +100,7 @@ input:focus-visible {
   color: #d1d7bf;
 }
 .stat-heading b {
+  white-space: nowrap;
   font-size: 10px;
   letter-spacing: 0.5px;
   color: #fff0cb;

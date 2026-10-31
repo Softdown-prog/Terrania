@@ -11,7 +11,7 @@
 
 - Site e interface do jogo em Angular 22.2.4, componentes standalone, sinais, rotas e AOT.
 - Migração de início, mundo, guia, novidades, comunidade, privacidade, termos e 404; navegação mobile, convites de sala, títulos/descrições e links legados com seed/room.
-- HUD, ajustes, zoom, efeitos, ajuda, fullscreen, bolsa/poções, conversas e confirmação de mundo via bindings Angular.
+- HUD, ajustes, zoom, efeitos, ajuda, fullscreen, bolsa/poções, conversas e confirmação de mundo via bindings Angular. O contador no jogo tem apresentação compacta para preservar a área de gameplay, e a vida não quebra entre linhas no celular.
 - Phaser **3.90.0** no jogo real. A Scene controla atualização, renderização, resize e ciclo de vida. `/laboratorio-phaser/` redireciona para `/jogar/`; o laboratório Phaser 4 foi removido.
 - Arte procedural preservada: os desenhistas Canvas alimentam uma CanvasTexture exibida pelo Phaser. Não foram reescritos como sprites, nem foi trocada a física por Arcade. As regras continuam independentes de Angular/Phaser e compatíveis com os backends.
 - Desmontagem da rota libera Phaser, controles, listeners, observadores, WebSocket e timer de reconexão, preservando o save solo.
@@ -72,7 +72,8 @@ O build emite `dist/` com dez entradas HTML, incluindo 404 e o antigo laboratór
 ## Verificações externas restantes
 
 - A revisão automática bloqueou `wrangler deploy --dry-run` por possível envio de configuração ao Cloudflare. Não repetir sem autorização apropriada; a compilação/verificação local do pacote passou. Nenhuma publicação foi solicitada. O passo Wrangler do CI fica restrito à main; os checks desta branch não executam esse contato externo.
-- Docker não está disponível neste ambiente local; o CI da branch tem smoke de imagens. CI e checagem de mil conexões devem ser lidos no GitHub antes de qualquer decisão de integração.
+- Docker não está disponível neste ambiente local. O CI Go da revisão `1d68dcb` passou no GitHub, incluindo detector de corrida, 1.000 conexões reais, paridade TypeScript/Go, imagens e saúde dos containers, sem acessar a VPS.
+- O primeiro CI frontend passou tipos/testes/build e parou ao instalar o Playwright no novo Ubuntu 26.04 de `ubuntu-latest`. O runner foi fixado em Ubuntu 24.04, suportado pelo instalador, e precisa concluir no novo head da branch.
 - QA em Android físico e homologação do endpoint público `/presence` dependem de revisão/ambiente posterior. Emulação não deve ser apresentada como teste no celular do Rodrigo.
 
 Antes de criar PR ou fazer merge, conferir o head desta branch, os checks reais e a decisão explícita do usuário. Não afirmar ausência absoluta de bugs com base somente em testes automatizados.

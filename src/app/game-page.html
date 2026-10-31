@@ -36,7 +36,7 @@
           ><small id="playerCount">{{ hud.online() ? hud.nearby() + " aventureiro(s) por perto" : "Modo solo" }}</small></span
         >
       </aside>
-<app-online-players class="game-presence" />
+<app-online-players [compact]="true" class="game-presence" />
       <div class="bottom-info">
         <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
         ><small id="saveMode">{{ hud.online() ? "Sala experimental · progresso temporário" : "Aventura local · progresso neste navegador" }}</small>
