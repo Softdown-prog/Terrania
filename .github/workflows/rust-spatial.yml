@@ -28,8 +28,15 @@ jobs:
         with:
           go-version-file: server-go/go.mod
           cache-dependency-path: server-go/go.sum
-      - name: Verificar formatacao Rust
-        run: cargo fmt --manifest-path rust/spatial-kernel/Cargo.toml --all --check
+      - name: Gerar formatacao rustfmt para commit e validar
+        run: |
+          cargo fmt --manifest-path rust/spatial-kernel/Cargo.toml --all
+          echo RUST_FMT_LIB_BEGIN_317
+          cat rust/spatial-kernel/src/lib.rs
+          echo RUST_FMT_LIB_END_317
+          echo RUST_FMT_BIN_BEGIN_317
+          cat rust/spatial-kernel/src/bin/spatial_check.rs
+          echo RUST_FMT_BIN_END_317
       - name: Clippy estrito (warnings sao erros)
         run: cargo clippy --manifest-path rust/spatial-kernel/Cargo.toml --locked --all-targets -- -D warnings
       - name: Testes Rust sem dependencia do motor Go
