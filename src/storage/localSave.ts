@@ -1,4 +1,6 @@
 import type { OfflineSave } from '../engine/OfflineSimulation.ts';
+import { normalizeInventory } from '../engine/Inventory.ts';
+import { normalizeDrops } from '../engine/loot.ts';
 
 const SAVE_KEY = 'terrania-origins-v1';
 /** Adaptador de persistência do navegador. Não deve ser usado no backend. */
@@ -15,7 +17,9 @@ export function loadLocalSave(): OfflineSave | null {
     return { seed: save.seed >>> 0, x: save.x, y: save.y,
       hp: Math.min(100, Math.max(1, save.hp)),
       kills: typeof save.kills === 'number' && Number.isFinite(save.kills) ? Math.max(0, save.kills) : 0,
-      defeated: save.defeated.slice(-2000) };
+      defeated: save.defeated.slice(-2000),
+      inventory: normalizeInventory(save.inventory),
+      drops: normalizeDrops(save.drops) };
   } catch { return null; }
 }
 export function saveLocal(save: OfflineSave): void {
