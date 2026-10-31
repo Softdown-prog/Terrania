@@ -31,6 +31,29 @@ jobs:
           go test -race -count=1 ./...
           go vet ./...
           go build ./cmd/terrania
+      - name: Registrar benchmark de simulacao (sem limiar artificial)
+        working-directory: server-go
+        run: go test ./engine -run '^
+      - name: Comparar mundo e movimento com o TypeScript de produção
+        run: |
+          node --experimental-strip-types server-go/scripts/ts-reference.mjs > /tmp/ts.json
+          (cd server-go && go run ./cmd/parity) > /tmp/go.json
+          node server-go/scripts/compare.mjs /tmp/ts.json /tmp/go.json
+      - name: Imagem independente e resposta de saúde
+        run: |
+          docker build -f server-go/Dockerfile -t terrania-go:ci .
+          docker run -d --name terrania-go-ci -p 127.0.0.1:18788:8788 \
+            -e NODE_ENV=production -e ALLOWED_ORIGINS=http://localhost:5173 terrania-go:ci
+          trap 'docker rm -f terrania-go-ci >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:18788/health | grep -q '"engine":"go"'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs terrania-go-ci
+          exit 1
+ -bench '^BenchmarkRoom' -benchtime=50x -benchmem
       - name: Comparar mundo e movimento com o TypeScript de produção
         run: |
           node --experimental-strip-types server-go/scripts/ts-reference.mjs > /tmp/ts.json
