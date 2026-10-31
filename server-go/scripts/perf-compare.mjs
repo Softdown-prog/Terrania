@@ -1,11 +1,13 @@
 // Controlled CI-only load measurement. Does not touch VPS or public players.
 // Both servers get 12 clients, same input frequency, identical CPU quota.
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { setTimeout as sleep } from "node:timers/promises";
 import WebSocket from "../../server/node_modules/ws/index.js";
 
 const origin = "https://rpg.analysepro.com";
+const execFileAsync = promisify(execFile);
 const entries = [
   { name:"go",container:"terrania-go-performance",port:18788 },
   { name:"node",container:"terrania-node-performance",port:18787 },
@@ -55,13 +57,14 @@ async function connect(entry,i) {
     });
   });
 }
-function sampleDockerStats() {
-  const proc=spawnSync("docker",[
+async function sampleDockerStats() {
+  // Run asynchronously; sync child_process blocks WebSocket event handlers and
+  // falsely records near-0ms gaps when queued snapshots are drained in bursts.
+  const {stdout}=await execFileAsync("docker",[
     "stats","--no-stream","--format","{{json .}}",
     "terrania-go-performance","terrania-node-performance",
-  ],{encoding:"utf8",timeout:12000});
-  if(proc.status!==0)throw Error("docker stats failed: "+proc.stderr.slice(0,300));
-  const rows=proc.stdout.trim().split("\n").map(x=>JSON.parse(x));
+  ],{encoding:"utf8",timeout:12000,maxBuffer:256*1024});
+  const rows=stdout.trim().split("\n").map(x=>JSON.parse(x));
   if(rows.length!==2)throw Error("expected two docker stats rows");
   return rows.map(r=>({container:r.Name,CPU:r.CPUPerc,memory:r.MemUsage,netIO:r.NetIO}));
 }
@@ -81,7 +84,7 @@ try {
   await sleep(1200);
   const samples=[];
   for(let i=0;i<3;i++) {
-    samples.push(sampleDockerStats());
+    samples.push(await sampleDockerStats());
     await sleep(500);
   }
   for(const item of entries){
