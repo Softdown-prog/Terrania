@@ -75,7 +75,7 @@ func Collect(ctx context.Context, workers []string) (int, int, error) {
 				results <- out
 				return
 			}
-			defer func(){_ = res.Body.Close()}()
+			defer func() { _ = res.Body.Close() }()
 			if res.StatusCode != http.StatusOK {
 				out.err = errors.New("worker unavailable")
 				results <- out

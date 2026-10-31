@@ -50,8 +50,8 @@ func TestPresenceTracksActualConnectionsAcrossRooms(t *testing.T) {
 		return ws
 	}
 	a, b := connect("friends-a"), connect("friends-b")
-	defer func(){_ = a.Close()}()
-	defer func(){_ = b.Close()}()
+	defer func() { _ = a.Close() }()
+	defer func() { _ = b.Close() }()
 	check(2, 2)
 	_ = a.Close()
 	check(1, 1)
