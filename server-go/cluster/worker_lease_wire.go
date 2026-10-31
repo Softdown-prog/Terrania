@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 const (
@@ -173,6 +172,3 @@ func LeaseCommandFor(p WorkerLeasePermit)WorkerLeaseCommand{
 		WorkerID:p.WorkerID,BootID:p.BootID,Epoch:p.Epoch}
 }
 
-// A renewing worker MUST fail closed when the remote coordinator disappears;
-// this transport does not auto-renew or issue capabilities.
-var _ = time.Second
