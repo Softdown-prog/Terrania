@@ -1,0 +1,135 @@
+name: Terrania Go staging na VPS (somente shadow)
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Verificar o shadow existente ou implantar a imagem Go validada
+        type: choice
+        options: [verify, deploy]
+        default: verify
+        required: true
+      expected_sha:
+        description: SHA completo já instalado para verify; vazio significa SHA atual da main
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vps-terrania-go-shadow
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.repository == 'Softdown-prog/Terrania' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/go.mod
+          cache-dependency-path: server-go/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Testar regras Go, concorrencia e protocolo
+        working-directory: server-go
+        run: |
+          go mod verify
+          go test -race -count=1 ./...
+          go vet ./...
+          go build ./cmd/terrania
+      - name: Confirmar paridade com a simulacao TypeScript
+        run: |
+          node --experimental-strip-types server-go/scripts/ts-reference.mjs > /tmp/terrania-ts.json
+          (cd server-go && go run ./cmd/parity) > /tmp/terrania-go.json
+          node server-go/scripts/compare.mjs /tmp/terrania-ts.json /tmp/terrania-go.json
+      - name: Testar o Docker do Go sem contato com a VPS
+        if: inputs.operation == 'deploy'
+        run: |
+          docker build -f server-go/Dockerfile -t terrania-go:staging-ci .
+          docker run -d --name go-smoke --network none -e GIT_SHA="$GITHUB_SHA" \
+            -e ALLOWED_ORIGINS=https://rpg.analysepro.com terrania-go:staging-ci
+          trap 'docker rm -f go-smoke >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 25); do
+            if docker exec go-smoke /usr/local/bin/terrania-go --healthcheck; then exit 0; fi
+            sleep 1
+          done
+          docker logs go-smoke
+          exit 1
+
+  publish:
+    if: inputs.operation == 'deploy'
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.image.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publicar imagem Go imutavel para staging
+        id: image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server-go/Dockerfile
+          push: true
+          tags: ghcr.io/softdown-prog/terrania-go:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/Softdown-prog/Terrania
+
+  vps:
+    needs: [validate, publish]
+    if: always() && needs.validate.result == 'success' && (needs.publish.result == 'success' || (inputs.operation == 'verify' && needs.publish.result == 'skipped'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout pinned central broker client
+        uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Painel
+          ref: 95655f3614c7c267270ab09128b25a608dbb75b1
+          path: operations-client
+          persist-credentials: false
+      - name: Guardar revisao publica do Node antes de tocar no shadow
+        run: |
+          curl -fsSL --max-time 15 https://api-rpg.analysepro.com/health > /tmp/node-before.json
+          node -e 'const fs=require("fs");const h=JSON.parse(fs.readFileSync("/tmp/node-before.json"));if(h.status!=="ok"||!h.revision)process.exit(1)'
+      - name: Deploy ou verificacao autorizada do shadow (sem shell remoto)
+        env:
+          VPS_OPERATION: ${{ inputs.operation }}
+          VPS_PROJECT: terrania-go-shadow
+          VPS_SHA: ${{ inputs.expected_sha || github.sha }}
+          VPS_IMAGES: '{"engine-go":"ghcr.io/softdown-prog/terrania-go@${{ needs.publish.outputs.digest }}"}'
+          VPS_SSH_KEY: ${{ secrets.VPS_OPERATIONS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_OPERATIONS_KNOWN_HOSTS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 operations-client/operations/client.py
+      - name: Provar que o Node publico nao mudou durante o shadow
+        if: always()
+        run: |
+          curl -fsSL --max-time 15 https://api-rpg.analysepro.com/health > /tmp/node-after.json
+          node -e 'const fs=require("fs");const before=JSON.parse(fs.readFileSync("/tmp/node-before.json"));const after=JSON.parse(fs.readFileSync("/tmp/node-after.json"));if(after.status!=="ok"||after.revision!==before.revision)process.exit(1)'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terrania-go-shadow-result-${{ github.run_id }}
+          path: vps-result.json
+          if-no-files-found: warn
+          retention-days: 30
