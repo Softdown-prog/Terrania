@@ -151,3 +151,13 @@ A FSM `raftlab.FSM` aplica **somente registros auditáveis de propostas**, com I
 A suíte testa confirmação em três e cinco nós, isolamento de um líder antigo, eleição com a maioria restante, recuperação após reconexão, integridade de snapshot, rejeição de comandos inválidos e idempotência.
 
 **Limitações:** o transporte e os stores continuam *in-memory*; o sistema não é um serviço Raft durável entre máquinas. Ainda faltam armazenamento realmente persistente dos logs/stable store/snapshots, conexão autenticada entre os nós, bootstrapping seguro, reconciliação do estado de autoridade com as permissões antigas e controle de recuperação/rejoin. Não usar resultado do laboratório para liberar `GrantCoordinator.Promote` ou ativar o jogo. A VPS e a branch `main` não são modificadas.
+
+## Fase 13 — stores Raft duráveis em disco (laboratório isolado)
+
+Adicionado `raftlab.OpenDurableCluster(root, membros...)` exclusivamente para testes locais. A integração utiliza `github.com/hashicorp/raft-boltdb/v2` versão **v2.3.1** para armazenar, em arquivo bbolt, o log e o *stable store* do Raft, com sincronização normal de disco, e `raft.NewFileSnapshotStore` para snapshots persistentes. O estado fica em uma árvore de diretórios privada `0700` e arquivos `0600`, sem guardar chaves de usuários, servidores ou permissões de gameplay. O transporte entre nós continua **em memória**.
+
+O laboratório mantém `members.json` versionado e imutável, com a ordem e identidade dos três ou cinco membros. O primeiro boot faz *bootstrap* da configuração inicial; reinícios posteriores verificam a identidade e chamam `raft.HasExistingState`, **sem** criar silenciosamente um cluster novo quando arquivos do membro sumiram. A pasta deve ter caminho absoluto, não aceitar symlinks, e armazenamentos simultâneos disputando o mesmo bbolt falham pela trava do banco. Inicializações interrompidas ou manifestos divergentes falham fechados em vez de tentar consertar a configuração sem auditoria.
+
+Os novos testes checam persistência de commits e snapshots durante shutdown/restart completo dos três membros, recusa de membros trocados, stores ausentes/corrompidos, permissões inseguras e manifestos em symlink. As verificações são executadas separadamente na CI do módulo experimental com `go test -race`.
+
+**Limitação:** persistência local não equivale a implantação em múltiplas máquinas. Faltam transporte mTLS autenticado, provisionamento seguro de identidade de cada nó, inicialização de cluster por operações coordenadas, proteção de armazenamento contra perda do disco e integração do estado comprometido ao fencing dos workers. O teste não conecta `GrantCoordinator`, não abre portas, não usa PostgreSQL da VPS e não autoriza failover automático.
