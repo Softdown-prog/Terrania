@@ -23,12 +23,6 @@ import (
 	"github.com/Softdown-prog/Terrania/server-go/engine"
 )
 
-const (
-	maxClients = 48
-	maxRooms = 8
-	maxRoomClients = 12
-)
-
 type client struct {
 	socket *websocket.Conn
 	id string
@@ -46,13 +40,22 @@ type gameServer struct {
 	clients map[*websocket.Conn]*client
 	allowed map[string]bool
 	revision string
+	limits limits
+	ticks atomic.Uint64
+	tickOverruns atomic.Uint64
+	lastTickNs atomic.Int64
 	ready atomic.Bool // true only after the live 2-player probe in production
 	nextName int
 }
 
 func newGameServer(allowed []string,revision string) *gameServer {
+	return newGameServerWithLimits(allowed,revision,defaultLimits())
+}
+
+func newGameServerWithLimits(allowed []string,revision string,l limits) *gameServer {
+	if err:=l.validate();err!=nil {panic(err)}
 	s:=&gameServer{rooms:make(map[string]*engine.Room),
-		clients:make(map[*websocket.Conn]*client),allowed:make(map[string]bool)}
+		clients:make(map[*websocket.Conn]*client),allowed:make(map[string]bool),limits:l}
 	for _,origin:=range allowed { if origin!="" { s.allowed[strings.TrimSpace(origin)]=true } }
 	if regexp.MustCompile("^[0-9a-f]{40}$").MatchString(revision) { s.revision=revision }
 	// In unit tests the HTTP handler is used without a real listener.
@@ -71,6 +74,21 @@ func (s *gameServer) handler() http.Handler {
 		if s.revision!="" { rev=s.revision }
 		_ = json.NewEncoder(w).Encode(map[string]any{"status":"ok","revision":rev,"engine":"go"})
 	})
+	mux.HandleFunc("/status",func(w http.ResponseWriter,r *http.Request) {
+		if r.Method!=http.MethodGet {http.Error(w,"method not allowed",http.StatusMethodNotAllowed);return}
+		s.mu.Lock()
+		connected,rooms:=len(s.clients),len(s.rooms)
+		s.mu.Unlock()
+		w.Header().Set("Content-Type","application/json")
+		w.Header().Set("Cache-Control","no-store")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"engine":"go","revision":s.revision,"ready":s.ready.Load(),
+			"connected":connected,"rooms":rooms,"maxClients":s.limits.clients,
+			"maxRooms":s.limits.rooms,"maxRoomClients":s.limits.perRoom,
+			"ticks":s.ticks.Load(),"tickOverruns":s.tickOverruns.Load(),
+			"lastTickMs":float64(s.lastTickNs.Load())/1e6,
+		})
+	})
 	mux.HandleFunc("/ws",s.handleWS)
 	return mux
 }
@@ -87,9 +105,9 @@ func (s *gameServer) handleWS(w http.ResponseWriter,r *http.Request) {
 	}
 	s.mu.Lock()
 	room:=s.rooms[roomID]
-	full:=len(s.clients)>=maxClients||
-		(room==nil&&len(s.rooms)>=maxRooms)||
-		(room!=nil&&len(room.Guests)>=maxRoomClients)
+	full:=len(s.clients)>=s.limits.clients||
+		(room==nil&&len(s.rooms)>=s.limits.rooms)||
+		(room!=nil&&len(room.Guests)>=s.limits.perRoom)
 	s.mu.Unlock()
 	if full { http.Error(w,"capacity reached",http.StatusServiceUnavailable);return }
 	upgrader:=websocket.Upgrader{
@@ -104,9 +122,9 @@ func (s *gameServer) handleWS(w http.ResponseWriter,r *http.Request) {
 	id:=hex.EncodeToString(idBytes[:])
 	s.mu.Lock()
 	room=s.rooms[roomID]
-	if len(s.clients)>=maxClients||
-		(room==nil&&len(s.rooms)>=maxRooms)||
-		(room!=nil&&len(room.Guests)>=maxRoomClients) {
+	if len(s.clients)>=s.limits.clients||
+		(room==nil&&len(s.rooms)>=s.limits.rooms)||
+		(room!=nil&&len(room.Guests)>=s.limits.perRoom) {
 		s.mu.Unlock()
 		_ = ws.WriteControl(websocket.CloseMessage,websocket.FormatCloseMessage(1013,"capacity"),time.Now().Add(time.Second))
 		_ = ws.Close()
@@ -212,6 +230,7 @@ func (s *gameServer) run(ctx context.Context) {
 		select {
 		case <-ctx.Done():return
 		case now:=<-ticker.C:
+			started:=time.Now()
 			dt:=now.Sub(previous).Seconds()
 			previous=now
 			if dt<0 { dt=0 }
@@ -227,6 +246,10 @@ func (s *gameServer) run(ctx context.Context) {
 				}
 			}
 			s.mu.Unlock()
+			elapsed:=time.Since(started)
+			s.ticks.Add(1)
+			s.lastTickNs.Store(int64(elapsed))
+			if elapsed>50*time.Millisecond { s.tickOverruns.Add(1) }
 		}
 	}
 }
@@ -249,7 +272,10 @@ func main() {
 		if os.Getenv("NODE_ENV")=="production" { log.Fatal("ALLOWED_ORIGINS mandatory in production") }
 		allowed=[]string{"http://localhost:5173","http://127.0.0.1:5173"}
 	}
-	s:=newGameServer(allowed,os.Getenv("GIT_SHA"))
+	l,err:=limitsFromEnv()
+	if err!=nil {log.Fatal("invalid Go worker limits: ",err)}
+	log.Printf("Go worker capacity configured: maxClients=%d maxRooms=%d playersPerRoom=%d",l.clients,l.rooms,l.perRoom)
+	s:=newGameServerWithLimits(allowed,os.Getenv("GIT_SHA"),l)
 	// A running HTTP process is not sufficient: validate two actual WS clients
 	// before reporting ready to Docker / the GitHub-to-VPS broker.
 	s.ready.Store(false)
