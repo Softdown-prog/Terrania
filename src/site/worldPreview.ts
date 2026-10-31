@@ -4,7 +4,7 @@ import { renderHero, renderSlime } from "../render/actors.ts";
 import { getTile } from "../world/terrain.ts";
 
 /** Static previews use actual game rendering, without starting simulation or input. */
-export function preparePreviews(): void {
+export function preparePreviews(root: ParentNode = document): () => void {
   const world = new WorldRenderer(842136);
   const draw = (canvas: HTMLCanvasElement) => {
     const rect = canvas.getBoundingClientRect();
@@ -101,12 +101,12 @@ export function preparePreviews(): void {
     ctx.fillRect(0, 0, rect.width / zoom, rect.height / zoom);
   };
   const visible = new Set<HTMLCanvasElement>();
-  const canvases = document.querySelectorAll<HTMLCanvasElement>(
+  const canvases = root.querySelectorAll<HTMLCanvasElement>(
     "canvas[data-world-view],canvas[data-character-view]",
   );
   if (!("IntersectionObserver" in window)) {
     for (const canvas of canvases) draw(canvas);
-    return;
+    return () => world.clear();
   }
   const observer = new IntersectionObserver(
     (entries) => {
@@ -122,10 +122,18 @@ export function preparePreviews(): void {
   );
   for (const canvas of canvases) observer.observe(canvas);
   let resizeFrame = 0;
-  window.addEventListener("resize", () => {
+  const resize = () => {
     cancelAnimationFrame(resizeFrame);
     resizeFrame = requestAnimationFrame(() => {
       for (const canvas of visible) draw(canvas);
     });
-  });
+  };
+  window.addEventListener("resize", resize);
+  return () => {
+    observer.disconnect();
+    cancelAnimationFrame(resizeFrame);
+    window.removeEventListener("resize", resize);
+    visible.clear();
+    world.clear();
+  };
 }

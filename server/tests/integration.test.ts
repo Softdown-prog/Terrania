@@ -54,6 +54,14 @@ test(
       );
       assert.deepEqual(await (await fetch("http://127.0.0.1:" + port + "/health?deploy=verified")).json(),
         { status: "ok", revision: "a".repeat(40) });
+      const presenceUrl = "http://127.0.0.1:" + port + "/presence";
+      const presence = async () => (await (await fetch(presenceUrl)).json()) as { online: number; rooms: number; scope: string; updatedAt: string };
+      assert.equal((await presence()).online, 0);
+      assert.equal((await fetch(presenceUrl, { headers: { Origin: "https://untrusted.test" } })).status, 403);
+      assert.equal((await fetch(presenceUrl, { method: "POST" })).status, 405);
+      const cors = await fetch(presenceUrl, { headers: { Origin: "http://localhost:5173" } });
+      assert.equal(cors.headers.get("Access-Control-Allow-Origin"), "http://localhost:5173");
+      assert.equal(cors.headers.get("Cache-Control"), "no-store");
       const streams: ServerMessage[][] = [[], []];
       for (let i = 0; i < 2; i++) {
         const ws = new WebSocket(
@@ -74,6 +82,11 @@ test(
         ),
       );
       const welcome = streams[0].find((m) => m.type === "welcome");
+      const connected = await presence();
+      assert.equal(connected.online, 2);
+      assert.equal(connected.rooms, 1);
+      assert.equal(connected.scope, "server");
+      assert.ok(Number.isFinite(Date.parse(connected.updatedAt)));
       assert.ok(welcome?.type === "welcome");
       assert.equal(welcome.version, PROTOCOL_VERSION);
       assert.equal(welcome.seed, 842136);
@@ -98,6 +111,14 @@ test(
           ),
         ),
       );
+      sockets[1].terminate();
+      let count = await presence();
+      for (let i = 0; i < 40 && count.online !== 1; i++) { await pause(20); count = await presence(); }
+      assert.equal(count.online, 1);
+      sockets[0].terminate();
+      for (let i = 0; i < 40 && count.online !== 0; i++) { await pause(20); count = await presence(); }
+      assert.equal(count.online, 0);
+      assert.equal(count.rooms, 0);
     } finally {
       for (const ws of sockets) ws.terminate();
       child.kill("SIGTERM");

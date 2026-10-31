@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "noEmit": false,
-    "rootDir": "src",
-    "outDir": "preview-dist/src",
-    "rewriteRelativeImportExtensions": true
-  }
-}

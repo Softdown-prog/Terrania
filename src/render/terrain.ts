@@ -37,7 +37,7 @@ function drawGround(
       [1, 0],
       [0, -1],
       [0, 1],
-    ]) {
+    ] as const) {
       if (getTile(tx + dx, ty + dy, seed).ground === "water") continue;
       ctx.fillStyle = "#9aaf89";
       ctx.globalAlpha = 0.35;

@@ -39,7 +39,7 @@ Documentação oficial: https://developers.cloudflare.com/pages/configuration/bu
 
 ## Alfa 0.3
 
-O build gera nove HTMLs, incluindo `/jogar/index.html` e `/404.html`. O comando continua `npm run build`, com saída `dist`. `scripts/verify-build.mjs` falha se uma página, asset, âncora ou link interno estiver faltando.
+O build Angular gera a aplicação e dez entradas HTML para as rotas, incluindo `/jogar/index.html`, `/404.html` e o redirecionamento do antigo laboratório. O comando continua `npm run build`, com saída `dist`. `scripts/verify-build.mjs` falha se uma entrada, asset ou rota interna estiver faltando.
 
 Atualize também o servidor da VPS para o protocolo 2 antes de validar o online da nova física. Um backend antigo mantém o novo cliente em modo solo com aviso explícito. Consulte [site e alfa 0.3](SITE_E_ALFA_03.md).
 
