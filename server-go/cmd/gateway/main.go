@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -16,11 +17,26 @@ import (
 )
 
 func gatewayHandler(router *cluster.Router, allowed map[string]bool) http.Handler {
+	return gatewayHandlerWithLobby(router,allowed,newLobby(1000,84,12))
+}
+
+func gatewayHandlerWithLobby(router *cluster.Router,allowed map[string]bool,l *lobby) http.Handler {
 	mux:=http.NewServeMux()
 	mux.HandleFunc("/health",func(w http.ResponseWriter,r *http.Request){
 		w.Header().Set("Content-Type","application/json")
 		w.Header().Set("Cache-Control","no-store")
 		_ = json.NewEncoder(w).Encode(map[string]any{"status":"ok","gateway":"go","workers":router.Count()})
+	})
+	mux.HandleFunc("/capacity",func(w http.ResponseWriter,r *http.Request){
+		if r.Method!=http.MethodGet {http.Error(w,"method not allowed",http.StatusMethodNotAllowed);return}
+		active,rooms:=l.status()
+		w.Header().Set("Cache-Control","no-store")
+		w.Header().Set("Content-Type","application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"active":active,"rooms":rooms,"maxClients":l.maxClients,
+			"maxRooms":l.maxRooms,"roomSize":l.maxPerRoom,"workers":router.Count(),
+			"scope":"single-gateway-admission-only",
+		})
 	})
 	mux.HandleFunc("/ws",func(w http.ResponseWriter,r *http.Request){
 		if r.Method!=http.MethodGet {http.Error(w,"method not allowed",http.StatusMethodNotAllowed);return}
@@ -34,7 +50,13 @@ func gatewayHandler(router *cluster.Router, allowed map[string]bool) http.Handle
 		room:=r.URL.Query().Get("room")
 		if room=="" {room="origins"}
 		if !engine.ValidRoom(room) {http.Error(w,"invalid room",http.StatusBadRequest);return}
-		node:=router.Pick(room)
+		allocated,release,err:=l.acquire(room)
+		if err!=nil {http.Error(w,"no available room seats",http.StatusServiceUnavailable);return}
+		defer release() // reverse proxy blocks until WebSocket closes.
+		q:=r.URL.Query()
+		q.Set("room",allocated)
+		r.URL.RawQuery=q.Encode()
+		node:=router.Pick(allocated)
 		// Fixed, admin-controlled upstream only. No URL in the client can override it.
 		proxy:=httputil.NewSingleHostReverseProxy(node.URL)
 		proxy.FlushInterval=-1
@@ -60,8 +82,21 @@ func main(){
 	for _,origin:=range strings.Split(origins,","){
 		if o:=strings.TrimSpace(origin);o!="" {allowed[o]=true}
 	}
-	srv:=&http.Server{Addr:":"+port,Handler:gatewayHandler(router,allowed),
+	maxPlayers,err:=capacityEnv("GATEWAY_MAX_CLIENTS",1000,10000)
+	if err!=nil {log.Fatal(err)}
+	maxRooms,err:=capacityEnv("GATEWAY_MAX_ROOMS",84,10000)
+	if err!=nil {log.Fatal(err)}
+	srv:=&http.Server{Addr:":"+port,Handler:gatewayHandlerWithLobby(router,allowed,newLobby(maxPlayers,maxRooms,12)),
 		ReadHeaderTimeout:5*time.Second}
 	log.Printf("Terrania Go gateway listening on :%s with %d workers",port,router.Count())
 	log.Fatal(srv.ListenAndServe())
+}
+
+
+func capacityEnv(name string,standard,ceiling int)(int,error) {
+	value:=os.Getenv(name)
+	if value=="" {return standard,nil}
+	n,err:=strconv.Atoi(value)
+	if err!=nil||n<1||n>ceiling {return 0,fmt.Errorf("%s must be 1..%d",name,ceiling)}
+	return n,nil
 }
