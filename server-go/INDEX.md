@@ -1,5 +1,7 @@
 # Índice — servidor Go, gateway e salas
 
+Detalhes por responsabilidade: [motor Go](engine/INDEX.md) e [comandos, workers e gateway](cmd/INDEX.md).
+
 - [engine/room.go](engine/room.go), [engine/world.go](engine/world.go), [engine/slime.go](engine/slime.go): simulação autoritativa, cenário, monstros.
 - [engine/spatial_default.go](engine/spatial_default.go): consultas espaciais padrão em Go.
 - [engine/spatial_rust.go](engine/spatial_rust.go): ponte Rust **opcional**, build tag `rustspatial`, Linux AMD64/cgo.

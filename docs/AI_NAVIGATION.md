@@ -12,7 +12,8 @@ Encontre o subsistema antes de ler código. **Este mapa aponta para índices loc
 | Servidor, gateway, mobs e escala Go | [Go](../server-go/INDEX.md) | `server-go/engine/room.go`, `server-go/cmd/gateway/main.go` |
 | Busca espacial opcional Rust | [Rust](../rust/spatial-kernel/INDEX.md) | `rust/spatial-kernel/src/lib.rs` |
 | Regressões e QA | [Testes](../tests/INDEX.md) | `tests/browser/`, `server/tests/` |
-| Estrutura, decisões e operação | [Arquitetura](ARQUITETURA.md) | [Roadmap](ROADMAP.md), [escala Go](GO_SCALE_1000.md) |
+| Estrutura, decisões e operação | [Documentação](INDEX.md) | [Arquitetura](ARQUITETURA.md), [Roadmap](ROADMAP.md), [escala Go](GO_SCALE_1000.md) |
+| Scripts de build e ferramentas de IA | [Scripts](../scripts/INDEX.md) | `scripts/find-ai-files.mjs`, `scripts/audit-ai-navigation.mjs` |
 
 ## Encontrar arquivos sem listar milhares de caminhos
 
