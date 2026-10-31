@@ -58,7 +58,7 @@ A implementação reutilizável está em [scripts/ai-navigation-api.mjs](../scri
 
 ## Servidor MCP local de navegação
 
-A implementação isolada de MCP está em [tools/mcp-navigation/README.md](../tools/mcp-navigation/README.md). Expondo somente leitura por `stdio`, ela reutiliza `ai:find`, `ai:audit` e os `INDEX.md`, e adiciona busca literal de símbolos e leitura limitada de linhas. **Não é um servidor HTTP, não faz deploy e não altera a simulação.** A instalação npm do pacote MCP é independente do frontend.
+A implementação isolada de MCP está em [tools/mcp-navigation/README.md](../tools/mcp-navigation/README.md). Expondo somente leitura por `stdio`, ela reutiliza `ai:find`, `ai:audit` e os `INDEX.md`, e adiciona busca literal de símbolos e leitura limitada de linhas. **Não é um servidor HTTP, não faz deploy e não altera a simulação.** O MCP relê a lista versionada do Git em cada chamada para acompanhar novas inclusões e remoções sem reiniciar o processo. A instalação npm do pacote MCP é independente do frontend.
 
 ## Navegação eficiente
 1. Leia [AGENTS.md](../AGENTS.md) e o índice local **somente** da tarefa atual.

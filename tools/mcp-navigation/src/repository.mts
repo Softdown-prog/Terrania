@@ -40,8 +40,14 @@ function readInside(root: string, path: string, maxBytes: number): string {
   return text;
 }
 
-export function createRepository(root: string, trackedPaths: readonly string[]) {
-  const tracked = [...new Set(trackedPaths.filter(safeTrackedPath))].sort();
+type NavigationCore = {
+  find: (options: { query: string; scope: string; limit: number }) => Record<string, unknown>;
+  audit: (options: { scope: string; minFiles: number; limit: number; depth: number }) => Record<string, unknown>;
+  guide: (options: { scope: string; maxChars: number }) => Record<string, unknown>;
+};
+
+function makeSnapshot(root: string, paths: readonly string[]) {
+  const tracked = [...new Set(paths.filter(safeTrackedPath))].sort();
   const known = new Set(tracked);
   // The navigation core is maintained in JavaScript; define its typed boundary here.
   const navigation = createNavigationApi(tracked, {
@@ -50,12 +56,30 @@ export function createRepository(root: string, trackedPaths: readonly string[]) 
         throw new Error('Guia não autorizado.');
       return readInside(root, path, 128 * 1024);
     },
-  }) as unknown as {
-    find: (options: { query: string; scope: string; limit: number }) => Record<string, unknown>;
-    audit: (options: { scope: string; minFiles: number; limit: number; depth: number }) => Record<string, unknown>;
-    guide: (options: { scope: string; maxChars: number }) => Record<string, unknown>;
-  };
-  function authorize(path: string): string {
+  }) as unknown as NavigationCore;
+  return { tracked, known, navigation, key: tracked.join('\0') };
+}
+
+/**
+ * A loader, when supplied, refreshes the Git index at the start of every MCP
+ * operation. No watcher, timer, or restart is required after git add/rm.
+ * An index-read error propagates instead of falling back to stale permissions.
+ */
+export function createRepository(
+  root: string,
+  trackedPaths: readonly string[],
+  reloadTrackedPaths?: () => readonly string[],
+) {
+  let snapshot = makeSnapshot(root, trackedPaths);
+  function current() {
+    if (reloadTrackedPaths) {
+      const latest = [...new Set(reloadTrackedPaths().filter(safeTrackedPath))].sort();
+      if (latest.join('\0') !== snapshot.key)
+        snapshot = makeSnapshot(root, latest);
+    }
+    return snapshot;
+  }
+  function authorize(known: ReadonlySet<string>, path: string): string {
     const normalized = normalizeScope(path);
     if (!normalized || !safeTrackedPath(normalized) || !known.has(normalized))
       throw new Error('Arquivo não versionado ou não autorizado.');
@@ -65,18 +89,18 @@ export function createRepository(root: string, trackedPaths: readonly string[]) 
   }
   return {
     find(query: string, scope = '', limit = 20) {
-      return navigation.find({ query, scope, limit });
+      return current().navigation.find({ query, scope, limit });
     },
     audit(scope = '', minFiles = 20, limit = 15, depth = 5) {
-      return navigation.audit({ scope, minFiles, limit, depth });
+      return current().navigation.audit({ scope, minFiles, limit, depth });
     },
     guide(scope = '', maxChars = 8000) {
-      return navigation.guide({ scope, maxChars });
+      return current().navigation.guide({ scope, maxChars });
     },
     readLines(path: string, startLine = 1, maxLines = 60) {
       ensurePositive(startLine, 1_000_000, 'startLine');
       ensurePositive(maxLines, 100, 'maxLines');
-      const name = authorize(path);
+      const name = authorize(current().known, path);
       const lines = readInside(root, name, MAX_SOURCE_BYTES).split(/\r?\n/);
       const selected = lines.slice(startLine - 1, startLine - 1 + maxLines);
       return { schemaVersion: 1, kind: 'read_source_lines', path: name,
@@ -91,7 +115,7 @@ export function createRepository(root: string, trackedPaths: readonly string[]) 
         throw new Error('Termo de pesquisa deve ter 2 a 128 caracteres, sem quebras de linha.');
       ensurePositive(limit, MAX_SEARCH_HITS, 'limit');
       const folder = normalizeScope(scope);
-      const candidatePaths = tracked.filter(path =>
+      const candidatePaths = current().tracked.filter(path =>
         SOURCE_EXTS.has(extname(path).toLowerCase()) &&
         (!folder || path === folder || path.startsWith(folder + '/')));
       const totalEligible = candidatePaths.length;
@@ -126,8 +150,8 @@ export function openLocalRepository() {
   const discovered = realpathSync(execFileSync('git', ['rev-parse', '--show-toplevel'],
     { cwd: root, encoding: 'utf8', timeout: 5000 }).trim());
   if (discovered !== realpathSync(root)) throw new Error('Raiz Git inesperada.');
-  const paths = execFileSync('git', ['ls-files', '-z'], {
+  const readIndex = () => execFileSync('git', ['ls-files', '-z'], {
     cwd: root, encoding: 'utf8', timeout: 5000, maxBuffer: 16 * 1024 * 1024,
   }).split('\0').filter(Boolean);
-  return createRepository(root, paths);
+  return createRepository(root, readIndex(), readIndex);
 }

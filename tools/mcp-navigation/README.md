@@ -36,6 +36,12 @@ Utilize caminhos **absolutos**, ajustados ao local do seu clone:
 
 O formato exato da configuração varia por cliente; este exemplo é conceitual. O servidor local identifica sua raiz a partir da própria localização do script, não aceita uma raiz arbitrária informada pela IA.
 
+## Atualização do índice sem reinício
+
+O servidor consulta `git ls-files -z` **em cada chamada MCP**. Se um arquivo for incluído ou removido do índice Git (por exemplo, `git add` ou `git rm --cached`), a próxima chamada já usa a nova lista. A atualização é feita sob demanda, sem `fs.watch`, polling, timers, thread adicional ou rede. Alterações no conteúdo dos arquivos existentes são lidas diretamente do disco.
+
+Apenas arquivos versionados participam da navegação; arquivos recém-criados e ainda não adicionados ao Git não são expostos. O custo de um `git ls-files` é pago por chamada, inclusive quando não há mudanças. Se a leitura do índice falhar, a chamada retorna erro, sem recorrer a uma lista antiga. Limites de tamanho, bloqueio de segredos por nome e verificação de caminhos reais continuam em vigor.
+
 ## Ferramentas
 
 | Ferramenta | Finalidade |
