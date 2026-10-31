@@ -26,7 +26,7 @@ import (
 type client struct {
 	socket *websocket.Conn
 	id string
-	room *engine.Room
+	room *roomSession
 	welcome engine.Welcome
 	out chan *engine.Snapshot
 	done chan struct{}
@@ -36,7 +36,8 @@ type client struct {
 
 type gameServer struct {
 	mu sync.Mutex
-	rooms map[string]*engine.Room
+	rooms map[string]*roomSession
+	ctx context.Context // set by run; guarded by s.mu
 	clients map[*websocket.Conn]*client
 	allowed map[string]bool
 	revision string
@@ -54,7 +55,7 @@ func newGameServer(allowed []string,revision string) *gameServer {
 
 func newGameServerWithLimits(allowed []string,revision string,l limits) *gameServer {
 	if err:=l.validate();err!=nil {panic(err)}
-	s:=&gameServer{rooms:make(map[string]*engine.Room),
+	s:=&gameServer{rooms:make(map[string]*roomSession),
 		clients:make(map[*websocket.Conn]*client),allowed:make(map[string]bool),limits:l}
 	for _,origin:=range allowed { if origin!="" { s.allowed[strings.TrimSpace(origin)]=true } }
 	if regexp.MustCompile("^[0-9a-f]{40}$").MatchString(revision) { s.revision=revision }
@@ -78,6 +79,10 @@ func (s *gameServer) handler() http.Handler {
 		if r.Method!=http.MethodGet {http.Error(w,"method not allowed",http.StatusMethodNotAllowed);return}
 		s.mu.Lock()
 		connected,rooms:=len(s.clients),len(s.rooms)
+		var maxRoomTickNs int64
+		for _,rs:=range s.rooms {
+			if ns:=rs.lastTickNs.Load();ns>maxRoomTickNs {maxRoomTickNs=ns}
+		}
 		s.mu.Unlock()
 		w.Header().Set("Content-Type","application/json")
 		w.Header().Set("Cache-Control","no-store")
@@ -87,6 +92,8 @@ func (s *gameServer) handler() http.Handler {
 			"maxRooms":s.limits.rooms,"maxRoomClients":s.limits.perRoom,
 			"ticks":s.ticks.Load(),"tickOverruns":s.tickOverruns.Load(),
 			"lastTickMs":float64(s.lastTickNs.Load())/1e6,
+			"maxRoomTickMs":float64(maxRoomTickNs)/1e6,
+			"tickScope":"completed-room-ticks",
 		})
 	})
 	mux.HandleFunc("/ws",s.handleWS)
@@ -107,7 +114,7 @@ func (s *gameServer) handleWS(w http.ResponseWriter,r *http.Request) {
 	room:=s.rooms[roomID]
 	full:=len(s.clients)>=s.limits.clients||
 		(room==nil&&len(s.rooms)>=s.limits.rooms)||
-		(room!=nil&&len(room.Guests)>=s.limits.perRoom)
+		(room!=nil&&len(room.clients)>=s.limits.perRoom)
 	s.mu.Unlock()
 	if full { http.Error(w,"capacity reached",http.StatusServiceUnavailable);return }
 	upgrader:=websocket.Upgrader{
@@ -124,16 +131,23 @@ func (s *gameServer) handleWS(w http.ResponseWriter,r *http.Request) {
 	room=s.rooms[roomID]
 	if len(s.clients)>=s.limits.clients||
 		(room==nil&&len(s.rooms)>=s.limits.rooms)||
-		(room!=nil&&len(room.Guests)>=s.limits.perRoom) {
+		(room!=nil&&len(room.clients)>=s.limits.perRoom) {
 		s.mu.Unlock()
 		_ = ws.WriteControl(websocket.CloseMessage,websocket.FormatCloseMessage(1013,"capacity"),time.Now().Add(time.Second))
 		_ = ws.Close()
 		return
 	}
-	if room==nil { room=engine.NewRoom(roomID);s.rooms[roomID]=room }
+	if room==nil {
+		room=newRoomSession(roomID)
+		s.rooms[roomID]=room
+		if s.ctx!=nil {go s.runRoom(s.ctx,room)}
+	}
 	s.nextName++
-	room.Add(id,"Aventureiro "+strconv.Itoa(s.nextName))
-	c:=&client{socket:ws,id:id,room:room,welcome:engine.NewWelcome(id,roomID,room.Seed),out:make(chan *engine.Snapshot,1),done:make(chan struct{}),windowStart:time.Now()}
+	room.mu.Lock()
+	room.room.Add(id,"Aventureiro "+strconv.Itoa(s.nextName))
+	c:=&client{socket:ws,id:id,room:room,welcome:engine.NewWelcome(id,roomID,room.room.Seed),out:make(chan *engine.Snapshot,1),done:make(chan struct{}),windowStart:time.Now()}
+	room.clients[c]=struct{}{}
+	room.mu.Unlock()
 	s.clients[ws]=c
 	s.mu.Unlock()
 	go s.writePump(c)
@@ -151,11 +165,10 @@ func (s *gameServer) readPump(c *client) {
 		messageType,data,err:=c.socket.ReadMessage()
 		if err!=nil { return }
 		now:=time.Now()
-		s.mu.Lock()
-		if now.Sub(c.windowStart)>=time.Second { c.count=0;c.windowStart=now }
+		// This connection has exactly one readPump; rate counters are local.
+		if now.Sub(c.windowStart)>=time.Second {c.count=0;c.windowStart=now}
 		c.count++
 		excess:=c.count>35||messageType!=websocket.TextMessage
-		s.mu.Unlock()
 		if excess {
 			_ = c.socket.WriteControl(websocket.CloseMessage,
 				websocket.FormatCloseMessage(websocket.ClosePolicyViolation,"input limit"),time.Now().Add(time.Second))
@@ -167,17 +180,24 @@ func (s *gameServer) readPump(c *client) {
 				websocket.FormatCloseMessage(websocket.ClosePolicyViolation,"invalid input"),time.Now().Add(time.Second))
 			return
 		}
-		s.mu.Lock()
-		c.room.ReceiveInput(c.id,in,now)
-		s.mu.Unlock()
+		c.room.mu.Lock()
+		c.room.room.ReceiveInput(c.id,in,now)
+		c.room.mu.Unlock()
 	}
 }
 
 func (s *gameServer) leave(c *client) {
 	s.mu.Lock()
 	delete(s.clients,c.socket)
-	c.room.Remove(c.id)
-	if len(c.room.Guests)==0 { delete(s.rooms,c.room.ID) }
+	c.room.mu.Lock()
+	c.room.room.Remove(c.id)
+	delete(c.room.clients,c)
+	empty:=len(c.room.clients)==0
+	c.room.mu.Unlock()
+	if empty && s.rooms[c.room.room.ID]==c.room {
+		delete(s.rooms,c.room.room.ID)
+		close(c.room.stop) // the room loop stops; no idle-room ticker leaks
+	}
 	close(c.done)
 	s.mu.Unlock()
 	_ = c.socket.Close()
@@ -221,37 +241,18 @@ func (c *client) enqueueSnapshot(state *engine.Snapshot) {
 	}
 }
 
+// Run is a lifecycle coordinator only: it never holds the global registry
+// mutex during simulation, physics, mob AI or network snapshot generation.
 func (s *gameServer) run(ctx context.Context) {
-	ticker:=time.NewTicker(50*time.Millisecond)
-	defer ticker.Stop()
-	previous:=time.Now()
-	frame:=0
-	for {
-		select {
-		case <-ctx.Done():return
-		case now:=<-ticker.C:
-			started:=time.Now()
-			dt:=now.Sub(previous).Seconds()
-			previous=now
-			if dt<0 { dt=0 }
-			if dt>.05 { dt=.05 }
-			s.mu.Lock()
-			for _,room:=range s.rooms { room.Tick(dt,now) }
-			frame++
-			if frame%2==0 {
-				for _,c:=range s.clients {
-					if state:=c.room.SnapshotFor(c.id);state!=nil {
-						c.enqueueSnapshot(state)
-					}
-				}
-			}
-			s.mu.Unlock()
-			elapsed:=time.Since(started)
-			s.ticks.Add(1)
-			s.lastTickNs.Store(int64(elapsed))
-			if elapsed>50*time.Millisecond { s.tickOverruns.Add(1) }
-		}
-	}
+	s.mu.Lock()
+	if s.ctx!=nil {s.mu.Unlock();panic("gameServer.run called more than once")}
+	s.ctx=ctx
+	for _,room:=range s.rooms {go s.runRoom(ctx,room)}
+	s.mu.Unlock()
+	<-ctx.Done()
+	s.mu.Lock()
+	s.ctx=nil
+	s.mu.Unlock()
 }
 
 func main() {
