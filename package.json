@@ -10,7 +10,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test --experimental-strip-types tests/*.test.ts",
     "test:browser": "playwright test",
-    "check:ai-index": "node scripts/check-ai-navigation.mjs"
+    "check:ai-index": "node scripts/check-ai-navigation.mjs",
+    "ai:find": "node scripts/find-ai-files.mjs"
   },
   "devDependencies": {
     "typescript": "6.0.3",

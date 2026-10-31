@@ -14,6 +14,18 @@ Encontre o subsistema antes de ler código. **Este mapa aponta para índices loc
 | Regressões e QA | [Testes](../tests/INDEX.md) | `tests/browser/`, `server/tests/` |
 | Estrutura, decisões e operação | [Arquitetura](ARQUITETURA.md) | [Roadmap](ROADMAP.md), [escala Go](GO_SCALE_1000.md) |
 
+## Encontrar arquivos sem listar milhares de caminhos
+
+A busca usa somente caminhos versionados do Git, não lê conteúdo dos arquivos nem adiciona pacotes:
+
+```bash
+npm run ai:find -- player --scope src --limit 20
+npm run ai:find -- spatial --scope server-go --json
+npm run ai:find -- 'room runtime' --limit 10
+```
+
+Limite padrão: **20 caminhos**, máximo **100** por chamada. Para encontrar símbolos **dentro** do código, use `rg -n` no módulo já identificado. A busca por caminhos é complementar aos `INDEX.md`, não substitui os índices de arquitetura.
+
 ## Navegação eficiente
 1. Leia [AGENTS.md](../AGENTS.md) e o índice local **somente** da tarefa atual.
 2. Busque símbolos com `rg -n 'NomeDoSimbolo' src server server-go rust` e caminhos com `rg --files src/engine` (ajuste a pasta).

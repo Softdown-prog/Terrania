@@ -11,7 +11,7 @@ Comece pelo [mapa de navegação](docs/AI_NAVIGATION.md) e abra **apenas o índi
 - Go puro continua sendo o padrão; `rustspatial` é experimental e exige testes de paridade e benchmark antes de ativar.
 
 ## Procedimento
-1. Localize o domínio no [mapa](docs/AI_NAVIGATION.md), leia o `INDEX.md` correspondente e faça busca direcionada por símbolos.
+1. Localize o domínio no [mapa](docs/AI_NAVIGATION.md), leia o `INDEX.md` correspondente; para caminhos use `npm run ai:find -- player --scope src`, e para símbolos use `rg -n` no módulo.
 2. Confira contratos e testes antes de alterar APIs, saves, formato de snapshots, estado da sala ou lógica de mundo.
 3. Frontend: `npm run typecheck && npm test && npm run build`; navegador: `npm run test:browser`.
 4. Node: `npm run typecheck --prefix server && npm test --prefix server && npm run build --prefix server`.
