@@ -8,6 +8,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -44,6 +46,7 @@ type gameServer struct {
 	clients map[*websocket.Conn]*client
 	allowed map[string]bool
 	revision string
+	ready atomic.Bool // true only after the live 2-player probe in production
 	nextName int
 }
 
@@ -52,6 +55,8 @@ func newGameServer(allowed []string,revision string) *gameServer {
 		clients:make(map[*websocket.Conn]*client),allowed:make(map[string]bool)}
 	for _,origin:=range allowed { if origin!="" { s.allowed[strings.TrimSpace(origin)]=true } }
 	if regexp.MustCompile("^[0-9a-f]{40}$").MatchString(revision) { s.revision=revision }
+	// In unit tests the HTTP handler is used without a real listener.
+	s.ready.Store(true)
 	return s
 }
 
@@ -61,6 +66,7 @@ func (s *gameServer) handler() http.Handler {
 		if r.Method!=http.MethodGet { http.Error(w,"method not allowed",http.StatusMethodNotAllowed);return }
 		w.Header().Set("Content-Type","application/json")
 		w.Header().Set("Cache-Control","no-store")
+		if !s.ready.Load() { http.Error(w,"engine warming up",http.StatusServiceUnavailable); return }
 		var rev any
 		if s.revision!="" { rev=s.revision }
 		_ = json.NewEncoder(w).Encode(map[string]any{"status":"ok","revision":rev,"engine":"go"})
@@ -244,12 +250,30 @@ func main() {
 		allowed=[]string{"http://localhost:5173","http://127.0.0.1:5173"}
 	}
 	s:=newGameServer(allowed,os.Getenv("GIT_SHA"))
+	// A running HTTP process is not sufficient: validate two actual WS clients
+	// before reporting ready to Docker / the GitHub-to-VPS broker.
+	s.ready.Store(false)
 	ctx,stop:=signal.NotifyContext(context.Background(),syscall.SIGTERM,syscall.SIGINT)
 	defer stop()
 	go s.run(ctx)
 	server:=&http.Server{Addr:":"+port,Handler:s.handler(),ReadHeaderTimeout:5*time.Second}
+	listener,err:=net.Listen("tcp",":"+port)
+	if err!=nil { log.Fatal("Unable to listen on ",port,": ",err) }
 	errs:=make(chan error,1)
-	go func(){ errs<-server.ListenAndServe() }()
+	go func(){ errs<-server.Serve(listener) }()
+	go func(){
+		origin:=""
+		for _,raw:=range allowed {
+			if candidate:=strings.TrimSpace(raw);candidate!="" {origin=candidate;break}
+		}
+		if origin=="" {log.Print("No allowed Origin for startup probe");os.Exit(1)}
+		if err:=probeMultiplayer(port,origin);err!=nil {
+			log.Print("Go live 2-player startup probe FAILED: ",err)
+			os.Exit(1) // Docker restart policy handles a failed boot.
+		}
+		s.ready.Store(true)
+		log.Print("Go live 2-player startup probe OK; health ready")
+	}()
 	log.Print("Terrania Go shadow server listening on ",port)
 	select {
 	case <-ctx.Done():
