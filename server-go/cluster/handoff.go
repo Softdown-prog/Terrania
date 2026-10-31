@@ -356,17 +356,27 @@ func (d *RegionDirectory) Abort(t TransferTicket) (Ownership, error) {
 	return ownership(t.Province, next), nil
 }
 
- // ValidateStaging is an advisory preflight before a potentially slow disk
- // write. StageDestination MUST revalidate after the write; this does not
- // reserve ownership or authorize destination simulation.
-func (d *RegionDirectory) ValidateStaging(t TransferTicket,digest [32]byte,now time.Time)error{
+// ValidateStaging is an advisory preflight before a potentially slow disk
+// write. StageDestination MUST revalidate after the write; this does not
+// reserve ownership or authorize destination simulation.
+func (d *RegionDirectory) ValidateStaging(t TransferTicket, digest [32]byte, now time.Time) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	s,ok:=d.regions[t.Province]
-	if !ok{return ErrRegionUnknown}
-	if err:=d.guardLocked(s);err!=nil{return err}
-	if err:=validTicket(s,t,now);err!=nil{return err}
-	if !s.pending.frozen{return ErrHandoffNotReady}
-	if digest!=t.Digest{return ErrHandoffInvalid}
+	s, ok := d.regions[t.Province]
+	if !ok {
+		return ErrRegionUnknown
+	}
+	if err := d.guardLocked(s); err != nil {
+		return err
+	}
+	if err := validTicket(s, t, now); err != nil {
+		return err
+	}
+	if !s.pending.frozen {
+		return ErrHandoffNotReady
+	}
+	if digest != t.Digest {
+		return ErrHandoffInvalid
+	}
 	return nil
 }

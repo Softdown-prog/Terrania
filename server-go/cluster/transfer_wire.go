@@ -118,12 +118,16 @@ func NewSnapshotReceiver(d *RegionDirectory, worker string) (*SnapshotReceiver, 
 // NewArchivedSnapshotReceiver persists the full authenticated frame BEFORE
 // an acknowledgment or directory staging is published. This remains an
 // opt-in control-plane component and is NOT mounted in production.
-func NewArchivedSnapshotReceiver(d *RegionDirectory,worker string,a *SnapshotArchive)(*SnapshotReceiver,error){
-	if a==nil{return nil,ErrSnapshotArchiveInvalid}
-	h,err:=NewSnapshotReceiver(d,worker)
-	if err!=nil{return nil,err}
-	h.archive=a
-	return h,nil
+func NewArchivedSnapshotReceiver(d *RegionDirectory, worker string, a *SnapshotArchive) (*SnapshotReceiver, error) {
+	if a == nil {
+		return nil, ErrSnapshotArchiveInvalid
+	}
+	h, err := NewSnapshotReceiver(d, worker)
+	if err != nil {
+		return nil, err
+	}
+	h.archive = a
+	return h, nil
 }
 
 // peerWorkerID requires an authenticated client certificate with exactly one
@@ -225,13 +229,13 @@ func (h *SnapshotReceiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Validate against the live coordinator before writing an archive. The
 	// directory may still change while fsync runs; the final StageDestination
 	// rechecks and rejects an outdated ticket without activating anything.
-	if err:=h.directory.ValidateStaging(t,hash,time.Now());err!=nil {
-		http.Error(w,"transfer ticket not active or source not frozen",http.StatusConflict)
+	if err := h.directory.ValidateStaging(t, hash, time.Now()); err != nil {
+		http.Error(w, "transfer ticket not active or source not frozen", http.StatusConflict)
 		return
 	}
-	if h.archive!=nil {
-		if err:=h.archive.SaveDurable(transfer);err!=nil {
-			http.Error(w,"durable snapshot unavailable",http.StatusServiceUnavailable)
+	if h.archive != nil {
+		if err := h.archive.SaveDurable(transfer); err != nil {
+			http.Error(w, "durable snapshot unavailable", http.StatusServiceUnavailable)
 			return
 		}
 	}
