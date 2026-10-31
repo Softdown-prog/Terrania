@@ -107,12 +107,7 @@ func (r *Room) Tick(dt float64,now time.Time) {
 		}
 	}
 	for _,mob:=range r.mobsInOrder() {
-		var near *Guest
-		closest:=260.
-		for _,g:=range guests {
-			d:=math.Hypot(g.Actor.X-mob.X,g.Actor.Y-mob.Y)
-			if d<closest { closest=d;near=g }
-		}
+		near:=closestGuest(guests,mob.X,mob.Y)
 		if near!=nil { mob.Update(dt,near.Actor,r.World) }
 		keep:=false
 		for _,g:=range guests {
@@ -150,22 +145,17 @@ func (r *Room) spawnNearGuests(guests []*Guest) {
 func (r *Room) SnapshotFor(id string) *Snapshot {
 	me:=r.Guests[id]
 	if me==nil { return nil }
-	near:=func(x,y float64) bool {
-		return math.Abs(x-me.Actor.X)<920&&math.Abs(y-me.Actor.Y)<920
-	}
 	result:=&Snapshot{Type:"state",Players:[]HeroState{},Mobs:[]MobState{}}
-	for _,g:=range r.guestsInOrder() {
+	visitVisibleGuests(r.guestsInOrder(),me.Actor.X,me.Actor.Y,func(g *Guest) {
 		a:=g.Actor
-		if !near(a.X,a.Y) { continue }
 		result.Players=append(result.Players,HeroState{ID:g.ID,Name:g.Name,X:a.X,Y:a.Y,HP:a.HP,
 			Kills:g.Kills,FaceX:a.FaceX,FaceY:a.FaceY,WalkTime:a.WalkTime,
 			AttackTime:a.AttackTime,VX:a.VX,VY:a.VY,HurtTime:a.HurtTime})
-	}
-	for _,m:=range r.mobsInOrder() {
-		if !near(m.X,m.Y) { continue }
+	})
+	visitVisibleMobs(r.mobsInOrder(),me.Actor.X,me.Actor.Y,func(m *Slime) {
 		result.Mobs=append(result.Mobs,MobState{ID:m.ID,X:m.X,Y:m.Y,HP:m.HP,
 			Bounce:m.Bounce(),HurtTime:m.HurtTime})
-	}
+	})
 	return result
 }
 
