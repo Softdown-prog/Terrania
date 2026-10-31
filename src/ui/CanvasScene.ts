@@ -10,6 +10,8 @@ import { drawInterior } from '../render/interior.ts';
 import { ROOM_WIDTH, ROOM_HEIGHT, type InteriorRoom } from '../engine/InteriorRoom.ts';
 import type { Effects } from '../render/Effects.ts';
 import type { Camera } from '../render/Camera.ts';
+import type { Point } from '../engine/TapNavigator.ts';
+import { screenToWorld, screenToInterior } from '../input/tap.ts';
 
 /** Shared by the game and honest, static world previews on the website. */
 export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRenderer,
@@ -46,6 +48,23 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   actors.sort((a, b) => a.y - b.y);
   for (const actor of actors) actor.draw();
 }
+/** Marca procedural leve: apenas feedback visual, sem sprite externo. */
+function drawTarget(ctx: CanvasRenderingContext2D, p: Point, time: number): void {
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.strokeStyle = '#e7c7ff';
+  ctx.fillStyle = '#b986ff33';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(0, 0, 10 + Math.sin(time * 5) * 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-3, 0); ctx.lineTo(3, 0);
+  ctx.moveTo(0, -3); ctx.lineTo(0, 3);
+  ctx.stroke();
+  ctx.restore();
+}
 /** Canvas and sizing only; gameplay stays in the simulations. */
 export class CanvasScene {
   private readonly ctx: CanvasRenderingContext2D;
@@ -68,7 +87,14 @@ export class CanvasScene {
     this.canvas.width = Math.ceil(width * dpr);
     this.canvas.height = Math.ceil(height * dpr);
   }
-  renderInterior(room: InteriorRoom): void {
+  worldPoint(local: Point, camera: Camera): Point | null {
+    return screenToWorld(local, this.width, this.height,
+      { x: camera.renderX, y: camera.renderY }, camera.zoom);
+  }
+  interiorPoint(local: Point): Point | null {
+    return screenToInterior(local, this.width, this.height);
+  }
+  renderInterior(room: InteriorRoom, destination: Point | null = null, time = 0): void {
     const scale = Math.min(1.7, this.width / (ROOM_WIDTH + 70), this.height / (ROOM_HEIGHT + 130));
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this.ctx.fillStyle = '#102822';
@@ -77,14 +103,18 @@ export class CanvasScene {
       this.dpr * (this.width - ROOM_WIDTH * scale) / 2,
       this.dpr * (this.height - ROOM_HEIGHT * scale) / 2);
     drawInterior(this.ctx, room);
+    if (destination) drawTarget(this.ctx, destination, time);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
   }
   render(world: WorldRenderer, camera: Camera, player: Player, mobs: ReadonlyArray<Slime | MobState>,
-    remotePlayers: ReadonlyArray<HeroState>, selfId: string | null, time: number, effects: Effects): void {
+    remotePlayers: ReadonlyArray<HeroState>, selfId: string | null, time: number, effects: Effects,
+    destination: Point | null = null): void {
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale, 0, 0);
     drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, remotePlayers, selfId, time, effects.enabled);
     effects.render(this.ctx, camera.renderX - width / 2, camera.renderY - height / 2);
+    if (destination) drawTarget(this.ctx, { x: destination.x - (camera.renderX - width / 2),
+      y: destination.y - (camera.renderY - height / 2) }, time);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     const vignette = this.ctx.createRadialGradient(this.width / 2, this.height / 2, this.height * .25, this.width / 2, this.height / 2, Math.max(this.width, this.height) * .7);
     vignette.addColorStop(0, '#102f2400'); vignette.addColorStop(1, '#071e2855');
