@@ -64,8 +64,8 @@ type electionRecord struct {
 	MemberID    string
 	SignerHash  string
 	Term        uint64
-	CandidateID string // empty means a higher term was observed, not yet voted
-	Tip *ReplicaLogTip `json:",omitempty"`
+	CandidateID string         // empty means a higher term was observed, not yet voted
+	Tip         *ReplicaLogTip `json:",omitempty"`
 }
 
 // ElectionWitness is one independent durable vote store. Each witness must
@@ -165,7 +165,7 @@ func (w *ElectionWitness) replay() error {
 			r.Term < w.term || (r.CandidateID != "" && !validServiceID(r.CandidateID)) {
 			return ErrElectionCorrupt
 		}
-		if r.Tip!=nil && (r.CandidateID==""||!validReplicaTip(*r.Tip)) {
+		if r.Tip != nil && (r.CandidateID == "" || !validReplicaTip(*r.Tip)) {
 			return ErrElectionCorrupt
 		}
 		if r.Term == w.term {
@@ -183,7 +183,7 @@ func (w *ElectionWitness) replay() error {
 }
 
 func (w *ElectionWitness) appendLocked(term uint64, candidate string) error {
-	return w.appendVoteLocked(term,candidate,nil)
+	return w.appendVoteLocked(term, candidate, nil)
 }
 
 func (w *ElectionWitness) appendVoteLocked(term uint64, candidate string, tip *ReplicaLogTip) error {
