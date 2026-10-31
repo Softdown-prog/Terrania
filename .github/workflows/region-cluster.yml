@@ -28,7 +28,7 @@ jobs:
       - name: Enforce gofmt for new cluster and codec code
         run: |
           set -euo pipefail
-          gofmt -w server-go/cluster/handoff.go server-go/cluster/region.go server-go/cluster/region_handoff_test.go server-go/cluster/transfer_wire.go server-go/cluster/transfer_wire_test.go server-go/cluster/room_codec_test.go server-go/cluster/region_journal.go server-go/cluster/region_journal_test.go server-go/engine/room_state.go server-go/engine/room_state_test.go server-go/cluster/snapshot_archive.go server-go/cluster/snapshot_archive_test.go server-go/cluster/archive_wire_test.go server-go/cluster/recovery_inspect.go server-go/cluster/worker_runtime.go server-go/cluster/worker_runtime_test.go server-go/cluster/worker_lease.go server-go/cluster/worker_lease_test.go server-go/cluster/worker_lease_wire.go server-go/cluster/worker_lease_wire_test.go server-go/cluster/grant_coordinator.go server-go/cluster/grant_coordinator_test.go server-go/cluster/election_vote.go server-go/cluster/election_vote_test.go server-go/cluster/replica_log.go server-go/cluster/replica_log_test.go server-go/cluster/replica_freshness.go server-go/cluster/replica_freshness_test.go
+          gofmt -w server-go/cluster/handoff.go server-go/cluster/region.go server-go/cluster/region_handoff_test.go server-go/cluster/transfer_wire.go server-go/cluster/transfer_wire_test.go server-go/cluster/room_codec_test.go server-go/cluster/region_journal.go server-go/cluster/region_journal_test.go server-go/engine/room_state.go server-go/engine/room_state_test.go server-go/cluster/snapshot_archive.go server-go/cluster/snapshot_archive_test.go server-go/cluster/archive_wire_test.go server-go/cluster/recovery_inspect.go server-go/cluster/worker_runtime.go server-go/cluster/worker_runtime_test.go server-go/cluster/worker_lease.go server-go/cluster/worker_lease_test.go server-go/cluster/worker_lease_wire.go server-go/cluster/worker_lease_wire_test.go server-go/cluster/grant_coordinator.go server-go/cluster/grant_coordinator_test.go server-go/cluster/election_vote.go server-go/cluster/election_vote_test.go server-go/cluster/replica_log.go server-go/cluster/replica_log_test.go server-go/cluster/replica_freshness.go server-go/cluster/replica_freshness_test.go server-go/cluster/replica_freshness_restart_test.go
           if ! git diff --quiet -- server-go/cluster server-go/engine/room_state.go server-go/engine/room_state_test.go; then
             echo 'Go source requires gofmt; generated formatting follows:'
             for file in $(git diff --name-only -- server-go/cluster server-go/engine/room_state.go server-go/engine/room_state_test.go); do
@@ -50,6 +50,7 @@ jobs:
           go test -race -count=3 ./cluster -run '^TestElection' -v
           go test -race -count=3 ./cluster -run '^TestReplica' -v
           go test -race -count=3 ./cluster -run '^TestFreshElection' -v
+          go test -race -count=3 ./cluster -run '^TestFreshElectionFsyncedTip' -v
           go test -race -count=1 ./cluster ./cmd/gateway ./cmd/terrania
           go test -count=1 ./...
           go build ./cmd/gateway
