@@ -119,3 +119,20 @@ Sem mudanças no Docker, na VPS ou na `main`.
 O backend Go agora mantém buffers de entrada, jogadores e saída **dentro de cada `Room`**, reutilizados pelo único goroutine proprietário da sala. Não há cache global compartilhado nem ponteiros preservados no Rust entre ticks. O `room.Tick` utiliza `stepMonstersWithScratch`; chamadas de teste avulsas podem usar um scratch local. O adaptador elimina os vetores temporários `afterX`/`afterY`, lê essas coordenadas dos registros já enviados ao Rust e evita recalcular colisão quando não há impulso de knockback ou movimento. Lotes inválidos retornam para o caminho Go antes de qualquer mutação de entidades.
 
 O objetivo é reduzir o custo da ponte, sobretudo em 1.024 e 4.096 monstros. O CI mede novamente essas cargas e verifica paridade, reutilização de capacidade, rejeição atômica e ausência de alocações após o aquecimento dos buffers. **O limite ativo da sala continua em 96 e a integração Rust continua opt-in.** A capacidade da arena Rust não implica desempenho garantido, nem muda Go como motor de rede.
+
+## Experimental mirror Go -> arena Rust persistente (build tag rustarena)
+
+A nova ABI `src/ffi_arena.rs` permite criar, atualizar em lote, consultar e remover entidades numa arena Rust por sala, com handles `u64` contendo ID de slot e geracao. O `EntityArena` armazena entidades de tipos genericos e rejeita handles obsoletos. A mesma entidade pode ser atualizada sem re-alocacao do slot. `terrania_arena_free` libera memoria nativa ao encerrar o loop de sala; o wrapper Go usa um finalizer apenas como seguranca extra para salas isoladas em testes.
+
+Ao compilar com `CGO_ENABLED=1` e `-tags rustarena` (Linux AMD64), cada `Room.Tick` sincroniza os mobs vivos do Go com um **espelho opcional** da arena Rust apos o processamento autoritativo. O Go ainda decide o resultado do combate, a fisica, a rede e o inventario. Se a arena falhar ou detectar entrada invalida, o espelho pode ser descartado sem alterar o jogo. O build comum nao cria arena nativa nem passa pela FFI.
+
+**Importante:** esta etapa prepara ownership/lifecycle e armazenamento persistente, mas **nao transfere ainda o estado autoritativo da IA para Rust**; isso exige benchmark de ticks completos e testes de equivalencia do ciclo de vida antes de ativar. O limite de spawn Go continua 96 monstros. Para validar experimentalmente:
+
+```bash
+cargo build --manifest-path rust/spatial-kernel/Cargo.toml --locked --release
+cd server-go
+CGO_ENABLED=1 go test -race -tags rustarena ./...
+CGO_ENABLED=1 go test -race -tags 'rustmonsters rustarena' ./...
+```
+
+As arenas pertencem a cada sala individualmente, nunca a um processo global nem a um segundo servidor. Sem deploy, sem merge.

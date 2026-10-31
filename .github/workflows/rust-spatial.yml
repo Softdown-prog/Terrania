@@ -6,6 +6,8 @@ on:
       - "server-go/cmd/spatial-reference/**"
       - "server-go/engine/spatial_*.go"
       - "server-go/engine/room.go"
+      - "server-go/engine/entity_arena*.go"
+      - "server-go/cmd/terrania/room_runtime.go"
       - "server-go/engine/monsters*.go"
       - "server-go/engine/benchmark_test.go"
       - ".github/workflows/rust-spatial.yml"
@@ -16,6 +18,8 @@ on:
       - "server-go/cmd/spatial-reference/**"
       - "server-go/engine/spatial_*.go"
       - "server-go/engine/room.go"
+      - "server-go/engine/entity_arena*.go"
+      - "server-go/cmd/terrania/room_runtime.go"
       - "server-go/engine/monsters*.go"
       - "server-go/engine/benchmark_test.go"
       - ".github/workflows/rust-spatial.yml"
@@ -54,6 +58,8 @@ jobs:
           go test -race -count=1 -tags rustspatial ./...
           go test -race -count=1 -tags rustmonsters ./...
           go test -race -count=1 -tags 'rustspatial rustmonsters' ./...
+          go test -race -count=1 -tags rustarena ./...
+          go test -race -count=1 -tags 'rustmonsters rustarena' ./...
           go vet -tags rustspatial ./...
           go build -tags rustspatial -o /tmp/terrania-go-ffi ./cmd/terrania
           go build -tags rustmonsters -o /tmp/terrania-go-monsters ./cmd/terrania
