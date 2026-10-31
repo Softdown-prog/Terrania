@@ -62,3 +62,63 @@ func TestRoomArenaIsolationAndInvalidSnapshot(t *testing.T) {
         t.Fatalf("other room snapshot unexpectedly changed: %+v",v)
     }
 }
+
+func TestRoomArenaBulkSpawnPreservesHandles(t *testing.T) {
+    room := NewRoom("arena-bulk-10000")
+    defer room.Close()
+    for i := 0; i < 10_000; i++ {
+        id := fmt.Sprintf("bulk-%d", i)
+        mob := NewSlime(id, float64(i%100), float64(i/100))
+        room.mobs[id] = mob
+        room.mobOrder = append(room.mobOrder, id)
+    }
+    if !room.entityArena.syncRoom(room) {
+        t.Fatal("10k native batch insertion failed")
+    }
+    if got := room.entityArena.count(); got != 10_000 {
+        t.Fatalf("got %d entities after batch", got)
+    }
+    first := room.entityArena.handles["bulk-0"]
+    if !room.entityArena.syncRoom(room) {
+        t.Fatal("second 10k batch failed")
+    }
+    if room.entityArena.handles["bulk-0"] != first {
+        t.Fatal("unchanged entity received a new handle")
+    }
+    for i := 0; i < 5_000; i++ {
+        room.removeMob(fmt.Sprintf("bulk-%d", i))
+    }
+    if !room.entityArena.syncRoom(room) {
+        t.Fatal("mass despawn failed")
+    }
+    if _, ok := room.entityArena.readHandle(first); ok {
+        t.Fatal("stale handle accepted")
+    }
+    if got := room.entityArena.count(); got != 5_000 {
+        t.Fatalf("count after mass despawn = %d", got)
+    }
+}
+
+// This measures Go map traversal, packing 200,000 C records and one Rust
+// update_batch call AFTER the initial spawn. It is not a 20Hz room tick,
+// since Go.Room still has a hard 96-monster live spawn limit.
+func BenchmarkRoomArenaSync200000(b *testing.B) {
+    room := NewRoom("bench-arena-200k")
+    defer room.Close()
+    for i := 0; i < 200_000; i++ {
+        id := fmt.Sprintf("entity-%d", i)
+        mob := NewSlime(id, float64(i%1000), float64(i/1000))
+        room.mobs[id] = mob
+        room.mobOrder = append(room.mobOrder, id)
+    }
+    if !room.entityArena.syncRoom(room) || room.entityArena.count() != 200_000 {
+        b.Fatal("200k mirror initialization failed")
+    }
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        if !room.entityArena.syncRoom(room) {
+            b.Fatal("mirror tick failed")
+        }
+    }
+}

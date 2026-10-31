@@ -307,6 +307,77 @@ mod tests {
         }
     }
     #[test]
+    fn ffi_spawn_batch_rejects_partial_input_and_recycled_handle() {
+        let arena = terrania_arena_new(3);
+        assert!(!arena.is_null());
+        let mut handles = [0u64; 3];
+        let valid = [monster(1.0), monster(2.0), monster(3.0)];
+        let invalid = [
+            monster(1.0),
+            Entity {
+                kind: EntityKind(0),
+                ..monster(2.0)
+            },
+            monster(3.0),
+        ];
+        // SAFETY: live arena and disjoint stack arrays, single thread owner.
+        unsafe {
+            assert_eq!(
+                terrania_arena_spawn_batch(
+                    arena,
+                    invalid.as_ptr(),
+                    3,
+                    handles.as_mut_ptr(),
+                    3
+                ),
+                -1
+            );
+            assert_eq!(terrania_arena_len(arena), 0);
+            assert_eq!(handles, [0, 0, 0]);
+            assert_eq!(
+                terrania_arena_spawn_batch(
+                    arena,
+                    valid.as_ptr(),
+                    3,
+                    handles.as_mut_ptr(),
+                    2
+                ),
+                -2
+            );
+            assert_eq!(terrania_arena_len(arena), 0);
+            assert_eq!(
+                terrania_arena_spawn_batch(
+                    arena,
+                    valid.as_ptr(),
+                    3,
+                    handles.as_mut_ptr(),
+                    3
+                ),
+                3
+            );
+            assert_eq!(terrania_arena_len(arena), 3);
+            assert_ne!(handles[0], handles[1]);
+            let old = handles[0];
+            assert_eq!(terrania_arena_despawn(arena, old), 0);
+            let mut replacement = [0u64; 1];
+            assert_eq!(
+                terrania_arena_spawn_batch(
+                    arena,
+                    valid.as_ptr(),
+                    1,
+                    replacement.as_mut_ptr(),
+                    1
+                ),
+                1
+            );
+            assert_ne!(old, replacement[0]);
+            assert_eq!(terrania_arena_despawn(arena, old), -2);
+            assert_eq!(terrania_arena_len(arena), 3);
+            terrania_arena_free(arena);
+        }
+    }
+
+    #[test]
     fn ffi_200k_atomic_single_batch_and_capacity() {
         use std::time::Instant;
         const COUNT: usize = 200_000;
