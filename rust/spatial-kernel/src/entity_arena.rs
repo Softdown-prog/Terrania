@@ -20,6 +20,7 @@ impl EntityKind {
     pub const AMBIENT: Self = Self(5);
 }
 
+#[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Entity {
     pub kind: EntityKind,
@@ -36,6 +37,12 @@ impl EntityHandle {
     #[must_use]
     pub const fn raw(self) -> u64 {
         self.0
+    }
+
+    /// Decode an untrusted Go handle; each arena validates generation and slot.
+    #[must_use]
+    pub const fn from_raw(raw: u64) -> Self {
+        Self(raw)
     }
 }
 
@@ -164,6 +171,25 @@ impl EntityArena {
         let dense_index = slot.dense_index.ok_or("stale handle")?;
         self.entries[dense_index].entity.x = x;
         self.entries[dense_index].entity.y = y;
+        Ok(())
+    }
+
+    /// Replace data for an existing entity without changing its stable handle.
+    ///
+    /// # Errors
+    /// Rejects invalid coordinates or entity kind and stale handles.
+    pub fn update(&mut self, handle: EntityHandle, entity: Entity) -> Result<(), &'static str> {
+        if entity.kind.0 == 0 || !entity.x.is_finite() || !entity.y.is_finite() {
+            return Err("invalid entity");
+        }
+        let index = usize::try_from(handle.raw() & u64::from(u32::MAX))
+            .map_err(|_| "invalid handle")?;
+        let slot = self.slots.get(index).ok_or("invalid handle")?;
+        if u64::from(slot.generation) != handle.raw() >> 32 {
+            return Err("stale handle");
+        }
+        let dense = slot.dense_index.ok_or("stale handle")?;
+        self.entries[dense].entity = entity;
         Ok(())
     }
 

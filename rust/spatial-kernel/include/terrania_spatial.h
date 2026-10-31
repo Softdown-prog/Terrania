@@ -51,6 +51,32 @@ int32_t terrania_monsters_plan(const TerraniaMonsterInput *monsters, uint32_t co
                               const TerraniaMonsterPlayer *players, uint32_t player_count,
                               double dt, TerraniaMonsterPlan *out, uint32_t capacity);
 
+/* Optional persistent Rust-owned arena, one per Go room.
+ * Handles are slot/generation IDs, scoped to that arena (never globally unique).
+ * Safe concurrency policy: the owning room must serialize all arena calls;
+ * a pointer must never be used after terrania_arena_free.
+ * Gameplay authority, world collisions and networking stay in Go. */
+typedef struct TerraniaArena TerraniaArena;
+typedef struct {
+    uint16_t kind; /* 1 monster, 2 NPC, 3 projectile, 4 resource, 5 ambient */
+    double x, y;
+    int32_t hp;
+    uint32_t state;
+} TerraniaEntity;
+
+/* new returns NULL for invalid capacity. Free NULL is a no-op. */
+TerraniaArena *terrania_arena_new(uint32_t capacity);
+void terrania_arena_free(TerraniaArena *arena);
+/* Returns 0 success, -1 invalid data, -2 stale handle, -3 full. */
+int32_t terrania_arena_spawn(TerraniaArena *arena, TerraniaEntity entity,
+                            uint64_t *out_handle);
+int32_t terrania_arena_update_batch(TerraniaArena *arena, const uint64_t *handles,
+                                   const TerraniaEntity *entities, uint32_t count);
+int32_t terrania_arena_despawn(TerraniaArena *arena, uint64_t handle);
+int32_t terrania_arena_get(const TerraniaArena *arena, uint64_t handle,
+                          TerraniaEntity *out);
+int32_t terrania_arena_len(const TerraniaArena *arena);
+
 #ifdef __cplusplus
 }
 #endif

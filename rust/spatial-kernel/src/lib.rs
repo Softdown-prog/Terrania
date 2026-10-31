@@ -5,6 +5,8 @@
 pub mod entity_arena;
 #[allow(unsafe_code)]
 mod ffi;
+#[allow(unsafe_code)]
+mod ffi_arena;
 pub mod monsters;
 pub use ffi::{terrania_monsters_plan, terrania_spatial_nearest, terrania_spatial_visible};
 
