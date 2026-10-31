@@ -40,7 +40,7 @@ func TestCollectNeverReportsPartialOrInventedZero(t *testing.T) {
 			t.Fatalf("accepted invalid data: %s", raw)
 		}
 	}
-	bad := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "warming", 503) }))
+	bad := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "warming", http.StatusServiceUnavailable) }))
 	defer bad.Close()
 	if _, _, err := Collect(context.Background(), []string{a.URL, bad.URL}); err == nil {
 		t.Fatal("reported partial total")
