@@ -18,7 +18,7 @@ test('auditoria identifica módulos sem índice e mantém resumo pequeno', () =>
   assert.equal(audit.indexed, 3);
   assert.deepEqual(audit.largest.map(x => x.path), ['src', 'src/engine']);
   assert.deepEqual(audit.missing.map(x => x.path), ['src/game', 'docs']);
-  assert.equal(audit.candidates, 2);
+  assert.equal(audit.candidates, 3); // Also server-go/engine has no local index.
 });
 
 test('escopo e profundidade restringem dados sem abrir fontes', () => {
