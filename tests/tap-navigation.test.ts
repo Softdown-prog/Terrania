@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { findWalkingPath, clearPath, TapNavigator } from "../src/engine/TapNavigator.ts";
+import { Player } from "../src/actors/Player.ts";
 import { isShortTap, screenToWorld, screenToInterior } from "../src/input/tap.ts";
 import { interiorCollision, ROOM_FURNITURE } from "../src/engine/InteriorRoom.ts";
 import type { CollisionMap } from "../src/world/collision.ts";
@@ -69,4 +70,21 @@ test("trava de segurança encerra navegação se herói não progride", () => {
   nav.go({ x: 0, y: 0 }, { x: 100, y: 0 }, open);
   for (let i = 0; i < 60; i++) nav.direction({ x: 0, y: 0 }, 1 / 60);
   assert.equal(nav.target, null);
+});
+
+test("personagem realmente alcança o destino contornando parede sem atravessá-la", () => {
+  const navigator = new TapNavigator();
+  const player = new Player();
+  player.x = 0;
+  player.y = 0;
+  const destination = { x: 96, y: 0 };
+  assert.equal(navigator.go(player, destination, wall), true);
+  for (let step = 0; step < 900 && navigator.target; step++) {
+    const input = navigator.direction(player, 1 / 60);
+    player.update(1 / 60, input, wall);
+    assert.equal(wall.canMove(player.x, player.y), true);
+  }
+  assert.ok(Math.hypot(player.x - destination.x, player.y - destination.y) < 12,
+    "o herói deve chegar próximo ao toque depois do desvio");
+  assert.equal(navigator.target, null);
 });
