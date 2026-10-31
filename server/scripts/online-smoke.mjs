@@ -48,7 +48,9 @@ for (const publicOrigin of [origin]) {
   });
 }
 await check("health público da VPS", async () => {
-  assert.deepEqual(JSON.parse(await get(api + "/health")), { status: "ok" });
+  const health = JSON.parse(await get(api + "/health"));
+  assert.equal(health.status, "ok");
+  if (process.env.EXPECTED_SHA) assert.equal(health.revision, process.env.EXPECTED_SHA);
 });
 await check("dois jogadores e movimento autoritativo por WSS público", async () => {
   const streams = [[], []];

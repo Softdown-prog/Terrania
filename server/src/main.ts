@@ -22,9 +22,9 @@ const send = (socket: WebSocket, msg: ServerMessage): void => {
   socket.send(JSON.stringify(msg));
 };
 const server = createServer((req, res) => {
-  if (req.url === '/health' && req.method === 'GET') {
+  if (new URL(req.url ?? '/', 'http://localhost').pathname === '/health' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-    res.end(JSON.stringify({ status: 'ok' }));
+    res.end(JSON.stringify({ status: 'ok', revision: /^[0-9a-f]{40}$/.test(process.env.GIT_SHA ?? '') ? process.env.GIT_SHA : null }));
   } else { res.writeHead(404); res.end(); }
 });
 const wss = new WebSocketServer({ noServer: true, maxPayload: 512, perMessageDeflate: false });

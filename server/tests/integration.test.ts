@@ -32,6 +32,7 @@ test(
           ...process.env,
           PORT: String(port),
           ALLOWED_ORIGINS: "http://localhost:5173",
+          GIT_SHA: "a".repeat(40),
         },
         stdio: ["ignore", "pipe", "pipe"],
       },
@@ -51,6 +52,8 @@ test(
         (await fetch("http://127.0.0.1:" + port + "/health")).status,
         200,
       );
+      assert.deepEqual(await (await fetch("http://127.0.0.1:" + port + "/health?deploy=verified")).json(),
+        { status: "ok", revision: "a".repeat(40) });
       const streams: ServerMessage[][] = [[], []];
       for (let i = 0; i < 2; i++) {
         const ws = new WebSocket(
