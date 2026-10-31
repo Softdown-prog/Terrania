@@ -39,6 +39,11 @@ jobs:
           node --experimental-strip-types server-go/scripts/ts-reference.mjs > /tmp/ts.json
           (cd server-go && go run ./cmd/parity) > /tmp/go.json
           node server-go/scripts/compare.mjs /tmp/ts.json /tmp/go.json
+      - name: Comparar combate e IA frame a frame com TypeScript
+        run: |
+          node --experimental-strip-types server-go/scripts/gameplay-reference.mjs > /tmp/terrania-gameplay-ts.json
+          (cd server-go && go run ./cmd/gameplay-parity) > /tmp/terrania-gameplay-go.json
+          node server-go/scripts/compare.mjs /tmp/terrania-gameplay-ts.json /tmp/terrania-gameplay-go.json
       - name: Imagem independente e resposta de saúde
         run: |
           docker build -f server-go/Dockerfile -t terrania-go:ci .
