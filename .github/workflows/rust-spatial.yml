@@ -4,12 +4,16 @@ on:
     paths:
       - "rust/spatial-kernel/**"
       - "server-go/cmd/spatial-reference/**"
+      - "server-go/engine/spatial_*.go"
+      - "server-go/engine/room.go"
       - ".github/workflows/rust-spatial.yml"
   push:
     branches: [main]
     paths:
       - "rust/spatial-kernel/**"
       - "server-go/cmd/spatial-reference/**"
+      - "server-go/engine/spatial_*.go"
+      - "server-go/engine/room.go"
       - ".github/workflows/rust-spatial.yml"
 
 permissions:
@@ -36,6 +40,63 @@ jobs:
         run: cargo test --manifest-path rust/spatial-kernel/Cargo.toml --locked --all-targets
       - name: Compilar bibliotecas Rust isoladas (rlib/staticlib/cdylib)
         run: cargo build --manifest-path rust/spatial-kernel/Cargo.toml --locked --release
+      - name: Testar ponte Go-Rust FFI de verdade, sem alterar producao
+        working-directory: server-go
+        env:
+          CGO_ENABLED: '1'
+        run: |
+          set -euo pipefail
+          go test -race -count=1 ./engine ./cmd/terrania
+          go test -race -count=1 -tags rustspatial ./...
+          go vet -tags rustspatial ./...
+          go build -tags rustspatial -o /tmp/terrania-go-ffi ./cmd/terrania
+      - name: Comparar benchmarks Go puro vs Go chamando Rust por FFI
+        working-directory: server-go
+        env:
+          CGO_ENABLED: '1'
+        run: |
+          set -euo pipefail
+          go test ./engine -run '^
+        run: |
+          set -euo pipefail
+          (cd server-go && go run ./cmd/spatial-reference) | tee /tmp/terrania-spatial-go.txt
+          cargo run --manifest-path rust/spatial-kernel/Cargo.toml --release --locked --bin spatial-check --quiet | tee /tmp/terrania-spatial-rust.txt
+          diff -u /tmp/terrania-spatial-go.txt /tmp/terrania-spatial-rust.txt
+          echo "Rust e Go: mesmas entidades visiveis e mesmo alvo selecionado."
+      - name: Benchmark exploratorio de CPU local (nao e medicao da VPS)
+        run: |
+          set -euo pipefail
+          (cd server-go && go build -o /tmp/terrania-spatial-go ./cmd/spatial-reference)
+          /tmp/terrania-spatial-go --bench 2>&1 | tee /tmp/go-bench.log
+          rust/spatial-kernel/target/release/spatial-check --bench 2>&1 | tee /tmp/rust-bench.log
+          echo "### Kernel Rust x Go - GitHub runner, nao VPS" >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/go-bench.log >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/rust-bench.log >> "$GITHUB_STEP_SUMMARY"
+ -bench '^BenchmarkSpatial' -benchtime=250x -count=3 -benchmem | tee /tmp/terrania-go-only.txt
+          go test -tags rustspatial ./engine -run '^
+        run: |
+          set -euo pipefail
+          (cd server-go && go run ./cmd/spatial-reference) | tee /tmp/terrania-spatial-go.txt
+          cargo run --manifest-path rust/spatial-kernel/Cargo.toml --release --locked --bin spatial-check --quiet | tee /tmp/terrania-spatial-rust.txt
+          diff -u /tmp/terrania-spatial-go.txt /tmp/terrania-spatial-rust.txt
+          echo "Rust e Go: mesmas entidades visiveis e mesmo alvo selecionado."
+      - name: Benchmark exploratorio de CPU local (nao e medicao da VPS)
+        run: |
+          set -euo pipefail
+          (cd server-go && go build -o /tmp/terrania-spatial-go ./cmd/spatial-reference)
+          /tmp/terrania-spatial-go --bench 2>&1 | tee /tmp/go-bench.log
+          rust/spatial-kernel/target/release/spatial-check --bench 2>&1 | tee /tmp/rust-bench.log
+          echo "### Kernel Rust x Go - GitHub runner, nao VPS" >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/go-bench.log >> "$GITHUB_STEP_SUMMARY"
+          tail -n 1 /tmp/rust-bench.log >> "$GITHUB_STEP_SUMMARY"
+ -bench '^BenchmarkSpatial' -benchtime=250x -count=3 -benchmem | tee /tmp/terrania-go-with-rust.txt
+          {
+            echo '### Comparacao end-to-end com FFI (GitHub runner, NAO VPS)'
+            echo 'Go puro:'
+            tail -n 8 /tmp/terrania-go-only.txt
+            echo 'Go com Rust via C ABI:'
+            tail -n 8 /tmp/terrania-go-with-rust.txt
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Comparar 200 consultas e 4096 objetos com Go, bit a bit
         run: |
           set -euo pipefail
