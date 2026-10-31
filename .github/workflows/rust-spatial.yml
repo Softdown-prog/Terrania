@@ -9,7 +9,7 @@ on:
       - "server-go/engine/benchmark_test.go"
       - ".github/workflows/rust-spatial.yml"
   push:
-    branches: [main]
+    branches: [main, 'feat/go-rust-ffi-*']
     paths:
       - "rust/spatial-kernel/**"
       - "server-go/cmd/spatial-reference/**"
