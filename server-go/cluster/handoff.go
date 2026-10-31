@@ -56,6 +56,7 @@ type regionState struct {
 	epoch         uint64
 	pending       *pendingTransfer
 	lastCommitted string
+	recoveryRequired bool
 }
 
 // RegionDirectory simulates a single trusted coordinator. A real multi-node
@@ -64,6 +65,8 @@ type RegionDirectory struct {
 	mu      sync.Mutex
 	workers map[string]struct{}
 	regions map[Province]*regionState
+	journal *regionJournal
+	faulted bool
 }
 
 func NewRegionDirectory(router *Router) (*RegionDirectory, error) {
@@ -94,17 +97,21 @@ func (d *RegionDirectory) Register(p Province, worker string) (Ownership, error)
 		return Ownership{}, ErrWorkerUnknown
 	}
 	if s, ok := d.regions[p]; ok {
+		if err := d.guardLocked(s); err != nil { return Ownership{}, err }
 		if s.owner != worker {
 			return Ownership{}, ErrStaleOwner
 		}
 		return ownership(p, s), nil
 	}
-	d.regions[p] = &regionState{owner: worker, epoch: 1}
-	return ownership(p, d.regions[p]), nil
+	next := &regionState{owner: worker, epoch: 1}
+	if err := d.persistLocked(p,next);err!=nil{return Ownership{},err}
+	d.regions[p] = next
+	return ownership(p, next), nil
 }
 
 func ownership(p Province, s *regionState) Ownership {
 	phase := "active"
+	if s.recoveryRequired {return Ownership{Province:p,WorkerID:s.owner,Epoch:s.epoch,Phase:"recovery-required"}}
 	if s.pending != nil {
 		phase = "preparing"
 		if s.pending.quiesced {
@@ -121,6 +128,7 @@ func (d *RegionDirectory) Status(p Province) (Ownership, error) {
 	if !ok {
 		return Ownership{}, ErrRegionUnknown
 	}
+	if d.faulted {return Ownership{}, ErrRegionStorageFailed}
 	return ownership(p, s), nil
 }
 
@@ -130,7 +138,7 @@ func (d *RegionDirectory) CanSimulate(p Province, worker string, epoch uint64) b
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	s, ok := d.regions[p]
-	return ok && s.owner == worker && s.epoch == epoch &&
+	return ok && !d.faulted && !s.recoveryRequired && s.owner == worker && s.epoch == epoch &&
 		(s.pending == nil || !s.pending.frozen)
 }
 
@@ -144,6 +152,7 @@ func (d *RegionDirectory) Begin(p Province, from, to string, epoch uint64, diges
 	if !ok {
 		return TransferTicket{}, ErrRegionUnknown
 	}
+	if err:=d.guardLocked(s);err!=nil{return TransferTicket{},err}
 	if !d.validWorker(from) || !d.validWorker(to) {
 		return TransferTicket{}, ErrWorkerUnknown
 	}
@@ -163,7 +172,10 @@ func (d *RegionDirectory) Begin(p Province, from, to string, epoch uint64, diges
 	t := TransferTicket{Province: p, From: from, To: to, OldEpoch: epoch,
 		NewEpoch: epoch + 1, Digest: digest, ExpiresAt: now.Add(HandoffTTL),
 		Token: hex.EncodeToString(nonce[:])}
-	s.pending = &pendingTransfer{ticket: t}
+	next:=cloneRegionState(s)
+	next.pending=&pendingTransfer{ticket:t}
+	if err:=d.persistLocked(p,next);err!=nil{return TransferTicket{},err}
+	d.regions[p]=next
 	return t, nil
 }
 
@@ -195,10 +207,14 @@ func (d *RegionDirectory) FreezeSource(t TransferTicket, now time.Time) error {
 	if !ok {
 		return ErrRegionUnknown
 	}
+	if err:=d.guardLocked(s);err!=nil{return err}
 	if err := validTicket(s, t, now); err != nil {
 		return err
 	}
-	s.pending.frozen = true
+	next:=cloneRegionState(s)
+	next.pending.frozen=true
+	if err:=d.persistLocked(t.Province,next);err!=nil{return err}
+	d.regions[t.Province]=next
 	return nil
 }
 
@@ -211,6 +227,7 @@ func (d *RegionDirectory) StageDestination(t TransferTicket, digest [32]byte, no
 	if !ok {
 		return ErrRegionUnknown
 	}
+	if err:=d.guardLocked(s);err!=nil{return err}
 	if err := validTicket(s, t, now); err != nil {
 		return err
 	}
@@ -220,7 +237,10 @@ func (d *RegionDirectory) StageDestination(t TransferTicket, digest [32]byte, no
 	if digest != t.Digest {
 		return ErrHandoffInvalid
 	}
-	s.pending.staged = true
+	next:=cloneRegionState(s)
+	next.pending.staged=true
+	if err:=d.persistLocked(t.Province,next);err!=nil{return err}
+	d.regions[t.Province]=next
 	return nil
 }
 
@@ -233,13 +253,17 @@ func (d *RegionDirectory) QuiesceSource(t TransferTicket, now time.Time) error {
 	if !ok {
 		return ErrRegionUnknown
 	}
+	if err:=d.guardLocked(s);err!=nil{return err}
 	if err := validTicket(s, t, now); err != nil {
 		return err
 	}
 	if !s.pending.frozen || !s.pending.staged {
 		return ErrHandoffNotReady
 	}
-	s.pending.quiesced = true
+	next:=cloneRegionState(s)
+	next.pending.quiesced=true
+	if err:=d.persistLocked(t.Province,next);err!=nil{return err}
+	d.regions[t.Province]=next
 	return nil
 }
 
@@ -252,6 +276,7 @@ func (d *RegionDirectory) Commit(t TransferTicket, now time.Time) (Ownership, er
 	if !ok {
 		return Ownership{}, ErrRegionUnknown
 	}
+	if err:=d.guardLocked(s);err!=nil{return Ownership{},err}
 	if s.pending == nil && s.lastCommitted == t.Token && t.To == s.owner && t.NewEpoch == s.epoch {
 		return ownership(t.Province, s), nil
 	}
@@ -261,11 +286,14 @@ func (d *RegionDirectory) Commit(t TransferTicket, now time.Time) (Ownership, er
 	if !s.pending.frozen || !s.pending.staged || !s.pending.quiesced {
 		return Ownership{}, ErrHandoffNotReady
 	}
-	s.owner = t.To
-	s.epoch = t.NewEpoch
-	s.pending = nil
-	s.lastCommitted = t.Token
-	return ownership(t.Province, s), nil
+	next:=cloneRegionState(s)
+	next.owner=t.To
+	next.epoch=t.NewEpoch
+	next.pending=nil
+	next.lastCommitted=t.Token
+	if err:=d.persistLocked(t.Province,next);err!=nil{return Ownership{},err}
+	d.regions[t.Province]=next
+	return ownership(t.Province,next),nil
 }
 
 // Abort explicitly recovers the original owner. The epoch is incremented even
@@ -278,6 +306,7 @@ func (d *RegionDirectory) Abort(t TransferTicket) (Ownership, error) {
 	if !ok {
 		return Ownership{}, ErrRegionUnknown
 	}
+	if err:=d.guardLocked(s);err!=nil{return Ownership{},err}
 	if s.pending == nil {
 		return Ownership{}, ErrHandoffInvalid
 	}
@@ -285,8 +314,11 @@ func (d *RegionDirectory) Abort(t TransferTicket) (Ownership, error) {
 	if err := validTicket(s, t, t.ExpiresAt); err != nil {
 		return Ownership{}, err
 	}
-	s.epoch = t.NewEpoch
-	s.pending = nil
-	s.lastCommitted = ""
-	return ownership(t.Province, s), nil
+	next:=cloneRegionState(s)
+	next.epoch=t.NewEpoch
+	next.pending=nil
+	next.lastCommitted=""
+	if err:=d.persistLocked(t.Province,next);err!=nil{return Ownership{},err}
+	d.regions[t.Province]=next
+	return ownership(t.Province,next),nil
 }

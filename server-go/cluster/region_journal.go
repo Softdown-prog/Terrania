@@ -104,7 +104,9 @@ func (j *regionJournal) replay(d *RegionDirectory)error{
 		body:=make([]byte,int(size))
 		if _,err=io.ReadFull(j.file,body);err!=nil{return fmt.Errorf("%w: truncated body: %v",ErrRegionJournalCorrupt,err)}
 		sum:=sha256.Sum256(body)
-		if sum!=[32]byte(head[4:]){return fmt.Errorf("%w: checksum mismatch",ErrRegionJournalCorrupt)}
+		var stored [32]byte
+		copy(stored[:],head[4:])
+		if sum!=stored{return fmt.Errorf("%w: checksum mismatch",ErrRegionJournalCorrupt)}
 		var e journalEntry
 		if err=json.Unmarshal(body,&e);err!=nil{return fmt.Errorf("%w: invalid JSON",ErrRegionJournalCorrupt)}
 		if e.Sequence!=j.sequence+1 || validJournalEntry(d,e)!=nil {
@@ -192,4 +194,10 @@ func (d *RegionDirectory) persistLocked(p Province,s *regionState)error{
 		return err
 	}
 	return nil
+}
+
+func cloneRegionState(s *regionState)*regionState{
+	next:=*s
+	if s.pending!=nil {p:=*s.pending;next.pending=&p}
+	return &next
 }
