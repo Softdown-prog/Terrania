@@ -20,10 +20,10 @@ func probeMultiplayer(port, origin string) error {
 	headers := http.Header{"Origin": []string{origin}}
 	first, _, err := dialer.Dial(url, headers)
 	if err != nil { return fmt.Errorf("player 1 connect: %w", err) }
-	defer first.Close()
+	defer func(){_ = first.Close()}()
 	second, _, err := dialer.Dial(url, headers)
 	if err != nil { return fmt.Errorf("player 2 connect: %w", err) }
-	defer second.Close()
+	defer func(){_ = second.Close()}()
 
 	var a, b engine.Welcome
 	_ = first.SetReadDeadline(time.Now().Add(3 * time.Second))
@@ -84,7 +84,7 @@ func probeMultiplayer(port, origin string) error {
 		if moved { break }
 	}
 	// Wait for the writer before closing the socket; avoid leaked goroutines.
-	_ = <-done
+	if err:=<-done;err!=nil {return fmt.Errorf("probe input writer: %w",err)}
 	if !moved { return fmt.Errorf("second player did not observe movement") }
 	// Assert protocol boundaries without changing the public world.
 	if strings.TrimSpace(a.ID) == "" { return fmt.Errorf("empty player id") }
