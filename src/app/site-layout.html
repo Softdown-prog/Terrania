@@ -10,7 +10,7 @@
           type="button"
           [attr.aria-expanded]="navOpen()" (click)="navOpen.set(!navOpen())"
           aria-controls="main-nav"
-          aria-label="Abrir navegação"
+          [attr.aria-label]="navOpen() ? 'Fechar navegação' : 'Abrir navegação'"
         >
           <span></span><span></span>
         </button>
