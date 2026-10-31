@@ -3,11 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const read = (path: string) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
-const sitePages = [
-  "index.html", "404.html", "mundo/index.html", "guia/index.html",
-  "novidades/index.html", "comunidade/index.html",
-  "privacidade/index.html", "termos/index.html", "jogar/index.html",
-];
+
 
 test("site usa tokens púrpura em vez de verde e dourado", () => {
   const css = read("src/site/site.css");
@@ -21,10 +17,8 @@ test("site usa tokens púrpura em vez de verde e dourado", () => {
   assert.match(css, /@media \(max-width: 480px\)/);
 });
 
-test("todas as páginas usam a cor púrpura-preta da barra do navegador", () => {
-  for (const path of sitePages) {
-    assert.match(read(path), /<meta name="theme-color" content="#0b0812"\s*\/>/, path);
-  }
+test("a entrada compartilhada mantém a cor púrpura-preta da barra do navegador", () => {
+  assert.match(read("index.html"), /<meta name="theme-color" content="#0b0812"\s*\/>/);
 });
 
 test("escudo do site acompanha a identidade púrpura", () => {

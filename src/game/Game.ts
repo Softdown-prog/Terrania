@@ -10,7 +10,7 @@ import {
 } from "../engine/OfflineSimulation.ts";
 import { loadLocalSave, saveLocal } from "../storage/localSave.ts";
 import { CanvasScene } from "../ui/CanvasScene.ts";
-import { Hud, type Preferences } from "../ui/Hud.ts";
+import type { GameUi, Preferences } from "../ui/GameUi.ts";
 import { nearestNpc } from "../world/npcs.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { BUILDINGS } from "../world/village.ts";
@@ -19,8 +19,7 @@ import { TapNavigator } from "../engine/TapNavigator.ts";
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
   private readonly input = new Input();
-  private readonly scene: CanvasScene;
-  private readonly hud = new Hud();
+  private readonly lifecycle = new AbortController();
   private readonly camera = new Camera();
   private readonly effects = new Effects();
   private readonly navigator = new TapNavigator();
@@ -31,12 +30,10 @@ export class Game {
   private networkClock = 0;
   private pendingAttack = false;
   private offlineSnapshot: OfflineSave | null = null;
-  private lastTime = 0;
   private saveClock = 0;
   private accumulator = 0;
   private clock = 0;
-  constructor(canvas: HTMLCanvasElement) {
-    this.scene = new CanvasScene(canvas);
+  constructor(private readonly scene: CanvasScene, private readonly hud: GameUi, multiplayerUrl: string) {
     const saved = loadLocalSave(),
       params = new URLSearchParams(location.search);
     const requestedSeed = params.get("seed");
@@ -54,9 +51,7 @@ export class Game {
     this.camera.zoom = preferences.zoom;
     this.hud.onPreferences((p) => this.configure(p));
     this.hud.setOnline(false);
-    const url = (
-      import.meta as ImportMeta & { env?: { VITE_MULTIPLAYER_URL?: string } }
-    ).env?.VITE_MULTIPLAYER_URL;
+    const url = multiplayerUrl;
     if (url && params.get("modo") !== "solo") {
       this.multiplayer = new MultiplayerClient(
         url,
@@ -66,12 +61,7 @@ export class Game {
         (status) => this.updateConnectionStatus(status),
       );
     } else this.hud.setStatus("Offline · aventura local");
-    const resizeScene = () => this.scene.resize();
-    window.addEventListener("resize", resizeScene);
-    window.visualViewport?.addEventListener("resize", resizeScene);
-    window.addEventListener("orientationchange", () =>
-      requestAnimationFrame(resizeScene));
-    window.addEventListener("pagehide", () => this.save());
+    window.addEventListener("pagehide", () => this.save(), { signal: this.lifecycle.signal });
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         this.save();
@@ -79,9 +69,8 @@ export class Game {
         this.navigator.cancel();
         this.multiplayer?.sendInput(0, 0, false);
       }
-      this.lastTime = 0;
       this.accumulator = 0;
-    });
+    }, { signal: this.lifecycle.signal });
     this.hud.onNewWorld(() => this.newWorld());
     this.hud.onTalk(() => this.talkToNpc());
     this.hud.onPotionUse(() => {
@@ -96,7 +85,6 @@ export class Game {
       return "Poção utilizada! Vida restaurada em até 35 pontos.";
     });
     this.hud.updateInventory(this.sim.inventory, false);
-    requestAnimationFrame((t) => this.frame(t));
   }
   private configure(p: Preferences): void {
     this.camera.setZoom(p.zoom);
@@ -180,9 +168,10 @@ export class Game {
     if (this.multiplayer?.connected) return;
     const values = new Uint32Array(1);
     crypto.getRandomValues(values);
-    this.replaceWorld(values[0]);
+    const seed = values[0] ?? 842136;
+    this.replaceWorld(seed);
     const url = new URL(location.href);
-    url.searchParams.set("seed", String(values[0]));
+    url.searchParams.set("seed", String(seed));
     history.replaceState(null, "", url);
     this.save();
   }
@@ -190,12 +179,9 @@ export class Game {
     if (this.multiplayer?.connected || this.offlineSnapshot) return;
     saveLocal(this.sim.snapshot());
   }
-  private frame(time: number): void {
-    const dt =
-      this.lastTime === 0
-        ? 0
-        : Math.max(0, Math.min(0.1, (time - this.lastTime) / 1000));
-    this.lastTime = time;
+  /** Called exclusively by the Phaser Scene; there is no second animation loop. */
+  update(deltaSeconds: number): void {
+    const dt = Math.max(0, Math.min(0.1, deltaSeconds));
     this.clock += dt;
     const online = this.multiplayer?.connected === true;
     if (this.input.consumeTalk() && !this.hud.menuOpen) this.talkToNpc();
@@ -241,7 +227,6 @@ export class Game {
         this.hud.updateInventory(this.sim.inventory, online);
         this.hud.setInterior(room.building.name);
         this.scene.renderInterior(room, this.navigator.target, this.clock);
-        requestAnimationFrame((next) => this.frame(next));
         return;
       }
     }
@@ -309,6 +294,14 @@ export class Game {
       this.navigator.target,
       online ? [] : [...this.sim.drops.values()],
     );
-    requestAnimationFrame((next) => this.frame(next));
+  }
+  destroy(): void {
+    this.save();
+    this.lifecycle.abort();
+    this.input.destroy();
+    this.multiplayer?.disconnect();
+    this.navigator.cancel();
+    this.world.clear();
+    this.effects.reset();
   }
 }

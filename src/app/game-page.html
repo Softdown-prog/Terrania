@@ -1,68 +1,47 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <meta name="theme-color" content="#0b0812" />
-    <meta
-      name="description"
-      content="Jogue Terrania: Origins. Explore a clareira, enfrente slimes e aventure-se em um RPG medieval 2D no navegador."
-    />
-    <meta name="robots" content="noindex" />
-    <link rel="icon" type="image/svg+xml" href="/art/crest.svg" />
-    <title>Jogar · Terrania: Origins</title>
-  </head>
-  <body>
-    <main id="app" aria-label="Jogo Terrania: Origins">
-      <canvas
-        id="game"
-        tabindex="0"
-        aria-label="Mundo de Terrania. Mova-se com WASD ou setas e ataque com Espaço ou J."
-      ></canvas>
+<main id="app" aria-label="Jogo Terrania: Origins">
+      <div #mount id="game-mount"></div>
       <header class="hud">
-        <a class="game-brand" href="/" aria-label="Voltar ao site Terrania"
+        <a class="game-brand" routerLink="/" aria-label="Voltar ao site Terrania"
           ><img src="/art/crest.svg" width="36" height="42" alt="" /><span
             >TERRANIA<small>ORIGINS · ALFA 0.3</small></span
           ></a
         >
         <div class="vitals">
           <div class="stat-heading">
-            <span>AVENTUREIRO</span><b id="hpText">100 / 100</b>
+            <span>AVENTUREIRO</span><b id="hpText">{{ hud.hp() + " / " + hud.maxHp() }}</b>
           </div>
           <div class="meter" role="img" aria-label="Barra de vida">
-            <div id="hpFill"></div>
+            <div id="hpFill" [style.width.%]="hud.hp() / hud.maxHp() * 100"></div>
           </div>
         </div>
         <div class="quest">
           <span class="stat-heading">MISSÃO DA CLAREIRA</span
-          ><b id="quest">Proteja a clareira</b>
+          ><b id="quest">{{ hud.quest() }}</b>
           <div class="quest-bottom">
-            <div class="quest-meter"><div id="questFill"></div></div>
-            <span id="questProgress">0 / 5 slimes</span>
+            <div class="quest-meter"><div id="questFill" [style.width.%]="hud.questPercent()"></div></div>
+            <span id="questProgress">{{ hud.questProgress() }}</span>
           </div>
         </div>
       </header>
       <nav class="game-tools" aria-label="Opções do jogo">
-        <button id="inventoryButton" type="button" aria-haspopup="dialog" aria-controls="inventoryDialog">Bolsa</button
-        ><button id="helpButton" type="button" title="Como jogar">Ajuda</button
-        ><button id="settingsButton" type="button">Ajustes</button
-        ><button id="fullscreenButton" type="button">Tela cheia</button>
+        <button id="inventoryButton" [disabled]="hud.online()" (click)="open(inventoryDialog)" type="button" aria-haspopup="dialog" aria-controls="inventoryDialog">{{ hud.online() ? "Bolsa · solo" : "Bolsa (" + (hud.gel() + hud.potions()) + ")" }}</button
+        ><button id="helpButton" (click)="open(helpDialog)" type="button" title="Como jogar">Ajuda</button
+        ><button id="settingsButton" (click)="open(settingsDialog)" type="button">Ajustes</button
+        ><button id="fullscreenButton" (click)="fullscreen()" type="button">{{ fullscreenActive() ? "Sair da tela cheia" : "Tela cheia" }}</button>
       </nav>
       <aside class="connection">
-        <i id="connectionDot" aria-hidden="true"></i
+        <i id="connectionDot" [attr.data-online]="hud.online()" aria-hidden="true"></i
         ><span
-          ><b id="multiplayerStatus" role="status">Preparando aventura…</b
-          ><small id="playerCount">Modo solo</small></span
+          ><b id="multiplayerStatus" role="status">{{ hud.status() }}</b
+          ><small id="playerCount">{{ hud.online() ? hud.nearby() + " aventureiro(s) por perto" : "Modo solo" }}</small></span
         >
       </aside>
+<app-online-players class="game-presence" />
       <div class="bottom-info">
-        <span id="coords">X 0 · Y 0</span><span>Mundo <b id="seed">—</b></span
-        ><small id="saveMode">Aventura local</small>
+        <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
+        ><small id="saveMode">{{ hud.online() ? "Sala experimental · progresso temporário" : "Aventura local · progresso neste navegador" }}</small>
       </div>
-      <p id="gameNotice" role="status"></p>
+      <p id="gameNotice" role="status">{{ notice() }}</p>
       <div id="joystick" role="group" aria-label="Controle de movimento: arraste para caminhar">
         <div id="stick"></div>
       </div>
@@ -75,72 +54,72 @@
           <path d="m8 24 15-19 4-1-1 5-17 16M4 22l7 6M5 28l-2 2" /></svg
         ><span>ATACAR</span>
       </button>
-      <button id="talkButton" hidden type="button" aria-label="Conversar com personagem">Conversar <kbd>E</kbd></button>
+      <button id="talkButton" [hidden]="!hud.talkVisible()" [attr.aria-label]="hud.talkLabel()" (click)="hud.talk()" type="button" aria-label="Conversar com personagem">{{ hud.talkLabel() }}</button>
       <div class="keyboard-hint" aria-hidden="true">
         <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar <span>·</span> <kbd>E</kbd> conversar
       </div>
-      <dialog id="inventoryDialog" aria-labelledby="inventoryTitle">
-        <button class="dialog-x" data-close-dialog type="button" aria-label="Fechar bolsa">×</button>
+      <dialog id="inventoryDialog" #inventoryDialog (close)="closed()" aria-labelledby="inventoryTitle">
+        <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar bolsa">×</button>
         <span class="dialog-kicker">SEUS ITENS · AVENTURA SOLO</span>
         <h1 id="inventoryTitle">Bolsa do aventureiro</h1>
         <p class="dialog-note">Os slimes derrotados deixam gel no chão. Aproxime-se para recolher. Aela entrega poções após você proteger a clareira.</p>
         <div class="inventory-item">
           <span class="item-icon item-gel" aria-hidden="true">◆</span>
           <span><strong>Gel de slime</strong><small>Material coletável · guardado na bolsa</small></span>
-          <b id="gelCount">0 / 99</b>
+          <b id="gelCount">{{ hud.gel() + " / 99" }}</b>
         </div>
         <div class="inventory-item">
           <span class="item-icon item-potion" aria-hidden="true">✚</span>
           <span><strong>Poção de cura</strong><small>Restaura 35 pontos de vida</small></span>
-          <b id="potionCount">0 / 99</b>
+          <b id="potionCount">{{ hud.potions() + " / 99" }}</b>
         </div>
-        <button id="usePotion" class="primary-button" type="button">Usar poção</button>
-        <p id="inventoryFeedback" class="dialog-note" role="status" aria-live="polite"></p>
-        <button data-close-dialog class="secondary-button" type="button">Voltar à aventura</button>
+        <button id="usePotion" [disabled]="hud.online() || hud.potions() === 0" (click)="hud.usePotion()" class="primary-button" type="button">Usar poção</button>
+        <p id="inventoryFeedback" class="dialog-note" role="status" aria-live="polite">{{ hud.inventoryFeedback() }}</p>
+        <button (click)="close($event)" class="secondary-button" type="button">Voltar à aventura</button>
       </dialog>
-      <dialog id="settingsDialog" aria-labelledby="settingsTitle">
-        <button class="dialog-x" data-close-dialog aria-label="Fechar ajustes">
+      <dialog id="settingsDialog" #settingsDialog (close)="closed()" aria-labelledby="settingsTitle">
+        <button class="dialog-x" (click)="close($event)" aria-label="Fechar ajustes">
           ×</button
         ><span class="dialog-kicker">SUA AVENTURA, SEU RITMO</span>
         <h1 id="settingsTitle">Ajustes do jogo</h1>
         <label class="range-label" for="zoom"
           >Distância da câmera
-          <output id="zoomValue" for="zoom">1.65×</output></label
+          <output id="zoomValue" for="zoom">{{ hud.preferences().zoom.toFixed(2) + "×" }}</output></label
         ><input
           id="zoom"
           type="range"
           min="1"
           max="2.5"
           step=".05"
-          value="1.65"
+          [value]="hud.preferences().zoom" (input)="zoom($event)"
         />
         <div class="range-hint">
           <span>Mais mundo</span><span>Mais perto</span>
         </div>
         <label class="toggle"
-          ><input id="effects" type="checkbox" checked /><span
+          ><input id="effects" type="checkbox" [checked]="hud.preferences().effects" (change)="togglePreference('effects', $event)" /><span
             >Partículas e água animada<small
               >Desative para reduzir efeitos visuais.</small
             ></span
           ></label
         >
         <label class="toggle"
-          ><input id="cameraMotion" type="checkbox" checked /><span
+          ><input id="cameraMotion" type="checkbox" [checked]="hud.preferences().cameraMotion" (change)="togglePreference('cameraMotion', $event)" /><span
             >Movimento da câmera<small
               >Antecipação da caminhada e impacto dos golpes.</small
             ></span
           ></label
         >
-        <button id="newWorld" class="secondary-button" type="button">
+        <button id="newWorld" [disabled]="hud.online()" (click)="open(worldDialog)" class="secondary-button" type="button">
           Gerar outro mundo local
         </button>
-        <p id="menuMode" class="dialog-note"></p>
-        <button class="primary-button" data-close-dialog type="button">
+        <p id="menuMode" class="dialog-note">{{ hud.online() ? "Você continua na sala online com o movimento desativado enquanto o menu está aberto." : "A aventura local fica pausada enquanto este menu está aberto." }}</p>
+        <button class="primary-button" (click)="close($event)" type="button">
           Voltar à aventura
         </button>
       </dialog>
-      <dialog id="helpDialog" aria-labelledby="helpTitle">
-        <button class="dialog-x" data-close-dialog aria-label="Fechar ajuda">
+      <dialog id="helpDialog" #helpDialog (close)="closed()" aria-labelledby="helpTitle">
+        <button class="dialog-x" (click)="close($event)" aria-label="Fechar ajuda">
           ×</button
         ><span class="dialog-kicker">PRIMEIROS PASSOS</span>
         <h1 id="helpTitle">Encontre seu caminho.</h1>
@@ -178,19 +157,19 @@
           O modo solo usa progresso local. As salas online são experimentais e
           temporárias.
         </p>
-        <button class="primary-button" data-close-dialog type="button">
+        <button class="primary-button" (click)="close($event)" type="button">
           Entendi, vamos explorar
         </button>
       </dialog>
-      <dialog id="npcDialog" aria-labelledby="npcName">
-        <button class="dialog-x" data-close-dialog type="button" aria-label="Fechar conversa">×</button>
-        <span class="dialog-kicker" id="npcRole"></span>
-        <h1 id="npcName"></h1>
-        <p id="npcSpeech" aria-live="polite"></p>
-        <small class="dialog-note" id="npcStep"></small>
-        <button id="npcNext" class="primary-button" type="button">Continuar</button>
+      <dialog id="npcDialog" #npcDialog (close)="closed()" aria-labelledby="npcName">
+        <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar conversa">×</button>
+        <span class="dialog-kicker" id="npcRole">{{ hud.npcRole() }}</span>
+        <h1 id="npcName">{{ hud.npcName() }}</h1>
+        <p id="npcSpeech" aria-live="polite">{{ hud.npcSpeech() }}</p>
+        <small class="dialog-note" id="npcStep">{{ hud.npcStep() }}</small>
+        <button id="npcNext" (click)="nextNpc(npcDialog)" class="primary-button" type="button">{{ hud.npcLast() ? "Encerrar conversa" : "Continuar" }}</button>
       </dialog>
-      <dialog id="worldDialog" aria-labelledby="worldTitle">
+      <dialog id="worldDialog" #worldDialog (close)="closed()" aria-labelledby="worldTitle">
         <span class="dialog-kicker">UMA NOVA PARTIDA</span>
         <h1 id="worldTitle">Gerar outro mundo?</h1>
         <p>
@@ -198,18 +177,11 @@
           Essa ação não altera uma sala online.
         </p>
         <div class="dialog-actions">
-          <button class="secondary-button" data-close-dialog type="button">
+          <button class="secondary-button" (click)="close($event)" type="button">
             Manter minha aventura</button
-          ><button id="confirmWorld" class="primary-button" type="button">
+          ><button id="confirmWorld" (click)="newWorld(worldDialog)" class="primary-button" type="button">
             Gerar mundo
           </button>
         </div>
       </dialog>
     </main>
-    <noscript
-      >Ative o JavaScript para jogar.
-      <a href="/guia/">Consulte o guia do aventureiro.</a></noscript
-    >
-    <script type="module" src="/src/main.ts"></script>
-  </body>
-</html>

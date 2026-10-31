@@ -1,7 +1,7 @@
 name: Verificar Terrania front-end e multiplayer
 on:
   push:
-    branches: [main]
+    branches: [main, feat/angular-ui-phaser3]
   pull_request:
 jobs:
   validar:
@@ -10,16 +10,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - name: Instalar front-end
-        run: npm ci
+          node-version: '24'
+      - name: Instalar front-end e servidor de teste
+        run: npm ci && npm ci --prefix server
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Instalar navegador de teste
+        run: npx playwright install --with-deps chromium
+      - name: Validar Angular, Phaser e presença real no navegador
+        run: npm run test:browser
       - name: Validar empacotamento do Worker e assets (sem publicar)
+        if: github.ref == 'refs/heads/main'
         run: npx --no-install wrangler deploy --dry-run
-      - name: Instalar servidor
-        run: npm ci --prefix server
       - run: npm run typecheck --prefix server
       - run: npm test --prefix server
       - run: npm run build --prefix server

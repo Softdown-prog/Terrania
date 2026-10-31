@@ -21,6 +21,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/Softdown-prog/Terrania/server-go/engine"
+	"github.com/Softdown-prog/Terrania/server-go/presence"
 )
 
 type client struct {
@@ -66,6 +67,12 @@ func newGameServerWithLimits(allowed []string,revision string,l limits) *gameSer
 
 func (s *gameServer) handler() http.Handler {
 	mux:=http.NewServeMux()
+	mux.HandleFunc("/presence", presence.Handler(s.allowed, "server", func(context.Context) (int, int, error) {
+		if !s.ready.Load() { return 0, 0, errors.New("engine warming up") }
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		return len(s.clients), len(s.rooms), nil
+	}))
 	mux.HandleFunc("/health",func(w http.ResponseWriter,r *http.Request) {
 		if r.Method!=http.MethodGet { http.Error(w,"method not allowed",http.StatusMethodNotAllowed);return }
 		w.Header().Set("Content-Type","application/json")

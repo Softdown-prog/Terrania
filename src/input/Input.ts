@@ -4,6 +4,7 @@ import type { Point } from "../engine/TapNavigator.ts";
 
 /** Teclado e controles Android usam o mesmo vetor de movimento da simulação. */
 export class Input {
+  private readonly lifetime = new AbortController();
   private keys = new Set<string>();
   private joyX = 0;
   private joyY = 0;
@@ -23,12 +24,12 @@ export class Input {
       if (this.tapPointer !== null) { this.tapPointer = null; return; }
       this.tapPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp };
       canvas.setPointerCapture(event.pointerId);
-    });
+    }, { signal: this.lifetime.signal });
     canvas?.addEventListener("pointermove", (event) => {
       if (!(event instanceof PointerEvent) || event.pointerId !== this.tapPointer?.id) return;
       if (Math.hypot(event.clientX - this.tapPointer.x, event.clientY - this.tapPointer.y) > 12)
         this.tapPointer = null;
-    });
+    }, { signal: this.lifetime.signal });
     canvas?.addEventListener("pointerup", (event) => {
       if (!(event instanceof PointerEvent)) return;
       const first = this.tapPointer;
@@ -38,12 +39,12 @@ export class Input {
           event.timeStamp - first.time) || document.querySelector("dialog[open]")) return;
       const rect = canvas.getBoundingClientRect();
       this.queuedTap = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-    });
+    }, { signal: this.lifetime.signal });
     for (const type of ["pointercancel", "lostpointercapture"] as const)
       canvas?.addEventListener(type, (event) => {
         if (event instanceof PointerEvent && event.pointerId === this.tapPointer?.id)
           this.tapPointer = null;
-      });
+      }, { signal: this.lifetime.signal });
     window.addEventListener("keydown", (event) => {
       if (
         document.querySelector("dialog[open]") ||
@@ -62,12 +63,12 @@ export class Input {
       if (!event.repeat && event.code === "KeyE") this.talkQueued = true;
       if (!event.repeat && (event.code === "Space" || event.code === "KeyJ"))
         this.attackQueued = true;
-    });
-    window.addEventListener("keyup", (event) => this.keys.delete(event.code));
-    window.addEventListener("blur", () => this.clear());
+    }, { signal: this.lifetime.signal });
+    window.addEventListener("keyup", (event) => this.keys.delete(event.code), { signal: this.lifetime.signal });
+    window.addEventListener("blur", () => this.clear(), { signal: this.lifetime.signal });
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) this.clear();
-    });
+    }, { signal: this.lifetime.signal });
     const stick = document.getElementById("joystick"),
       thumb = document.getElementById("stick");
     if (stick && thumb) {
@@ -89,12 +90,12 @@ export class Input {
         this.stickPointer = event.pointerId;
         stick.setPointerCapture(event.pointerId);
         move(event);
-      });
+      }, { signal: this.lifetime.signal });
       stick.addEventListener("pointermove", (event) => {
         if (event.pointerId !== this.stickPointer) return;
         event.preventDefault();
         move(event);
-      });
+      }, { signal: this.lifetime.signal });
       const release = (event: PointerEvent) => {
         if (event.pointerId !== this.stickPointer) return;
         this.stickPointer = null;
@@ -102,10 +103,10 @@ export class Input {
         thumb.style.transform = "translate(0, 0)";
         if (stick.hasPointerCapture(event.pointerId)) stick.releasePointerCapture(event.pointerId);
       };
-      stick.addEventListener("pointerup", release);
-      stick.addEventListener("pointercancel", release);
-      stick.addEventListener("lostpointercapture", release);
-      stick.addEventListener("contextmenu", (event) => event.preventDefault());
+      stick.addEventListener("pointerup", release, { signal: this.lifetime.signal });
+      stick.addEventListener("pointercancel", release, { signal: this.lifetime.signal });
+      stick.addEventListener("lostpointercapture", release, { signal: this.lifetime.signal });
+      stick.addEventListener("contextmenu", (event) => event.preventDefault(), { signal: this.lifetime.signal });
     }
     const attack = document.getElementById("attack");
     attack?.addEventListener("pointerdown", (event) => {
@@ -114,7 +115,7 @@ export class Input {
       this.attackPointer = event.pointerId;
       attack.setPointerCapture(event.pointerId);
       this.attackQueued = this.attackHeld = true;
-    });
+    }, { signal: this.lifetime.signal });
     const releaseAttack = (event: PointerEvent) => {
       if (event.pointerId !== this.attackPointer) return;
       this.attackPointer = null;
@@ -122,12 +123,12 @@ export class Input {
       if (attack?.hasPointerCapture(event.pointerId)) attack.releasePointerCapture(event.pointerId);
     };
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"] as const)
-      attack?.addEventListener(type, releaseAttack);
-    attack?.addEventListener("contextmenu", (event) => event.preventDefault());
+      attack?.addEventListener(type, releaseAttack, { signal: this.lifetime.signal });
+    attack?.addEventListener("contextmenu", (event) => event.preventDefault(), { signal: this.lifetime.signal });
     // Acessibilidade: Enter/Espaço também acionam o botão físico de ataque.
     attack?.addEventListener("click", (event) => {
       if (event.detail === 0) this.attackQueued = true;
-    });
+    }, { signal: this.lifetime.signal });
   }
   clear(): void {
     this.keys.clear();
@@ -150,6 +151,10 @@ export class Input {
       attack.releasePointerCapture(attackId);
     const thumb = document.getElementById("stick");
     if (thumb) thumb.style.transform = "translate(0, 0)";
+  }
+  destroy(): void {
+    this.clear();
+    this.lifetime.abort();
   }
   consumeTap(): Point | null {
     const point = this.queuedTap;

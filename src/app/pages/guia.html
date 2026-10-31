@@ -1,53 +1,6 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#0b0812" />
-    <meta
-      name="description"
-      content="Aprenda os controles, o combate, a missão inicial, o modo solo e as salas online de Terrania."
-    />
-    <meta property="og:title" content="Como jogar · Terrania: Origins" />
-    <meta
-      property="og:description"
-      content="Aprenda os controles, o combate, a missão inicial, o modo solo e as salas online de Terrania."
-    />
-    <meta property="og:type" content="website" />
-    <link rel="icon" type="image/svg+xml" href="/art/crest.svg" />
-    <title>Como jogar · Terrania: Origins</title>
-  </head>
-  <body class="inner-page">
-    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="/" aria-label="Terrania: Origins — início"
-          ><img src="/art/crest.svg" alt="" width="37" height="44" /><span
-            >TERRANIA<small>O R I G I N S</small></span
-          ></a
-        ><button
-          class="nav-toggle"
-          type="button"
-          aria-expanded="false"
-          aria-controls="main-nav"
-          aria-label="Abrir navegação"
-        >
-          <span></span><span></span>
-        </button>
-        <nav id="main-nav" aria-label="Navegação principal">
-          <a href="/mundo/">O mundo</a
-          ><a href="/guia/" aria-current="page">Como jogar</a
-          ><a href="/novidades/">Novidades</a
-          ><a href="/comunidade/">Comunidade</a
-          ><a class="button button-small nav-play" href="/jogar/"
-            >Jogar agora <span aria-hidden="true">↗</span></a
-          >
-        </nav>
-      </div>
-    </header>
-    <main id="conteudo">
+<main id="conteudo" appPreviews>
       <section class="page-intro section-shell">
-        <a class="back-link" href="/">← Voltar ao início</a
+        <a class="back-link" routerLink="/">← Voltar ao início</a
         ><span class="eyebrow">GUIA DO AVENTUREIRO</span>
         <h1>A sua primeira<br /><em>expedição.</em></h1>
         <p>
@@ -58,12 +11,12 @@
       </section>
       <div class="section-shell guide-layout">
         <nav class="guide-index" aria-label="Capítulos do guia">
-          <span>NESTE GUIA</span><a href="#comecar">01 · Começar</a
-          ><a href="#controles">02 · Controles</a
-          ><a href="#combate">03 · Combate e missão</a
-          ><a href="#online">04 · Jogar online</a
-          ><a href="#ajustes">05 · Câmera e desempenho</a
-          ><a href="#duvidas">06 · Perguntas frequentes</a>
+          <span>NESTE GUIA</span><a [routerLink]="[]" fragment="comecar">01 · Começar</a
+          ><a [routerLink]="[]" fragment="controles">02 · Controles</a
+          ><a [routerLink]="[]" fragment="combate">03 · Combate e missão</a
+          ><a [routerLink]="[]" fragment="online">04 · Jogar online</a
+          ><a [routerLink]="[]" fragment="ajustes">05 · Câmera e desempenho</a
+          ><a [routerLink]="[]" fragment="duvidas">06 · Perguntas frequentes</a>
         </nav>
         <div class="guide-content">
           <section id="comecar">
@@ -81,7 +34,7 @@
                 Use a opção abaixo para entrar diretamente no modo solo, mesmo
                 quando houver um servidor online configurado.
               </p>
-              <a href="/jogar/?modo=solo" class="text-link"
+              <a routerLink="/jogar/" [queryParams]="{'modo': 'solo'}" class="text-link"
                 >Iniciar aventura solo ↗</a
               >
             </div>
@@ -178,7 +131,7 @@
               nas salas. Se a conexão cair, o jogo retoma sua aventura local e
               tenta reconectar.
             </p>
-            <a href="/comunidade/#salas" class="text-link"
+            <a routerLink="/comunidade/" fragment="salas" class="text-link"
               >Preparar um link de sala ↗</a
             >
           </section>
@@ -243,42 +196,10 @@
       <section class="final-cta section-shell">
         <span class="eyebrow">HÁ UM CAMINHO À SUA ESPERA</span>
         <h2>A próxima aventura<br />começa na clareira.</h2>
-        <a class="button" href="/jogar/"
+        <a class="button" routerLink="/jogar/"
           >Entrar em Terrania <span aria-hidden="true">↗</span></a
         >
         <p>No navegador. Sem instalação.</p>
         <img src="/art/crest.svg" alt="" class="cta-crest" />
       </section>
     </main>
-    <footer class="site-footer">
-      <div class="footer-main">
-        <a class="brand" href="/"
-          ><img src="/art/crest.svg" alt="" width="34" height="40" /><span
-            >TERRANIA<small>O R I G I N S</small></span
-          ></a
-        >
-        <p>
-          O caminho começa com você.<br />Um RPG independente em construção.
-        </p>
-        <a href="/jogar/" class="text-link"
-          >Sua aventura espera <span aria-hidden="true">↗</span></a
-        >
-      </div>
-      <div class="footer-bottom">
-        <span>© 2026 Terrania: Origins · Softdown</span>
-        <nav aria-label="Informações do site">
-          <a href="/privacidade/">Privacidade</a
-          ><a href="/termos/">Termos de uso</a
-          ><a
-            href="https://github.com/Softdown-prog/Terrania"
-            target="_blank"
-            rel="noopener noreferrer"
-            >GitHub ↗</a
-          >
-        </nav>
-        <span class="alpha-label"><i></i> ALFA EM DESENVOLVIMENTO</span>
-      </div>
-    </footer>
-    <script type="module" src="/src/site/site.ts"></script>
-  </body>
-</html>

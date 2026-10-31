@@ -63,8 +63,12 @@ export function findWalkingPath(from: Point, target: Point, collision: Collision
   for (let visited = 0; open.length && visited < 2200; visited++) {
     // Fila pequena e limitada: evita dependências e gera rotas determinísticas.
     let best = 0;
-    for (let i = 1; i < open.length; i++) if (open[i].f < open[best].f) best = i;
+    let bestScore = open[0]?.f ?? Infinity;
+    for (const [i, entry] of open.entries()) {
+      if (entry.f < bestScore) { best = i; bestScore = entry.f; }
+    }
     const current = open.splice(best, 1)[0];
+    if (!current) break;
     const key = cellKey(current.x, current.y);
     if (closed.has(key)) continue;
     closed.add(key);
@@ -73,6 +77,7 @@ export function findWalkingPath(from: Point, target: Point, collision: Collision
       let cursor = key;
       while (cursor !== cellKey(start.x, start.y)) {
         const [x, y] = cursor.split(",").map(Number);
+        if (x === undefined || y === undefined) return null;
         points.push(cellPoint(x, y));
         const previous = parent.get(cursor);
         if (!previous) return null;
@@ -89,10 +94,13 @@ export function findWalkingPath(from: Point, target: Point, collision: Collision
       for (let i = 0; i < points.length;) {
         let next = i;
         for (let j = i + 1; j < points.length; j++) {
-          if (clearPath(previous, points[j], collision)) next = j;
+          const candidate = points[j];
+          if (candidate && clearPath(previous, candidate, collision)) next = j;
         }
-        result.push(points[next]);
-        previous = points[next];
+        const waypoint = points[next];
+        if (!waypoint) return null;
+        result.push(waypoint);
+        previous = waypoint;
         i = next + 1;
       }
       return result;
@@ -141,7 +149,7 @@ export class TapNavigator {
   direction(at: Point, dt: number): Point {
     const zero = { x: 0, y: 0 };
     if (!this.waypoints.length) return zero;
-    while (this.waypoints.length && dist(at, this.waypoints[0]) < 7)
+    while (this.waypoints[0] && dist(at, this.waypoints[0]) < 7)
       this.waypoints.shift();
     if (!this.waypoints.length) {
       this.cancel();
@@ -155,7 +163,9 @@ export class TapNavigator {
       }
     }
     this.last = { x: at.x, y: at.y };
-    const next = this.waypoints[0], distance = dist(at, next);
+    const next = this.waypoints[0];
+    if (!next) { this.cancel(); return zero; }
+    const distance = dist(at, next);
     // Aproximação fina impede oscilações e ultrapassagem da marca de destino.
     const intensity = this.waypoints.length === 1 ? Math.min(1, distance / 23) : 1;
     return { x: (next.x - at.x) / distance * intensity, y: (next.y - at.y) / distance * intensity };

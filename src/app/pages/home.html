@@ -1,0 +1,201 @@
+<main id="conteudo" appPreviews>
+      <section class="hero">
+        <img
+          class="hero-art"
+          src="/art/terrania-world.svg"
+          alt="Ilustração de ambientação: um aventureiro diante de florestas, um rio e antigas ruínas"
+          fetchpriority="high"
+        />
+        <div class="hero-shade"></div>
+        <div class="hero-content section-shell">
+          <span class="edition"
+            ><i></i> ALFA JOGÁVEL <span>·</span> FEITO PARA EXPLORAR</span
+          >
+          <h1>Há um mundo<br />além da <em>clareira.</em></h1>
+          <p>
+            Prepare sua espada. Siga as trilhas. Encontre seu caminho em
+            Terrania, um RPG medieval de exploração e combate no navegador.
+          </p>
+          <div class="hero-actions">
+            <a routerLink="/jogar/" class="button"
+              >Entrar em Terrania <span aria-hidden="true">↗</span></a
+            ><a routerLink="/mundo/" class="quiet-link"
+              >Descobrir o mundo <span aria-hidden="true">↓</span></a
+            >
+          </div>
+          <span class="hero-note"
+            >SEM INSTALAÇÃO <span>✦</span> COMPUTADOR E CELULAR</span
+          >
+        </div>
+        <div class="hero-bottom section-shell">
+          <span
+            ><i class="compass" aria-hidden="true">✧</i> TERRAS DE ORIGINS</span
+          ><span class="art-caption">Arte de ambientação</span
+          ><a [routerLink]="[]" fragment="explorar" aria-label="Explorar a apresentação"
+            >ROLE PARA EXPLORAR <span aria-hidden="true">↓</span></a
+          >
+        </div>
+      </section>
+      <div class="world-ribbon">
+        <span>MUNDO PROCEDURAL</span><i>✦</i><span>COMBATE COM ESPADAS</span
+        ><i>✦</i><span>AVENTURA SOLO</span><i>✦</i
+        ><span>ONLINE EXPERIMENTAL</span>
+      </div>
+      <section id="explorar" class="section-shell explore-section">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">01 / AS TERRAS DE ORIGINS</span>
+            <h2>Cada trilha,<br />uma nova descoberta.</h2>
+          </div>
+          <div class="heading-copy">
+            <p>
+              Uma clareira segura, uma trilha que some entre as árvores, um rio
+              que muda sua rota. O mundo nasce de uma semente — a curiosidade
+              faz o resto.
+            </p>
+            <a class="text-link" routerLink="/mundo/"
+              >Conheça as terras <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
+        <div class="landscape-grid">
+          <a class="landscape-card" routerLink="/mundo/" fragment="clareira"
+            ><figure class="world-scene">
+              <canvas
+                data-world-view="clareira"
+                role="img"
+                aria-label="Clareira inicial com arco de pedra e trilha"
+              ></canvas>
+              <figcaption>
+                <span class="scene-dot"></span> VISUAL DO JOGO · ALFA 0.3
+              </figcaption>
+            </figure>
+            <div class="card-caption">
+              <span>I / SEU PONTO DE PARTIDA</span>
+              <h3>A clareira</h3>
+              <span class="card-arrow" aria-hidden="true">↗</span>
+            </div></a
+          ><a class="landscape-card" routerLink="/mundo/" fragment="floresta"
+            ><figure class="world-scene">
+              <canvas
+                data-world-view="floresta"
+                role="img"
+                aria-label="Árvores e trilhas de uma floresta procedural"
+              ></canvas>
+              <figcaption>
+                <span class="scene-dot"></span> VISUAL DO JOGO · ALFA 0.3
+              </figcaption>
+            </figure>
+            <div class="card-caption">
+              <span>II / ALÉM DO CONHECIDO</span>
+              <h3>A floresta</h3>
+              <span class="card-arrow" aria-hidden="true">↗</span>
+            </div></a
+          ><a class="landscape-card" routerLink="/mundo/" fragment="rio"
+            ><figure class="world-scene">
+              <canvas
+                data-world-view="rio"
+                role="img"
+                aria-label="Água e margens do rio no mundo de Terrania"
+              ></canvas>
+              <figcaption>
+                <span class="scene-dot"></span> VISUAL DO JOGO · ALFA 0.3
+              </figcaption>
+            </figure>
+            <div class="card-caption">
+              <span>III / SIGA OUTRO CAMINHO</span>
+              <h3>As margens do rio</h3>
+              <span class="card-arrow" aria-hidden="true">↗</span>
+            </div></a
+          >
+        </div>
+      </section>
+      <section class="combat-section">
+        <div class="section-shell combat-layout">
+          <div class="combat-art">
+            <div class="combat-ring"></div>
+            <canvas
+              data-character-view="combat"
+              role="img"
+              aria-label="Herói de capa, armadura e espada enfrentando um slime"
+            ></canvas
+            ><span class="art-label">O PRIMEIRO ENCONTRO</span>
+          </div>
+          <div class="combat-copy">
+            <span class="eyebrow">02 / UM PASSO. UM GOLPE. UMA ESCOLHA.</span>
+            <h2>A coragem está<br />nos seus movimentos.</h2>
+            <p>
+              Encontre slimes além da clareira, aproxime-se com cuidado e ataque
+              na direção certa. Cada golpe tem alcance, preparo e recuperação.
+            </p>
+            <dl class="feature-list">
+              <div>
+                <dt><span>01</span> Explore no seu ritmo</dt>
+                <dd>
+                  Caminhe em oito direções, com controles de teclado ou toque.
+                </dd>
+              </div>
+              <div>
+                <dt><span>02</span> Proteja a clareira</dt>
+                <dd>Derrote cinco slimes na primeira missão da aventura.</dd>
+              </div>
+              <div>
+                <dt><span>03</span> Encontre outros aventureiros</dt>
+                <dd>
+                  Experimente salas online quando o servidor estiver disponível.
+                </dd>
+              </div>
+            </dl>
+            <a class="text-link" routerLink="/guia/"
+              >Abra o guia do aventureiro <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
+      </section>
+      <section class="section-shell journal-section">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">03 / DIÁRIO DE DESENVOLVIMENTO</span>
+            <h2>Um mundo que<br />está só começando.</h2>
+          </div>
+          <a class="text-link" routerLink="/novidades/"
+            >Todas as novidades <span aria-hidden="true">↗</span></a
+          >
+        </div>
+        <a class="journal-entry" routerLink="/novidades/" fragment="alfa-03"
+          ><span class="entry-date">29 OUT<br /><b>2026</b></span>
+          <div>
+            <span class="small-tag">ATUALIZAÇÃO · ALFA 0.3</span>
+            <h3>Novos horizontes para Terrania.</h3>
+            <p>
+              Um novo site, cenário mais rico, câmera ajustável e mais resposta
+              em cada movimento e golpe.
+            </p>
+          </div>
+          <span class="entry-arrow" aria-hidden="true">↗</span></a
+        >
+        <div class="development-note">
+          <span class="development-symbol" aria-hidden="true">✧</span>
+          <div>
+            <b>Faça parte desde o começo.</b>
+            <p>
+              Terrania está em alfa. Explore o que já existe, conte o que
+              encontrou e ajude a dar forma aos próximos caminhos.
+            </p>
+          </div>
+          <a class="text-link" routerLink="/comunidade/"
+            >Participar <span aria-hidden="true">↗</span></a
+          >
+        </div>
+      </section>
+      <section class="final-cta section-shell">
+        <span class="eyebrow">HÁ UM CAMINHO À SUA ESPERA</span>
+        <h2>A próxima aventura<br />começa na clareira.</h2>
+        <a class="button" routerLink="/jogar/"
+          >Entrar em Terrania <span aria-hidden="true">↗</span></a
+        >
+        <p>No navegador. Sem instalação.</p>
+        <img src="/art/crest.svg" alt="" class="cta-crest" />
+      </section>
+    <section class="section-shell presence-section"><app-online-players /></section>
+</main>

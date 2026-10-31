@@ -5,7 +5,7 @@ on:
       - "server-go/**"
       - ".github/workflows/go-engine.yml"
   push:
-    branches: [main]
+    branches: [main, feat/angular-ui-phaser3]
     paths:
       - "server-go/**"
       - ".github/workflows/go-engine.yml"

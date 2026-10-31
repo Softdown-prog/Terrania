@@ -6,20 +6,20 @@ const read = (path: string) => readFileSync(new URL("../" + path, import.meta.ur
 
 test("Canvas acompanha o tamanho do elemento e mudanças de viewport Android", () => {
   const scene = read("src/ui/CanvasScene.ts");
-  const game = read("src/game/Game.ts");
-  assert.match(scene, /this\.canvas\.clientWidth/);
-  assert.match(scene, /this\.canvas\.clientHeight/);
-  assert.match(game, /visualViewport\?\.addEventListener\("resize"/);
-  assert.match(game, /"orientationchange"/);
+  const game = read("src/game/PhaserGame.ts");
+  assert.match(scene, /resize\(viewWidth: number, viewHeight: number\)/);
+  assert.match(scene, /Math\.round\(viewHeight\)/);
+  assert.match(game, /visualViewport\?\.addEventListener\(['"]resize['"]/);
+  assert.match(game, /['"]orientationchange['"]/);
 });
 test("gamepad touch respeita gestos, notch e área segura", () => {
   const css = read("src/style.css");
-  const html = read("jogar/index.html");
+  const html = read("src/app/game-page.html");
   assert.match(css, /height: 100dvh/);
   assert.match(css, /overscroll-behavior: none/);
   assert.match(css, /safe-area-inset-bottom/);
   assert.match(css, /max-height: 500px/);
-  assert.match(html, /viewport-fit=cover/);
+  assert.match(read("index.html"), /viewport-fit=cover/);
   assert.match(html, /role="group" aria-label="Controle de movimento/);
 });
 test("menu institucional do site permanece navegável no Android", () => {

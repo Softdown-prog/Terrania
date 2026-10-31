@@ -1,52 +1,6 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#0b0812" />
-    <meta
-      name="description"
-      content="Prepare links de salas, convide amigos e participe do desenvolvimento de Terrania: Origins."
-    />
-    <meta property="og:title" content="Comunidade · Terrania: Origins" />
-    <meta
-      property="og:description"
-      content="Prepare links de salas, convide amigos e participe do desenvolvimento de Terrania: Origins."
-    />
-    <meta property="og:type" content="website" />
-    <link rel="icon" type="image/svg+xml" href="/art/crest.svg" />
-    <title>Comunidade · Terrania: Origins</title>
-  </head>
-  <body class="inner-page">
-    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="/" aria-label="Terrania: Origins — início"
-          ><img src="/art/crest.svg" alt="" width="37" height="44" /><span
-            >TERRANIA<small>O R I G I N S</small></span
-          ></a
-        ><button
-          class="nav-toggle"
-          type="button"
-          aria-expanded="false"
-          aria-controls="main-nav"
-          aria-label="Abrir navegação"
-        >
-          <span></span><span></span>
-        </button>
-        <nav id="main-nav" aria-label="Navegação principal">
-          <a href="/mundo/">O mundo</a><a href="/guia/">Como jogar</a
-          ><a href="/novidades/">Novidades</a
-          ><a href="/comunidade/" aria-current="page">Comunidade</a
-          ><a class="button button-small nav-play" href="/jogar/"
-            >Jogar agora <span aria-hidden="true">↗</span></a
-          >
-        </nav>
-      </div>
-    </header>
-    <main id="conteudo">
+<main id="conteudo" appPreviews>
       <section class="page-intro section-shell">
-        <a class="back-link" href="/">← Voltar ao início</a
+        <a class="back-link" routerLink="/">← Voltar ao início</a
         ><span class="eyebrow">COMUNIDADE / NO MESMO CAMINHO</span>
         <h1>Uma aventura cresce<br />com quem <em>participa.</em></h1>
         <p>
@@ -68,12 +22,12 @@
             Não use dados pessoais nele.
           </p>
         </div>
-        <form class="room-form" action="/jogar/" method="get">
+        <form class="room-form" (submit)="joinRoom($event, roomInput)">
           <label for="room">NOME DA SALA</label>
           <div class="room-input">
             <span aria-hidden="true">✧</span
             ><input
-              id="room"
+              id="room" #roomInput
               name="room"
               type="text"
               pattern="[a-z0-9-]{1,24}"
@@ -90,10 +44,10 @@
           </p>
           <button class="button" type="submit">
             Acessar sala <span aria-hidden="true">↗</span></button
-          ><button class="copy-button" id="copyRoom" type="button">
+          ><button class="copy-button" id="copyRoom" (click)="copyRoom(roomInput)" type="button">
             Copiar link para convidar
           </button>
-          <p id="roomFeedback" class="room-feedback" role="status"></p>
+          <p id="roomFeedback" class="room-feedback" role="status">{{ feedback() }}</p>
           <div class="room-warning">
             <i></i>
             <p id="roomAvailability">
@@ -174,42 +128,11 @@
       <section class="final-cta section-shell">
         <span class="eyebrow">HÁ UM CAMINHO À SUA ESPERA</span>
         <h2>A próxima aventura<br />começa na clareira.</h2>
-        <a class="button" href="/jogar/"
+        <a class="button" routerLink="/jogar/"
           >Entrar em Terrania <span aria-hidden="true">↗</span></a
         >
         <p>No navegador. Sem instalação.</p>
         <img src="/art/crest.svg" alt="" class="cta-crest" />
       </section>
-    </main>
-    <footer class="site-footer">
-      <div class="footer-main">
-        <a class="brand" href="/"
-          ><img src="/art/crest.svg" alt="" width="34" height="40" /><span
-            >TERRANIA<small>O R I G I N S</small></span
-          ></a
-        >
-        <p>
-          O caminho começa com você.<br />Um RPG independente em construção.
-        </p>
-        <a href="/jogar/" class="text-link"
-          >Sua aventura espera <span aria-hidden="true">↗</span></a
-        >
-      </div>
-      <div class="footer-bottom">
-        <span>© 2026 Terrania: Origins · Softdown</span>
-        <nav aria-label="Informações do site">
-          <a href="/privacidade/">Privacidade</a
-          ><a href="/termos/">Termos de uso</a
-          ><a
-            href="https://github.com/Softdown-prog/Terrania"
-            target="_blank"
-            rel="noopener noreferrer"
-            >GitHub ↗</a
-          >
-        </nav>
-        <span class="alpha-label"><i></i> ALFA EM DESENVOLVIMENTO</span>
-      </div>
-    </footer>
-    <script type="module" src="/src/site/site.ts"></script>
-  </body>
-</html>
+    <section class="section-shell presence-section"><app-online-players /></section>
+</main>

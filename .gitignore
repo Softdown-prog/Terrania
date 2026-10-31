@@ -7,3 +7,9 @@ dist/
 .env
 .env.*
 !.env.example
+
+.angular/
+out-tsc/
+playwright-report/
+test-results/
+src/app/runtime-config.ts
