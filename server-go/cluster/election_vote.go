@@ -38,7 +38,7 @@ type ElectionVote struct {
 	Signature   string
 	// Tip is included in the signed payload for log-aware votes.
 	// Nil means legacy/offline-only election evidence.
-	Tip         *ReplicaLogTip `json:",omitempty"`
+	Tip *ReplicaLogTip `json:",omitempty"`
 }
 
 type electionPayload struct {
