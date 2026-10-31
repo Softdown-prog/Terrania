@@ -13,6 +13,7 @@ const pages = [
     "privacidade",
     "termos",
     "jogar",
+    "laboratorio-phaser",
   ].map((page) => page + "/index.html"),
 ];
 for (const page of pages) {
@@ -49,6 +50,11 @@ assert.ok(
     'id="game"',
   ),
 );
+assert.ok(
+  readFileSync(resolve(output, "laboratorio-phaser/index.html"), "utf8").includes(
+    'id="phaser-root"',
+  ),
+);
 console.log(
-  "Verified 9 built pages, internal links, assets and separate game entry.",
+  "Verified 10 built pages, internal links, assets, game entry and Phaser lab.",
 );

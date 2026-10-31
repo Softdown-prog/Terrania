@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#160e23" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="description" content="Experimento técnico isolado do Terrânia com Phaser 4 e arte procedural." />
+    <title>Laboratório Phaser 4 · Terrânia</title>
+    <style>
+      :root { color-scheme: dark; font: 15px system-ui, sans-serif; background: #160e23; color: #f0e6ff; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; width: 100%; min-height: 100%; }
+      body { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; }
+      header, footer { padding: 12px clamp(12px, 4vw, 30px); }
+      header { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; background: #261939; border-bottom: 1px solid #815ab966; }
+      a { color: #e2baff; }
+      header a { min-height: 44px; display: inline-flex; align-items: center; }
+      header strong { margin-right: auto; }
+      header span { font-size: 12px; color: #cdb9e3; }
+      main { width: 100%; min-height: 300px; position: relative; display: grid; align-items: center; overflow: hidden; }
+      #phaser-root { width: 100%; height: min(78dvh, 900px); min-height: 300px; touch-action: none; }
+      #phaser-root canvas { display: block; touch-action: none; }
+      footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: #21162e; border-top: 1px solid #815ab966; font-size: 12px; }
+      #lab-fps { font-variant-numeric: tabular-nums; }
+      @media (max-width: 480px) { header strong { width: 100%; } main { min-height: 260px; } #phaser-root { min-height: 260px; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>TERRÂNIA · LABORATÓRIO PHASER 4</strong>
+      <span>Experimento isolado — não modifica seu save nem conecta à VPS</span>
+      <a href="/jogar/?modo=solo">Voltar ao jogo</a>
+    </header>
+    <main aria-label="Demonstração procedural com Phaser">
+      <div id="phaser-root" aria-label="Cena procedural. Toque ou clique no chão para mover o herói."></div>
+    </main>
+    <footer>
+      <span id="lab-status" role="status">Iniciando renderizador experimental…</span>
+      <span id="lab-fps" role="status" aria-label="Quadros por segundo">— FPS</span>
+    </footer>
+    <script type="module" src="/src/phaser-lab/main.ts"></script>
+  </body>
+</html>
