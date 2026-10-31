@@ -1,5 +1,7 @@
 # Terrania: Origins
 
+**Para modelos de IA:** comece no [guia dos agentes](AGENTS.md) e no [mapa de navegação](docs/AI_NAVIGATION.md) antes de pesquisar arquivos.
+
 RPG **2D top-down e procedural** para navegador, com **Angular 22 na interface e Phaser 3.90 no jogo**. A arte procedural continua em Canvas 2D, convertida em textura Phaser em memória, sem sprites externos. Inspirado em ideias de mundo/RPG do antigo Terranium (`Softdown-prog/2d2`), sem transportar o motor C++/SDL3.
 
 ## Versão 0.3 — site, mundo e movimento

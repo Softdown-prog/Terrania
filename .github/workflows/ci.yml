@@ -13,6 +13,7 @@ jobs:
           node-version: '24'
       - name: Instalar front-end e servidor de teste
         run: npm ci && npm ci --prefix server
+      - run: npm run check:ai-index
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
