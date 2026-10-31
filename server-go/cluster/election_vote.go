@@ -65,6 +65,7 @@ type electionRecord struct {
 	SignerHash  string
 	Term        uint64
 	CandidateID string // empty means a higher term was observed, not yet voted
+	Tip *ReplicaLogTip `json:",omitempty"`
 }
 
 // ElectionWitness is one independent durable vote store. Each witness must
@@ -81,6 +82,7 @@ type ElectionWitness struct {
 	index      uint64
 	term       uint64
 	candidate  string
+	votedTip   *ReplicaLogTip
 	faulted    bool
 }
 
@@ -163,6 +165,9 @@ func (w *ElectionWitness) replay() error {
 			r.Term < w.term || (r.CandidateID != "" && !validServiceID(r.CandidateID)) {
 			return ErrElectionCorrupt
 		}
+		if r.Tip!=nil && (r.CandidateID==""||!validReplicaTip(*r.Tip)) {
+			return ErrElectionCorrupt
+		}
 		if r.Term == w.term {
 			// A term may be observed first and voted later, but can never
 			// switch candidates or reset a committed vote.
@@ -173,17 +178,22 @@ func (w *ElectionWitness) replay() error {
 		w.index = r.Index
 		w.term = r.Term
 		w.candidate = r.CandidateID
+		w.votedTip = r.Tip
 	}
 }
 
 func (w *ElectionWitness) appendLocked(term uint64, candidate string) error {
+	return w.appendVoteLocked(term,candidate,nil)
+}
+
+func (w *ElectionWitness) appendVoteLocked(term uint64, candidate string, tip *ReplicaLogTip) error {
 	if w.faulted || w.file == nil || w.index == ^uint64(0) {
 		w.faulted = true
 		return ErrElectionStorage
 	}
 	r := electionRecord{Version: electionRecordVersion, Index: w.index + 1,
 		ClusterID: w.cluster, MemberID: w.member, SignerHash: w.signerHash,
-		Term: term, CandidateID: candidate}
+		Term: term, CandidateID: candidate, Tip: tip}
 	body, err := json.Marshal(r)
 	if err != nil || len(body) == 0 || len(body) > maxElectionRecordBytes {
 		w.faulted = true
@@ -208,6 +218,7 @@ func (w *ElectionWitness) appendLocked(term uint64, candidate string) error {
 	w.index++
 	w.term = term
 	w.candidate = candidate
+	w.votedTip = tip
 	return nil
 }
 
@@ -242,7 +253,7 @@ func (w *ElectionWitness) Vote(term uint64, candidate string) (ElectionVote, err
 	if w.faulted || w.file == nil {
 		return ElectionVote{}, ErrElectionStorage
 	}
-	if term < w.term || (term == w.term && w.candidate != "" && w.candidate != candidate) {
+	if term < w.term || (term == w.term && w.candidate != "" && (w.candidate != candidate || w.votedTip != nil)) {
 		return ElectionVote{}, ErrElectionConflict
 	}
 	if term > w.term || w.candidate == "" {

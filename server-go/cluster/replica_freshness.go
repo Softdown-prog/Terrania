@@ -102,18 +102,24 @@ func (w *ElectionWitness) VoteWithReplica(l *ReplicaLog, term uint64, candidate 
 	if !candidateLogFreshEnough(tip, local) {
 		return ElectionVote{}, ErrElectionStaleLog
 	}
-	v, err := w.Vote(term, candidate)
-	if err != nil {
-		return ElectionVote{}, err
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if w.faulted || w.file == nil {return ElectionVote{},ErrElectionStorage}
+	if term < w.term || (term == w.term && w.candidate != "" &&
+		(w.candidate != candidate || w.votedTip == nil || *w.votedTip != tip)) {
+		return ElectionVote{},ErrElectionConflict
 	}
+	if term > w.term || w.candidate == "" {
+		copyTip := tip
+		if err := w.appendVoteLocked(term,candidate,&copyTip);err!=nil{return ElectionVote{},err}
+	}
+	// Re-sign only the exact tip previously fsynced for this term.
 	copyTip := tip
-	v.Tip = &copyTip
-	payload, err := v.payload()
-	if err != nil {
-		return ElectionVote{}, err
-	}
-	v.Signature = hex.EncodeToString(ed25519.Sign(w.signer, payload))
-	return v, nil
+	v := ElectionVote{ClusterID:w.cluster,MemberID:w.member,CandidateID:candidate,Term:term,Tip:&copyTip}
+	payload,err := v.payload()
+	if err != nil{return ElectionVote{},err}
+	v.Signature=hex.EncodeToString(ed25519.Sign(w.signer,payload))
+	return v,nil
 }
 
 // FreshElectionCertificate is signed election evidence that all quorum
