@@ -205,12 +205,28 @@ mod tests {
                 -1
             );
             assert_eq!(
-                terrania_monsters_plan(&raw const m, 1, std::ptr::null(), 0, 0.05, std::ptr::null_mut(), 0),
+                terrania_monsters_plan(
+                    &raw const m,
+                    1,
+                    std::ptr::null(),
+                    0,
+                    0.05,
+                    std::ptr::null_mut(),
+                    0
+                ),
                 -2
             );
             let mut out = [MonsterPlan::default()];
             assert_eq!(
-                terrania_monsters_plan(&raw const m, 1, std::ptr::null(), 0, 0.05, out.as_mut_ptr(), 1),
+                terrania_monsters_plan(
+                    &raw const m,
+                    1,
+                    std::ptr::null(),
+                    0,
+                    0.05,
+                    out.as_mut_ptr(),
+                    1
+                ),
                 1
             );
             assert_eq!(out[0].target_index, -1);
