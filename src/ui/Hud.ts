@@ -1,4 +1,6 @@
 import type { Player } from "../actors/Player.ts";
+import type { Inventory } from "../engine/Inventory.ts";
+import { MAX_STACK } from "../engine/Inventory.ts";
 import { npcDialogue, type Npc } from "../world/npcs.ts";
 export interface Preferences {
   zoom: number;
@@ -20,6 +22,10 @@ export class Hud {
   private readonly settings = element<HTMLDialogElement>("settingsDialog");
   private readonly help = element<HTMLDialogElement>("helpDialog");
   private readonly npcDialog = element<HTMLDialogElement>("npcDialog");
+  private readonly inventoryDialog = element<HTMLDialogElement>("inventoryDialog");
+  private readonly inventoryButton = element<HTMLButtonElement>("inventoryButton");
+  private readonly usePotionButton = element<HTMLButtonElement>("usePotion");
+  private readonly inventoryFeedback = element<HTMLElement>("inventoryFeedback");
   private readonly talkButton = element<HTMLButtonElement>("talkButton");
   private readonly npcNext = element<HTMLButtonElement>("npcNext");
   private npcLines: readonly string[] = [];
@@ -29,11 +35,15 @@ export class Hud {
   private readonly effects = element<HTMLInputElement>("effects");
   private readonly motion = element<HTMLInputElement>("cameraMotion");
   constructor() {
-    for (const dialog of [this.settings, this.help, this.worldDialog, this.npcDialog])
+    for (const dialog of [this.settings, this.help, this.worldDialog, this.npcDialog, this.inventoryDialog])
       dialog.addEventListener("close", () => {
         if (!this.menuOpen)
           document.getElementById("game")?.focus({ preventScroll: true });
       });
+    this.inventoryButton.addEventListener("click", () => {
+      this.inventoryFeedback.textContent = "";
+      this.inventoryDialog.showModal();
+    });
     element("settingsButton").addEventListener("click", () =>
       this.settings.showModal(),
     );
@@ -73,7 +83,7 @@ export class Hud {
     }
   }
   get menuOpen(): boolean {
-    return this.settings.open || this.help.open || this.worldDialog.open || this.npcDialog.open;
+    return this.settings.open || this.help.open || this.worldDialog.open || this.npcDialog.open || this.inventoryDialog.open;
   }
   loadPreferences(): Preferences {
     let saved: Partial<Preferences> = {};
@@ -123,6 +133,23 @@ export class Hud {
         cb(p);
       });
   }
+  onPotionUse(cb: () => string): void {
+    this.usePotionButton.addEventListener("click", () => {
+      this.inventoryFeedback.textContent = cb();
+    });
+  }
+  updateInventory(inventory: Inventory, online: boolean): void {
+    const gel = inventory.gel;
+    const potion = inventory.potion;
+    this.inventoryButton.disabled = online;
+    this.inventoryButton.textContent = online ? "Bolsa · solo" : "Bolsa (" + (gel + potion) + ")";
+    this.inventoryButton.title = online
+      ? "Inventário disponível apenas no modo solo"
+      : "Abrir bolsa do aventureiro";
+    this.usePotionButton.disabled = online || potion === 0;
+    element("gelCount").textContent = gel + " / " + MAX_STACK;
+    element("potionCount").textContent = potion + " / " + MAX_STACK;
+  }
   onTalk(cb: () => void): void {
     this.talkButton.addEventListener("click", cb);
   }
@@ -142,8 +169,10 @@ export class Hud {
     this.npcNext.textContent = this.npcPage === this.npcLines.length - 1
       ? "Encerrar conversa" : "Continuar";
   }
-  showNpcDialogue(npc: Npc, kills: number): void {
-    this.npcLines = npcDialogue(npc, kills);
+  showNpcDialogue(npc: Npc, kills: number, reward?: string): void {
+    this.npcLines = reward
+      ? [...npcDialogue(npc, kills), reward]
+      : npcDialogue(npc, kills);
     this.npcPage = 0;
     element("npcName").textContent = npc.name;
     element("npcRole").textContent = npc.role;
