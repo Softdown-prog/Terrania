@@ -4,12 +4,16 @@ on:
     paths:
       - "rust/spatial-kernel/**"
       - "server-go/cmd/spatial-reference/**"
+      - "server-go/engine/spatial_*.go"
+      - "server-go/engine/room.go"
       - ".github/workflows/rust-spatial.yml"
   push:
     branches: [main]
     paths:
       - "rust/spatial-kernel/**"
       - "server-go/cmd/spatial-reference/**"
+      - "server-go/engine/spatial_*.go"
+      - "server-go/engine/room.go"
       - ".github/workflows/rust-spatial.yml"
 
 permissions:
@@ -36,6 +40,30 @@ jobs:
         run: cargo test --manifest-path rust/spatial-kernel/Cargo.toml --locked --all-targets
       - name: Compilar bibliotecas Rust isoladas (rlib/staticlib/cdylib)
         run: cargo build --manifest-path rust/spatial-kernel/Cargo.toml --locked --release
+      - name: Verificar ponte Go-Rust com detector de corrida
+        working-directory: server-go
+        env:
+          CGO_ENABLED: '1'
+        run: |
+          set -euo pipefail
+          go test -race -count=1 ./engine ./cmd/terrania
+          go test -race -count=1 -tags rustspatial ./...
+          go vet -tags rustspatial ./...
+          go build -tags rustspatial -o /tmp/terrania-go-ffi ./cmd/terrania
+      - name: Comparar desempenho do Go puro com Go+Rust pela FFI
+        working-directory: server-go
+        env:
+          CGO_ENABLED: '1'
+        run: |
+          set -euo pipefail
+          go test ./engine -run '^$' -bench '^BenchmarkSpatial' -benchtime=250x -count=3 -benchmem | tee /tmp/go-only.txt
+          go test -tags rustspatial ./engine -run '^$' -bench '^BenchmarkSpatial' -benchtime=250x -count=3 -benchmem | tee /tmp/go-rust.txt
+          {
+            echo '### Go puro (CI runner, nao VPS)'
+            grep '^BenchmarkSpatial' /tmp/go-only.txt
+            echo '### Go + Rust FFI (CI runner, nao VPS)'
+            grep '^BenchmarkSpatial' /tmp/go-rust.txt
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Comparar 200 consultas e 4096 objetos com Go, bit a bit
         run: |
           set -euo pipefail
