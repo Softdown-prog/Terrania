@@ -5,7 +5,8 @@
 - Repositório: `Softdown-prog/Terrania`.
 - Branch de trabalho: **`feat/angular-ui-phaser3`**.
 - Base inicial da main: `da610eb57af81867abbcccef2087992fea1e78a8`.
-- Pedido do Rodrigo: continuar nesta branch, sem commits na main, PR, merge ou deploy. Quando a migração e as validações estiverem completas, a decisão sobre PR/mesclagem será dele. Um pedido genérico de continuar não autoriza essas ações.
+- A migração foi desenvolvida isoladamente, sem PR ou publicação durante a implementação.
+- **Autorização de integração:** em 31/10/2026, Rodrigo solicitou explicitamente: “Agora faça o merge”. A integração na `main` e os workflows já associados a ela estão autorizados. Conferir o resultado dos checks e preservar as alterações Go/Rust recebidas pela main durante o desenvolvimento.
 
 ## Implementado
 
@@ -78,13 +79,13 @@ A revisão seguinte encontrou e reproduziu dois problemas que os testes anterior
 
 Os dois cenários falharam antes da correção e passaram depois. A cobertura nova também testa sair/voltar enquanto há uma consulta de presença pendente. O total de navegador passou de 6 para 12 cenários, incluindo desktop e emulação Pixel 5; todos passaram com `CI=true`. Os 55 testes de regras/saves também passaram. Configuração estrita permanece ativa.
 
-O CI da revisão anterior `df1e8e4` terminou aprovado. Conferir novamente os checks do novo head após esta correção; não abrir PR, merge ou deploy automaticamente.
+Os CIs das revisões `df1e8e4` e `b04e63e` terminaram aprovados. A autorização posterior de integração está registrada no início deste documento; validar também o resultado da combinação com a main antes do merge.
 
 ## Verificações externas restantes
 
-- A revisão automática bloqueou `wrangler deploy --dry-run` por possível envio de configuração ao Cloudflare. Não repetir sem autorização apropriada; a compilação/verificação local do pacote passou. Nenhuma publicação foi solicitada. O passo Wrangler do CI fica restrito à main; os checks desta branch não executam esse contato externo.
+- Durante a fase isolada, a revisão automática bloqueou a execução manual de `wrangler deploy --dry-run` por possível envio de configuração ao Cloudflare. Essa execução manual não foi repetida. A solicitação posterior de integração autoriza o fluxo normal da main; o passo Wrangler do CI e os deploys existentes devem ser acompanhados após o merge.
 - Docker não está disponível neste ambiente local. O CI Go da revisão `1d68dcb` passou no GitHub, incluindo detector de corrida, 1.000 conexões reais, paridade TypeScript/Go, imagens e saúde dos containers, sem acessar a VPS.
 - O primeiro CI frontend passou tipos/testes/build e parou ao instalar o Playwright no novo Ubuntu 26.04 de `ubuntu-latest`. O runner foi fixado em Ubuntu 24.04, suportado pelo instalador. O CI também revelou que os budgets de produção eram herdados pelo build de desenvolvimento sem otimização: agora o limite fica apenas na configuração de produção. Consultar os checks do head atual antes de integrar.
 - QA em Android físico e homologação do endpoint público `/presence` dependem de revisão/ambiente posterior. Emulação não deve ser apresentada como teste no celular do Rodrigo.
 
-Antes de criar PR ou fazer merge, conferir o head desta branch, os checks reais e a decisão explícita do usuário. Não afirmar ausência absoluta de bugs com base somente em testes automatizados.
+Para integrar, conferir o head desta branch e os checks reais. A decisão explícita do usuário está registrada acima. Não afirmar ausência absoluta de bugs com base somente em testes automatizados.
