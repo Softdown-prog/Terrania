@@ -12,6 +12,7 @@ const pages = [
   "privacidade",
   "termos",
   "jogar",
+  "laboratorio-phaser",
 ];
 export default defineConfig({
   server: { allowedHosts: ["terminal.local"] },
