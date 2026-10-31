@@ -234,7 +234,11 @@ export class Game {
           this.sim.player.update(1 / 60, movement, this.sim.collision);
           if (this.pendingAttack) this.sim.player.startAttack();
         } else {
+          const before = this.sim.player;
           const changed = this.sim.update(1 / 60, movement, this.pendingAttack);
+          // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
+          if (this.sim.player !== before || this.sim.player.hurtTime > 0)
+            this.navigator.cancel();
           this.pendingAttack = false;
           if (changed) this.save();
         }
