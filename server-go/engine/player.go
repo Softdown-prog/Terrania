@@ -97,7 +97,7 @@ func CanStrike(attacker *Player,target Target,w World) bool {
 	facingLength:=math.Hypot(attacker.FaceX,attacker.FaceY)
 	if facingLength==0 { facingLength=1 }
 	if distance>=AttackReach||(dx*attacker.FaceX+dy*attacker.FaceY)/
-		(math.Max(1,distance)*facingLength)<-.1 { return false }
+		(math.Max(1,distance)*facingLength) < -0.1 { return false }
 	steps:=int(math.Ceil(distance/6))
 	for i:=1;i<=steps;i++ {
 		if !w.CanMove(attacker.X+dx*float64(i)/float64(steps),
