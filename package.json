@@ -14,5 +14,8 @@
     "typescript": "7.0.2",
     "vite": "^7.1.10",
     "wrangler": "4.156.0"
+  },
+  "dependencies": {
+    "phaser": "4.2.1"
   }
 }
