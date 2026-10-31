@@ -18,7 +18,7 @@ test('navega em arquivos versionados, lê índices e limites de linhas', t => {
   assert.equal(repo.searchSymbols('Room','src/engine',10).matches.length,2);
   const content=repo.readLines('src/engine/room.ts',2,1);
   assert.equal(content.lines[0]?.number,2);
-  assert.match(content.lines[0]?.text??'','const mob');
+  assert.match(content.lines[0]?.text??'',/const mob/);
   assert.throws(()=>repo.readLines('../AGENTS.md'));
   assert.throws(()=>repo.readLines('.env'));
   assert.throws(()=>repo.readLines('README.key'));

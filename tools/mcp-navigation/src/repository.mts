@@ -43,13 +43,18 @@ function readInside(root: string, path: string, maxBytes: number): string {
 export function createRepository(root: string, trackedPaths: readonly string[]) {
   const tracked = [...new Set(trackedPaths.filter(safeTrackedPath))].sort();
   const known = new Set(tracked);
+  // The navigation core is maintained in JavaScript; define its typed boundary here.
   const navigation = createNavigationApi(tracked, {
     readGuide: (path: string) => {
       if (!known.has(path) || !(path === 'AGENTS.md' || path.endsWith('/INDEX.md')))
         throw new Error('Guia não autorizado.');
       return readInside(root, path, 128 * 1024);
     },
-  });
+  }) as unknown as {
+    find: (options: { query: string; scope: string; limit: number }) => Record<string, unknown>;
+    audit: (options: { scope: string; minFiles: number; limit: number; depth: number }) => Record<string, unknown>;
+    guide: (options: { scope: string; maxChars: number }) => Record<string, unknown>;
+  };
   function authorize(path: string): string {
     const normalized = normalizeScope(path);
     if (!normalized || !safeTrackedPath(normalized) || !known.has(normalized))
