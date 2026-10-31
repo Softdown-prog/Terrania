@@ -11,7 +11,8 @@ pub extern "C" fn terrania_arena_new(capacity: u32) -> *mut EntityArena {
     match EntityArena::new(capacity as usize) {
         Ok(arena) => Box::into_raw(Box::new(arena)),
         Err(_) => std::ptr::null_mut(),
-    }}
+    }
+}
 
 /// Release the opaque arena. The pointer becomes invalid immediately.
 ///
@@ -318,5 +319,4 @@ mod tests {
             terrania_arena_free(arena);
         }
     }
-
 }
