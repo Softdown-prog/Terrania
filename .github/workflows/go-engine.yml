@@ -31,6 +31,9 @@ jobs:
           go test -race -count=1 ./...
           go vet ./...
           go build ./cmd/terrania
+      - name: Registrar benchmark de simulacao (sem limiar artificial)
+        working-directory: server-go
+        run: go test ./engine -run '^$' -bench '^BenchmarkRoom' -benchtime=50x -benchmem
       - name: Comparar mundo e movimento com o TypeScript de produção
         run: |
           node --experimental-strip-types server-go/scripts/ts-reference.mjs > /tmp/ts.json

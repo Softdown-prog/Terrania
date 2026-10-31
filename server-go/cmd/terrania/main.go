@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,7 +31,8 @@ type client struct {
 	socket *websocket.Conn
 	id string
 	room *engine.Room
-	out chan any
+	welcome engine.Welcome
+	out chan *engine.Snapshot
 	done chan struct{}
 	count int
 	windowStart time.Time
@@ -106,9 +109,8 @@ func (s *gameServer) handleWS(w http.ResponseWriter,r *http.Request) {
 	if room==nil { room=engine.NewRoom(roomID);s.rooms[roomID]=room }
 	s.nextName++
 	room.Add(id,"Aventureiro "+strconv.Itoa(s.nextName))
-	c:=&client{socket:ws,id:id,room:room,out:make(chan any,2),done:make(chan struct{}),windowStart:time.Now()}
+	c:=&client{socket:ws,id:id,room:room,welcome:engine.NewWelcome(id,roomID,room.Seed),out:make(chan *engine.Snapshot,1),done:make(chan struct{}),windowStart:time.Now()}
 	s.clients[ws]=c
-	c.out<-engine.NewWelcome(id,roomID,room.Seed)
 	s.mu.Unlock()
 	go s.writePump(c)
 	s.readPump(c)
@@ -158,6 +160,9 @@ func (s *gameServer) leave(c *client) {
 }
 
 func (s *gameServer) writePump(c *client) {
+	// Send welcome first: never lose it when snapshots are congested.
+	_ = c.socket.SetWriteDeadline(time.Now().Add(5*time.Second))
+	if err:=c.socket.WriteJSON(c.welcome);err!=nil { _ = c.socket.Close(); return }
 	ping:=time.NewTicker(30*time.Second)
 	defer ping.Stop()
 	for {
@@ -175,6 +180,23 @@ func (s *gameServer) writePump(c *client) {
 }
 
 // Um unico loop autoritativo: 20 ticks/s, snapshots a cada dois ticks.
+// Keep only the latest pending snapshot for slow connections.
+func (c *client) enqueueSnapshot(state *engine.Snapshot) {
+	select {
+	case c.out<-state:
+		return
+	default:
+	}
+	select {
+	case <-c.out:
+	default:
+	}
+	select {
+	case c.out<-state:
+	default:
+	}
+}
+
 func (s *gameServer) run(ctx context.Context) {
 	ticker:=time.NewTicker(50*time.Millisecond)
 	defer ticker.Stop()
@@ -194,9 +216,7 @@ func (s *gameServer) run(ctx context.Context) {
 			if frame%2==0 {
 				for _,c:=range s.clients {
 					if state:=c.room.SnapshotFor(c.id);state!=nil {
-						select {
-						case c.out<-state: default: // descarta snapshot antigo, nunca trava o tick
-						}
+						c.enqueueSnapshot(state)
 					}
 				}
 			}
@@ -224,10 +244,30 @@ func main() {
 		allowed=[]string{"http://localhost:5173","http://127.0.0.1:5173"}
 	}
 	s:=newGameServer(allowed,os.Getenv("GIT_SHA"))
-	ctx,cancel:=context.WithCancel(context.Background())
-	defer cancel()
+	ctx,stop:=signal.NotifyContext(context.Background(),syscall.SIGTERM,syscall.SIGINT)
+	defer stop()
 	go s.run(ctx)
 	server:=&http.Server{Addr:":"+port,Handler:s.handler(),ReadHeaderTimeout:5*time.Second}
+	errs:=make(chan error,1)
+	go func(){ errs<-server.ListenAndServe() }()
 	log.Print("Terrania Go shadow server listening on ",port)
-	if err:=server.ListenAndServe();err!=nil&&!errors.Is(err,http.ErrServerClosed) { log.Fatal(err) }
+	select {
+	case <-ctx.Done():
+		log.Print("Terrania Go: stopping shadow server")
+	case err:=<-errs:
+		if err!=nil&&!errors.Is(err,http.ErrServerClosed) { log.Print("HTTP failed: ",err);os.Exit(1) }
+		return
+	}
+	shutdownCtx,cancel:=context.WithTimeout(context.Background(),5*time.Second)
+	defer cancel()
+	if err:=server.Shutdown(shutdownCtx);err!=nil { log.Print("HTTP shutdown: ",err) }
+	// http.Server.Shutdown does not manage upgraded WebSocket sessions.
+	s.mu.Lock()
+	sockets:=make([]*websocket.Conn,0,len(s.clients))
+	for ws:=range s.clients {sockets=append(sockets,ws)}
+	s.mu.Unlock()
+	for _,ws:=range sockets {
+		_ = ws.WriteControl(websocket.CloseMessage,websocket.FormatCloseMessage(websocket.CloseGoingAway,"server restarting"),time.Now().Add(time.Second))
+		_ = ws.Close()
+	}
 }
