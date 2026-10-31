@@ -29,7 +29,8 @@ type client struct {
 	socket *websocket.Conn
 	id string
 	room *engine.Room
-	out chan any
+	welcome engine.Welcome
+	out chan *engine.Snapshot
 	done chan struct{}
 	count int
 	windowStart time.Time
@@ -106,9 +107,8 @@ func (s *gameServer) handleWS(w http.ResponseWriter,r *http.Request) {
 	if room==nil { room=engine.NewRoom(roomID);s.rooms[roomID]=room }
 	s.nextName++
 	room.Add(id,"Aventureiro "+strconv.Itoa(s.nextName))
-	c:=&client{socket:ws,id:id,room:room,out:make(chan any,2),done:make(chan struct{}),windowStart:time.Now()}
+	c:=&client{socket:ws,id:id,room:room,welcome:engine.NewWelcome(id,roomID,room.Seed),out:make(chan *engine.Snapshot,1),done:make(chan struct{}),windowStart:time.Now()}
 	s.clients[ws]=c
-	c.out<-engine.NewWelcome(id,roomID,room.Seed)
 	s.mu.Unlock()
 	go s.writePump(c)
 	s.readPump(c)
@@ -158,6 +158,9 @@ func (s *gameServer) leave(c *client) {
 }
 
 func (s *gameServer) writePump(c *client) {
+	// Send welcome first: never lose it when snapshots are congested.
+	_ = c.socket.SetWriteDeadline(time.Now().Add(5*time.Second))
+	if err:=c.socket.WriteJSON(c.welcome);err!=nil { _ = c.socket.Close(); return }
 	ping:=time.NewTicker(30*time.Second)
 	defer ping.Stop()
 	for {
@@ -175,6 +178,23 @@ func (s *gameServer) writePump(c *client) {
 }
 
 // Um unico loop autoritativo: 20 ticks/s, snapshots a cada dois ticks.
+// Keep only the latest pending snapshot for slow connections.
+func (c *client) enqueueSnapshot(state *engine.Snapshot) {
+	select {
+	case c.out<-state:
+		return
+	default:
+	}
+	select {
+	case <-c.out:
+	default:
+	}
+	select {
+	case c.out<-state:
+	default:
+	}
+}
+
 func (s *gameServer) run(ctx context.Context) {
 	ticker:=time.NewTicker(50*time.Millisecond)
 	defer ticker.Stop()
@@ -194,9 +214,7 @@ func (s *gameServer) run(ctx context.Context) {
 			if frame%2==0 {
 				for _,c:=range s.clients {
 					if state:=c.room.SnapshotFor(c.id);state!=nil {
-						select {
-						case c.out<-state: default: // descarta snapshot antigo, nunca trava o tick
-						}
+						c.enqueueSnapshot(state)
 					}
 				}
 			}
