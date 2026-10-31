@@ -260,8 +260,8 @@ mod tests {
     fn ffi_200k_atomic_single_batch_and_capacity() {
         use std::time::Instant;
         const COUNT: usize = 200_000;
-        assert!(terrania_arena_new((COUNT + 1) as u32).is_null());
-        let arena = terrania_arena_new(COUNT as u32);
+        assert!(terrania_arena_new(u32::try_from(COUNT + 1).unwrap()).is_null());
+        let arena = terrania_arena_new(u32::try_from(COUNT).unwrap());
         assert!(!arena.is_null());
         let mut handles = Vec::with_capacity(COUNT);
         let mut values = Vec::with_capacity(COUNT);
@@ -270,18 +270,18 @@ mod tests {
         unsafe {
             for i in 0..COUNT {
                 let mut handle = 0;
-                let entity = monster(i as f64);
+                let entity = monster(f64::from(u32::try_from(i).unwrap()));
                 assert_eq!(terrania_arena_spawn(arena, entity, &raw mut handle), 0);
                 handles.push(handle);
-                values.push(monster(i as f64 + 1.0));
+                values.push(monster(f64::from(u32::try_from(i).unwrap()) + 1.0));
             }
-            assert_eq!(terrania_arena_len(arena), COUNT as i32);
+            assert_eq!(terrania_arena_len(arena), i32::try_from(COUNT).unwrap());
             let extra = monster(999.0);
             let mut unused = 0u64;
             assert_eq!(terrania_arena_spawn(arena, extra, &raw mut unused), -3);
             let started = Instant::now();
             assert_eq!(
-                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), COUNT as u32),
+                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), u32::try_from(COUNT).unwrap()),
                 0
             );
             let batch_time = started.elapsed();
@@ -292,14 +292,14 @@ mod tests {
                 terrania_arena_get(arena, handles[COUNT - 1], &raw mut check),
                 0
             );
-            assert_eq!(check.x, COUNT as f64);
+            assert_eq!(check.x, f64::from(u32::try_from(COUNT).unwrap()));
             // Out-of-range count must be rejected before accessing any buffer.
             assert_eq!(
                 terrania_arena_update_batch(
                     arena,
                     handles.as_ptr(),
                     values.as_ptr(),
-                    (COUNT + 1) as u32
+                    u32::try_from(COUNT + 1).unwrap()
                 ),
                 -1
             );
@@ -307,7 +307,7 @@ mod tests {
             values[0].x = 600.0;
             values[COUNT - 1].x = f64::NAN;
             assert_eq!(
-                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), COUNT as u32),
+                terrania_arena_update_batch(arena, handles.as_ptr(), values.as_ptr(), u32::try_from(COUNT).unwrap()),
                 -1
             );
             assert_eq!(terrania_arena_get(arena, handles[0], &raw mut check), 0);

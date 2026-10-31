@@ -338,7 +338,7 @@ mod tests {
         for (i, &handle) in handles.iter().enumerate() {
             let updated = Entity {
                 kind: kinds[i % kinds.len()],
-                x: (i as f64) + 0.25,
+                x: f64::from(u32::try_from(i).unwrap()) + 0.25,
                 y: -2.0,
                 hp: 4,
                 state: 42,
