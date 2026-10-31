@@ -32,7 +32,7 @@ func TestGatewayPresenceIgnoresUnconfirmedSeatReservations(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer res.Body.Close()
+	defer func(){_ = res.Body.Close()}()
 	var value presence.Data
 	if err := json.NewDecoder(res.Body).Decode(&value); err != nil {
 		t.Fatal(err)
