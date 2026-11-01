@@ -48,6 +48,17 @@ A pasta `server-go/autoscale/` agora inclui:
 
 A política de isolamento para a VPS multiprojetos permanece **nenhum deploy e nenhuma interferência no painel, bancos, gateways e containers dos demais projetos**.
 
+## Controlador de reconciliação (laboratório, sem ativação)
+
+A nova `Controller.Reconcile(ctx, now)` conecta **`Calculate` → `Supervisor` → `WorkerRegistry`**, exclusivamente em código de laboratório. A cada amostra **confiável e recente do host** (`HostObserver.Read`), ela considera conexões reais reservadas no registro, fila de admissões informada pelo observador e CPU/RAM livres após descontar todos os outros projetos.
+
+- **Scale-out:** no máximo **um container por amostra nova**, mesmo sob pico; o próximo só é criado depois de outra leitura da capacidade. IDs de workers são gerados dentro de `as-worker-0001..9999`, sem reutilizar IDs ainda registrados ou sob supervisão. Cada `Start` segue o fluxo de saúde e publicação de backend já testado.
+- **Scale-in:** requer pelo menos duas amostras consecutivas de demanda baixa, além do cooldown da política. Primeiro bloqueia novas entradas, conserva as sessões e somente remove um worker se estiver vazio. Nenhuma sessão WebSocket é migrada por essa rotina.
+- **Amostra repetida:** um timestamp `SampledAt` já processado não pode gerar novo provisionamento, mesmo com 100 chamadas concorrentes. Telemetria anterior ao limite, futura, inválida ou com erro faz a reconciliação falhar sem mutação.
+- `Controller.Run` disponibiliza agendamento por ticker para um **programa supervisor futuro**; ele não é chamado por `cmd/gateway`, `cmd/terrania` nem por qualquer serviço da VPS. Seu uso precisará de fonte de telemetria real, registros duráveis e canal de controle autenticado.
+
+**Pontos ainda não resolvidos:** a coleta de CPU/RAM disponível na VPS compartilhada e backlog real de novos usuários; continuidade de identidade dos containers em restart; separação de privilégios do Docker; API privada autenticada de membership; ensaio Docker real; rate limits de conexão e proteção antiabuso. As cotas usadas pelos testes são sintéticas, não aferições da VPS.
+
 ## Ciclo de vida pretendido
 
 1. O controlador recebe métricas confiáveis (conexões ativas **por worker**, backlog de admissões, RAM/CPU realmente livres e timestamps). Métricas desatualizadas devem impedir mudanças, jamais autorizar um scale-out infinito.
