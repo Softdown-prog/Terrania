@@ -1,10 +1,11 @@
-name: Terrania one-VPS autoscaling controller (offline, no deploy)
+name: Terrania one-VPS host telemetry and private IPC (offline, no deploy)
 on:
   push:
     branches: [main, 'feat/go-rust-ffi-*']
     paths:
       - 'server-go/autoscale/**'
       - 'server-go/cluster/worker_registry*.go'
+      - 'server-go/cluster/private_ipc*.go'
       - 'server-go/cmd/gateway/main.go'
       - 'server-go/cmd/gateway/dynamic_registry_test.go'
       - 'docs/AUTOSCALING-ONE-VPS.md'
@@ -13,6 +14,7 @@ on:
     paths:
       - 'server-go/autoscale/**'
       - 'server-go/cluster/worker_registry*.go'
+      - 'server-go/cluster/private_ipc*.go'
       - 'server-go/cmd/gateway/main.go'
       - 'server-go/cmd/gateway/dynamic_registry_test.go'
       - 'docs/AUTOSCALING-ONE-VPS.md'
@@ -33,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           changed=0
-          for file in server-go/autoscale/*.go server-go/cluster/worker_registry.go server-go/cluster/worker_registry_test.go server-go/cmd/gateway/main.go server-go/cmd/gateway/dynamic_registry_test.go; do
+          for file in server-go/autoscale/*.go server-go/cluster/worker_registry.go server-go/cluster/worker_registry_test.go server-go/cluster/private_ipc*.go server-go/cmd/gateway/main.go server-go/cmd/gateway/dynamic_registry_test.go; do
             if [[ -n "$(gofmt -l "$file")" ]]; then
               gofmt -w "$file"
               echo "FORMAT_REQUIRED=$file"
@@ -58,12 +60,12 @@ jobs:
         working-directory: server-go
         run: |
           set -euo pipefail
-          go test -race -count=1 ./cmd/gateway ./autoscale
+          go test -race -count=1 ./cmd/gateway ./autoscale ./cluster
           go test -count=1 ./...
           go build ./cmd/gateway
           go build ./cmd/terrania
       - name: Summary (no Docker or VPS)
         run: |
           echo '### Same-VPS elastic scaling: offline decision-to-supervisor reconciliation' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Five race-enabled repetitions of policy, trusted-sample fencing, burst controller, Docker mock, lifecycle supervisor, worker directory and WebSocket affinity/drain tests.' >> "$GITHUB_STEP_SUMMARY"
-          echo '**Docker Engine calls are mocked. Gateway production still uses static GO_SHARDS. No Docker socket, no VPS mutation and no running autoscaler daemon.**' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Five race-enabled repetitions of policy, Linux /proc CPU/RAM reserve probes, authenticated Unix IPC, trusted-sample fencing, burst controller, Docker mock, worker directory and WebSocket tests.' >> "$GITHUB_STEP_SUMMARY"
+          echo '**Docker Engine calls are mocked. Linux /proc is exercised with controlled fixtures, not VPS metrics. IPC is Unix-only laboratory code, not wired to the production gateway. No VPS mutation or daemon.**' >> "$GITHUB_STEP_SUMMARY"
