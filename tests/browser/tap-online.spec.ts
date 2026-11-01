@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('toque para caminhar online transmite movimento autoritativo observado pelo segundo jogador', async ({ page, context }) => {
+test('toque para caminhar online transmite movimento autoritativo observado pelo segundo jogador', async ({ page, context }, testInfo) => {
   const observed = { id: '', remoteX: Number.NaN };
   const visitor = await context.newPage();
   try {
@@ -38,9 +38,20 @@ test('toque para caminhar online transmite movimento autoritativo observado pelo
     const canvas = page.locator('canvas#game');
     const point = await canvas.evaluate(element => {
       const rect = element.getBoundingClientRect();
-      return { x: rect.width / 2 + 75, y: rect.height / 2 };
+      return {
+        localX: rect.width / 2 + 75,
+        localY: rect.height / 2,
+        screenX: rect.left + rect.width / 2 + 75,
+        screenY: rect.top + rect.height / 2,
+      };
     });
-    await canvas.click({ position: point });
+    if (testInfo.project.name === 'android') {
+      // Gera eventos touch/pointer reais na emulação Pixel 5, não um click de mouse.
+      await expect(page.locator('#joystick')).toBeVisible();
+      await page.touchscreen.tap(point.screenX, point.screenY);
+    } else {
+      await canvas.click({ position: { x: point.localX, y: point.localY } });
+    }
     // Posição recebida via WebSocket pelo outro jogador, não somente predição do cliente.
     await expect.poll(() => observed.remoteX, { timeout: 12000 }).toBeGreaterThan(initialX + 8);
     await expect(page.locator('#multiplayerStatus')).toContainText('Online');
