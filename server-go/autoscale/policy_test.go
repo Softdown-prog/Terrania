@@ -33,9 +33,10 @@ func TestBurstIsBoundedBySameVPS(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			p, err := Calculate(c, observe(live, tc.queued, tc.cpu, tc.ram))
-			if err != nil { t.Fatal(err) }
-			if p.Start != tc.wantStart || p.RequestedWorkers != tc.wantRequested ||
-				p.UnservedAtHardCap != tc.wantUnserved || p.LimitedByHost != tc.limited {
+			if err != nil {
+				t.Fatal(err)
+			}
+			if p.Start != tc.wantStart || p.RequestedWorkers != tc.wantRequested || p.UnservedAtHardCap != tc.wantUnserved || p.LimitedByHost != tc.limited {
 				t.Fatalf("unexpected plan: %+v", p)
 			}
 		})
@@ -44,11 +45,12 @@ func TestBurstIsBoundedBySameVPS(t *testing.T) {
 func TestScaleInDrainsBeforeStopping(t *testing.T) {
 	c := config()
 	now := when()
-	workers := []Worker{{ID: "worker-1", Connected: 10, Ready: true},
-		{ID: "worker-2", Ready: true}, {ID: "worker-3", Ready: true}}
+	workers := []Worker{{ID: "worker-1", Connected: 10, Ready: true}, {ID: "worker-2", Ready: true}, {ID: "worker-3", Ready: true}}
 	o := observe(workers, 0, 500, 256)
 	p, err := Calculate(c, o)
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !reflect.DeepEqual(p.Drain, []string{"worker-2"}) || len(p.Stop) != 0 {
 		t.Fatalf("must drain first: %+v", p)
 	}
@@ -65,16 +67,21 @@ func TestScaleInDrainsBeforeStopping(t *testing.T) {
 	}
 	o.LastScaleOut = now.Add(-time.Minute)
 	p, _ = Calculate(c, o)
-	if len(p.Stop) != 0 || len(p.Drain) != 0 { t.Fatal("cooldown must suppress scale-in") }
+	if len(p.Stop) != 0 || len(p.Drain) != 0 {
+		t.Fatal("cooldown must suppress scale-in")
+	}
 }
 func TestNoChangeToInputAndOnlyOneDrain(t *testing.T) {
 	c := config()
-	ws := []Worker{{ID: "b", Connected: 5, Ready: true}, {ID: "a", Connected: 5, Ready: true},
-		{ID: "c", Connected: 5, Ready: true}}
+	ws := []Worker{{ID: "b", Connected: 5, Ready: true}, {ID: "a", Connected: 5, Ready: true}, {ID: "c", Connected: 5, Ready: true}}
 	original := append([]Worker(nil), ws...)
 	p, _ := Calculate(c, observe(ws, 0, 1000, 512))
-	if !reflect.DeepEqual(p.Drain, []string{"a"}) { t.Fatalf("tie selection: %+v", p) }
-	if !reflect.DeepEqual(original, ws) { t.Fatal("planner mutated observed workers") }
+	if !reflect.DeepEqual(p.Drain, []string{"a"}) {
+		t.Fatalf("tie selection: %+v", p)
+	}
+	if !reflect.DeepEqual(original, ws) {
+		t.Fatal("planner mutated observed workers")
+	}
 }
 func TestSafeValidation(t *testing.T) {
 	c := config()
@@ -87,7 +94,9 @@ func TestSafeValidation(t *testing.T) {
 		observe([]Worker{{ID: "overflow", Connected: 1, Ready: true}}, math.MaxInt, 500, 256),
 	}
 	for i, o := range bad {
-		if _, err := Calculate(c, o); err == nil { t.Errorf("invalid observation %d accepted", i) }
+		if _, err := Calculate(c, o); err == nil {
+			t.Errorf("invalid observation %d accepted", i)
+		}
 	}
 	broken := c
 	broken.MaxWorkers = 129
@@ -96,15 +105,23 @@ func TestSafeValidation(t *testing.T) {
 	}
 	broken = c
 	broken.TargetPercent = 0
-	if _, err := Calculate(broken, observe(nil, 0, 500, 256)); err == nil { t.Fatal("invalid target") }
+	if _, err := Calculate(broken, observe(nil, 0, 500, 256)); err == nil {
+		t.Fatal("invalid target")
+	}
 }
 func TestColdStartAndZeroDemand(t *testing.T) {
 	c := config()
-	p, err := Calculate(c, observe(nil, 0, 1000, 1024))
-	if err != nil { t.Fatal(err) }
-	if p.Start != 1 || p.RequestedWorkers != 1 { t.Fatalf("min worker required: %+v", p) }
-	p, err = Calculate(c, observe(nil, 0, 0, 0))
-	if err != nil { t.Fatal(err) }
+	p, e := Calculate(c, observe(nil, 0, 1000, 1024))
+	if e != nil {
+		t.Fatal(e)
+	}
+	if p.Start != 1 || p.RequestedWorkers != 1 {
+		t.Fatalf("min worker required: %+v", p)
+	}
+	p, e = Calculate(c, observe(nil, 0, 0, 0))
+	if e != nil {
+		t.Fatal(e)
+	}
 	if p.Start != 0 || !p.LimitedByHost {
 		t.Fatalf("must not overcommit shared VPS: %+v", p)
 	}
