@@ -132,7 +132,7 @@ func ipcValidateBackend(id, raw string) (Backend, error) {
 		return Backend{}, ErrRegistryIPCConfig
 	}
 	ip := net.ParseIP(host)
-	if ip == nil || !(ip.IsPrivate() || ip.IsLoopback()) {
+	if ip == nil || (!ip.IsPrivate() && !ip.IsLoopback()) {
 		return Backend{}, ErrRegistryIPCConfig
 	}
 	r, err := NewRouter(id + "=" + raw)
@@ -212,7 +212,7 @@ func (c *RegistryIPCClient) request(ctx context.Context, op, method string, body
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrRegistryIPCUnavailable, err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		return fmt.Errorf("%w: HTTP %d", ErrRegistryIPCUnavailable, res.StatusCode)
 	}
