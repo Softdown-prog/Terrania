@@ -3,7 +3,6 @@ package raftlab
 import (
 	"bufio"
 	"bytes"
-	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -78,17 +77,9 @@ func runRaftNetworkWorker() error {
 		return err
 	}
 	defer listener.Close()
-	cert, err := tls.LoadX509KeyPair(filepath.Join(root, id, "cert.pem"), filepath.Join(root, id, "key.pem"))
+	cert, pool, err := ReadPrivateRaftIdentity(root, id)
 	if err != nil {
 		return err
-	}
-	pemCA, err := os.ReadFile(filepath.Join(root, "ca.pem"))
-	if err != nil {
-		return err
-	}
-	pool := x509.NewCertPool()
-	if !pool.AppendCertsFromPEM(pemCA) {
-		return ErrRaftPeerIdentity
 	}
 	dir := filepath.Join(root, id)
 	store, err := raftboltdb.New(raftboltdb.Options{
