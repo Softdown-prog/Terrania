@@ -99,7 +99,9 @@ func (c *Controller) Reconcile(ctx context.Context, now time.Time) (ReconcileRes
 	if sample.SampledAt.IsZero() || age < 0 || age > c.config.MaxSampleAge {
 		return ReconcileResult{}, ErrTelemetryStale
 	}
-	// Never spend the same CPU/RAM headroom twice when an observer repeats data.
+	// One complete observation may cause at most one transition. Otherwise
+	// repeated reconciliation on the SAME remaining-CPU/RAM reading could
+	// create many workers against resources that were free only once.
 	if !sample.SampledAt.After(c.lastProcessedSample) {
 		return ReconcileResult{Action: "duplicate-sample"}, nil
 	}
