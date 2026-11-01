@@ -6,6 +6,7 @@ on:
       - 'src/qa/**'
       - 'scripts/qa-bot.mjs'
       - 'tests/qa-bot.test.ts'
+      - 'tests/qa-combat.test.ts'
       - '.github/workflows/qa-bot.yml'
 permissions:
   contents: read
@@ -27,14 +28,21 @@ jobs:
             const r = JSON.parse(fs.readFileSync("qa-bot-report.json", "utf8"));
             const lines = [
               "### QA-BOT-001 (offline only)",
-              "Seed: " + r.seed + " | Ticks: " + r.ticks + " | Status: " + r.status,
-              "Checks: " + r.totals.passed + " passed, " + r.totals.failed +
-                " failed, " + r.totals.skipped + " skipped",
-              "Visited map tiles: " + r.totals.mapTilesVisited +
-                " | NPC interactions: " + r.totals.npcInteractions +
-                " | Interiors: " + r.totals.interiorsVisited,
+              "Seed: " + r.seed + " | Overall status: " + r.status,
+              "Exploration: " + r.exploration.totals.passed + " passed, " +
+                r.exploration.totals.failed + " failed, " +
+                r.exploration.totals.skipped + " skipped",
+              "Visited map tiles: " + r.exploration.totals.mapTilesVisited +
+                " | NPC interactions: " + r.exploration.totals.npcInteractions +
+                " | Interiors: " + r.exploration.totals.interiorsVisited,
+              "Training combat: " + r.combat.totals.passed + " passed, " +
+                r.combat.totals.failed + " failed, " +
+                r.combat.totals.skipped + " skipped",
+              "Kills: " + r.combat.kills + " | Gel: " + r.combat.gelCollected +
+                " | Potions used: " + r.combat.potionsUsed,
               "",
-              "No multiplayer, browser, combat, progression or VPS tested."
+              "Controlled offline encounters; natural spawns, multiplayer, " +
+                "browser, XP and VPS not tested."
             ];
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
           '

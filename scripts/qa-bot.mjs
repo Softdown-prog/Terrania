@@ -1,3 +1,4 @@
+import { runCombatQa } from "../src/qa/QaCombat.ts";
 import { runQaBot } from "../src/qa/QaBot.ts";
 function integerOption(name) {
   const item = process.argv.slice(2).find(arg => arg.startsWith(name + "="));
@@ -12,9 +13,21 @@ try {
   const args = {};
   if (seed !== undefined) args.seed = seed;
   if (maxTicks !== undefined) args.maxTicks = maxTicks;
-  const report = runQaBot(args);
+  const exploration = runQaBot(args);
+  const combat = runCombatQa(exploration.seed);
+  const status = exploration.status === "passed" && combat.status === "passed"
+    ? "passed" : (exploration.status === "failed" || combat.status === "failed"
+      ? "failed" : "incomplete");
+  const report = {
+    schemaVersion: 2,
+    botId: exploration.botId,
+    seed: exploration.seed,
+    status,
+    exploration,
+    combat,
+  };
   process.stdout.write(JSON.stringify(report, null, 2) + "\n");
-  if (process.argv.includes("--strict") && report.status !== "passed")
+  if (process.argv.includes("--strict") && status !== "passed")
     process.exitCode = 1;
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
