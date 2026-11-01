@@ -26,11 +26,11 @@ type WorkerRuntime interface {
 // WorkerDirectory is only allowed in the same trusted process (or via a
 // future authenticated IPC channel). No HTTP admin route is installed.
 type WorkerDirectory interface {
-	Register(cluster.Backend) error
-	SetReady(string, bool) error
-	Drain(string) error
-	Remove(string) error
-	Snapshot() []cluster.WorkerStatus
+	Register(context.Context, cluster.Backend) error
+	SetReady(context.Context, string, bool) error
+	Drain(context.Context, string) error
+	Remove(context.Context, string) error
+	Snapshot(context.Context) ([]cluster.WorkerStatus, error)
 }
 
 type managedWorker struct {
@@ -66,7 +66,11 @@ func (s *Supervisor) ProvisionOne(ctx context.Context, id string) error {
 	if _, exists := s.managed[id]; exists {
 		return ErrSupervisorExists
 	}
-	for _, w := range s.directory.Snapshot() {
+	snapshot, err := s.directory.Snapshot(ctx)
+	if err != nil {
+		return err
+	}
+	for _, w := range snapshot {
 		if w.ID == id {
 			return ErrSupervisorExists
 		}
@@ -119,14 +123,14 @@ func (s *Supervisor) ProvisionOne(ctx context.Context, id string) error {
 	if backend.ID != id || backend.URL == nil {
 		return cleanup(ErrDockerOwnership)
 	}
-	if err := s.directory.Register(backend); err != nil {
+	if err := s.directory.Register(ctx, backend); err != nil {
 		return cleanup(err)
 	}
-	if err := s.directory.SetReady(id, true); err != nil {
-		if drainErr := s.directory.Drain(id); drainErr != nil {
+	if err := s.directory.SetReady(ctx, id, true); err != nil {
+		if drainErr := s.directory.Drain(ctx, id); drainErr != nil {
 			return fmt.Errorf("failed to mark ready: %v; drain failed: %w", err, drainErr)
 		}
-		if removeErr := s.directory.Remove(id); removeErr != nil {
+		if removeErr := s.directory.Remove(ctx, id); removeErr != nil {
 			return fmt.Errorf("failed to mark ready: %v; registry removal failed: %w", err, removeErr)
 		}
 		return cleanup(err)
@@ -151,7 +155,11 @@ func (s *Supervisor) DrainOrStopOne(ctx context.Context, id string) (bool, error
 	if !owned.directoryRemoved {
 		found := false
 		var state cluster.WorkerStatus
-		for _, w := range s.directory.Snapshot() {
+		snapshot, err := s.directory.Snapshot(ctx)
+		if err != nil {
+			return false, err
+		}
+		for _, w := range snapshot {
 			if w.ID == id {
 				state = w
 				found = true
@@ -162,7 +170,7 @@ func (s *Supervisor) DrainOrStopOne(ctx context.Context, id string) (bool, error
 			return false, ErrWorkerMissingState
 		}
 		if !state.Draining {
-			if err := s.directory.Drain(id); err != nil {
+			if err := s.directory.Drain(ctx, id); err != nil {
 				return false, err
 			}
 			return false, nil
@@ -170,7 +178,7 @@ func (s *Supervisor) DrainOrStopOne(ctx context.Context, id string) (bool, error
 		if state.Clients != 0 || state.Rooms != 0 {
 			return false, ErrSupervisorBusy
 		}
-		if err := s.directory.Remove(id); err != nil {
+		if err := s.directory.Remove(ctx, id); err != nil {
 			return false, err
 		}
 		owned.directoryRemoved = true
