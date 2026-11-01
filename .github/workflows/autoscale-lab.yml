@@ -1,4 +1,4 @@
-name: Terrania one-VPS autoscaling registry (offline, no deploy)
+name: Terrania one-VPS autoscaling controller (offline, no deploy)
 on:
   push:
     branches: [main, 'feat/go-rust-ffi-*']
@@ -64,6 +64,6 @@ jobs:
           go build ./cmd/terrania
       - name: Summary (no Docker or VPS)
         run: |
-          echo '### Same-VPS elastic scaling: offline gateway integration' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Five race-enabled repetitions of policy, Docker mock, lifecycle supervisor, worker directory and WebSocket affinity/drain tests.' >> "$GITHUB_STEP_SUMMARY"
+          echo '### Same-VPS elastic scaling: offline decision-to-supervisor reconciliation' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Five race-enabled repetitions of policy, trusted-sample fencing, burst controller, Docker mock, lifecycle supervisor, worker directory and WebSocket affinity/drain tests.' >> "$GITHUB_STEP_SUMMARY"
           echo '**Docker Engine calls are mocked. Gateway production still uses static GO_SHARDS. No Docker socket, no VPS mutation and no running autoscaler daemon.**' >> "$GITHUB_STEP_SUMMARY"
