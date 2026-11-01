@@ -59,6 +59,16 @@ A nova `Controller.Reconcile(ctx, now)` conecta **`Calculate` → `Supervisor` �
 
 **Pontos ainda não resolvidos:** a coleta de CPU/RAM disponível na VPS compartilhada e backlog real de novos usuários; continuidade de identidade dos containers em restart; separação de privilégios do Docker; API privada autenticada de membership; ensaio Docker real; rate limits de conexão e proteção antiabuso. As cotas usadas pelos testes são sintéticas, não aferições da VPS.
 
+## Sonda Linux de CPU/RAM e canal Unix privado (laboratório)
+
+- `autoscale.NewLinuxHostObserver` lê **somente** `/proc/stat` e `/proc/meminfo` para calcular o intervalo de CPU ociosa e `MemAvailable`; exige **duas amostras** separadas por no mínimo um segundo, reserva parte da CPU e da RAM ao sistema operacional e aos **outros projetos da VPS** e aplica tetos absolutos. Usa `PendingSource` separado para a fila de admissões: **a fila real ainda não está conectada**. Não confunde um único número de jogadores virtuais com sockets.
+- O coletor deve executar **no namespace real do host**, com a quota de vCPU da VPS configurada explicitamente. Em container, `/proc` ou o cgroup podem refletir uma visão diferente e produzir uma estimativa inválida. Valores de reserva têm de ser aprovados com medições reais de RAM, CPU, swap, tráfego e cargas dos demais serviços. A política não garante sozinha ausência de OOM.
+- `cluster.NewRegistryIPCHandler` e `cluster.ListenRegistryIPC` permitem **somente em opt-in** um listener Unix privado, com pasta `0700`, socket `0600`, credencial bearer separada de pelo menos 32 caracteres e métodos estritamente limitados (`workers`, `register`, `ready`, `drain`, `remove`). O registro só aceita endereço HTTP em IP privado/loopback e porta do jogo `8788`, sem URL externa, domínio arbitrário ou parâmetros. Não há endpoint de administração no HTTP público.
+- `cluster.RegistryIPCClient` propaga erros de conexão e **deliberadamente não implementa** a interface `WorkerDirectory`, que hoje retorna snapshots sem erro. Adaptar a interface seria perigoso se uma falha de conexão passasse a ser vista como uma lista vazia de workers. **Antes da ativação é obrigatório modificar esse contrato** para não escalar ou remover com falha de IPC.
+- Os testes GitHub Actions usam fixtures sintéticas de `/proc` e sockets Unix de runner CI. **Não são medições da VPS real e não comandam Docker**. Eles verificam reservas, dados malformados, amostras de CPU antigas, autenticação, bloqueio de endpoints externos e proibição de remover workers ocupados.
+
+**Ainda não integrado à produção:** inicialização do listener no gateway, processo local separado para coletor e controller, canal de comando durável, emissão e rotação das credenciais do IPC, monitoramento de cgroups/OOM, limite de fila e proteção contra abuso, persistência e reconciliação de identidade após restart e testes de containers reais. Não instalar o listener dentro de uma interface pública nem compartilhar a credencial com o frontend.
+
 ## Ciclo de vida pretendido
 
 1. O controlador recebe métricas confiáveis (conexões ativas **por worker**, backlog de admissões, RAM/CPU realmente livres e timestamps). Métricas desatualizadas devem impedir mudanças, jamais autorizar um scale-out infinito.
