@@ -141,7 +141,7 @@ func TestControllerRejectsStaleFutureOrInvalidTelemetry(t *testing.T) {
 }
 func TestControllerRejectsCanceledContextAndBadConfiguration(t *testing.T) {
 	host := &fakeHostObserver{sample: HostSample{SampledAt: when(), Queued: 100, FreeCPUMilli: 1500, FreeMemoryMiB: 768}}
-	c, _, reg, runtime := controllerForTest(t, host)
+	c, _, _, runtime := controllerForTest(t, host)
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	if _, err := c.Reconcile(ctx, when()); !errors.Is(err, context.Canceled) {
