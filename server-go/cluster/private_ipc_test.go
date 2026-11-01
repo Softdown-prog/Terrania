@@ -15,7 +15,11 @@ import (
 const ipcTestToken = "51b8dd2dbe796d24576b7a2c6d3810b6e44f707e5e514edeb9604d588bb7b14"
 
 func TestRegistryIPCUnixSocketAuthenticatesAndDrains(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "gateway.sock")
+	parent := filepath.Join(t.TempDir(), "private")
+	if err := os.Mkdir(parent, 0700); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(parent, "gateway.sock")
 	reg, err := NewWorkerRegistry(48, 8)
 	if err != nil {
 		t.Fatal(err)
@@ -88,7 +92,11 @@ func mustIPCURL(t *testing.T, raw string) *url.URL {
 }
 
 func TestRegistryIPCRejectsUntrustedClientsAndPublicBackends(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "gateway.sock")
+	parent := filepath.Join(t.TempDir(), "private")
+	if err := os.Mkdir(parent, 0700); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(parent, "gateway.sock")
 	reg, _ := NewWorkerRegistry(48, 8)
 	handler, _ := NewRegistryIPCHandler(reg, ipcTestToken)
 	listener, err := ListenRegistryIPC(path)
