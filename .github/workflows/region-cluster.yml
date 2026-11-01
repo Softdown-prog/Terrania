@@ -92,9 +92,9 @@ jobs:
       - name: Enforce gofmt in isolated Raft module
         run: |
           set -euo pipefail
-          gofmt -w fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go
-          if [[ -n "$(git status --porcelain -- fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go)" ]]; then
-            for file in fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go; do
+          gofmt -w fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go network_node.go network_node_test.go
+          if [[ -n "$(git status --porcelain -- fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go network_node.go network_node_test.go)" ]]; then
+            for file in fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go network_node.go network_node_test.go; do
               echo "RAFT_FORMATTED_FILE=server-go/cluster/raftlab/$file BASE64=$(base64 -w0 "$file")"
             done
             exit 1

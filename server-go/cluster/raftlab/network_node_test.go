@@ -2,7 +2,6 @@ package raftlab
 
 import (
 	"errors"
-	"io"
 	"net"
 	"reflect"
 	"testing"
@@ -167,5 +166,4 @@ func TestRaftNetworkRejectsInvalidMembershipBeforeStartingTransport(t *testing.T
 		if node!=nil{_ = node.Close()}
 		t.Fatalf("uninitialized store silently started: %v",err)
 	}
-	_ = io.Discard
 }
