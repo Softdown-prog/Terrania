@@ -17,6 +17,22 @@ A meta é **38 jogadores por container** (80% de 48, arredondado para baixo), co
 
 O valor real de `MaxWorkers` tem de ser calculado sobre RAM/CPU **disponíveis após reservar margem para SO, painel e TODOS os outros projetos**, e sobre benchmarks reais a 20 ticks/s, latência, snapshots, GC e banda. O gateway atual suporta no máximo 128 entradas estáticas e não é um controlador de escalabilidade.
 
+## Registry e afinidade implementados na etapa seguinte
+
+O módulo `cluster.WorkerRegistry` é um **diretório dinâmico em memória e exclusivo de um gateway**: `Register`, `SetReady`, `Acquire`, `Drain`, `Remove` e `Snapshot`. A admissão reserva atomica­mente uma sessão no worker e fornece uma função idempotente de liberação. O diretório limita clientes e salas por worker e nunca move uma sala enquanto uma conexão estiver ativa. A escolha de uma sala nova privilegia ocupação menor e desempate determinístico.
+
+O gateway tem a entrada experimental `gatewayHandlerWithRegistry`, testada com um `httptest.Server` para cada worker, **WebSockets reais e proxy HTTP**, enquanto o binário real continua chamando `gatewayHandlerWithLobby` com `staticWorkerSource` e `GO_SHARDS`. Não há endpoint HTTP para gestão de membership nem acionamento de Docker. O diretório recusa remover worker ocupado e fecha a entrada para novas sessões quando ele está em drain; conexões existentes continuam até encerrar. Uma reconexão a sala em drain recebe indisponibilidade, **não é silenciosamente transferida**.
+
+**Limitação deliberada:** `WorkerRegistry` perde a tabela de ownership após reinício do gateway; não é HA, não persiste autoridade do jogo nem deve ser usado com dois gateways simultâneos. Um futuro supervisor deverá controlar estado durável, verificar readiness real, atualizar novas salas, garantir limite de CPU/RAM e reconciliar o Docker. Limites de 128 backends do roteador ainda se aplicam. Nenhum container é criado ou removido nesta etapa.
+
+Verificação:
+```sh
+cd server-go
+go test -race -count=5 ./cluster -run '^TestRegistry'
+go test -race -count=5 ./cmd/gateway -run '^TestGatewayDynamic'
+go test -count=1 ./...
+```
+
 ## Ciclo de vida pretendido
 
 1. O controlador recebe métricas confiáveis (conexões ativas **por worker**, backlog de admissões, RAM/CPU realmente livres e timestamps). Métricas desatualizadas devem impedir mudanças, jamais autorizar um scale-out infinito.
