@@ -121,6 +121,8 @@ export class Game {
   private applySnapshot(self: HeroState): void {
     const player = this.sim.player,
       distance = Math.hypot(self.x - player.x, self.y - player.y);
+    // A correção autoritativa pode invalidar uma rota local iniciada por toque.
+    if (distance > 100) this.navigator.cancel();
     const factor = distance > 100 ? 1 : 0.35;
     player.x += (self.x - player.x) * factor;
     player.y += (self.y - player.y) * factor;
@@ -193,10 +195,10 @@ export class Game {
     const manual = paused ? { x: 0, y: 0 } : this.input.movement();
     const attack = !paused && this.input.consumeAttack();
     const manualActive = Math.hypot(manual.x, manual.y) > 0.02;
-    if (paused || manualActive || attack || (online && !this.interior))
-      this.navigator.cancel();
+    if (paused || manualActive || attack) this.navigator.cancel();
     const tap = this.input.consumeTap();
-    if (tap && !paused && !manualActive && !attack && (!online || this.interior)) {
+    // O servidor recebe somente vetores de movimento e segue autoritativo no multiplayer.
+    if (tap && !paused && !manualActive && !attack) {
       const destination = this.interior
         ? this.scene.interiorPoint(tap)
         : this.scene.worldPoint(tap, this.camera);
