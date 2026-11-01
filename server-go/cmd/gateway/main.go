@@ -22,16 +22,39 @@ func gatewayHandler(router *cluster.Router, allowed map[string]bool) http.Handle
 }
 
 func gatewayHandlerWithLobby(router *cluster.Router,allowed map[string]bool,l *lobby) http.Handler {
+	return gatewayHandlerWithSource(staticWorkerSource{router: router},allowed,l)
+}
+
+// gatewayHandlerWithRegistry is a laboratory entrypoint only. The public
+// binary keeps GO_SHARDS fixed until an authenticated local reconciler exists.
+func gatewayHandlerWithRegistry(registry *cluster.WorkerRegistry,allowed map[string]bool,l *lobby) http.Handler {
+	return gatewayHandlerWithSource(registry,allowed,l)
+}
+
+type gatewayWorkerSource interface {
+	Acquire(string) (cluster.Backend,func(),error)
+	Backends() []cluster.Backend
+	Count() int
+}
+
+type staticWorkerSource struct {router *cluster.Router}
+func (s staticWorkerSource) Acquire(room string) (cluster.Backend,func(),error) {
+	return s.router.Pick(room),func(){},nil
+}
+func (s staticWorkerSource) Backends() []cluster.Backend { return s.router.Backends() }
+func (s staticWorkerSource) Count() int { return s.router.Count() }
+
+func gatewayHandlerWithSource(source gatewayWorkerSource,allowed map[string]bool,l *lobby) http.Handler {
 	mux:=http.NewServeMux()
 	mux.HandleFunc("/presence", presence.Handler(allowed, "cluster", func(ctx context.Context) (int, int, error) {
-		workers := make([]string, 0, router.Count())
-		for _, node := range router.Backends() { workers = append(workers, node.URL.String()) }
+		workers := make([]string, 0, source.Count())
+		for _, node := range source.Backends() { workers = append(workers, node.URL.String()) }
 		return presence.Collect(ctx, workers)
 	}))
 	mux.HandleFunc("/health",func(w http.ResponseWriter,r *http.Request){
 		w.Header().Set("Content-Type","application/json")
 		w.Header().Set("Cache-Control","no-store")
-		_ = json.NewEncoder(w).Encode(map[string]any{"status":"ok","gateway":"go","workers":router.Count()})
+		_ = json.NewEncoder(w).Encode(map[string]any{"status":"ok","gateway":"go","workers":source.Count()})
 	})
 	mux.HandleFunc("/capacity",func(w http.ResponseWriter,r *http.Request){
 		if r.Method!=http.MethodGet {http.Error(w,"method not allowed",http.StatusMethodNotAllowed);return}
@@ -40,7 +63,7 @@ func gatewayHandlerWithLobby(router *cluster.Router,allowed map[string]bool,l *l
 		w.Header().Set("Content-Type","application/json")
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"active":active,"rooms":rooms,"maxClients":l.maxClients,
-			"maxRooms":l.maxRooms,"roomSize":l.maxPerRoom,"workers":router.Count(),
+			"maxRooms":l.maxRooms,"roomSize":l.maxPerRoom,"workers":source.Count(),
 			"scope":"single-gateway-admission-only",
 		})
 	})
@@ -62,7 +85,12 @@ func gatewayHandlerWithLobby(router *cluster.Router,allowed map[string]bool,l *l
 		q:=r.URL.Query()
 		q.Set("room",allocated)
 		r.URL.RawQuery=q.Encode()
-		node:=router.Pick(allocated)
+		node,releaseNode,err:=source.Acquire(allocated)
+		if err!=nil {
+			http.Error(w,"no ready game worker",http.StatusServiceUnavailable)
+			return
+		}
+		defer releaseNode() // release after the reverse-proxied WebSocket closes.
 		// Fixed, admin-controlled upstream only. No URL in the client can override it.
 		proxy:=httputil.NewSingleHostReverseProxy(node.URL)
 		proxy.FlushInterval=-1
@@ -94,7 +122,7 @@ func main(){
 	if err!=nil {log.Fatal(err)}
 	srv:=&http.Server{Addr:":"+port,Handler:gatewayHandlerWithLobby(router,allowed,newLobby(maxPlayers,maxRooms,12)),
 		ReadHeaderTimeout:5*time.Second}
-	log.Printf("Terrania Go gateway listening on :%s with %d workers",port,router.Count())
+	log.Printf("Terrania Go gateway listening on :%s with %d workers",port,source.Count())
 	log.Fatal(srv.ListenAndServe())
 }
 
