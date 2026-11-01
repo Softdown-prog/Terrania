@@ -194,8 +194,11 @@ func (d *DockerDriver) ReadyBackend(ctx context.Context,workerID,containerID str
 // StopAndRemove requires the exact local container ID and ownership labels.
 // The coordinator MUST remove the drained worker from admissions FIRST.
 func (d *DockerDriver) StopAndRemove(ctx context.Context,workerID,containerID string)error{
-	if _,err:=d.inspect(ctx,workerID,containerID);err!=nil {return err}
-	if err:=d.request(ctx,http.MethodPost,"/containers/"+containerID+"/stop?t=10",nil,nil);err!=nil {return err}
+	info,err:=d.inspect(ctx,workerID,containerID)
+	if err!=nil {return err}
+	if info.State.Running {
+		if err:=d.request(ctx,http.MethodPost,"/containers/"+containerID+"/stop?t=10",nil,nil);err!=nil {return err}
+	}
 	if _,err:=d.inspect(ctx,workerID,containerID);err!=nil {return err}
 	return d.request(ctx,http.MethodDelete,"/containers/"+containerID+"?force=false&v=false",nil,nil)
 }
