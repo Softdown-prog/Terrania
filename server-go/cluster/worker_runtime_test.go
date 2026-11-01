@@ -280,7 +280,7 @@ func TestGuardedRoomRejectsRecoveredEpochWithoutReconciliation(t *testing.T) {
 		t.Fatal("coordinator close ignored")
 	}
 	reopened := persistentDirectory(t, path)
-	defer reopened.Close()
+	defer func() { _ = reopened.Close() }()
 	if staged, err := NewGuardedRoom(reopened, p, "east", 1, engine.NewRoom("origins")); staged != nil || !errors.Is(err, ErrRoomNotAuthoritative) {
 		if staged != nil {
 			staged.Close()
