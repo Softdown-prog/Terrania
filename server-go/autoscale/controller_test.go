@@ -132,5 +132,5 @@ func TestControllerSerializedConcurrentReconcile(t *testing.T){
 	wg.Wait()
 	close(errorsOut)
 	for err:=range errorsOut{if err!=nil{t.Fatal(err)}}
-	if runtime.created!=3 || reg.Count()!=3 {t.Fatalf("expected bounded three workers? created=%d count=%d",runtime.created,reg.Count())}
+	if runtime.created!=1 || reg.Count()!=1 {t.Fatalf("duplicate telemetry caused extra workers: created=%d count=%d",runtime.created,reg.Count())}
 }
