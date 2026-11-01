@@ -95,6 +95,7 @@ jobs:
           gofmt -w fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go network_node.go network_node_test.go process_test.go tls_identity.go tls_identity_test.go identity_files.go identity_files_test.go
           if [[ -n "$(git status --porcelain -- fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go network_node.go network_node_test.go process_test.go tls_identity.go tls_identity_test.go identity_files.go identity_files_test.go)" ]]; then
             for file in $(git diff --name-only -- fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go network_node.go network_node_test.go process_test.go tls_identity.go tls_identity_test.go identity_files.go identity_files_test.go); do
+              file="${file#server-go/cluster/raftlab/}"
               echo "RAFT_FORMATTED_FILE=server-go/cluster/raftlab/$file BASE64=$(base64 -w0 "$file")"
             done
             exit 1
