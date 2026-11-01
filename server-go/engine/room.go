@@ -27,6 +27,8 @@ type Room struct {
 	defeated map[string]bool
 	defeatedOrder []string
 	spawnClock float64
+	monsterBuffers monsterScratch // only the room's Tick goroutine may use this
+	entityArena roomEntityArena // optional Rust-owned mirror, room-local
 }
 
 func NewRoom(id string) *Room {
@@ -106,15 +108,16 @@ func (r *Room) Tick(dt float64,now time.Time) {
 			}
 		}
 	}
-	for _,mob:=range r.mobsInOrder() {
-		near:=closestGuest(guests,mob.X,mob.Y)
-		if near!=nil { mob.Update(dt,near.Actor,r.World) }
+	mobs := r.mobsInOrder()
+	stepMonstersWithScratch(guests, mobs, dt, r.World, &r.monsterBuffers)
+	for _,mob:=range mobs {
 		keep:=false
 		for _,g:=range guests {
 			if math.Hypot(g.Actor.X-mob.X,g.Actor.Y-mob.Y)<ChunkPixels*2.5 { keep=true;break }
 		}
 		if !keep { r.removeMob(mob.ID) }
 	}
+	r.entityArena.syncRoom(r)
 	for _,g:=range guests {
 		if g.Actor.HP<=0 {
 			g.Actor=NewPlayer()
@@ -161,3 +164,7 @@ func (r *Room) SnapshotFor(id string) *Snapshot {
 
 // Contagem observavel por testes e telemetria sem expor mapas mutaveis.
 func (r *Room) MobCount() int { return len(r.mobs) }
+
+// Close releases native room-local resources; call after the last room Tick.
+// It is safe to call repeatedly while holding the owning room's lock.
+func (r *Room) Close() { r.entityArena.close() }

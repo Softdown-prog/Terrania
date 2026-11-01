@@ -1,0 +1,236 @@
+name: Terrania full pre-main validation (single run, no deploy)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'feat/go-rust-ffi-opt-in-bench'
+    paths:
+      - '.github/workflows/pre-main-suite.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'server-go/**'
+      - 'rust/spatial-kernel/**'
+      - 'server/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/pre-main-suite.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terrania-pre-main-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go-core-autoscale:
+    name: 1/6 Go, cluster, autoscale, parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/go.mod
+          cache-dependency-path: server-go/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Strict formatting of autoscaling and IPC files
+        run: |
+          set -euo pipefail
+          files=$(gofmt -l server-go/autoscale/*.go server-go/cluster/private_ipc*.go server-go/cluster/worker_registry*.go server-go/cmd/gateway/dynamic_registry_test.go)
+          if [ -n "$files" ]; then
+            printf 'Unformatted autoscale / IPC sources: %s\n' "$files"
+            exit 1
+          fi
+      - name: Verify, vet, all Go tests and race detector
+        working-directory: server-go
+        run: |
+          set -euo pipefail
+          go mod verify
+          go vet ./...
+          go test -race -count=1 -timeout=5m ./...
+          go test -race -count=5 -timeout=5m ./autoscale ./cluster ./cmd/gateway
+          go build -o /tmp/terrania-pre-main-gateway ./cmd/gateway
+          go build -o /tmp/terrania-pre-main-worker ./cmd/terrania
+      - name: Simulation and gameplay parity vs TypeScript
+        run: |
+          set -euo pipefail
+          node --experimental-strip-types server-go/scripts/ts-reference.mjs >/tmp/terrania-ts.json
+          (cd server-go && go run ./cmd/parity) >/tmp/terrania-go.json
+          node server-go/scripts/compare.mjs /tmp/terrania-ts.json /tmp/terrania-go.json
+          node --experimental-strip-types server-go/scripts/gameplay-reference.mjs >/tmp/terrania-gameplay-ts.json
+          (cd server-go && go run ./cmd/gameplay-parity) >/tmp/terrania-gameplay-go.json
+          node server-go/scripts/compare.mjs /tmp/terrania-gameplay-ts.json /tmp/terrania-gameplay-go.json
+      - name: Record test inventory
+        run: |
+          echo "### Go / autoscale" >> "$GITHUB_STEP_SUMMARY"
+          echo "Go test source files (main module): $(find server-go -name '*_test.go' ! -path '*/raftlab/*' | wc -l)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Race-enabled Go tests, gateway, worker builds and parity are required to pass." >> "$GITHUB_STEP_SUMMARY"
+
+  raft-quorum:
+    name: 2/6 Raft quorum and recovery
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: server-go/cluster/raftlab
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/cluster/raftlab/go.mod
+          cache: false
+      - name: Raft formatting and pinned modules
+        run: |
+          set -euo pipefail
+          go mod verify
+          files=$(find . -name '*.go' -print0 | xargs -0 gofmt -l)
+          test -z "$files" || { echo "$files"; exit 1; }
+          go vet ./...
+      - name: Raft all tests and concurrent stress
+        run: |
+          set -euo pipefail
+          go test -race -count=1 -timeout=220s ./...
+          go test -race -count=3 -timeout=90s -run '^(TestRaftLabLocalIdentity|TestRaftLabPrivateCredential)' ./...
+          echo "### Raft: all tests passed under Go race detector" >> "$GITHUB_STEP_SUMMARY"
+
+  rust-and-ffi:
+    name: 3/6 Rust, Clippy, Go FFI
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/go.mod
+          cache-dependency-path: server-go/go.sum
+      - name: Rust formatting, lint, all tests and release build
+        run: |
+          set -euo pipefail
+          cargo fmt --manifest-path rust/spatial-kernel/Cargo.toml --all --check
+          cargo clippy --manifest-path rust/spatial-kernel/Cargo.toml --locked --all-targets -- -D warnings
+          cargo test --manifest-path rust/spatial-kernel/Cargo.toml --locked --all-targets
+          cargo build --manifest-path rust/spatial-kernel/Cargo.toml --locked --release
+          cargo test --manifest-path rust/spatial-kernel/Cargo.toml --locked --release arena_200k
+          cargo test --manifest-path rust/spatial-kernel/Cargo.toml --locked --release ffi_200k
+      - name: Go/Rust opt-in build tags with race detector
+        working-directory: server-go
+        env:
+          CGO_ENABLED: '1'
+        run: |
+          set -euo pipefail
+          go test -race -count=1 -tags rustspatial ./...
+          go test -race -count=1 -tags rustmonsters ./...
+          go test -race -count=1 -tags 'rustspatial rustmonsters' ./...
+          go test -race -count=1 -tags rustarena ./...
+          go test -race -count=1 -tags 'rustmonsters rustarena' ./...
+          go vet -tags rustspatial ./...
+          go build -tags rustspatial -o /tmp/terrania-ffi ./cmd/terrania
+          go build -tags rustmonsters -o /tmp/terrania-monsters ./cmd/terrania
+
+  ui-and-node:
+    name: 4/6 Angular, Phaser, Node
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: All web and multiplayer tests
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npm ci --prefix server --no-audit --no-fund
+          npm run typecheck
+          npm test
+          npm run build
+          npm run typecheck --prefix server
+          npm test --prefix server
+          npm run build --prefix server
+          echo "### Web UI and Node: typechecks, tests and builds passed" >> "$GITHUB_STEP_SUMMARY"
+
+  browser-e2e:
+    name: 5/6 Chromium browser desktop and Android
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install isolated test dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npm ci --prefix server --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Playwright browser suites (no VPS)
+        run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: terrania-pre-main-playwright-failures
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  capacity-and-containers:
+    name: 6/6 Capacity, 1000 WS, local Docker smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/go.mod
+          cache-dependency-path: server-go/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Offline capacity and 1000 WebSocket admissions
+        working-directory: server-go
+        env:
+          TEST_1000_CONNECTIONS: '1'
+        run: |
+          set -euo pipefail
+          go test -race -count=1 -timeout=5m ./cmd/capacity-lab
+          go test -count=1 -timeout=120s ./cmd/terrania -run '^TestThousandConnectionsAdmission$' -v
+          mkdir -p /tmp/terrania-pre-main-capacity
+          go run ./cmd/capacity-lab -entities=100000 -players=10000 -ticks=3 -target-samples=10000 -report=/tmp/terrania-pre-main-capacity/100k.json >/dev/null
+          go run ./cmd/capacity-lab -entities=1000000 -players=100000 -ticks=3 -target-samples=25000 -report=/tmp/terrania-pre-main-capacity/1m.json >/dev/null
+          go run ./cmd/capacity-lab -entities=10000000 -players=1000000 -ticks=3 -target-samples=100000 -memory-guard-mib=768 -report=/tmp/terrania-pre-main-capacity/10m.json >/dev/null
+      - name: Build and probe Go worker Docker image locally
+        run: |
+          set -euo pipefail
+          docker build -f server-go/Dockerfile -t terrania-premain-go:ci .
+          docker run -d --name terrania-premain-go -p 127.0.0.1:18788:8788 \
+            --memory=256m --cpus=0.50 \
+            -e NODE_ENV=production -e ALLOWED_ORIGINS=https://rpg.example.com terrania-premain-go:ci
+          trap 'docker rm -f terrania-premain-go >/dev/null 2>&1 || true' EXIT
+          ready=0
+          for i in $(seq 1 30); do
+            if curl -fsS --max-time 2 http://127.0.0.1:18788/health | grep -q '"engine":"go"'; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then docker logs terrania-premain-go; exit 1; fi
+          echo "Go worker Docker health passed on isolated GitHub runner." >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terrania-pre-main-capacity
+          path: /tmp/terrania-pre-main-capacity/*.json
+          if-no-files-found: ignore
+          retention-days: 7

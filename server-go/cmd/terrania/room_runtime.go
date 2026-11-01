@@ -36,6 +36,8 @@ func newRoomSession(id string) *roomSession {
 func (s *gameServer) runRoom(ctx context.Context, rs *roomSession) {
 	ticker:=time.NewTicker(50*time.Millisecond)
 	defer ticker.Stop()
+	// Wait for any in-flight tick or disconnect before freeing the optional Rust arena.
+	defer func() { rs.mu.Lock(); rs.room.Close(); rs.mu.Unlock() }()
 	previous:=time.Now()
 	frame:=0
 	for {

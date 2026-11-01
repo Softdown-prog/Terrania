@@ -1,0 +1,109 @@
+name: Terrania regional cluster protocol (offline, no deploy)
+on:
+  pull_request:
+    paths:
+      - 'server-go/cluster/**'
+      - 'server-go/engine/room_state*.go'
+      - 'docs/REGION-CLUSTER.md'
+      - '.github/workflows/region-cluster.yml'
+  push:
+    branches: [main, 'feat/go-rust-ffi-*']
+    paths:
+      - 'server-go/cluster/**'
+      - 'server-go/engine/room_state*.go'
+      - 'docs/REGION-CLUSTER.md'
+      - '.github/workflows/region-cluster.yml'
+permissions:
+  contents: read
+jobs:
+  region-protocol:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/go.mod
+          cache-dependency-path: server-go/go.sum
+      - name: Enforce gofmt for new cluster and codec code
+        run: |
+          set -euo pipefail
+          gofmt -w server-go/cluster/handoff.go server-go/cluster/region.go server-go/cluster/region_handoff_test.go server-go/cluster/transfer_wire.go server-go/cluster/transfer_wire_test.go server-go/cluster/room_codec_test.go server-go/cluster/region_journal.go server-go/cluster/region_journal_test.go server-go/engine/room_state.go server-go/engine/room_state_test.go server-go/cluster/snapshot_archive.go server-go/cluster/snapshot_archive_test.go server-go/cluster/archive_wire_test.go server-go/cluster/recovery_inspect.go server-go/cluster/worker_runtime.go server-go/cluster/worker_runtime_test.go server-go/cluster/worker_lease.go server-go/cluster/worker_lease_test.go server-go/cluster/worker_lease_wire.go server-go/cluster/worker_lease_wire_test.go server-go/cluster/grant_coordinator.go server-go/cluster/grant_coordinator_test.go server-go/cluster/election_vote.go server-go/cluster/election_vote_test.go server-go/cluster/replica_log.go server-go/cluster/replica_log_test.go server-go/cluster/replica_freshness.go server-go/cluster/replica_freshness_test.go server-go/cluster/replica_freshness_restart_test.go
+          if ! git diff --quiet -- server-go/cluster server-go/engine/room_state.go server-go/engine/room_state_test.go; then
+            echo 'Go source requires gofmt; generated formatting follows:'
+            for file in $(git diff --name-only -- server-go/cluster server-go/engine/room_state.go server-go/engine/room_state_test.go); do
+              echo "FORMATTED_FILE=${file} BASE64=$(base64 -w0 "$file")"
+            done
+            exit 1
+          fi
+      - name: Strict checks and concurrency tests
+        working-directory: server-go
+        run: |
+          set -euo pipefail
+          go mod verify
+          go vet ./cluster ./cmd/gateway ./cmd/terrania
+          go test -race -count=1 ./cluster -run '^TestJournal' -v
+          go test -race -count=1 ./cluster -run '^(TestArchive|TestArchived|TestDurable)' -v
+          go test -race -count=3 ./cluster -run '^(TestGuardedRoom|TestConcurrentRoomTick|TestRegionExecutionGates|TestCaptureAndFreeze|TestStagedRoom|TestRoomTransferNetwork)' -v
+          go test -race -count=3 ./cluster -run '^(TestWorkerLease|TestPrivateLeaseTransport|TestRemoteMTLSRevoke|TestDisconnectedWorker|TestWorkerRevocation|TestWorkerGates)' -v
+          go test -race -count=2 ./cluster -run '^TestGrantCoordinator' -v
+          go test -race -count=3 ./cluster -run '^TestElection' -v
+          go test -race -count=3 ./cluster -run '^TestReplica' -v
+          go test -race -count=3 ./cluster -run '^TestFreshElection' -v
+          go test -race -count=3 ./cluster -run '^TestFreshElectionFsyncedTip' -v
+          go test -race -count=1 ./cluster ./cmd/gateway ./cmd/terrania
+          go test -count=1 ./...
+          go build ./cmd/gateway
+          go build ./cmd/terrania
+      - name: Stress multi-region transfer isolation
+        working-directory: server-go
+        run: |
+          set -euo pipefail
+          go test -race -count=3 ./cluster -run '^(TestParallelProvinceTransfersRemainIsolated|TestConcurrentPrivateSnapshotsBoundedByStagingBudget|TestPrivateSnapshotHTTPSMutualTLSAndCommit|TestPrivateWireCarriesRestorableGoRoom)$' -v
+          echo '### Region ownership prototype — local only' >> "$GITHUB_STEP_SUMMARY"
+          echo '512 regions x 3 concurrent transfer tests and live engine state roundtrip, with the Go race detector.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Durable log-aware election safety and bounded same-term replica catch-up tested offline. Not Raft, no production leader/worker activation or VPS deploy.' >> "$GITHUB_STEP_SUMMARY"
+
+  raftlab-offline:
+    name: Raft library quorum laboratory (no deploy)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: server-go/cluster/raftlab
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/cluster/raftlab/go.mod
+          cache: false
+      - name: Verify pinned Raft module graph
+        run: |
+          set -euo pipefail
+          go mod tidy
+          if [[ -n "$(git status --porcelain -- go.mod go.sum)" ]]; then
+            echo 'Raft laboratory module graph is not committed'
+            for file in go.mod go.sum; do
+              echo "RAFT_MODULE_FILE=server-go/cluster/raftlab/$file BASE64=$(base64 -w0 "$file")"
+            done
+            exit 1
+          fi
+          go mod verify
+      - name: Enforce gofmt in isolated Raft module
+        run: |
+          set -euo pipefail
+          gofmt -w fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go network_node.go network_node_test.go process_test.go tls_identity.go tls_identity_test.go identity_files.go identity_files_test.go
+          if [[ -n "$(git status --porcelain -- fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go network_node.go network_node_test.go process_test.go tls_identity.go tls_identity_test.go identity_files.go identity_files_test.go)" ]]; then
+            for file in $(git diff --name-only -- fsm.go cluster.go cluster_test.go durable.go durable_test.go tls_layer.go tls_layer_test.go network_node.go network_node_test.go process_test.go tls_identity.go tls_identity_test.go identity_files.go identity_files_test.go); do
+              file="${file#server-go/cluster/raftlab/}"
+              echo "RAFT_FORMATTED_FILE=server-go/cluster/raftlab/$file BASE64=$(base64 -w0 "$file")"
+            done
+            exit 1
+          fi
+      - name: Raft consensus and partition tests with race detector
+        run: |
+          set -euo pipefail
+          go vet ./...
+          go test -race -count=3 -timeout=90s -run '^(TestRaftLabLocalIdentity|TestRaftLabPrivateCredential)' ./...
+          go test -race -count=1 -timeout=220s ./...
+          go test -count=1 -timeout=220s ./...

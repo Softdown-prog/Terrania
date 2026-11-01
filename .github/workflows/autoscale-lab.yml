@@ -1,0 +1,71 @@
+name: Terrania one-VPS host telemetry and private IPC (offline, no deploy)
+on:
+  push:
+    branches: [main, 'feat/go-rust-ffi-*']
+    paths:
+      - 'server-go/autoscale/**'
+      - 'server-go/cluster/worker_registry*.go'
+      - 'server-go/cluster/private_ipc*.go'
+      - 'server-go/cmd/gateway/main.go'
+      - 'server-go/cmd/gateway/dynamic_registry_test.go'
+      - 'docs/AUTOSCALING-ONE-VPS.md'
+      - '.github/workflows/autoscale-lab.yml'
+  pull_request:
+    paths:
+      - 'server-go/autoscale/**'
+      - 'server-go/cluster/worker_registry*.go'
+      - 'server-go/cluster/private_ipc*.go'
+      - 'server-go/cmd/gateway/main.go'
+      - 'server-go/cmd/gateway/dynamic_registry_test.go'
+      - 'docs/AUTOSCALING-ONE-VPS.md'
+      - '.github/workflows/autoscale-lab.yml'
+permissions:
+  contents: read
+jobs:
+  policy-and-registry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server-go/go.mod
+          cache-dependency-path: server-go/go.sum
+      - name: Strict Go formatting of modified sources
+        run: |
+          set -euo pipefail
+          changed=0
+          for file in server-go/autoscale/*.go server-go/cluster/worker_registry.go server-go/cluster/worker_registry_test.go server-go/cluster/private_ipc*.go server-go/cmd/gateway/main.go server-go/cmd/gateway/dynamic_registry_test.go; do
+            if [[ -n "$(gofmt -l "$file")" ]]; then
+              gofmt -w "$file"
+              echo "FORMAT_REQUIRED=$file"
+              echo "FORMATTED_SOURCE_BASE64=$file:$(base64 -w0 "$file")"
+              changed=1
+            fi
+          done
+          if [[ "$changed" != 0 ]]; then
+            echo "Formatting required; no checkout changes will be published."
+            exit 1
+          fi
+      - name: Vet, autoscale decision policy and race-detector stress
+        working-directory: server-go
+        run: |
+          set -euo pipefail
+          go mod verify
+          go vet ./autoscale ./cluster ./cmd/gateway
+          go test -race -count=5 ./autoscale -v
+          go test -race -count=5 ./cluster -run '^TestRegistry' -v
+          go test -race -count=5 ./cmd/gateway -run '^TestGatewayDynamic' -v
+      - name: All Go package regressions and gateway build
+        working-directory: server-go
+        run: |
+          set -euo pipefail
+          go test -race -count=1 ./cmd/gateway ./autoscale ./cluster
+          go test -count=1 ./...
+          go build ./cmd/gateway
+          go build ./cmd/terrania
+      - name: Summary (no Docker or VPS)
+        run: |
+          echo '### Same-VPS elastic scaling: offline decision-to-supervisor reconciliation' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Five race-enabled repetitions of policy, Linux /proc CPU/RAM reserve probes, authenticated Unix IPC, trusted-sample fencing, burst controller, Docker mock, worker directory and WebSocket tests.' >> "$GITHUB_STEP_SUMMARY"
+          echo '**Docker Engine calls are mocked. Linux /proc is exercised with controlled fixtures, not VPS metrics. IPC is Unix-only laboratory code, not wired to the production gateway. No VPS mutation or daemon.**' >> "$GITHUB_STEP_SUMMARY"

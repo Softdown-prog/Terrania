@@ -37,3 +37,110 @@ func BenchmarkRoomSnapshot12Players(b *testing.B) {
         if state:=r.SnapshotFor("player-00");state==nil {b.Fatal("snapshot missing")}
     }
 }
+
+
+// BenchmarkRoomSnapshot1000Players is a deliberately adversarial single-room
+// snapshot with 1000 visible entities. It is NOT a 1000-concurrent-user load test.
+// The normal room size and networking behavior are measured separately.
+func BenchmarkRoomSnapshot1000Players(b *testing.B) {
+	r := NewRoom("origins")
+	for i := 0; i < 1000; i++ {
+		id := fmt.Sprintf("bench-%04d", i)
+		g := r.Add(id, "Aventureiro")
+		g.Actor.X = float64(i%25) * 24
+		g.Actor.Y = float64(i/25) * 20
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		snapshot := r.SnapshotFor("bench-0000")
+		if snapshot == nil || len(snapshot.Players) != 1000 {
+			b.Fatalf("expected 1000 visible players, got %+v", snapshot)
+		}
+	}
+}
+
+// BenchmarkMonsterStep96 measures the complete 96-monster update path,
+// including the optional one-call Rust batch, Go collision, and hit handling.
+// This is a CPU microbenchmark, NOT a 1000-player server load test.
+func BenchmarkMonsterStep96(b *testing.B) {
+    world := World{Seed:842136}
+    guests := make([]*Guest,0,12)
+    for i:=0;i<12;i++ {
+        g:=&Guest{Actor:NewPlayer()}
+        g.Actor.X=float64((i%4)*100-200)
+        g.Actor.Y=float64((i/4)*90-100)
+        guests=append(guests,g)
+    }
+    mobs:=make([]*Slime,0,96)
+    for i:=0;i<96;i++ {
+        mobs=append(mobs,NewSlime(fmt.Sprintf("bench-slime-%d",i),
+            float64((i%12)*40-240),float64((i/12)*35-140)))
+    }
+    var scratch monsterScratch
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i:=0;i<b.N;i++ {
+        stepMonstersWithScratch(guests,mobs,.05,world,&scratch)
+    }
+}
+
+// BenchmarkMonsterStep1024 is a pre-production CPU stress scenario.
+// The live Room.MaxMobs limit remains 96; this does not simulate network users.
+func BenchmarkMonsterStep1024(b *testing.B) {
+    benchmarkMonsterBatch(b, 1024)
+}
+
+func BenchmarkMonsterStep4096(b *testing.B) {
+    benchmarkMonsterBatch(b, 4096)
+}
+
+func benchmarkMonsterBatch(b *testing.B, count int) {
+    world := World{Seed: 842136}
+    guests := make([]*Guest, 0, 12)
+    for i := 0; i < 12; i++ {
+        g := &Guest{Actor: NewPlayer()}
+        g.Actor.X = 1500 + float64(i%4)*35
+        g.Actor.Y = 1400 + float64(i/4)*35
+        guests = append(guests, g)
+    }
+    mobs := make([]*Slime, 0, count)
+    for i := 0; i < count; i++ {
+        mobs = append(mobs, NewSlime(fmt.Sprintf("benchmark-%d", i),
+            1400 + float64(i%64)*4, 1370 + float64(i/64)*4))
+    }
+    var scratch monsterScratch
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        stepMonstersWithScratch(guests, mobs, .05, world, &scratch)
+    }
+}
+
+// BenchmarkMonsterActiveTargets1024 restores the SAME active-target state
+// before every measured tick. Unlike long-running drift scenarios, this keeps
+// real chase/collision work present in both Go and Rust implementations.
+// Reset overhead is intentionally identical on both paths.
+func BenchmarkMonsterActiveTargets1024(b *testing.B) {
+    world := World{Seed:842136}
+    player := NewPlayer()
+    player.X, player.Y = 1400,1400
+    guests := []*Guest{{Actor:player}}
+    mobs := make([]*Slime,1024)
+    base := make([]Slime,len(mobs))
+    for i := range mobs {
+        m := NewSlime(fmt.Sprintf("active-%d",i),
+            1435+float64(i%32)*2,1400+float64(i/32)*2)
+        mobs[i] = m
+        base[i] = *m
+    }
+    var scratch monsterScratch
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i:=0;i<b.N;i++ {
+        for j,m := range mobs {
+            *m = base[j]
+        }
+        stepMonstersWithScratch(guests,mobs,.05,world,&scratch)
+    }
+}
