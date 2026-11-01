@@ -189,7 +189,7 @@ func parseMemAvailable(raw []byte) (int, error) {
 			return 0, ErrHostCounters
 		}
 		kb, err := strconv.ParseUint(fields[1], 10, 64)
-		if err != nil || kb > uint64(math.MaxInt)*1024 {
+		if err != nil || kb > uint64(math.MaxInt) {
 			return 0, ErrHostCounters
 		}
 		return int(kb / 1024), nil
