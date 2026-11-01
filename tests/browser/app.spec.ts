@@ -35,15 +35,18 @@ test('Phaser 3 inicia o mundo, Angular controla ajustes/bolsa e sair libera o jo
   await expect(page.locator('#coords')).not.toHaveText(before!);
   await page.keyboard.up('d');
   await page.screenshot({path:test.info().outputPath('game.png')});
+  await page.locator('#gameMenuButton').click();
   await page.locator('#settingsButton').click();
   await expect(page.locator('#settingsDialog')).toBeVisible();
   await page.locator('#zoom').fill('2');
   await expect(page.locator('#zoomValue')).toHaveText('2.00×');
   await page.locator('#settingsDialog .dialog-x').click();
+  await page.locator('#gameMenuButton').click();
   await page.locator('#inventoryButton').click();
   await expect(page.locator('#inventoryDialog')).toBeVisible();
   await expect(page.locator('#gelCount')).toHaveText('0 / 99');
   await page.locator('#inventoryDialog .dialog-x').click();
+  await page.locator('#gameMenuButton').click();
   await page.locator('#helpButton').click();
   await expect(page.locator('#helpDialog')).toBeVisible();
   await page.keyboard.press('Escape');
@@ -79,4 +82,31 @@ test('painel consulta conexões reais em duas salas, atualiza 2→1→0 e não i
     await page.unroute('**/presence');
     await expect(page.getByTestId('online-count')).toHaveText('0');
   } finally { await first.close(); await second.close(); }
+});
+
+test('menu Angular mantém contador fora do cenário e só consulta presença na aba de jogadores', async ({ page }) => {
+  let polls = 0;
+  await page.route('**/presence', async route => {
+    polls++;
+    await route.fulfill({status: 200, contentType: 'application/json',
+      body: JSON.stringify({online: 3, rooms: 2, scope: 'server', updatedAt: new Date().toISOString()})});
+  });
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('canvas#game')).toBeVisible();
+  await expect(page.locator('#gameToolActions')).toBeHidden();
+  await expect(page.locator('.game-presence')).toHaveCount(0);
+  await expect(page.locator('app-online-players')).toHaveCount(0);
+  await page.waitForTimeout(150);
+  expect(polls).toBe(0);
+  await page.locator('#gameMenuButton').click();
+  await expect(page.locator('#gameToolActions')).toBeVisible();
+  await page.locator('#playersButton').click();
+  await expect(page.locator('#gameToolActions')).toBeHidden();
+  await expect(page.locator('#playersDialog')).toBeVisible();
+  await expect(page.getByTestId('online-count')).toHaveText('3');
+  expect(polls).toBeGreaterThan(0);
+  await page.locator('#playersDialog .dialog-x').click();
+  await expect(page.locator('#playersDialog')).not.toBeVisible();
+  await expect(page.locator('app-online-players')).toHaveCount(0);
+  await expect(page.locator('#gameMenuButton')).toBeVisible();
 });

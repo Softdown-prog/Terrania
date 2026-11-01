@@ -11,8 +11,11 @@ export class GamePageComponent implements AfterViewInit {
   readonly hud = inject(HudService);
   readonly notice = signal('');
   readonly fullscreenActive = signal(false);
+  readonly toolsExpanded = signal(false);
+  readonly playersDialogOpen = signal(false);
   private readonly mount = viewChild.required<ElementRef<HTMLElement>>('mount');
   private readonly npcDialog = viewChild.required<ElementRef<HTMLDialogElement>>('npcDialog');
+  private readonly playersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('playersDialog');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroy = inject(DestroyRef);
   constructor() {
@@ -25,13 +28,16 @@ export class GamePageComponent implements AfterViewInit {
     catch { this.notice.set('Não foi possível iniciar o jogo neste navegador. Recarregue a página para tentar novamente.'); }
   }
   open(dialog: HTMLDialogElement): void {
+    this.toolsExpanded.set(false);
     this.hud.menuOpen = true;
+    if (dialog === this.playersDialog().nativeElement) this.playersDialogOpen.set(true);
     if (!dialog.open) dialog.showModal();
   }
   close(event: Event): void {
     if (event.target instanceof Element) event.target.closest('dialog')?.close();
   }
   closed(): void {
+    if (!this.playersDialog().nativeElement.open) this.playersDialogOpen.set(false);
     // close is emitted after the native open property changes (also for Escape).
     this.hud.menuOpen = !!this.host.nativeElement.querySelector('dialog[open]');
     if (!this.hud.menuOpen) document.getElementById('game')?.focus({ preventScroll: true });

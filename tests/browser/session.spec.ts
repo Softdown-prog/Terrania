@@ -44,6 +44,7 @@ test('entrada online e saída da rota preservam o progresso solo recente', async
   await page.keyboard.down('d');
   await expect(page.locator('#coords')).not.toHaveText(coords!);
   await page.keyboard.up('d');
+  await page.locator('#gameMenuButton').click();
   await page.locator('#settingsButton').click();
   socket!.send(JSON.stringify({ type: 'welcome', version: PROTOCOL_VERSION,
     id: 'session-test', room: 'solo-save', seed: 842136 }));
@@ -61,6 +62,7 @@ test('entrada online e saída da rota preservam o progresso solo recente', async
   await expect(page.locator('canvas#game')).toBeVisible();
   await expect(page.locator('#seed')).toHaveText(String(save.seed));
   await expect(page.locator('#hpText')).toHaveText('79 / 100');
+  await page.locator('#gameMenuButton').click();
   await page.locator('#inventoryButton').click();
   await expect(page.locator('#gelCount')).toHaveText('9 / 99');
   await expect(page.locator('#potionCount')).toHaveText('2 / 99');
