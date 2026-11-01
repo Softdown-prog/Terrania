@@ -2,13 +2,7 @@ package engine
 
 // Go stays authoritative for rooms, players, combat, collisions and networking.
 // The opt-in Rust planner only returns decisions for one batch of monsters.
-func stepMonsters(guests []*Guest, mobs []*Slime, dt float64, world World) {
-    var scratch monsterScratch
-    stepMonstersWithScratch(guests, mobs, dt, world, &scratch)
-}
-
-// Scratch belongs to the calling room goroutine. A separate scratch is used by
-// standalone tests; no shared writable state or hidden background worker.
+// Scratch belongs to the calling room goroutine; no shared writable state.
 func stepMonstersWithScratch(guests []*Guest, mobs []*Slime, dt float64, world World, scratch *monsterScratch) {
     if tryRustMonsterStepWithScratch(guests, mobs, dt, world, scratch) {
         return
