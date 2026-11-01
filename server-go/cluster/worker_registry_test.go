@@ -88,8 +88,7 @@ func TestRegistryConcurrentAdmissionNeverOverbooks(t *testing.T) {
 	accepted:=0
 	var releases []func()
 	for x:=range results {
-		if x.err==nil {accepted++;releases=append(releases,x.release)}
-		else if !errors.Is(x.err,ErrNoWorkerCapacity) {t.Fatalf("unexpected admission failure: %v",x.err)}
+		if x.err==nil {accepted++;releases=append(releases,x.release)} else if !errors.Is(x.err,ErrNoWorkerCapacity) {t.Fatalf("unexpected admission failure: %v",x.err)}
 	}
 	if accepted!=96 {t.Fatalf("accepted %d, max per-worker 48 x2",accepted)}
 	for _,s:=range r.Snapshot() {
