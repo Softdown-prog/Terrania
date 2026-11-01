@@ -180,7 +180,7 @@ func (h *SnapshotReceiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, MaxRegionWireBytes)
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 	var transfer RegionSnapshotRequest
@@ -312,7 +312,7 @@ func SendRegionSnapshot(ctx context.Context, client *http.Client, endpoint strin
 	if err != nil {
 		return RegionSnapshotReceipt{}, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return RegionSnapshotReceipt{}, fmt.Errorf("snapshot destination rejected transfer: HTTP %d", resp.StatusCode)
 	}
