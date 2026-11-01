@@ -122,7 +122,7 @@ func main(){
 	if err!=nil {log.Fatal(err)}
 	srv:=&http.Server{Addr:":"+port,Handler:gatewayHandlerWithLobby(router,allowed,newLobby(maxPlayers,maxRooms,12)),
 		ReadHeaderTimeout:5*time.Second}
-	log.Printf("Terrania Go gateway listening on :%s with %d workers",port,source.Count())
+	log.Printf("Terrania Go gateway listening on :%s with %d workers",port,router.Count())
 	log.Fatal(srv.ListenAndServe())
 }
 
