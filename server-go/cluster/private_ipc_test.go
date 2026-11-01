@@ -32,13 +32,13 @@ func TestRegistryIPCUnixSocketAuthenticatesAndDrains(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer listener.Close()
+	defer func() { _ = listener.Close() }()
 	info, err := os.Stat(path)
 	if err != nil || info.Mode().Perm() != 0600 {
 		t.Fatalf("socket must be private 0600: %v %v", info, err)
 	}
 	server := &http.Server{Handler: handler, ReadHeaderTimeout: 2 * time.Second}
-	defer server.Close()
+	defer func() { _ = server.Close() }()
 	go func() { _ = server.Serve(listener) }()
 
 	client, err := NewRegistryIPCClient(path, ipcTestToken)
@@ -104,7 +104,7 @@ func TestRegistryIPCRejectsUntrustedClientsAndPublicBackends(t *testing.T) {
 		t.Fatal(err)
 	}
 	server := &http.Server{Handler: handler}
-	defer server.Close()
+	defer func() { _ = server.Close() }()
 	go func() { _ = server.Serve(listener) }()
 	wrong, err := NewRegistryIPCClient(path, strings.Repeat("z", 64))
 	if err != nil {
