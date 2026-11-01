@@ -20,8 +20,9 @@ jobs:
         with:
           node-version: '24'
       - name: Run QA bot with real offline simulation
-        run: node --experimental-strip-types scripts/qa-bot.mjs > qa-bot-report.json
+        run: node --experimental-strip-types scripts/qa-bot.mjs --strict > qa-bot-report.json
       - name: Show findings in GitHub summary
+        if: always()
         run: |
           node --input-type=module -e '
             import fs from "node:fs";
@@ -47,6 +48,7 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
           '
       - name: Upload detailed JSON
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: terrania-qa-bot-report
