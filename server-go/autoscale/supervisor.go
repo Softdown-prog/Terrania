@@ -79,6 +79,9 @@ func (s *Supervisor) ProvisionOne(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+	// Track the container BEFORE its first transition. If cleanup or IPC
+	// becomes unavailable, never lose the Docker identity on restart/retry.
+	s.managed[id] = &managedWorker{containerID: cid, directoryRemoved: true}
 	// Only cleanup containers created in this call. Failure to cleanup is
 	// surfaced, never interpreted as a successful start.
 	cleanup := func(cause error) error {
@@ -87,6 +90,7 @@ func (s *Supervisor) ProvisionOne(ctx context.Context, id string) error {
 		if closeErr := s.runtime.StopAndRemove(stopCtx, id, cid); closeErr != nil {
 			return fmt.Errorf("%v; orphan cleanup failed: %w", cause, closeErr)
 		}
+		delete(s.managed, id)
 		return cause
 	}
 	if err := s.runtime.Start(ctx, id, cid); err != nil {
@@ -124,8 +128,11 @@ func (s *Supervisor) ProvisionOne(ctx context.Context, id string) error {
 		return cleanup(ErrDockerOwnership)
 	}
 	if err := s.directory.Register(ctx, backend); err != nil {
-		return cleanup(err)
+		// A transport error might mean the gateway registered the worker but
+		// lost its response. Retain ownership for explicit reconciliation.
+		return fmt.Errorf("registration outcome unknown; container retained: %w", err)
 	}
+	s.managed[id].directoryRemoved = false
 	if err := s.directory.SetReady(ctx, id, true); err != nil {
 		if drainErr := s.directory.Drain(ctx, id); drainErr != nil {
 			return fmt.Errorf("failed to mark ready: %v; drain failed: %w", err, drainErr)
@@ -133,9 +140,9 @@ func (s *Supervisor) ProvisionOne(ctx context.Context, id string) error {
 		if removeErr := s.directory.Remove(ctx, id); removeErr != nil {
 			return fmt.Errorf("failed to mark ready: %v; registry removal failed: %w", err, removeErr)
 		}
+		s.managed[id].directoryRemoved = true
 		return cleanup(err)
 	}
-	s.managed[id] = &managedWorker{containerID: cid}
 	return nil
 }
 
