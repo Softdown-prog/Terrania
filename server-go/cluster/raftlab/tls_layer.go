@@ -68,7 +68,7 @@ func peerID(cs tls.ConnectionState) (string, error) {
 // chain verification, DNS SAN verification and strict SPIFFE URI verification
 // are all required for a connection. DNS is never used to discover peers.
 func NewLoopbackTLSLayer(listener net.Listener, ownID string, ownCert tls.Certificate, roots *x509.CertPool, roster map[raft.ServerAddress]string) (*TLSLayer, error) {
-	if listener == nil || !validName(ownID) || roots == nil || len(ownCert.Certificate) == 0 || len(roster) == 0 {
+	if listener == nil || len(roster) == 0 || checkLocalRaftIdentity(ownID, ownCert, roots) != nil {
 		return nil, ErrRaftPeerIdentity
 	}
 	tcp, ok := listener.Addr().(*net.TCPAddr)
