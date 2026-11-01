@@ -1,5 +1,5 @@
 import { OfflineSimulation } from "../engine/OfflineSimulation.ts";
-import { TapNavigator, type Point } from "../engine/TapNavigator.ts";
+import { TapNavigator, findWalkingPath, type Point } from "../engine/TapNavigator.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { NPCS, nearestNpc, npcDialogue, type Npc } from "../world/npcs.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
@@ -60,6 +60,30 @@ export interface QaBotOptions {
 const distance = (a: Point, b: Point): number => Math.hypot(a.x - b.x, a.y - b.y);
 const position = (point: Point): Point => ({ x: point.x, y: point.y });
 
+
+/**
+ * Placas e marcos são sólidos: interagir significa chegar perto, não pisar
+ * no centro. O ponto escolhido respeita a colisão e o alvo da interação.
+ */
+function approachPoint(sim: OfflineSimulation, npc: Npc): Point | null {
+  const offsets: Point[] = [{ x: 0, y: 0 }];
+  for (const r of [24, 40, 56]) {
+    for (const [dx, dy] of [
+      [1, 0], [-1, 0], [0, 1], [0, -1],
+      [0.7, 0.7], [0.7, -0.7], [-0.7, 0.7], [-0.7, -0.7],
+    ] as const) offsets.push({ x: dx * r, y: dy * r });
+  }
+  const candidates = offsets.map(p => ({ x: npc.x + p.x, y: npc.y + p.y }));
+  candidates.sort((a, b) => distance(sim.player, a) - distance(sim.player, b));
+  for (const point of candidates) {
+    if (!sim.collision.canMove(point.x, point.y) ||
+      nearestNpc(point.x, point.y)?.id !== npc.id) continue;
+    if (distance(sim.player, point) <= ARRIVAL_DISTANCE ||
+        findWalkingPath(sim.player, point, sim.collision)) return point;
+  }
+  return null;
+}
+
 /** Jogador interno, sem conta, navegador, rede, arquivos ou progresso persistente. */
 export function runQaBot(options: QaBotOptions = {}): QaBotReport {
   const seed = options.seed ?? 842136;
@@ -114,19 +138,24 @@ export function runQaBot(options: QaBotOptions = {}): QaBotReport {
         addCheck(remaining, "navigation", "skipped", "Limite global de ticks atingido");
       break;
     }
-    if (distance(sim.player, npc) > ARRIVAL_DISTANCE) {
-      if (!navigator.go(sim.player, npc, sim.collision)) {
+    const destination = approachPoint(sim, npc);
+    if (!destination) {
+      addCheck(npc, "navigation", "failed", "Nenhum ponto caminhável com interação disponível");
+      continue;
+    }
+    if (distance(sim.player, destination) > ARRIVAL_DISTANCE) {
+      if (!navigator.go(sim.player, destination, sim.collision)) {
         addCheck(npc, "navigation", "failed", "Não foi encontrada rota caminhável");
         continue;
       }
       const goalDeadline = Math.min(maxTicks, ticks + PER_GOAL_TICKS);
       while (ticks < goalDeadline && navigator.target &&
-             distance(sim.player, npc) > ARRIVAL_DISTANCE) {
+             distance(sim.player, destination) > ARRIVAL_DISTANCE) {
         advance(navigator.direction(sim.player, STEP_SECONDS));
       }
     }
     navigator.cancel();
-    const remainingDistance = distance(sim.player, npc);
+    const remainingDistance = distance(sim.player, destination);
     if (remainingDistance > ARRIVAL_DISTANCE) {
       const exhausted = ticks >= maxTicks;
       addCheck(npc, "navigation", exhausted ? "skipped" : "failed",

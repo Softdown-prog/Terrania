@@ -32,3 +32,13 @@ test("bot recusa seeds e limites inválidos", () => {
     { maxTicks: 0 }, { maxTicks: Number.POSITIVE_INFINITY }, { maxTicks: 36001 },
   ]) assert.throws(() => runQaBot(options), RangeError);
 });
+
+test("bot se aproxima de placas sólidas sem tentar atravessar o centro", () => {
+  const report = runQaBot({ seed: 842136, maxTicks: 12000 });
+  for (const id of ["entrance", "square"]) {
+    const result = report.checks.find(check => check.id === id &&
+      check.category === "interaction");
+    assert.equal(result?.status, "passed", "placa acessível: " + id);
+  }
+  assert.ok(report.totals.interiorsVisited >= 1);
+});
