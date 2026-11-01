@@ -7,6 +7,7 @@ on:
       - 'scripts/qa-bot.mjs'
       - 'tests/qa-bot.test.ts'
       - 'tests/qa-combat.test.ts'
+      - 'tests/qa-natural.test.ts'
       - '.github/workflows/qa-bot.yml'
 permissions:
   contents: read
@@ -41,8 +42,11 @@ jobs:
                 r.combat.totals.skipped + " skipped",
               "Kills: " + r.combat.kills + " | Gel: " + r.combat.gelCollected +
                 " | Potions used: " + r.combat.potionsUsed,
+              "Natural: " + r.natural.status +
+                " | Spawned: " + r.natural.monstersDiscovered +
+                " | Killed: " + r.natural.kills + " | Gel: " + r.natural.gel,
               "",
-              "Controlled offline encounters; natural spawns, multiplayer, " +
+              "Natural encounters offline; multiplayer, " +
                 "browser, XP and VPS not tested."
             ];
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");

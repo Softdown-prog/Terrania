@@ -1,3 +1,4 @@
+import { runNaturalQa } from "../src/qa/QaNatural.ts";
 import { runCombatQa } from "../src/qa/QaCombat.ts";
 import { runQaBot } from "../src/qa/QaBot.ts";
 function integerOption(name) {
@@ -15,16 +16,19 @@ try {
   if (maxTicks !== undefined) args.maxTicks = maxTicks;
   const exploration = runQaBot(args);
   const combat = runCombatQa(exploration.seed);
-  const status = exploration.status === "passed" && combat.status === "passed"
-    ? "passed" : (exploration.status === "failed" || combat.status === "failed"
-      ? "failed" : "incomplete");
+  const natural = runNaturalQa(exploration.seed);
+  const scenarios = [exploration, combat, natural];
+  const status = scenarios.every(item => item.status === "passed")
+    ? "passed" : scenarios.some(item => item.status === "failed")
+      ? "failed" : "incomplete";
   const report = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     botId: exploration.botId,
     seed: exploration.seed,
     status,
     exploration,
     combat,
+    natural,
   };
   process.stdout.write(JSON.stringify(report, null, 2) + "\n");
   if (process.argv.includes("--strict") && status !== "passed")

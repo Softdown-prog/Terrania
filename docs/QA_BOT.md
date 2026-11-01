@@ -1,37 +1,24 @@
-# Terrânia QA Bot — diagnóstico offline sem conta
+# Terrânia QA-BOT-001 — exploração, combate e encontro natural
 
-O QA-BOT-001 é um jogador interno determinístico, **sem cadastro**, login, IA
-externa, DOM, rede, persistência ou acesso à VPS. Executa cenários de QA em
-memória, com comportamento reproduzível pela seed.
+Execução offline em memória; nenhum cadastro, conta, VPS ou deploy.
 
-## Executar com Node.js 24
+```bash
+npm run qa:bot > qa-bot-report.json
+npm run qa:bot -- --strict
+```
 
-    npm run qa:bot > qa-bot-report.json
-    npm run qa:bot -- --seed=42 --ticks=18000
-    npm run qa:bot -- --strict
+O JSON v3 separa três cenários:
+- `exploration`: caminhada A*, NPCs, placas, três interiores.
+- `combat`: cinco slimes de treino controlados, gel, poções, missão e save.
+- `natural`: usa os slimes realmente gerados por `OfflineSimulation` no mundo.
+  Seleciona somente monstros acessíveis, caminha sem teleporte, enfrenta a IA
+  com ataque real e tenta coletar o gel no local da derrota.
 
-A saída JSON tem `schemaVersion: 2`, status geral e dois cenários distintos:
-- `exploration`: movimentação real por A*, colisão, NPCs, placas, diálogos,
-  portas e três interiores. `--ticks` limita somente esta exploração.
-- `combat`: cinco slimes **de treinamento**, instanciados no motor offline
-  em terreno caminhável depois de o personagem ir andando à vila. O herói
-  se aproxima, executa ataques reais respeitando alcance e cooldown, vai
-  até cada drop de gel, recebe duas poções pela missão de cinco slimes,
-  sofre dano usando a API de jogador, usa uma poção e verifica save/restauração.
-  Não altera dados de usuários reais e nunca teletransporta o herói.
+O cenário natural é limitado a um encontro por seed e ao orçamento de ticks.
+Uma falha detalha ID do monstro, coordenadas e etapa. Não faz spawn artificial.
+`--strict` reprova o CI quando algum cenário falha; o artifact JSON continua
+disponível mesmo quando a Action falha.
 
-Os relatórios registram status, ticks, coordenadas, causas de falhas,
-recompensas e capacidades explicitamente não validadas. A Action executa o bot com `--strict` para sinalizar regressões em vermelho,
-mas sempre tenta preservar o relatório JSON e o resumo para investigação.
-A execução local sem `--strict` não bloqueia por falhas diagnósticas;
-`--strict` devolve código 1 se algum cenário falhar ou ficar incompleto. Seed deve ser uint32, `--ticks` entre 120 e 36000.
-
-**Limites importantes:** esses encontros são **controlados**, não provam a
-distribuição de spawns naturais, pathfinding para monstros no mundo aberto
-nem o comportamento de NPCs inimigos fora da vila. Ainda não validam
-Phaser/Angular no navegador, multiplayer, rede, XP ou classes.
-Os testes correspondentes precisam de ambientes e agentes separados.
-O bot jamais é executado automaticamente na VPS de produção.
-
-Próximas fases: exploração de encontros naturais no mapa, sessão de
-navegador Phaser/Angular, multiplayer isolado, XP, níveis e habilidades.
+Limites: não testa Phaser/Angular no navegador, multiplayer, experiência XP,
+classes, servidores reais, persistência de usuários nem toda a distribuição
+do mundo. A execução automática é nos runners do GitHub Actions.
