@@ -33,6 +33,21 @@ go test -race -count=5 ./cmd/gateway -run '^TestGatewayDynamic'
 go test -count=1 ./...
 ```
 
+## Protótipo de supervisor Docker local (sem execução na VPS)
+
+A pasta `server-go/autoscale/` agora inclui:
+
+- `DockerDriver`: adaptador para a **API Docker sobre socket Unix local**, sem invocar shell. Requer imagem imutável fixada por digest SHA-256, rede dedicada `terrania-*`, limites de CPU, RAM, PIDs, root filesystem somente leitura, capacidades removidas e **nenhuma porta pública mapeada**.
+- `Supervisor`: sequência `Create → Start → Docker healthy → Registry.Register → Registry.SetReady`; falha de boot tenta remover somente o container recém-criado. As consultas de prontidão têm timeout e jamais publicam backend antes de health comprovado.
+- Na redução: `Drain` bloqueia novos WebSockets, aguarda `Clients=0` e `Rooms=0`, remove do diretório antes de parar e remover do Docker. Se Docker falhar, conserva o container ID para uma tentativa explícita de recuperação; **não remove containers desconhecidos**. Cada operação Docker confere ID exato, nome e labels próprias.
+- Testes do driver usam um servidor HTTP Docker **simulado**; testes de supervisor usam runtime falso e o diretório real com `go test -race`.
+
+**Não executar este protótipo com o socket Docker no gateway público.** O socket fornece acesso amplo ao host; o fato de o adaptador restringir suas chamadas não restringe outros processos que tenham acesso ao socket. É necessária uma conta/processo local isolado, permissões explícitas e um canal autenticado de controle para a integração futura.
+
+**Não é um autoscaler operacional:** não existe serviço/daemon agendando `Calculate`, coleta real da CPU/RAM compartilhada, persistência das operações e IDs após restart, recuperação de containers órfãos, descoberta automática e atualização do gateway em produção, ou testes de integração com Docker real. O supervisor e o registro ainda são bibliotecas de laboratório, não conectadas ao gateway em produção. Se o controlador reiniciar, a tabela em memória não pode autorizar remoção automática de containers preexistentes. O backend Dockerfile atual compila Go puro; a imagem de Go+Rust deve ser construída e validada separadamente antes de ser considerada para escalonamento.
+
+A política de isolamento para a VPS multiprojetos permanece **nenhum deploy e nenhuma interferência no painel, bancos, gateways e containers dos demais projetos**.
+
 ## Ciclo de vida pretendido
 
 1. O controlador recebe métricas confiáveis (conexões ativas **por worker**, backlog de admissões, RAM/CPU realmente livres e timestamps). Métricas desatualizadas devem impedir mudanças, jamais autorizar um scale-out infinito.
