@@ -40,5 +40,8 @@ test("bot se aproxima de placas sólidas sem tentar atravessar o centro", () => 
       check.category === "interaction");
     assert.equal(result?.status, "passed", "placa acessível: " + id);
   }
-  assert.ok(report.totals.interiorsVisited >= 1);
+  assert.equal(report.status, "passed", "a rota inicial deve ser totalmente concluída");
+  assert.equal(report.totals.failed, 0);
+  assert.equal(report.totals.npcInteractions, 9);
+  assert.equal(report.totals.interiorsVisited, 3);
 });
