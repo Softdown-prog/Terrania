@@ -61,6 +61,7 @@ type Controller struct {
 	directory WorkerDirectory
 	lowSamples int
 	lastScaleOut time.Time
+	lastProcessedSample time.Time
 }
 
 func NewController(config ControllerConfig,observer HostObserver,supervisor *Supervisor,directory WorkerDirectory)(*Controller,error){
@@ -86,6 +87,12 @@ func (c *Controller) Reconcile(ctx context.Context,now time.Time)(ReconcileResul
 	if sample.SampledAt.IsZero()||age<0||age>c.config.MaxSampleAge {
 		return ReconcileResult{},ErrTelemetryStale
 	}
+	// One complete observation may cause at most one transition. Otherwise
+	// repeated reconciliation on the SAME remaining-CPU/RAM reading could
+	// create many workers against resources that were free only once.
+	if !sample.SampledAt.After(c.lastProcessedSample) {
+		return ReconcileResult{Action:"duplicate-sample"},nil
+	}
 	live:=c.directory.Snapshot()
 	workers:=make([]Worker,0,len(live))
 	for _,w:=range live {
@@ -96,6 +103,7 @@ func (c *Controller) Reconcile(ctx context.Context,now time.Time)(ReconcileResul
 		FreeMemoryMiB:sample.FreeMemoryMiB,Now:now,LastScaleOut:c.lastScaleOut,
 	})
 	if err!=nil{return ReconcileResult{},err}
+	c.lastProcessedSample=sample.SampledAt
 	result:=ReconcileResult{Plan:plan,Action:"none"}
 
 	if plan.Start>0 {
