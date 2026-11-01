@@ -33,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           changed=0
-          for file in server-go/autoscale/policy.go server-go/autoscale/policy_test.go server-go/cluster/worker_registry.go server-go/cluster/worker_registry_test.go server-go/cmd/gateway/main.go server-go/cmd/gateway/dynamic_registry_test.go; do
+          for file in server-go/autoscale/*.go server-go/cluster/worker_registry.go server-go/cluster/worker_registry_test.go server-go/cmd/gateway/main.go server-go/cmd/gateway/dynamic_registry_test.go; do
             if [[ -n "$(gofmt -l "$file")" ]]; then
               gofmt -w "$file"
               echo "FORMAT_REQUIRED=$file"
@@ -51,7 +51,7 @@ jobs:
           set -euo pipefail
           go mod verify
           go vet ./autoscale ./cluster ./cmd/gateway
-          go test -race -count=5 ./autoscale
+          go test -race -count=5 ./autoscale -v
           go test -race -count=5 ./cluster -run '^TestRegistry' -v
           go test -race -count=5 ./cmd/gateway -run '^TestGatewayDynamic' -v
       - name: All Go package regressions and gateway build
@@ -65,5 +65,5 @@ jobs:
       - name: Summary (no Docker or VPS)
         run: |
           echo '### Same-VPS elastic scaling: offline gateway integration' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Five race-enabled repetitions of planner, worker directory and live WebSocket affinity/drain tests.' >> "$GITHUB_STEP_SUMMARY"
-          echo '**Gateway production still uses static GO_SHARDS. No Docker socket, no VPS mutation, no real autoscaler daemon.**' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Five race-enabled repetitions of policy, Docker mock, lifecycle supervisor, worker directory and WebSocket affinity/drain tests.' >> "$GITHUB_STEP_SUMMARY"
+          echo '**Docker Engine calls are mocked. Gateway production still uses static GO_SHARDS. No Docker socket, no VPS mutation and no running autoscaler daemon.**' >> "$GITHUB_STEP_SUMMARY"
