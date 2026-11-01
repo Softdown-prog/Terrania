@@ -101,9 +101,11 @@ func TestRaftLabLocalIdentityMustBeTrustedBeforeOpeningNetworkTransport(t *testi
 				t.Fatalf("invalid TLS identity was permitted: %v",err)
 			}
 			// The caller owns the listener on validation failure.
-			if _,err:=net.DialTimeout("tcp",l.Addr().String(),20*time.Millisecond);err!=nil{
+			conn,err:=net.DialTimeout("tcp",l.Addr().String(),20*time.Millisecond)
+			if err!=nil{
 				t.Fatalf("pre-startup validation unexpectedly took ownership of listener: %v",err)
 			}
+			_ = conn.Close()
 		})
 	}
 }
