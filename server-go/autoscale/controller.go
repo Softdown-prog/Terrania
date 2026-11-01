@@ -105,7 +105,10 @@ func (c *Controller) Reconcile(ctx context.Context, now time.Time) (ReconcileRes
 	if !sample.SampledAt.After(c.lastProcessedSample) {
 		return ReconcileResult{Action: "duplicate-sample"}, nil
 	}
-	live := c.directory.Snapshot()
+	live, err := c.directory.Snapshot(ctx)
+	if err != nil {
+		return ReconcileResult{}, err // failed IPC must NEVER mean zero active workers.
+	}
 	workers := make([]Worker, 0, len(live))
 	for _, w := range live {
 		workers = append(workers, Worker{ID: w.ID, Ready: w.Ready, Draining: w.Draining, Connected: w.Clients})
