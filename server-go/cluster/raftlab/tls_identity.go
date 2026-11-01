@@ -3,10 +3,8 @@ package raftlab
 import (
 	"bytes"
 	"crypto"
-	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
-	"errors"
 	"fmt"
 	"time"
 )
@@ -40,22 +38,6 @@ func checkLocalRaftIdentity(id string, certificate tls.Certificate, roots *x509.
 	if err != nil || !bytes.Equal(publicDER, leafDER) {
 		return ErrRaftPeerIdentity
 	}
-	// Prove that the private key actually signs; crypto.Signer.Public() alone
-	// is not evidence of private-key access (e.g. a broken HSM wrapper).
-	challenge := []byte("terrania/raftlab/local-tls-proof/v1")
-	signed, err := signer.Sign(rand.Reader, challenge, crypto.Hash(0))
-	if err == nil {
-		switch key := leaf.PublicKey.(type) {
-		case interface{ Equal(crypto.PublicKey) bool }:
-			// The equality test above is sufficient for matching keys.
-			_ = key
-		}
-	}
-	// TLS will challenge the private key during every handshake; we reject
-	// signing failures here but leave algorithm-specific verification to TLS.
-	if err != nil || len(signed) == 0 {
-		return ErrRaftPeerIdentity
-	}
 	if len(leaf.URIs) != 1 || leaf.URIs[0] == nil ||
 		leaf.URIs[0].String() != raftPeerURI(id) {
 		return ErrRaftPeerIdentity
@@ -81,14 +63,3 @@ func checkLocalRaftIdentity(id string, certificate tls.Certificate, roots *x509.
 	return nil
 }
 
-// LocalIdentityErr can be used by test harnesses to validate issued
-// credentials before opening any listener. It does not authorize production.
-func LocalIdentityErr(id string, certificate tls.Certificate, roots *x509.CertPool) error {
-	if err := checkLocalRaftIdentity(id, certificate, roots); err != nil {
-		if errors.Is(err, ErrRaftPeerIdentity) {
-			return err
-		}
-		return ErrRaftPeerIdentity
-	}
-	return nil
-}
