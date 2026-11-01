@@ -170,7 +170,7 @@ func (a *SnapshotArchive) readByKeyLocked(p Province, token string) (RegionSnaps
 	if err != nil {
 		return RegionSnapshotRequest{}, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	dec := json.NewDecoder(io.LimitReader(f, MaxRegionWireBytes+1))
 	dec.DisallowUnknownFields()
 	var frame snapshotArchiveFrame
