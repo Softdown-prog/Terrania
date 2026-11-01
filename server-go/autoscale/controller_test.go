@@ -34,7 +34,7 @@ func controllerForTest(t *testing.T, observer *fakeHostObserver) (*Controller, *
 	t.Helper()
 	runtime := &fakeRuntime{}
 	s, r := newTestSupervisor(t, runtime)
-	c, err := NewController(controllerTestConfig(), observer, s, r)
+	c, err := NewController(controllerTestConfig(), observer, s, s.directory)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +152,7 @@ func TestControllerRejectsCanceledContextAndBadConfiguration(t *testing.T) {
 	}
 	cfg := controllerTestConfig()
 	cfg.MaxSampleAge = 0
-	if _, err := NewController(cfg, host, c.supervisor, reg); !errors.Is(err, ErrControllerConfig) {
+	if _, err := NewController(cfg, host, c.supervisor, c.supervisor.directory); !errors.Is(err, ErrControllerConfig) {
 		t.Fatal(err)
 	}
 }
