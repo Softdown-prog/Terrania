@@ -1,24 +1,30 @@
-# Terrânia QA-BOT-001 — exploração, combate e encontro natural
+# QA-BOT-001 — exploração, combate, encontros naturais e expedição
 
-Execução offline em memória; nenhum cadastro, conta, VPS ou deploy.
+O bot é um cliente de QA **offline em memória**, sem login, conta, acesso à
+VPS, navegador, WebSocket ou IA externa. Somente o motor de gameplay opera.
 
-```bash
-npm run qa:bot > qa-bot-report.json
-npm run qa:bot -- --strict
-```
+## Executar no Node.js 24
 
-O JSON v3 separa três cenários:
-- `exploration`: caminhada A*, NPCs, placas, três interiores.
-- `combat`: cinco slimes de treino controlados, gel, poções, missão e save.
-- `natural`: usa os slimes realmente gerados por `OfflineSimulation` no mundo.
-  Seleciona somente monstros acessíveis, caminha sem teleporte, enfrenta a IA
-  com ataque real e tenta coletar o gel no local da derrota.
+    npm run qa:bot > qa-bot-report.json
+    npm run qa:bot -- --strict
 
-O cenário natural é limitado a um encontro por seed e ao orçamento de ticks.
-Uma falha detalha ID do monstro, coordenadas e etapa. Não faz spawn artificial.
-`--strict` reprova o CI quando algum cenário falha; o artifact JSON continua
-disponível mesmo quando a Action falha.
+O relatório JSON v4 possui quatro cenários independentes:
+- exploration: A*, diálogos, placas e interiores.
+- combat: cinco monstros de treino controlados, gel, poções e persistência.
+- natural: um slime criado pelo gerador natural, combate e coleta real.
+- expedition: **dois ou mais slimes naturais em uma única simulação**, sem
+  spawn artificial e sem teleporte. Coleta IDs, posições iniciais/finais,
+  ticks por encontro, regiões (chunks de 512 px) visitadas, tiles visitados,
+  distância realmente caminhada, passos bloqueados, falhas de rota, mortes,
+  HP antes/depois, resultados e tentativas de coleta.
 
-Limites: não testa Phaser/Angular no navegador, multiplayer, experiência XP,
-classes, servidores reais, persistência de usuários nem toda a distribuição
-do mundo. A execução automática é nos runners do GitHub Actions.
+A expedição usa orçamento global de ticks e limite de replanejamentos.
+Um NPC hostil pode matar o bot; o relatório mostra o ocorrido e o
+respawn normal do motor (sem garantir que o combate será recuperado).
+O modo --strict reprova a Action com qualquer falha, mas preserva o
+artefato JSON para análise. O cenário é reproduzível com a mesma seed.
+
+Não confundir esse QA de gameplay com Playwright ou teste de servidor.
+**Não testa** experiência, classes, personagens persistidos em banco,
+renderização Phaser, Angular, mobile físico ou multiplayer WebSocket.
+Nenhum código é executado automaticamente na VPS.

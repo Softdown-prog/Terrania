@@ -8,6 +8,7 @@ on:
       - 'tests/qa-bot.test.ts'
       - 'tests/qa-combat.test.ts'
       - 'tests/qa-natural.test.ts'
+      - 'tests/qa-expedition.test.ts'
       - '.github/workflows/qa-bot.yml'
 permissions:
   contents: read
@@ -45,6 +46,13 @@ jobs:
               "Natural: " + r.natural.status +
                 " | Spawned: " + r.natural.monstersDiscovered +
                 " | Killed: " + r.natural.kills + " | Gel: " + r.natural.gel,
+              "Expedition: " + r.expedition.status +
+                " | Kills: " + r.expedition.kills +
+                " | Gel: " + r.expedition.gelCollected +
+                " | Regions: " + r.expedition.regionsVisited.length +
+                " | Walked: " + r.expedition.walkedUnits +
+                " | Blocked steps: " + r.expedition.blockedSteps +
+                " | Deaths: " + r.expedition.deaths,
               "",
               "Natural encounters offline; multiplayer, " +
                 "browser, XP and VPS not tested."
