@@ -56,13 +56,13 @@ type ReconcileResult struct {
 // It never acts on client-controlled counts or exposes a public HTTP route.
 // No default runtime, polling loop or Docker socket is enabled in the game.
 type Controller struct {
-	mu           sync.Mutex
-	config       ControllerConfig
-	observer     HostObserver
-	supervisor   *Supervisor
-	directory    WorkerDirectory
-	lowSamples   int
-	lastScaleOut time.Time
+	mu                  sync.Mutex
+	config              ControllerConfig
+	observer            HostObserver
+	supervisor          *Supervisor
+	directory           WorkerDirectory
+	lowSamples          int
+	lastScaleOut        time.Time
 	lastProcessedSample time.Time
 }
 
