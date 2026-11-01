@@ -225,7 +225,7 @@ func TestReplicaDurableReplayRetainsHeadAndTerm(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer r2.Close()
+	defer func() { _ = r2.Close() }()
 	index, head, err := r2.Head()
 	want, _ := entry.Digest()
 	if err != nil || index != 1 || head != want {
