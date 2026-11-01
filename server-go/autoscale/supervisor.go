@@ -89,7 +89,7 @@ func (s *Supervisor) ProvisionOne(ctx context.Context,id string)error {
 		timer:=time.NewTimer(interval)
 		select {
 		case <-ctx.Done():
-			if !timer.Stop(){<-timer.C}
+			timer.Stop()
 			return cleanup(ctx.Err())
 		case <-timer.C:
 		}
