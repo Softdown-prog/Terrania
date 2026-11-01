@@ -156,7 +156,7 @@ func TestElectionWitnessRestartDurabilityAndTermHighWater(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer reopened.Close()
+	defer func() { _ = reopened.Close() }()
 	if _, err := reopened.Vote(6, "candidate-b"); !errors.Is(err, ErrElectionConflict) {
 		t.Fatalf("restart forgot previous vote: %v", err)
 	}
@@ -188,7 +188,7 @@ func TestElectionWitnessConcurrentVoteOnlyOneCandidateWins(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer w.Close()
+	defer func() { _ = w.Close() }()
 	const contenders = 64
 	var wg sync.WaitGroup
 	results := make(chan struct {
