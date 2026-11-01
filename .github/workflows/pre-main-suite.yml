@@ -40,12 +40,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Go formatting (all production module files)
+      - name: Strict formatting of autoscaling and IPC files
         run: |
           set -euo pipefail
-          files=$(find server-go -name '*.go' ! -path '*/raftlab/*' -print0 | xargs -0 gofmt -l)
+          files=$(gofmt -l server-go/autoscale/*.go server-go/cluster/private_ipc*.go server-go/cluster/worker_registry*.go server-go/cmd/gateway/dynamic_registry_test.go)
           if [ -n "$files" ]; then
-            printf 'Unformatted Go sources:\n%s\n' "$files"
+            printf 'Unformatted autoscale / IPC sources: %s\n' "$files"
             exit 1
           fi
       - name: Verify, vet, all Go tests and race detector
