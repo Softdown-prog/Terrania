@@ -19,7 +19,7 @@ func TestFreshElectionFsyncedTipSurvivesWitnessRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer replica.Close()
+	defer func() { _ = replica.Close() }()
 	empty := ReplicaLogTip{LastHash: zeroReplicaHash}
 	first, err := w.VoteWithReplica(replica, 5, "candidate-a", empty)
 	if err != nil {
@@ -32,7 +32,7 @@ func TestFreshElectionFsyncedTipSurvivesWitnessRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer restored.Close()
+	defer func() { _ = restored.Close() }()
 	same, err := restored.VoteWithReplica(replica, 5, "candidate-a", empty)
 	if err != nil || same.Signature != first.Signature {
 		t.Fatalf("persisted vote tip changed after restart: %v", err)
@@ -58,12 +58,12 @@ func TestFreshElectionLegacyVoteCannotBeRetrofittedAsStrict(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer w.Close()
+	defer func() { _ = w.Close() }()
 	l, err := OpenReplicaLog(filepath.Join(root, "replica.wal"), "terrania-lab", "voter-a", key)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer l.Close()
+	defer func() { _ = l.Close() }()
 	if _, err := w.Vote(3, "candidate-a"); err != nil {
 		t.Fatal(err)
 	}
