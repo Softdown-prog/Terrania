@@ -19,6 +19,14 @@ O valor real de `MaxWorkers` tem de ser calculado sobre RAM/CPU **disponíveis a
 
 ## Registry e afinidade implementados na etapa seguinte
 
+## IPC conectado ao contrato do controlador (segurança por erro explícito)
+
+O supervisor e o controlador agora dependem de `autoscale.WorkerDirectory`, com `context.Context` e erros em **todas** as operações (`Snapshot`, `Register`, `SetReady`, `Drain`, `Remove`). `IPCWorkerDirectory` utiliza o cliente Unix autenticado da pasta `cluster`, enquanto `LocalWorkerDirectory` preserva testes em memória. Se o gateway ficar indisponível, o snapshot **retorna erro**, não um array vazio; o controlador não reutiliza a amostra de telemetria e não decide aumentar ou diminuir recursos com estado desconhecido.
+
+O supervisor grava o ID do container em sua tabela temporária **imediatamente após o Create**. Se o Docker falhar na limpeza, preserva esse ID para reconciliação. Se a confirmação do registro remoto for ambígua, também conserva o container para investigação em vez de supor registro limpo. Isso não fornece persistência após reiniciar o processo: **nenhum deploy do supervisor é permitido sem estado durável, recuperação de órfãos e confirmação do status remoto após falhas de IPC**.
+
+Teste offline: `go test -race -count=5 ./autoscale ./cluster`. O teste `TestControllerOverPrivateUnixIPCStopsOnDisconnect` usa socket real no runner CI e runtime Docker simulado. Não há listener habilitado no gateway produtivo, serviço autônomo nem coleta de fila real. A porta HTTP do jogo continua sem endpoint de controle administrativo.
+
 O módulo `cluster.WorkerRegistry` é um **diretório dinâmico em memória e exclusivo de um gateway**: `Register`, `SetReady`, `Acquire`, `Drain`, `Remove` e `Snapshot`. A admissão reserva atomica­mente uma sessão no worker e fornece uma função idempotente de liberação. O diretório limita clientes e salas por worker e nunca move uma sala enquanto uma conexão estiver ativa. A escolha de uma sala nova privilegia ocupação menor e desempate determinístico.
 
 O gateway tem a entrada experimental `gatewayHandlerWithRegistry`, testada com um `httptest.Server` para cada worker, **WebSockets reais e proxy HTTP**, enquanto o binário real continua chamando `gatewayHandlerWithLobby` com `staticWorkerSource` e `GO_SHARDS`. Não há endpoint HTTP para gestão de membership nem acionamento de Docker. O diretório recusa remover worker ocupado e fecha a entrada para novas sessões quando ele está em drain; conexões existentes continuam até encerrar. Uma reconexão a sala em drain recebe indisponibilidade, **não é silenciosamente transferida**.
