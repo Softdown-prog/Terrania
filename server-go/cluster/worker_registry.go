@@ -12,19 +12,19 @@ import (
 // Only trusted local supervisor code may mutate its membership; never expose
 // Register/Drain/Remove as unauthenticated HTTP endpoints.
 type WorkerRegistry struct {
-	mu sync.Mutex
-	workers map[string]*registryWorker
-	rooms map[string]*registryRoom
+	mu         sync.Mutex
+	workers    map[string]*registryWorker
+	rooms      map[string]*registryRoom
 	maxClients int
-	maxRooms int
+	maxRooms   int
 }
 
 type registryWorker struct {
-	backend Backend
-	ready bool
+	backend  Backend
+	ready    bool
 	draining bool
-	clients int
-	rooms int
+	clients  int
+	rooms    int
 }
 type registryRoom struct {
 	workerID string
@@ -32,20 +32,20 @@ type registryRoom struct {
 }
 
 type WorkerStatus struct {
-	ID string
-	Ready bool
+	ID       string
+	Ready    bool
 	Draining bool
-	Clients int
-	Rooms int
+	Clients  int
+	Rooms    int
 }
 
 var (
-	ErrRegistryInvalid = errors.New("invalid worker registry configuration")
-	ErrRegistryFull = errors.New("worker registry is full")
-	ErrNoWorkerCapacity = errors.New("no ready worker has room and session capacity")
-	ErrWorkerBusy = errors.New("worker still owns active sessions or rooms")
-	ErrWorkerNotDrained = errors.New("worker must be draining before removal")
-	ErrWorkerMissing = errors.New("worker not registered")
+	ErrRegistryInvalid         = errors.New("invalid worker registry configuration")
+	ErrRegistryFull            = errors.New("worker registry is full")
+	ErrNoWorkerCapacity        = errors.New("no ready worker has room and session capacity")
+	ErrWorkerBusy              = errors.New("worker still owns active sessions or rooms")
+	ErrWorkerNotDrained        = errors.New("worker must be draining before removal")
+	ErrWorkerMissing           = errors.New("worker not registered")
 	ErrWorkerAlreadyRegistered = errors.New("worker already registered")
 )
 
@@ -54,10 +54,10 @@ func NewWorkerRegistry(maxClientsPerWorker, maxRoomsPerWorker int) (*WorkerRegis
 		return nil, ErrRegistryInvalid
 	}
 	return &WorkerRegistry{
-		workers: make(map[string]*registryWorker),
-		rooms: make(map[string]*registryRoom),
+		workers:    make(map[string]*registryWorker),
+		rooms:      make(map[string]*registryRoom),
 		maxClients: maxClientsPerWorker,
-		maxRooms: maxRoomsPerWorker,
+		maxRooms:   maxRoomsPerWorker,
 	}, nil
 }
 
@@ -103,11 +103,15 @@ func (r *WorkerRegistry) Register(backend Backend) error {
 }
 
 func (r *WorkerRegistry) SetReady(id string, ready bool) error {
-	if r == nil { return ErrRegistryInvalid }
+	if r == nil {
+		return ErrRegistryInvalid
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	worker := r.workers[id]
-	if worker == nil { return ErrWorkerMissing }
+	if worker == nil {
+		return ErrWorkerMissing
+	}
 	if ready && worker.draining {
 		return ErrWorkerNotDrained
 	}
@@ -118,11 +122,15 @@ func (r *WorkerRegistry) SetReady(id string, ready bool) error {
 // Drain blocks NEW WebSocket reservations, including reconnects to rooms on
 // this worker. Existing connections remain bound until their normal release.
 func (r *WorkerRegistry) Drain(id string) error {
-	if r == nil { return ErrRegistryInvalid }
+	if r == nil {
+		return ErrRegistryInvalid
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	worker := r.workers[id]
-	if worker == nil { return ErrWorkerMissing }
+	if worker == nil {
+		return ErrWorkerMissing
+	}
 	worker.draining = true
 	return nil
 }
@@ -130,13 +138,21 @@ func (r *WorkerRegistry) Drain(id string) error {
 // Remove must never delete an occupied worker: that would redirect active
 // rooms to another authoritative process without a state handoff.
 func (r *WorkerRegistry) Remove(id string) error {
-	if r == nil { return ErrRegistryInvalid }
+	if r == nil {
+		return ErrRegistryInvalid
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	worker := r.workers[id]
-	if worker == nil { return ErrWorkerMissing }
-	if !worker.draining { return ErrWorkerNotDrained }
-	if worker.clients != 0 || worker.rooms != 0 { return ErrWorkerBusy }
+	if worker == nil {
+		return ErrWorkerMissing
+	}
+	if !worker.draining {
+		return ErrWorkerNotDrained
+	}
+	if worker.clients != 0 || worker.rooms != 0 {
+		return ErrWorkerBusy
+	}
 	delete(r.workers, id)
 	return nil
 }
@@ -173,7 +189,9 @@ func (r *WorkerRegistry) Acquire(room string) (Backend, func(), error) {
 				chosen = candidate
 			}
 		}
-		if chosen == nil { return Backend{}, nil, ErrNoWorkerCapacity }
+		if chosen == nil {
+			return Backend{}, nil, ErrNoWorkerCapacity
+		}
 		assigned = &registryRoom{workerID: chosen.backend.ID}
 		r.rooms[room] = assigned
 		chosen.rooms++
@@ -202,30 +220,38 @@ func (r *WorkerRegistry) Acquire(room string) (Backend, func(), error) {
 // Snapshot is a stable copy of currently observed directory occupancy.
 // It is gateway-local, NOT a source of host RAM/CPU metrics.
 func (r *WorkerRegistry) Snapshot() []WorkerStatus {
-	if r == nil { return nil }
+	if r == nil {
+		return nil
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	out := make([]WorkerStatus, 0, len(r.workers))
 	for _, w := range r.workers {
-		out = append(out, WorkerStatus{ID:w.backend.ID, Ready:w.ready, Draining:w.draining, Clients:w.clients, Rooms:w.rooms})
+		out = append(out, WorkerStatus{ID: w.backend.ID, Ready: w.ready, Draining: w.draining, Clients: w.clients, Rooms: w.rooms})
 	}
-	sort.Slice(out, func(i,j int) bool { return out[i].ID < out[j].ID })
+	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
 	return out
 }
 
 func (r *WorkerRegistry) Count() int {
-	if r == nil { return 0 }
+	if r == nil {
+		return 0
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	return len(r.workers)
 }
 
 func (r *WorkerRegistry) Backends() []Backend {
-	if r == nil { return nil }
+	if r == nil {
+		return nil
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	out := make([]Backend, 0, len(r.workers))
-	for _, w := range r.workers { out = append(out, w.backend) }
-	sort.Slice(out, func(i,j int) bool { return out[i].ID < out[j].ID })
+	for _, w := range r.workers {
+		out = append(out, w.backend)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
 	return out
 }
