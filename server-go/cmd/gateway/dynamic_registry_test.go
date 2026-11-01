@@ -79,18 +79,18 @@ func TestGatewayDynamicRegistryPreservesLiveSessionsWhileScaling(t *testing.T) {
 	if err != nil || who != "a:friends" {
 		t.Fatalf("first socket got %q %v", who, err)
 	}
-	defer first.Close()
+	defer func() { _ = first.Close() }()
 	register("b", b.URL)
 	second, who, err := connect("friends")
 	if err != nil || who != "a:friends" {
 		t.Fatalf("live room moved after scale-out: %q %v", who, err)
 	}
-	defer second.Close()
+	defer func() { _ = second.Close() }()
 	third, who, err := connect("other")
 	if err != nil || who != "b:other" {
 		t.Fatalf("new room not assigned to new worker: %q %v", who, err)
 	}
-	defer third.Close()
+	defer func() { _ = third.Close() }()
 
 	if err := registry.Drain("a"); err != nil {
 		t.Fatal(err)
@@ -106,7 +106,7 @@ func TestGatewayDynamicRegistryPreservesLiveSessionsWhileScaling(t *testing.T) {
 	if err != nil || who != "b:another" {
 		t.Fatalf("new session entered draining worker: %q %v", who, err)
 	}
-	defer fourth.Close()
+	defer func() { _ = fourth.Close() }()
 
 	_ = first.Close()
 	_ = second.Close()
