@@ -252,7 +252,7 @@ func TestRegionTransferRejectsWrongCertificateCorruptedPayloadAndHTTP(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	r.Body.Close()
+	_ = r.Body.Close()
 	if r.StatusCode != http.StatusConflict {
 		t.Fatalf("receiver accepted corrupt payload: %d", r.StatusCode)
 	}
@@ -287,7 +287,7 @@ func TestRegionSnapshotWireBudgetAndAuthenticationWithoutHandlerTLS(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusRequestEntityTooLarge {
 		t.Fatalf("wire limit ineffective: %d", resp.StatusCode)
 	}
