@@ -188,3 +188,19 @@ func TestSupervisorConcurrentDuplicateProvisionIsSerialized(t *testing.T) {
 		t.Fatalf("duplicate provision: success=%d dup=%d created=%d", success, dup, f.created)
 	}
 }
+
+func TestSupervisorRetainsDockerIDWhenStartupCleanupFails(t *testing.T) {
+	runtime := &fakeRuntime{failStart: true, failStop: true}
+	s, registry := newTestSupervisor(t, runtime)
+	err := s.ProvisionOne(context.Background(), "as-worker-0001")
+	if err == nil || s.ManagedCount() != 1 || registry.Count() != 0 {
+		t.Fatalf("orphan lost after failed cleanup: err=%v tracked=%d", err, s.ManagedCount())
+	}
+	runtime.mu.Lock()
+	runtime.failStop = false
+	runtime.mu.Unlock()
+	stopped, err := s.DrainOrStopOne(context.Background(), "as-worker-0001")
+	if err != nil || !stopped || s.ManagedCount() != 0 || runtime.removed != 1 {
+		t.Fatalf("retained orphan not recoverable: stopped=%v err=%v", stopped, err)
+	}
+}
