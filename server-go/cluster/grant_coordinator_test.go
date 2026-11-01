@@ -25,7 +25,7 @@ func TestGrantCoordinatorSingleHolderRenewAndForgedBoot(t *testing.T) {
 	pub, key := testLeaseKeys(t)
 	path := filepath.Join(t.TempDir(), "authority.wal")
 	c := grantTestCoordinator(t, path, key)
-	defer c.Close()
+	defer func() { _ = c.Close() }()
 	province := Province{100, -99}
 	g, err := NewWorkerLeaseGate(pub, "east", province)
 	if err != nil {
@@ -76,7 +76,7 @@ func TestGrantCoordinatorRevokeAndPromotionFencesOlderLease(t *testing.T) {
 	pub, key := testLeaseKeys(t)
 	path := filepath.Join(t.TempDir(), "authority.wal")
 	c := grantTestCoordinator(t, path, key)
-	defer c.Close()
+	defer func() { _ = c.Close() }()
 	p := Province{-7, 9}
 	old, err := NewWorkerLeaseGate(pub, "east", p)
 	if err != nil {
@@ -167,7 +167,7 @@ func TestGrantCoordinatorRevokeAndPromotionFencesOlderLease(t *testing.T) {
 func TestGrantCoordinatorRefusesFailoverWithoutRevocationDespiteExpiredPermit(t *testing.T) {
 	pub, key := testLeaseKeys(t)
 	c := grantTestCoordinator(t, filepath.Join(t.TempDir(), "authority.wal"), key)
-	defer c.Close()
+	defer func() { _ = c.Close() }()
 	p := Province{15, 16}
 	a, err := NewWorkerLeaseGate(pub, "east", p)
 	if err != nil {
@@ -209,7 +209,7 @@ func TestGrantCoordinatorRestartIsReadOnlyUntilOfflineReconciliation(t *testing.
 		t.Fatal(err)
 	}
 	again := grantTestCoordinator(t, path, key)
-	defer again.Close()
+	defer func() { _ = again.Close() }()
 	state, err := again.Status(p)
 	if err != nil || !state.RecoveryRequired || state.WorkerID != "east" || state.Epoch != 1 {
 		t.Fatalf("restart removed fence: %+v %v", state, err)
@@ -302,7 +302,7 @@ func TestGrantCoordinatorSingleWriterAndConcurrentInitialGrants(t *testing.T) {
 		t.Fatal(err)
 	}
 	replayed := grantTestCoordinator(t, path, key)
-	defer replayed.Close()
+	defer func() { _ = replayed.Close() }()
 	status, err := replayed.Status(p)
 	if err != nil || !status.RecoveryRequired || status.Sequence != 1 {
 		t.Fatalf("ledger replay mismatch: %+v %v", status, err)
