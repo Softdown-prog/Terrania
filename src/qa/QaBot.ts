@@ -74,7 +74,10 @@ function approachPoint(sim: OfflineSimulation, npc: Npc): Point | null {
     ] as const) offsets.push({ x: dx * r, y: dy * r });
   }
   const candidates = offsets.map(p => ({ x: npc.x + p.x, y: npc.y + p.y }));
-  candidates.sort((a, b) => distance(sim.player, a) - distance(sim.player, b));
+  // Aproxima-se do NPC correto, não de um ponto na periferia do alcance
+  // que pode deixar outro NPC mais próximo no instante da interação.
+  candidates.sort((a, b) => distance(a, npc) - distance(b, npc) ||
+    distance(sim.player, a) - distance(sim.player, b));
   for (const point of candidates) {
     if (!sim.collision.canMove(point.x, point.y) ||
       nearestNpc(point.x, point.y)?.id !== npc.id) continue;
