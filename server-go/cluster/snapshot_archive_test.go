@@ -68,7 +68,7 @@ func TestDurableArchiveRestartReadOnly(t *testing.T) {
 		t.Fatal(err)
 	}
 	restarted := persistentDirectory(t, journal)
-	defer restarted.Close()
+	defer func() { _ = restarted.Close() }()
 	report, err := InspectRecoveredProvince(restarted, archive, province)
 	if err != nil {
 		t.Fatal(err)
