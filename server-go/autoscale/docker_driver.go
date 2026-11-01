@@ -27,8 +27,8 @@ var workerIDPattern = regexp.MustCompile(`^as-worker-[0-9]{4}$`)
 var dockerIDPattern = regexp.MustCompile(`^[a-f0-9]{64}$`)
 var pinnedImagePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9./:_-]*@sha256:[a-f0-9]{64}$`)
 
-var ErrWorkerNotReady = errors.New("Terrania worker is not Docker-healthy")
-var ErrDockerOwnership = errors.New("Docker container is not an owned Terrania autoscale worker")
+var ErrWorkerNotReady = errors.New("terrania worker is not Docker-healthy")
+var ErrDockerOwnership = errors.New("docker container is not an owned Terrania autoscale worker")
 var ErrDockerConfig = errors.New("invalid isolated Docker worker configuration")
 
 // DockerOptions are provisioned ONLY by a trusted local controller, never a
@@ -109,7 +109,7 @@ func (d *DockerDriver) request(ctx context.Context, method, path string, input a
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		return fmt.Errorf("docker %s returned HTTP %d", method, res.StatusCode)
 	}
@@ -164,7 +164,7 @@ func (d *DockerDriver) Create(ctx context.Context, workerID string) (string, err
 		return "", err
 	}
 	if !dockerIDPattern.MatchString(created.ID) {
-		return "", errors.New("Docker returned an invalid container ID")
+		return "", errors.New("docker returned an invalid container ID")
 	}
 	return created.ID, nil
 }
