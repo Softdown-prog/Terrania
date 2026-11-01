@@ -62,4 +62,3 @@ func checkLocalRaftIdentity(id string, certificate tls.Certificate, roots *x509.
 	}
 	return nil
 }
-
