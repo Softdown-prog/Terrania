@@ -99,7 +99,7 @@ func TestDockerDriverCreatesOnlyPinnedIsolatedWorker(t *testing.T){
 	}
 	if err:=d.StopAndRemove(ctx,"as-worker-0001",cid);err!=nil {t.Fatal(err)}
 	mu.Lock();defer mu.Unlock()
-	if len(methods)!=7 {t.Fatalf("unexpected Docker operations: %v",methods)}
+	if len(methods)!=8 {t.Fatalf("unexpected Docker operations: %v",methods)}
 }
 func TestDockerDriverNeverStopsUnownedContainer(t *testing.T){
 	cid:=strings.Repeat("b",64)
