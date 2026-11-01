@@ -64,7 +64,7 @@ func newTestSupervisor(t *testing.T, run *fakeRuntime) (*Supervisor, *cluster.Wo
 	if err != nil {
 		t.Fatal(err)
 	}
-	s := NewSupervisor(run, r)
+	s := NewSupervisor(run, LocalWorkerDirectory{Registry: r})
 	s.readyAttempts = 3
 	s.readyInterval = time.Millisecond
 	return s, r
