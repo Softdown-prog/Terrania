@@ -60,7 +60,7 @@ func TestJournalFullHandoffReplaysFailClosed(t *testing.T) {
 		t.Fatal("closed coordinator authorizes simulation")
 	}
 	d2 := persistentDirectory(t, path)
-	defer d2.Close()
+	defer func() { _ = d2.Close() }()
 	status, err := d2.Status(p)
 	if err != nil {
 		t.Fatal(err)
@@ -121,7 +121,7 @@ func TestJournalReplaysEveryInterruptedTransferStage(t *testing.T) {
 		t.Fatal(err)
 	}
 	reloaded := persistentDirectory(t, path)
-	defer reloaded.Close()
+	defer func() { _ = reloaded.Close() }()
 	for i := 0; i < 4; i++ {
 		p := Province{X: int64(i), Y: 1}
 		status, err := reloaded.Status(p)
@@ -224,7 +224,7 @@ func TestJournalConcurrentMutationsReplayAllRegionsFailClosed(t *testing.T) {
 		t.Fatal(err)
 	}
 	second := persistentDirectory(t, path)
-	defer second.Close()
+	defer func() { _ = second.Close() }()
 	for i := 0; i < total; i++ {
 		p := Province{X: int64(i), Y: 99}
 		s, err := second.Status(p)
@@ -282,7 +282,7 @@ func TestJournalSingleWriterExclusiveOwnership(t *testing.T) {
 		t.Fatalf("clean close failed to release exclusive marker: %v", err)
 	}
 	next := persistentDirectory(t, path)
-	defer next.Close()
+	defer func() { _ = next.Close() }()
 	status, err := next.Status(Province{100, 200})
 	if err != nil || status.Phase != "recovery-required" {
 		t.Fatalf("reopened improperly: %+v %v", status, err)
