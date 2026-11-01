@@ -102,7 +102,7 @@ func (h *WorkerLeaseEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, maxWorkerLeaseWireBytes)
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 	var command WorkerLeaseCommand
@@ -191,7 +191,7 @@ func SendWorkerLeaseCommand(ctx context.Context, client *http.Client, endpoint s
 	if err != nil {
 		return WorkerLeaseReceipt{}, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return WorkerLeaseReceipt{}, fmt.Errorf("worker rejected lease command: HTTP %d", resp.StatusCode)
 	}
