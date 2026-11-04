@@ -17,7 +17,7 @@ export interface GameUi {
   onTalk(callback: () => void): void;
   onPotionUse(callback: () => string): void;
   updateInventory(inventory: Inventory, online: boolean): void;
-  update(player: Player, kills: number, experience: number): void;
+  update(player: Player, kills: number, experience: number, onlineProgressAvailable?: boolean): void;
   setOnline(online: boolean): void;
   setStatus(status: string): void;
   setSeed(seed: number): void;

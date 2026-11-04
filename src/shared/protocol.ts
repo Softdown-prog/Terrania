@@ -8,6 +8,11 @@ export interface HeroState {
   y: number;
   hp: number;
   kills: number;
+  /** Present only when the Go server owns online progression. */
+  experience?: number;
+  level?: number;
+  maxHp?: number;
+  slimeKills?: number;
   faceX: number;
   faceY: number;
   walkTime: number;

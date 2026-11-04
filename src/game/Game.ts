@@ -1,6 +1,7 @@
 import { Input } from "../input/Input.ts";
 import { MultiplayerClient } from "../net/MultiplayerClient.ts";
 import type { HeroState } from "../shared/protocol.ts";
+import { levelForExperience, maxHpForExperience, normalizeExperience } from "../engine/Experience.ts";
 import { WorldRenderer } from "../render/WorldRenderer.ts";
 import { Camera } from "../render/Camera.ts";
 import { Effects } from "../render/Effects.ts";
@@ -30,6 +31,8 @@ export class Game {
   private networkClock = 0;
   private pendingAttack = false;
   private offlineSnapshot: OfflineSave | null = null;
+  /** Online XP is not stored in localStorage, nor computed from rendered kills. */
+  private onlineExperience: number | null = null;
   private saveClock = 0;
   private accumulator = 0;
   private clock = 0;
@@ -105,6 +108,7 @@ export class Game {
   private updateConnectionStatus(status: string): void {
     this.hud.setStatus(status);
     if (status.startsWith("Offline") && this.offlineSnapshot) {
+      this.onlineExperience = null;
       this.replaceWorld(this.offlineSnapshot.seed, this.offlineSnapshot);
       this.offlineSnapshot = null;
       this.hud.setOnline(false);
@@ -115,6 +119,7 @@ export class Game {
     this.save();
     this.networkClock = 0;
     this.pendingAttack = false;
+    this.onlineExperience = null;
     this.replaceWorld(seed);
     this.hud.setOnline(true);
   }
@@ -126,10 +131,21 @@ export class Game {
     const factor = distance > 100 ? 1 : 0.35;
     player.x += (self.x - player.x) * factor;
     player.y += (self.y - player.y) * factor;
-    player.hp = self.hp;
+    // Only a coherent server snapshot may enable online progression.
+    const onlineXp = typeof self.experience === "number" &&
+      Number.isSafeInteger(self.experience) && self.experience >= 0 &&
+      self.experience === normalizeExperience(self.experience) &&
+      self.level === levelForExperience(self.experience) &&
+      self.maxHp === maxHpForExperience(self.experience)
+        ? self.experience : null;
+    this.onlineExperience = onlineXp;
+    player.maxHp = onlineXp === null ? 100 : maxHpForExperience(onlineXp);
+    player.hp = Math.min(player.maxHp, Math.max(0, self.hp));
     this.sim.kills = self.kills;
-    // O multiplayer existente só contabiliza Slimes; não simular XP autoritativo.
-    this.sim.slimeKills = self.kills;
+    // Legacy servers have only Slimes; Go sends the actual quest kill count.
+    this.sim.slimeKills = Number.isSafeInteger(self.slimeKills) &&
+      self.slimeKills !== undefined && self.slimeKills >= 0 &&
+      self.slimeKills <= self.kills ? self.slimeKills : self.kills;
     player.hurtTime = Math.max(player.hurtTime, self.hurtTime ?? 0);
     if (Math.hypot(player.vx, player.vy) < 5) {
       player.faceX = self.faceX;
@@ -230,7 +246,9 @@ export class Game {
           this.saveClock += dt;
           if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
         }
-        this.hud.update(this.sim.player, this.sim.slimeKills, this.sim.experience);
+        this.hud.update(this.sim.player, this.sim.slimeKills,
+          online ? (this.onlineExperience ?? 0) : this.sim.experience,
+          online && this.onlineExperience !== null);
         this.hud.updateInventory(this.sim.inventory, online);
         this.hud.setInterior(room.building.name);
         this.scene.renderInterior(room, this.navigator.target, this.clock);
@@ -286,7 +304,9 @@ export class Game {
     if (feedback.hit) this.camera.shake(0.25);
     if (feedback.hurt) this.camera.shake(0.65);
     this.camera.update(dt, this.sim.player);
-    this.hud.update(this.sim.player, this.sim.slimeKills, this.sim.experience);
+    this.hud.update(this.sim.player, this.sim.slimeKills,
+          online ? (this.onlineExperience ?? 0) : this.sim.experience,
+          online && this.onlineExperience !== null);
     this.hud.updateInventory(this.sim.inventory, online);
     this.hud.setNearbyNpc(nearestNpc(this.sim.player.x, this.sim.player.y));
     this.scene.render(

@@ -8,13 +8,15 @@
         >
         <div class="vitals">
           <div class="stat-heading">
-            <span>{{ hud.online() ? 'AVENTUREIRO' : 'NÍVEL ' + hud.level() }}</span><b id="hpText">{{ hud.hp() + " / " + hud.maxHp() }}</b>
+            <span>{{ hud.online() && !hud.onlineProgressAvailable() ? 'AVENTUREIRO' : 'NÍVEL ' + hud.level() }}</span><b id="hpText">{{ hud.hp() + " / " + hud.maxHp() }}</b>
           </div>
           <div class="meter" role="img" aria-label="Barra de vida">
             <div id="hpFill" [style.width.%]="hud.hp() / hud.maxHp() * 100"></div>
           </div>
           @if (!hud.online()) {
-            <small class="xp-readout" id="xpText">XP {{ hud.experience() }} / {{ hud.nextLevelXp() }}</small>
+            @if (!hud.online() || hud.onlineProgressAvailable()) {
+              <small class="xp-readout" id="xpText">XP {{ hud.experience() }} / {{ hud.nextLevelXp() }}</small>
+            }
           }
         </div>
         <div class="quest">

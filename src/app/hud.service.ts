@@ -9,6 +9,7 @@ import { npcDialogue, type Npc } from '../world/npcs.ts';
 export class HudService implements GameUi {
   readonly status = signal('Preparando aventura…');
   readonly online = signal(false);
+  readonly onlineProgressAvailable = signal(false);
   readonly nearby = signal(0);
   readonly hp = signal(100);
   readonly maxHp = signal(100);
@@ -77,7 +78,10 @@ export class HudService implements GameUi {
     this.online.set(online);
   }
   setStatus(status: string): void { this.status.set(status); }
-  setOnline(online: boolean): void { this.online.set(online); }
+  setOnline(online: boolean): void {
+    this.online.set(online);
+    if (!online) this.onlineProgressAvailable.set(false);
+  }
   setSeed(seed: number): void { this.seed.set(seed); }
   setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }
   setNearbyNpc(npc: Npc | null): void {
@@ -106,7 +110,8 @@ export class HudService implements GameUi {
     this.quest.set(name); this.questProgress.set('E ou porta: sair');
     this.coords.set('Interior · Vila da Travessia');
   }
-  update(player: Player, kills: number, experience: number): void {
+  update(player: Player, kills: number, experience: number, onlineProgressAvailable = false): void {
+    this.onlineProgressAvailable.set(this.online() && onlineProgressAvailable);
     this.hp.set(player.hp); this.maxHp.set(player.maxHp);
     const xp = normalizeExperience(experience);
     this.level.set(levelForExperience(xp));
