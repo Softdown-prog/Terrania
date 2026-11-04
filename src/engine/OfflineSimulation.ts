@@ -1,10 +1,11 @@
 import { Player } from "../actors/Player.ts";
-import { Slime, slimeSpawns } from "../actors/Slime.ts";
+import type { Monster } from "../actors/Monster.ts";
+import { monsterSpawns } from "../actors/MonsterSpawns.ts";
 import { SeedCollision } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { canStrike } from "./combat.ts";
 import { Inventory, type InventoryState } from "./Inventory.ts";
-import { SLIME_XP, MAX_EXPERIENCE, levelForExperience, maxHpForExperience, normalizeExperience } from "./Experience.ts";
+import { MAX_EXPERIENCE, levelForExperience, maxHpForExperience, normalizeExperience } from "./Experience.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
@@ -20,18 +21,22 @@ export interface OfflineSave {
   drops?: LootDrop[];
   /** XP solo, opcional para saves legados. */
   experience?: number;
+  /** Apenas Slimes progridem a missão da Aela. */
+  slimeKills?: number;
 }
 
 /** Motor puro: nenhuma dependência de Canvas, DOM, UI, rede ou localStorage. */
 export class OfflineSimulation {
   player = new Player();
-  readonly slimes = new Map<string, Slime>();
+  /** Nome legado do mapa de mobs; agora armazena múltiplas espécies. */
+  readonly slimes = new Map<string, Monster>();
   readonly defeated = new Set<string>();
   readonly inventory: Inventory;
   readonly drops = new Map<string, LootDrop>();
   readonly collision: SeedCollision;
   readonly seed: number;
   kills = 0;
+  slimeKills = 0;
   experience = 0;
   get level(): number { return levelForExperience(this.experience); }
   private spawnedChunk = "";
@@ -52,6 +57,8 @@ export class OfflineSimulation {
       this.player.hp = Number.isFinite(saved.hp) ?
         Math.min(this.player.maxHp, Math.max(1, saved.hp)) : this.player.maxHp;
       this.kills = saved.kills;
+      this.slimeKills = Number.isSafeInteger(saved.slimeKills) && saved.slimeKills !== undefined && saved.slimeKills >= 0
+        ? Math.min(saved.kills, saved.slimeKills) : saved.kills;
       for (const id of saved.defeated) this.defeated.add(id);
       for (const drop of normalizeDrops(saved.drops)) {
         // Não carregar itens incompatíveis com a lista de monstros derrotados.
@@ -68,7 +75,7 @@ export class OfflineSimulation {
     this.spawnedChunk = key;
     for (let cy = y0 - 2; cy <= y0 + 2; cy++)
       for (let cx = x0 - 2; cx <= x0 + 2; cx++) {
-        for (const slime of slimeSpawns(cx, cy, this.seed)) {
+        for (const slime of monsterSpawns(cx, cy, this.seed)) {
           if (!this.defeated.has(slime.id) && !this.slimes.has(slime.id))
             this.slimes.set(slime.id, slime);
         }
@@ -104,16 +111,17 @@ export class OfflineSimulation {
             this.slimes.delete(id);
             this.defeated.add(id);
             this.kills++;
+            if (slime.kind === "slime") this.slimeKills++;
             // O XP depende de abate real e é independente de drop ou coleta.
             const previousMaxHp = this.player.maxHp;
-            this.experience = Math.min(MAX_EXPERIENCE, this.experience + SLIME_XP);
+            this.experience = Math.min(MAX_EXPERIENCE, this.experience + slime.species.xp);
             this.player.maxHp = maxHpForExperience(this.experience);
             if (this.player.maxHp > previousMaxHp)
               this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.maxHp - previousMaxHp);
             if (this.drops.size < MAX_WORLD_DROPS) {
               this.drops.set(slime.id, {
                 id: slime.id,
-                item: "gel",
+                item: slime.species.drop,
                 x: slime.x,
                 y: slime.y,
               });
@@ -127,7 +135,7 @@ export class OfflineSimulation {
     // estiver cheia, o item permanece visível no chão até haver espaço.
     for (const [id, drop] of this.drops) {
       if (Math.hypot(this.player.x - drop.x, this.player.y - drop.y) <= PICKUP_DISTANCE &&
-          this.inventory.addGel()) {
+          this.inventory.addMaterial(drop.item)) {
         this.drops.delete(id);
         changed = true;
       }
@@ -148,6 +156,7 @@ export class OfflineSimulation {
       y: this.player.y,
       hp: this.player.hp,
       kills: this.kills,
+      slimeKills: this.slimeKills,
       experience: this.experience,
       defeated: [...this.defeated].slice(-2000),
       inventory: this.inventory.snapshot(),
