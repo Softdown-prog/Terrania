@@ -49,6 +49,11 @@ type HeroState struct {
 	Y float64 `json:"y"`
 	HP int `json:"hp"`
 	Kills int `json:"kills"`
+	// Server-authoritative progression; older Node servers omit these fields.
+	Experience int `json:"experience"`
+	Level int `json:"level"`
+	MaxHP int `json:"maxHp"`
+	SlimeKills int `json:"slimeKills"`
 	FaceX float64 `json:"faceX"`
 	FaceY float64 `json:"faceY"`
 	WalkTime float64 `json:"walkTime"`

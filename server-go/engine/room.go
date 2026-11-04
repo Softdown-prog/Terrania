@@ -14,6 +14,8 @@ type Guest struct {
 	AttackQueued bool
 	LastInputAt time.Time
 	Kills int
+	SlimeKills int
+	Experience int
 }
 
 type Room struct {
@@ -104,6 +106,8 @@ func (r *Room) Tick(dt float64,now time.Time) {
 						r.defeatedOrder=r.defeatedOrder[1:]
 					}
 					g.Kills++
+					if mob.Species() == SlimeKind { g.SlimeKills++ }
+					if spec,ok:=monsterDefinition(mob.Kind);ok {g.GainExperience(spec.XP)}
 				}
 			}
 		}
@@ -121,6 +125,8 @@ func (r *Room) Tick(dt float64,now time.Time) {
 	for _,g:=range guests {
 		if g.Actor.HP<=0 {
 			g.Actor=NewPlayer()
+			g.Actor.MaxHP=MaxHPForExperience(g.Experience)
+			g.Actor.HP=g.Actor.MaxHP
 			g.Input=Direction{}
 			g.LastInputAt=time.Time{}
 		}
@@ -152,7 +158,9 @@ func (r *Room) SnapshotFor(id string) *Snapshot {
 	visitVisibleGuests(r.guestsInOrder(),me.Actor.X,me.Actor.Y,func(g *Guest) {
 		a:=g.Actor
 		result.Players=append(result.Players,HeroState{ID:g.ID,Name:g.Name,X:a.X,Y:a.Y,HP:a.HP,
-			Kills:g.Kills,FaceX:a.FaceX,FaceY:a.FaceY,WalkTime:a.WalkTime,
+			Kills:g.Kills,SlimeKills:g.SlimeKills,Experience:g.Experience,
+			Level:LevelForExperience(g.Experience),MaxHP:a.MaxHP,
+			FaceX:a.FaceX,FaceY:a.FaceY,WalkTime:a.WalkTime,
 			AttackTime:a.AttackTime,VX:a.VX,VY:a.VY,HurtTime:a.HurtTime})
 	})
 	visitVisibleMobs(r.mobsInOrder(),me.Actor.X,me.Actor.Y,func(m *Slime) {

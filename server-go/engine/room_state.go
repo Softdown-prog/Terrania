@@ -42,6 +42,9 @@ type RoomGuestState struct {
 	AttackQueued bool
 	LastInputAt  time.Time
 	Kills        int
+	// Version-1 legacy snapshots omit XP; new snapshots store it explicitly.
+	Experience   int `json:",omitempty"`
+	SlimeKills   *int `json:",omitempty"`
 }
 
 type RoomPlayerState struct {
@@ -116,6 +119,9 @@ func (s RoomState) validate() error {
 	for _, g := range s.Players {
 		if !validStateID(g.ID) || len(g.Name) == 0 || len(g.Name) > 128 ||
 			!utf8.ValidString(g.Name) || g.Kills < 0 ||
+			g.Experience < 0 || g.Experience > MaxExperience ||
+			(g.SlimeKills != nil && (*g.SlimeKills < 0 || *g.SlimeKills > g.Kills)) ||
+			g.Actor.MaxHP != MaxHPForExperience(g.Experience) ||
 			!finite(g.Input.X, g.Input.Y) || math.Hypot(g.Input.X, g.Input.Y) > 1.05 ||
 			!validPlayerState(g.Actor) {
 			return fmt.Errorf("%w: invalid player", ErrRoomStateInvalid)
@@ -193,7 +199,8 @@ func (r *Room) ExportState() ([]byte, error) {
 		}
 		s.Players = append(s.Players, RoomGuestState{ID: g.ID, Name: g.Name,
 			Actor: playerState(g.Actor), Input: g.Input, AttackQueued: g.AttackQueued,
-			LastInputAt: g.LastInputAt, Kills: g.Kills})
+			LastInputAt: g.LastInputAt, Kills: g.Kills,
+			Experience: g.Experience, SlimeKills: intPointer(g.SlimeKills)})
 		if g.ID != id {
 			return nil, ErrRoomStateInvalid
 		}
@@ -247,7 +254,8 @@ func RestoreRoomState(data []byte) (*Room, error) {
 	for _, p := range s.Players {
 		r.Guests[p.ID] = &Guest{ID: p.ID, Name: p.Name, Actor: p.Actor.restore(),
 			Input: p.Input, AttackQueued: p.AttackQueued,
-			LastInputAt: p.LastInputAt, Kills: p.Kills}
+			LastInputAt: p.LastInputAt, Kills: p.Kills,
+			Experience: p.Experience, SlimeKills: restoredSlimeKills(p)}
 		r.guestOrder = append(r.guestOrder, p.ID)
 	}
 	for _, m := range s.Mobs {
@@ -261,4 +269,14 @@ func RestoreRoomState(data []byte) (*Room, error) {
 		r.defeatedOrder = append(r.defeatedOrder, id)
 	}
 	return r, nil
+}
+
+// Legacy room checkpoints had only Slimes; absent slimeKills migrates to Kills.
+func restoredSlimeKills(state RoomGuestState) int {
+	if state.SlimeKills == nil { return state.Kills }
+	return *state.SlimeKills
+}
+
+func intPointer(value int) *int {
+	return &value
 }
