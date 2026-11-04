@@ -40,3 +40,12 @@ Alterações restritas ao input e apresentação. Velocidade, combate, colisão,
 ## RPG-004 — Ataque forte (modo solo)
 
 No Android, conferir botão **FORTE** ao lado de ATACAR sem sobrepor o joystick nem diálogos. Um toque executa um golpe; não deve repetir ao manter pressionado. No desktop, usar **K**. O golpe acerta depois de 0,24 s, causa 2 HP de dano por alvo em alcance/linha de visão e tem 1,2 s de recarga; ataque normal continua causando 1 HP. Interiores e menus não recebem combate; no multiplayer não há botão FORTE nem entrada de ataque novo no protocolo v3. Ver `tests/heavy-attack.test.ts` e `tests/browser/heavy-attack.spec.ts`.
+
+## RPG-005 — Esquiva e aviso de ataques especiais (solo)
+
+- Em modo solo, **SHIFT** ou o botão **ESQUIVA** ativa deslocamento rápido de 0,22 s na direção do joystick/teclado ou, parado, na direção do olhar; recarga de 1,1 s. Durante a esquiva o personagem tem 0,26 s de proteção contra dano. Não atravessa paredes e não combina com golpes em execução.
+- Em modo online ou nos interiores, a esquiva não é enviada ao protocolo WebSocket v3. Ao abrir menu, bloquear ações novas. O efeito visual ciano desaparece ao concluir a esquiva.
+- Lobos anunciam por 0,45 s um salto na marca do terreno, com 16 HP de dano ao acertar e 3,2 s de intervalo. Aranhas anunciam por 0,55 s uma teia que atinge a marca com raio de 26 unidades, causa 8 HP e desacelera o herói por até 1,25 s; movimento/rolagem podem evitar ambos.
+- Um ataque do herói durante a preparação interrompe o ataque especial. Não há projétil remoto, dano inventado no navegador online ou alteração do comportamento dos Slimes.
+- A UI Angular deve apresentar botões separados de ATAQUE, FORTE, ESQUIVA e CONVERSAR, sem sobreposição em retrato/paisagem. Validar em Android físico antes de deploy.
+- Testes: `tests/dodge-specials.test.ts`, `tests/browser/dodge-specials.spec.ts`, `npm test`, `npm run typecheck`, `npm run build`, Playwright e CI completa. A implantação online depende de implementação autoritativa Go posterior.

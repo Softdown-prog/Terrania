@@ -22,6 +22,7 @@
 - [ ] Sistema de quests com estados e recompensas
 - [x] Três tipos de monstros no modo solo: Slime, Lobo e Aranha, com loot e XP
 - [x] Dois tipos de ataque no solo: espada normal e golpe forte (K/toque), dano 2, preparação e recarga longa. Online permanece golpe normal autoritativo (RPG-004).
+- [x] Esquiva solo (Shift/Android) com colisão, janela breve de invulnerabilidade e recarga; salto telegrafado de lobo e teia telegrafada de aranha que reduz velocidade (RPG-005). Ainda pendentes: versão autoritativa Go e PvP/online.
 
 ## Fase 2 — Multiplayer de teste
 - [x] Testar WSS público via Caddy e sincronizar dois clientes numa sala temporária

@@ -59,3 +59,7 @@ confirmou o abate no tick autoritativo. O servidor acompanha `Kills` total,
 e inclui dados de progressão no snapshot WebSocket v3. Os checkpoints internos
 da sala também mantêm estes atributos. A reconexão anônima tem **novo ID** e
 não restaura XP sem identidade persistente. Leia `docs/RPG_PROGRESSAO.md`.
+
+## RPG-005 — Reações de combate (apenas modo solo)
+
+Lobo: investida com preparação de 0,45 s até a posição marcada do jogador, 16 de dano quando alcança o alvo, recarga 3,2 s. Aranha: teia telegrafada de 0,55 s contra a posição marcada, 8 de dano e lentidão temporária de 1,25 s caso o golpe efetivamente atinja. A esquiva pode evitar os ataques e um golpe interrompe a preparação. A IA anterior permanece quando a flag `soloSpecials` está desativada; essa flag é ativada apenas em `OfflineSimulation`. Nenhum ataque novo foi adicionado ao servidor Go, ao protocolo v3 ou à persistência. Veja `docs/QA_ANDROID.md`.
