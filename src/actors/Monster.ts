@@ -17,6 +17,11 @@ export class Monster {
   private pulse = 0;
   private knockX = 0;
   private knockY = 0;
+  /** Visible solo-only warning. The locked target gives the player time to dodge. */
+  specialWindup = 0;
+  specialTargetX = 0;
+  specialTargetY = 0;
+  specialCooldown = 0;
 
   constructor(kind: MonsterKind, id: string, x: number, y: number) {
     this.kind = kind;
@@ -27,7 +32,7 @@ export class Monster {
     this.y = y;
   }
 
-  update(dt: number, player: Player, world: CollisionMap): void {
+  update(dt: number, player: Player, world: CollisionMap, soloSpecials = false): void {
     if (!Number.isFinite(dt) || dt <= 0) return;
     dt = Math.min(0.1, dt);
     this.pulse += dt * 5;
@@ -41,6 +46,49 @@ export class Monster {
     if (villageGround(Math.floor(player.x / TILE_SIZE), Math.floor(player.y / TILE_SIZE))) return;
     const dx = player.x - this.x, dy = player.y - this.y;
     const distance = Math.hypot(dx, dy);
+    if (soloSpecials && this.kind !== "slime" && this.hp > 0) {
+      this.specialCooldown = Math.max(0, this.specialCooldown - dt);
+      if (this.specialWindup > 0) {
+        // Being hit interrupts the preparation; no unfair post-stagger impact.
+        if (this.hurtTime > 0) {
+          this.specialWindup = 0;
+          this.specialCooldown = Math.max(this.specialCooldown, 0.8);
+          return;
+        }
+        this.specialWindup = Math.max(0, this.specialWindup - dt);
+        if (this.specialWindup === 0) {
+          if (this.kind === "wolf") {
+            const tx = this.specialTargetX - this.x;
+            const ty = this.specialTargetY - this.y;
+            const length = Math.hypot(tx, ty);
+            if (length > 0.01) {
+              const travel = Math.max(0, Math.min(90, length - 12));
+              moveBody(this, tx / length * travel, ty / length * travel, world);
+            }
+            if (Math.hypot(player.x - this.x, player.y - this.y) < 33)
+              player.takeDamage(this.species.damage + 4, this.x, this.y);
+            this.specialCooldown = 3.2;
+          } else {
+            const landed = Math.hypot(player.x - this.specialTargetX,
+              player.y - this.specialTargetY) < 26;
+            if (landed && player.takeDamage(8, this.x, this.y))
+              player.applyWebSlow(1.25);
+            this.specialCooldown = 3.5;
+          }
+          this.contactCooldown = Math.max(this.contactCooldown, 0.5);
+        }
+        return;
+      }
+      const inRange = this.kind === "wolf"
+        ? distance >= 60 && distance <= 130
+        : distance >= 45 && distance <= 150;
+      if (this.specialCooldown <= 0 && this.hurtTime <= 0 && inRange) {
+        this.specialTargetX = player.x;
+        this.specialTargetY = player.y;
+        this.specialWindup = this.kind === "wolf" ? 0.45 : 0.55;
+        return;
+      }
+    }
     if (distance < this.species.aggroRadius && distance > 16 && this.hurtTime <= 0) {
       let multiplier: number;
       switch (this.species.ai) {
@@ -66,6 +114,10 @@ export class Monster {
   takeHit(sourceX: number, sourceY: number, damage = 1): void {
     if (!Number.isSafeInteger(damage) || damage <= 0) return;
     this.hp = Math.max(0, this.hp - damage);
+    if (this.specialWindup > 0) {
+      this.specialWindup = 0;
+      this.specialCooldown = Math.max(this.specialCooldown, 0.8);
+    }
     this.hurtTime = 0.22;
     const dx = this.x - sourceX, dy = this.y - sourceY;
     const distance = Math.hypot(dx, dy) || 1;
