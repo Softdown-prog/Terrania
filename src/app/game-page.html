@@ -42,6 +42,17 @@
         ><small id="saveMode">{{ hud.online() ? "Sala experimental · progresso temporário" : "Aventura local · progresso neste navegador" }}</small>
       </div>
       <p id="gameNotice" role="status">{{ notice() }}</p>
+      @if (hud.classicMode()) {
+        <aside id="classicCombat" class="classic-status" aria-label="Combate clássico experimental">
+          <strong>COMBATE CLÁSSICO · SOLO</strong>
+          @if (hud.combatTarget(); as target) {
+            <span id="classicTarget">Alvo: {{ target }}</span>
+            <button id="stopTarget" type="button" (click)="hud.stopCombat()">Cancelar alvo</button>
+          } @else {
+            <span id="classicHint">Toque em um slime ou use ATACAR para selecionar e seguir</span>
+          }
+        </aside>
+      }
       <div id="joystick" role="group" aria-label="Controle de movimento: arraste para caminhar">
         <div id="stick"></div>
       </div>
@@ -56,7 +67,7 @@
       </button>
       <button id="talkButton" [hidden]="!hud.talkVisible()" [attr.aria-label]="hud.talkLabel()" (click)="hud.talk()" type="button" aria-label="Conversar com personagem">{{ hud.talkLabel() }}</button>
       <div class="keyboard-hint" aria-hidden="true">
-        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar <span>·</span> <kbd>E</kbd> conversar
+        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> {{ hud.classicMode() ? 'selecionar alvo' : 'atacar' }} <span>·</span> <kbd>E</kbd> conversar
       </div>
       <dialog id="playersDialog" #playersDialog (close)="closed()" aria-labelledby="playersTitle">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar jogadores online">×</button>
@@ -155,7 +166,7 @@
           </div>
           <div>
             <dt>Espaço ou J</dt>
-            <dd>Atacar na direção em que você olha. Segure para repetir.</dd>
+            <dd>{{ hud.classicMode() ? "Selecione um slime com toque/clique ou pelo botão ATACAR. O herói persegue o alvo por caminhos livres e ataca sozinho quando puder. Toque no chão para caminhar sem persegui-lo; ATACAR retoma a perseguição. Escape cancela o alvo." : "Atacar na direção em que você olha. Segure para repetir." }}</dd>
           </div>
           <div>
             <dt>No celular</dt>

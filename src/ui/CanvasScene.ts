@@ -142,10 +142,25 @@ export class CanvasScene {
   }
   render(world: WorldRenderer, camera: Camera, player: Player, mobs: ReadonlyArray<Slime | MobState>,
     remotePlayers: ReadonlyArray<HeroState>, selfId: string | null, time: number, effects: Effects,
-    destination: Point | null = null, drops: ReadonlyArray<LootDrop> = []): void {
+    destination: Point | null = null, drops: ReadonlyArray<LootDrop> = [],
+    combatTargetId: string | null = null): void {
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale, 0, 0);
     drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, remotePlayers, selfId, time, effects.enabled, drops);
+    // Original Terrania visual: a small gold target ring, never copied assets.
+    if (combatTargetId) {
+      const target = mobs.find(mob => mob.id === combatTargetId);
+      if (target) {
+        const left = camera.renderX - width / 2;
+        const top = camera.renderY - height / 2;
+        this.ctx.save();
+        this.ctx.strokeStyle = '#f2d388';
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([4, 3]);
+        this.ctx.strokeRect(target.x - left - 17, target.y - top - 28, 34, 36);
+        this.ctx.restore();
+      }
+    }
     effects.render(this.ctx, camera.renderX - width / 2, camera.renderY - height / 2);
     if (destination) drawTarget(this.ctx, { x: destination.x - (camera.renderX - width / 2),
       y: destination.y - (camera.renderY - height / 2) }, time);

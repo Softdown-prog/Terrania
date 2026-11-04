@@ -10,6 +10,7 @@ export class Input {
   private joyY = 0;
   private attackQueued = false;
   private talkQueued = false;
+  private cancelTargetQueued = false;
   private attackHeld = false;
   private stickPointer: number | null = null;
   private attackPointer: number | null = null;
@@ -61,6 +62,7 @@ export class Input {
       ) event.preventDefault();
       this.keys.add(event.code);
       if (!event.repeat && event.code === "KeyE") this.talkQueued = true;
+      if (!event.repeat && event.code === "Escape") this.cancelTargetQueued = true;
       if (!event.repeat && (event.code === "Space" || event.code === "KeyJ"))
         this.attackQueued = true;
     }, { signal: this.lifetime.signal });
@@ -135,6 +137,7 @@ export class Input {
     this.joyX = this.joyY = 0;
     this.attackHeld = this.attackQueued = false;
     this.talkQueued = false;
+    this.cancelTargetQueued = false;
     this.queuedTap = null;
     const canvas = document.getElementById("game");
     const canvasPointer = this.tapPointer?.id;
@@ -172,6 +175,11 @@ export class Input {
       this.joyY;
     const d = Math.hypot(x, y);
     return d > 1 ? { x: x / d, y: y / d } : { x, y };
+  }
+  consumeCancelTarget(): boolean {
+    const requested = this.cancelTargetQueued;
+    this.cancelTargetQueued = false;
+    return requested;
   }
   consumeTalk(): boolean {
     const talk = this.talkQueued;

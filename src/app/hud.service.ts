@@ -9,6 +9,8 @@ export class HudService implements GameUi {
   readonly status = signal('Preparando aventura…');
   readonly online = signal(false);
   readonly nearby = signal(0);
+  readonly classicMode = signal(false);
+  readonly combatTarget = signal<string | null>(null);
   readonly hp = signal(100);
   readonly maxHp = signal(100);
   readonly quest = signal('Proteja a clareira');
@@ -35,6 +37,7 @@ export class HudService implements GameUi {
   private newWorldCallback: () => void = () => {};
   private talkCallback: () => void = () => {};
   private potionCallback: () => string = () => '';
+  private stopCombatCallback: () => void = () => {};
 
   loadPreferences(): Preferences {
     let saved: Partial<Preferences> = {};
@@ -60,6 +63,8 @@ export class HudService implements GameUi {
   onNewWorld(callback: () => void): void { this.newWorldCallback = callback; }
   onTalk(callback: () => void): void { this.talkCallback = callback; }
   onPotionUse(callback: () => string): void { this.potionCallback = callback; }
+  onStopCombat(callback: () => void): void { this.stopCombatCallback = callback; }
+  stopCombat(): void { this.stopCombatCallback(); }
   newWorld(): void { this.newWorldCallback(); }
   talk(): void { this.talkCallback(); }
   usePotion(): void { this.inventoryFeedback.set(this.potionCallback()); }
@@ -67,6 +72,8 @@ export class HudService implements GameUi {
     this.gel.set(inventory.gel); this.potions.set(inventory.potion); this.online.set(online);
   }
   setStatus(status: string): void { this.status.set(status); }
+  setClassicMode(enabled: boolean): void { this.classicMode.set(enabled); }
+  setCombatTarget(label: string | null): void { this.combatTarget.set(label); }
   setOnline(online: boolean): void { this.online.set(online); }
   setSeed(seed: number): void { this.seed.set(seed); }
   setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }
