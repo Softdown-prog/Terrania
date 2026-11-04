@@ -12,11 +12,15 @@ export class Monster {
   contactCooldown = 0;
   hurtTime = 0;
   readonly species: MonsterSpec;
+  readonly kind: MonsterKind;
+  readonly id: string;
   private pulse = 0;
   private knockX = 0;
   private knockY = 0;
 
-  constructor(readonly kind: MonsterKind, readonly id: string, x: number, y: number) {
+  constructor(kind: MonsterKind, id: string, x: number, y: number) {
+    this.kind = kind;
+    this.id = id;
     this.species = MONSTER_SPECIES[kind];
     this.hp = this.species.hp;
     this.x = x;
