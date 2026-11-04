@@ -842,3 +842,38 @@ noscript a {
 @media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
   #heavyAttack { bottom: max(22px, calc(env(safe-area-inset-bottom) + 18px)); width: 60px; height: 60px; }
 }
+
+/* RPG-005 — esquiva solo, independente do ataque normal e golpe forte. */
+#dodge {
+  display: none;
+  position: absolute;
+  right: max(107px, calc(env(safe-area-inset-right) + 101px));
+  bottom: max(105px, calc(env(safe-area-inset-bottom) + 99px));
+  z-index: 5;
+  width: 60px;
+  height: 60px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  border: 1px solid #93d7da;
+  background: #214555ed;
+  color: #def9fa;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 4px 14px #112b3888;
+}
+#dodge:active { filter: brightness(1.3); }
+@media (pointer: coarse), (max-width: 650px) {
+  #dodge { display: flex; align-items: center; justify-content: center; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  #dodge {
+    bottom: max(99px, calc(env(safe-area-inset-bottom) + 93px));
+    width: 56px;
+    height: 56px;
+  }
+}
