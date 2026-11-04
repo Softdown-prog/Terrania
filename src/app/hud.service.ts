@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import type { Player } from '../actors/Player.ts';
 import type { Inventory } from '../engine/Inventory.ts';
+import { levelForExperience, nextLevelExperience, normalizeExperience } from '../engine/Experience.ts';
 import type { GameUi, Preferences } from '../ui/GameUi.ts';
 import { npcDialogue, type Npc } from '../world/npcs.ts';
 
@@ -11,6 +12,9 @@ export class HudService implements GameUi {
   readonly nearby = signal(0);
   readonly hp = signal(100);
   readonly maxHp = signal(100);
+  readonly level = signal(1);
+  readonly experience = signal(0);
+  readonly nextLevelXp = signal(30);
   readonly quest = signal('Proteja a clareira');
   readonly questProgress = signal('0 / 5 slimes');
   readonly questPercent = signal(0);
@@ -96,8 +100,12 @@ export class HudService implements GameUi {
     this.quest.set(name); this.questProgress.set('E ou porta: sair');
     this.coords.set('Interior · Vila da Travessia');
   }
-  update(player: Player, kills: number): void {
+  update(player: Player, kills: number, experience: number): void {
     this.hp.set(player.hp); this.maxHp.set(player.maxHp);
+    const xp = normalizeExperience(experience);
+    this.level.set(levelForExperience(xp));
+    this.experience.set(xp);
+    this.nextLevelXp.set(nextLevelExperience(xp));
     this.quest.set(kills >= 5 ? 'Clareira protegida' : 'Proteja a clareira');
     this.questProgress.set(kills >= 5 ? 'Missão concluída ✓' : Math.min(kills, 5) + ' / 5 slimes');
     this.questPercent.set(Math.min(100, kills / 5 * 100));

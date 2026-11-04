@@ -80,7 +80,7 @@ export class Game {
           ? "Sua vida já está completa."
           : "Você não possui poções de cura.";
       this.save();
-      this.hud.update(this.sim.player, this.sim.kills);
+      this.hud.update(this.sim.player, this.sim.kills, this.sim.experience);
       this.hud.updateInventory(this.sim.inventory, false);
       return "Poção utilizada! Vida restaurada em até 35 pontos.";
     });
@@ -228,7 +228,7 @@ export class Game {
           this.saveClock += dt;
           if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
         }
-        this.hud.update(this.sim.player, this.sim.kills);
+        this.hud.update(this.sim.player, this.sim.kills, this.sim.experience);
         this.hud.updateInventory(this.sim.inventory, online);
         this.hud.setInterior(room.building.name);
         this.scene.renderInterior(room, this.navigator.target, this.clock);
@@ -284,7 +284,7 @@ export class Game {
     if (feedback.hit) this.camera.shake(0.25);
     if (feedback.hurt) this.camera.shake(0.65);
     this.camera.update(dt, this.sim.player);
-    this.hud.update(this.sim.player, this.sim.kills);
+    this.hud.update(this.sim.player, this.sim.kills, this.sim.experience);
     this.hud.updateInventory(this.sim.inventory, online);
     this.hud.setNearbyNpc(nearestNpc(this.sim.player.x, this.sim.player.y));
     this.scene.render(

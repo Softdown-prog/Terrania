@@ -113,6 +113,13 @@ input:focus-visible {
   overflow: hidden;
   border-radius: 2px;
 }
+.xp-readout {
+  display: block;
+  margin-top: 4px;
+  font: 9px system-ui;
+  color: #d1d7bf;
+  white-space: nowrap;
+}
 #hpFill {
   height: 100%;
   width: 100%;
