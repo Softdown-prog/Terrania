@@ -2,7 +2,7 @@ import type { Player } from "../actors/Player.ts";
 import type { Slime } from "../actors/Slime.ts";
 import type { CollisionMap } from "../world/collision.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
-import { canStrike } from "./combat.ts";
+import { ATTACK_REACH, canStrike } from "./combat.ts";
 import { TapNavigator } from "./TapNavigator.ts";
 
 /** CLASSIC-002: local-only follow logic for a single manually selected target.
@@ -10,7 +10,8 @@ import { TapNavigator } from "./TapNavigator.ts";
  * collision authority. No networking, teleportation, or extra damage.
  */
 export const CLASSIC_FOLLOW_LIMIT = TILE_SIZE * 16;
-export const CLASSIC_FOLLOW_STOP = TILE_SIZE * 1.25;
+// Stop inside actual melee reach, with margin for pathfinder waypoint tolerance.
+export const CLASSIC_FOLLOW_STOP = ATTACK_REACH - 4;
 const REPATH_SECONDS = 0.4;
 const REPATH_DISTANCE = TILE_SIZE * 0.5;
 const ZERO = { x: 0, y: 0 } as const;
