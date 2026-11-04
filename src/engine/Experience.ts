@@ -1,5 +1,6 @@
 /** XP total é a fonte de verdade da progressão solo. */
-export const SLIME_XP = 10;
+import { MONSTER_SPECIES } from "../actors/MonsterSpecies.ts";
+export const SLIME_XP = MONSTER_SPECIES.slime.xp;
 export const MAX_LEVEL = 50;
 export function experienceForLevel(level: number): number {
   if (!Number.isSafeInteger(level) || level < 1 || level > MAX_LEVEL)

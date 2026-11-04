@@ -1,5 +1,6 @@
 import type { Player } from "../actors/Player.ts";
 import type { Slime } from "../actors/Slime.ts";
+import type { MonsterKind } from "../actors/MonsterSpecies.ts";
 import { ATTACK_DURATION, ATTACK_WINDUP } from "../engine/combat.ts";
 export type HeroVisual = Pick<
   Player,
@@ -219,6 +220,51 @@ export function renderSlime(
     ctx.fillRect(-10, -27, 20, 4);
     ctx.fillStyle = "#e0b578";
     ctx.fillRect(-9, -26, 9, 2);
+  }
+  ctx.restore();
+}
+
+// Protocol v3 without 'kind' continues to display the original Slime.
+export type MonsterVisual = SlimeVisual & { readonly kind?: MonsterKind };
+/** Procedural silhouettes for new monsters. No image downloads or sprite sheets. */
+export function renderMonster(ctx: CanvasRenderingContext2D, mob: MonsterVisual, sx: number, sy: number): void {
+  if (!mob.kind || mob.kind === "slime") {
+    renderSlime(ctx, mob, sx, sy);
+    return;
+  }
+  ctx.save();
+  ctx.translate(sx, sy);
+  ellipse(ctx, 0, 4, 15, 4, "#152c3155");
+  const wounded = (mob.hurtTime ?? 0) > 0.1;
+  if (mob.kind === "wolf") {
+    ctx.fillStyle = wounded ? "#efe7d8" : "#6b7780";
+    ctx.beginPath();
+    ctx.moveTo(-16, -6); ctx.lineTo(-12, -19); ctx.lineTo(-6, -15);
+    ctx.lineTo(4, -16); ctx.lineTo(11, -24); ctx.lineTo(17, -8);
+    ctx.lineTo(12, 0); ctx.lineTo(-13, 0); ctx.closePath(); ctx.fill();
+    ellipse(ctx, -3, -10, 11, 7, wounded ? "#fff5ee" : "#8e9799");
+    ctx.fillStyle = "#e9c07a";
+    ctx.fillRect(-9, -12, 3, 3); ctx.fillRect(6, -12, 3, 3);
+    ctx.fillStyle = "#25363b"; ctx.fillRect(-1, -7, 4, 3);
+    ctx.fillStyle = "#45565f";
+    ctx.fillRect(-12, -2, 5, 7); ctx.fillRect(7, -2, 5, 7);
+  } else {
+    ctx.strokeStyle = wounded ? "#e8d2fa" : "#765e95";
+    ctx.lineWidth = 2.5;
+    for (const side of [-1, 1]) for (let leg = 0; leg < 4; leg++) {
+      const y = -13 + leg * 4;
+      ctx.beginPath(); ctx.moveTo(side * 6, -10);
+      ctx.lineTo(side * (14 + leg * 2), y - 7);
+      ctx.lineTo(side * (18 + leg * 2), y + 6); ctx.stroke();
+    }
+    ellipse(ctx, 1, -10, 10, 9, wounded ? "#decaf8" : "#413455");
+    ellipse(ctx, -7, -12, 6, 6, wounded ? "#decaf8" : "#685384");
+    ctx.fillStyle = "#f5b0a0";
+    ctx.fillRect(-11, -14, 2, 2); ctx.fillRect(-5, -14, 2, 2);
+  }
+  if (mob.hp < (mob.kind === "wolf" ? 3 : 2)) {
+    ctx.fillStyle = "#1e252b"; ctx.fillRect(-11, -30, 22, 4);
+    ctx.fillStyle = "#e7b17d"; ctx.fillRect(-10, -29, 10, 2);
   }
   ctx.restore();
 }

@@ -1,7 +1,7 @@
 import type { Player } from '../actors/Player.ts';
-import type { Slime } from '../actors/Slime.ts';
+import type { Monster } from '../actors/Monster.ts';
 import type { HeroState, MobState } from '../shared/protocol.ts';
-import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
+import { renderHero, renderMonster, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
 import { NPCS, NPC_TALK_RANGE } from '../world/npcs.ts';
 import { renderNpc } from '../render/npcs.ts';
@@ -16,7 +16,8 @@ import { screenToWorld, screenToInterior } from '../input/tap.ts';
 import type { LootDrop } from '../engine/loot.ts';
 
 /** Cristal de gel procedural, independente de sprite ou imagem externa. */
-function renderGel(ctx: CanvasRenderingContext2D, x: number, y: number, time: number): void {
+function renderGel(ctx: CanvasRenderingContext2D, x: number, y: number, time: number,
+  item: LootDrop["item"]): void {
   const bob = Math.sin(time * 2.4 + x * 0.02) * 2;
   ctx.save();
   ctx.translate(x, y - 7 + bob);
@@ -24,8 +25,8 @@ function renderGel(ctx: CanvasRenderingContext2D, x: number, y: number, time: nu
   ctx.beginPath();
   ctx.ellipse(0, 11 - bob, 9, 3, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#60cda6';
-  ctx.strokeStyle = '#d1fce8';
+  ctx.fillStyle = item === 'fang' ? '#d5c7a2' : item === 'silk' ? '#d7aef7' : '#60cda6';
+  ctx.strokeStyle = item === 'fang' ? '#fff2d4' : item === 'silk' ? '#f4dfff' : '#d1fce8';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(0, -12);
@@ -43,7 +44,7 @@ function renderGel(ctx: CanvasRenderingContext2D, x: number, y: number, time: nu
 /** Shared by the game and honest, static world previews on the website. */
 export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRenderer,
   cameraX: number, cameraY: number, width: number, height: number,
-  player: HeroVisual & { x: number; y: number }, mobs: ReadonlyArray<Slime | MobState>,
+  player: HeroVisual & { x: number; y: number }, mobs: ReadonlyArray<Monster | MobState>,
   remotePlayers: ReadonlyArray<HeroState> = [], selfId: string | null = null, time = 0, animated = false,
   drops: ReadonlyArray<LootDrop> = []): void {
   ctx.fillStyle = '#506f50'; ctx.fillRect(0, 0, width, height);
@@ -62,13 +63,13 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
         Math.hypot(player.x - npc.x, player.y - npc.y) <= NPC_TALK_RANGE) });
   }
   for (const mob of mobs) if (Math.abs(mob.x - cameraX) < width / 2 + 30 && Math.abs(mob.y - cameraY) < height / 2 + 40) {
-    actors.push({ y: mob.y, draw: () => renderSlime(ctx, mob, mob.x - left, mob.y - top) });
+    actors.push({ y: mob.y, draw: () => renderMonster(ctx, mob, mob.x - left, mob.y - top) });
   }
   for (const drop of drops) {
     if (Math.abs(drop.x - cameraX) > width / 2 + 12 ||
         Math.abs(drop.y - cameraY) > height / 2 + 18) continue;
     actors.push({ y: drop.y, draw: () =>
-      renderGel(ctx, drop.x - left, drop.y - top, time) });
+      renderGel(ctx, drop.x - left, drop.y - top, time, drop.item) });
   }
   for (const remote of remotePlayers) {
     if (remote.id === selfId || Math.abs(remote.x - cameraX) > width / 2 + 40 || Math.abs(remote.y - cameraY) > height / 2 + 50) continue;
@@ -140,7 +141,7 @@ export class CanvasScene {
     if (destination) drawTarget(this.ctx, destination, time);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
   }
-  render(world: WorldRenderer, camera: Camera, player: Player, mobs: ReadonlyArray<Slime | MobState>,
+  render(world: WorldRenderer, camera: Camera, player: Player, mobs: ReadonlyArray<Monster | MobState>,
     remotePlayers: ReadonlyArray<HeroState>, selfId: string | null, time: number, effects: Effects,
     destination: Point | null = null, drops: ReadonlyArray<LootDrop> = []): void {
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;

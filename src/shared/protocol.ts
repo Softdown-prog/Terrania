@@ -1,3 +1,4 @@
+import type { MonsterKind } from "../actors/MonsterSpecies.ts";
 /** Version 3 shares village building collision with clients and the server. */
 export const PROTOCOL_VERSION = 3;
 export interface HeroState {
@@ -16,6 +17,8 @@ export interface HeroState {
   hurtTime?: number;
 }
 export interface MobState {
+  /** Omissão significa Slime; compatível com servidores Go/Node antigos. */
+  kind?: MonsterKind;
   id: string;
   x: number;
   y: number;
