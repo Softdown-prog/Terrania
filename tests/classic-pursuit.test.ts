@@ -3,6 +3,7 @@ import test from "node:test";
 import { Player } from "../src/actors/Player.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
+import { canStrike } from "../src/engine/combat.ts";
 import {
   ClassicPursuit,
   CLASSIC_FOLLOW_LIMIT,
@@ -131,7 +132,7 @@ test("perseguição e golpe clássico conservam temporização do alvo único", 
     const movement = follow.direction(DT, hero, fight.targetId, mobs, OPEN);
     hero.update(DT, movement, OPEN);
     if (fight.tick(DT, hero, mobs, OPEN)) {
-      assert.ok(inClassicAttackPosition(hero, mob, OPEN));
+      assert.ok(canStrike(hero, mob, OPEN), "o ataque precisa respeitar alcance, direção e linha de visão");
       strikes++;
       hero.startAttack();
       mob.takeHit(hero.x, hero.y);
