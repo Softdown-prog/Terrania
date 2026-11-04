@@ -847,7 +847,7 @@ noscript a {
 #dodge {
   display: none;
   position: absolute;
-  right: max(107px, calc(env(safe-area-inset-right) + 101px));
+  right: max(112px, calc(env(safe-area-inset-right) + 106px));
   bottom: max(105px, calc(env(safe-area-inset-bottom) + 99px));
   z-index: 5;
   width: 60px;
