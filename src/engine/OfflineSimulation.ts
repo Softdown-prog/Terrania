@@ -4,6 +4,7 @@ import { SeedCollision } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { canStrike } from "./combat.ts";
 import { Inventory, type InventoryState } from "./Inventory.ts";
+import { SLIME_XP, MAX_EXPERIENCE, levelForExperience, maxHpForExperience, normalizeExperience } from "./Experience.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
@@ -17,6 +18,8 @@ export interface OfflineSave {
   /** Campos opcionais mantêm compatibilidade com saves antigos. */
   inventory?: InventoryState;
   drops?: LootDrop[];
+  /** XP solo, opcional para saves legados. */
+  experience?: number;
 }
 
 /** Motor puro: nenhuma dependência de Canvas, DOM, UI, rede ou localStorage. */
@@ -29,19 +32,25 @@ export class OfflineSimulation {
   readonly collision: SeedCollision;
   readonly seed: number;
   kills = 0;
+  experience = 0;
+  get level(): number { return levelForExperience(this.experience); }
   private spawnedChunk = "";
 
   constructor(seed: number, saved?: OfflineSave) {
     this.seed = seed;
     this.collision = new SeedCollision(seed);
     this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined);
+    this.experience = normalizeExperience(saved?.seed === seed ? saved.experience : undefined);
+    this.player.maxHp = maxHpForExperience(this.experience);
+    this.player.hp = this.player.maxHp;
     if (saved && saved.seed === seed) {
       // A previous save may now overlap a newly introduced solid landmark.
       if (this.collision.canMove(saved.x, saved.y)) {
         this.player.x = saved.x;
         this.player.y = saved.y;
       }
-      this.player.hp = saved.hp;
+      this.player.hp = Number.isFinite(saved.hp) ?
+        Math.min(this.player.maxHp, Math.max(1, saved.hp)) : this.player.maxHp;
       this.kills = saved.kills;
       for (const id of saved.defeated) this.defeated.add(id);
       for (const drop of normalizeDrops(saved.drops)) {
@@ -95,6 +104,12 @@ export class OfflineSimulation {
             this.slimes.delete(id);
             this.defeated.add(id);
             this.kills++;
+            // O XP depende de abate real e é independente de drop ou coleta.
+            const previousMaxHp = this.player.maxHp;
+            this.experience = Math.min(MAX_EXPERIENCE, this.experience + SLIME_XP);
+            this.player.maxHp = maxHpForExperience(this.experience);
+            if (this.player.maxHp > previousMaxHp)
+              this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.maxHp - previousMaxHp);
             if (this.drops.size < MAX_WORLD_DROPS) {
               this.drops.set(slime.id, {
                 id: slime.id,
@@ -119,6 +134,8 @@ export class OfflineSimulation {
     }
     if (this.player.hp <= 0) {
       this.player = new Player();
+      this.player.maxHp = maxHpForExperience(this.experience);
+      this.player.hp = this.player.maxHp;
       this.spawnedChunk = "";
       changed = true;
     }
@@ -131,6 +148,7 @@ export class OfflineSimulation {
       y: this.player.y,
       hp: this.player.hp,
       kills: this.kills,
+      experience: this.experience,
       defeated: [...this.defeated].slice(-2000),
       inventory: this.inventory.snapshot(),
       drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),
