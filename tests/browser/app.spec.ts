@@ -110,3 +110,22 @@ test('menu Angular mantém contador fora do cenário e só consulta presença na
   await expect(page.locator('app-online-players')).toHaveCount(0);
   await expect(page.locator('#gameMenuButton')).toBeVisible();
 });
+
+
+test('progressão solo aparece no HUD Angular no celular e não invade multiplayer', async ({ page }) => {
+  await page.setViewportSize({width: 390, height: 844});
+  await page.addInitScript(() => {
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({
+      seed: 842136, x: 16, y: 16, hp: 107, kills: 5,
+      defeated: [], experience: 50,
+    }));
+  });
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('canvas#game')).toBeVisible();
+  await expect(page.locator('.vitals .stat-heading span')).toHaveText('NÍVEL 2');
+  await expect(page.locator('#hpText')).toHaveText('107 / 110');
+  await expect(page.locator('#xpText')).toHaveText('XP 50 / 90');
+  await page.goto('/jogar/?room=online-xp-smoke');
+  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
+  await expect(page.locator('#xpText')).toHaveCount(0);
+});

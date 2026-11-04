@@ -41,7 +41,8 @@ jobs:
               "Training combat: " + r.combat.totals.passed + " passed, " +
                 r.combat.totals.failed + " failed, " +
                 r.combat.totals.skipped + " skipped",
-              "Kills: " + r.combat.kills + " | Gel: " + r.combat.gelCollected +
+              "Kills: " + r.combat.kills + " | XP: " + r.combat.experience +
+                " | Level: " + r.combat.level + " | Gel: " + r.combat.gelCollected +
                 " | Potions used: " + r.combat.potionsUsed,
               "Natural: " + r.natural.status +
                 " | Spawned: " + r.natural.monstersDiscovered +
@@ -55,7 +56,7 @@ jobs:
                 " | Deaths: " + r.expedition.deaths,
               "",
               "Natural encounters offline; multiplayer, " +
-                "browser, XP and VPS not tested."
+                "browser, multiplayer and VPS not tested."
             ];
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
           '

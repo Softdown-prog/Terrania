@@ -15,7 +15,7 @@ const MAX_PICKUP_TICKS = 240;
 export type CombatCheckStatus = "passed" | "failed" | "skipped";
 export interface CombatQaFinding {
   readonly id: string;
-  readonly category: "movement" | "combat" | "loot" | "quest" | "potion" | "persistence";
+  readonly category: "movement" | "combat" | "loot" | "quest" | "potion" | "persistence" | "progression";
   readonly status: CombatCheckStatus;
   readonly detail: string;
   readonly tick: number;
@@ -30,6 +30,9 @@ export interface CombatQaReport {
   readonly gelCollected: number;
   readonly potionsAwarded: number;
   readonly potionsUsed: number;
+  readonly experience: number;
+  readonly level: number;
+  readonly maxHp: number;
   readonly checks: readonly CombatQaFinding[];
   readonly totals: { readonly passed: number; readonly failed: number; readonly skipped: number };
   readonly capabilities: {
@@ -38,6 +41,7 @@ export interface CombatQaReport {
     readonly questReward: true;
     readonly potion: true;
     readonly persistence: true;
+    readonly experience: true;
     readonly randomNaturalSpawns: false;
     readonly browser: false;
     readonly multiplayer: false;
@@ -143,6 +147,12 @@ export function runCombatQa(seed: number = 842136): CombatQaReport {
     }
   }
 
+  const progressionValid = sim.kills === ENCOUNTERS &&
+    sim.experience === ENCOUNTERS * 10 && sim.level === 2 && sim.player.maxHp === 110;
+  record("experience-growth", "progression", progressionValid ? "passed" : "failed",
+    progressionValid ? "Cinco abates reais concederam XP, nível 2 e HP máximo 110" :
+      "XP, nível ou HP máximo divergente dos abates reais");
+
   const completedQuest = sim.kills === ENCOUNTERS;
   const firstClaim = sim.inventory.claimAelaReward(sim.kills);
   const secondClaim = sim.inventory.claimAelaReward(sim.kills);
@@ -177,9 +187,11 @@ export function runCombatQa(seed: number = 842136): CombatQaReport {
     restored.inventory.gel === sim.inventory.gel &&
     restored.inventory.potion === sim.inventory.potion &&
     restored.inventory.questRewardClaimed === sim.inventory.questRewardClaimed &&
+    restored.experience === sim.experience && restored.level === sim.level &&
+    restored.player.maxHp === sim.player.maxHp &&
     saved.defeated.length === restored.defeated.size;
   record("save-restore", "persistence", consistent ? "passed" : "failed",
-    consistent ? "XP ainda ausente; derrotas, gel, poções e recompensa restaurados" :
+    consistent ? "Derrotas, XP, nível, HP máximo, gel, poções e recompensa restaurados" :
       "Estado de combate/inventário divergente após serialização");
 
   const passed = checks.filter(c => c.status === "passed").length;
@@ -189,11 +201,12 @@ export function runCombatQa(seed: number = 842136): CombatQaReport {
     environment: "controlled-offline-encounters", seed,
     status: failed ? "failed" : skipped ? "incomplete" : "passed",
     ticks, kills: sim.kills, gelCollected: sim.inventory.gel,
-    potionsAwarded, potionsUsed, checks,
+    potionsAwarded, potionsUsed,
+    experience: sim.experience, level: sim.level, maxHp: sim.player.maxHp, checks,
     totals: { passed, failed, skipped },
     capabilities: {
       combat: true, loot: true, questReward: true, potion: true,
-      persistence: true, randomNaturalSpawns: false,
+      persistence: true, experience: true, randomNaturalSpawns: false,
       browser: false, multiplayer: false,
     },
   };

@@ -6,6 +6,10 @@ test("bot enfrenta cinco slimes, recolhe gel e usa poção via motor real", () =
   const report = runCombatQa(842136);
   assert.equal(report.status, "passed", JSON.stringify(report.checks.filter(c => c.status !== "passed")));
   assert.equal(report.kills, 5);
+  assert.equal(report.experience, 50);
+  assert.equal(report.level, 2);
+  assert.equal(report.maxHp, 110);
+  assert.equal(report.checks.find(c => c.id === "experience-growth")?.status, "passed");
   assert.equal(report.gelCollected, 5);
   assert.equal(report.potionsAwarded, 2);
   assert.equal(report.potionsUsed, 1);
