@@ -50,3 +50,12 @@ usa tags 1 (Slime), 2 (Lobo), 3 (Aranha), mas seu **planejador de IA** permanece
 somente para Slime: lotes mistos caem inteiramente no motor Go sem executar
 a IA errada para novas espécies. Nenhum XP online é concedido aqui; progressão
 online depende de armazenamento e contabilização autoritativos posteriores.
+
+## RPG-002 — XP online por abate
+
+O motor Go agora atribui a XP de cada espécie ao jogador que efetivamente
+confirmou o abate no tick autoritativo. O servidor acompanha `Kills` total,
+`SlimeKills` e `Experience` em separado, mantém nível/vida após reaparecimento
+e inclui dados de progressão no snapshot WebSocket v3. Os checkpoints internos
+da sala também mantêm estes atributos. A reconexão anônima tem **novo ID** e
+não restaura XP sem identidade persistente. Leia `docs/RPG_PROGRESSAO.md`.

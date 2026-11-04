@@ -69,6 +69,7 @@ func TestAuthoritativeKillXpTwoPlayersAndCheckpoint(t *testing.T) {
 		m:=NewMonster(fixture.kind,fixture.id,x+35,y)
 		m.HP=1
 		m.HurtTime=100
+		m.ContactCooldown=100 // Isolate XP/HP restoration from touch damage.
 		r.mobs[m.ID]=m
 		r.mobOrder=append(r.mobOrder,m.ID)
 		a.Actor.AttackCooldownTimer=0
