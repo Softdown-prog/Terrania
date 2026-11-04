@@ -62,6 +62,10 @@ func TestTwoPlayersSeeAuthoritativeNaturalMonsterKinds(t *testing.T) {
 								math.Abs(m.X-n.X)>600 || math.Abs(m.Y-n.Y)>600 {continue}
 							// Do not place test players in an obstructed tile.
 							if !w.CanMove(m.X-35,m.Y) {continue}
+							// Both natural mob chunks must be in the player's 3x3 spawn area.
+							playerCX,playerCY:=engine.ChunkOf(m.X-35),engine.ChunkOf(m.Y)
+							spiderCX,spiderCY:=engine.ChunkOf(n.X),engine.ChunkOf(n.Y)
+							if math.Abs(float64(playerCX-spiderCX))>1 || math.Abs(float64(playerCY-spiderCY))>1 {continue}
 							wolf,spider=m,n
 							heroX,heroY=m.X-35,m.Y
 							found=true
