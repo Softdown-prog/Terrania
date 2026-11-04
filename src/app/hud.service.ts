@@ -21,6 +21,8 @@ export class HudService implements GameUi {
   readonly coords = signal('X 0 · Y 0');
   readonly seed = signal(842136);
   readonly gel = signal(0);
+  readonly fang = signal(0);
+  readonly silk = signal(0);
   readonly potions = signal(0);
   readonly inventoryFeedback = signal('');
   readonly talkVisible = signal(false);
@@ -68,7 +70,11 @@ export class HudService implements GameUi {
   talk(): void { this.talkCallback(); }
   usePotion(): void { this.inventoryFeedback.set(this.potionCallback()); }
   updateInventory(inventory: Inventory, online: boolean): void {
-    this.gel.set(inventory.gel); this.potions.set(inventory.potion); this.online.set(online);
+    this.gel.set(inventory.gel);
+    this.fang.set(inventory.fang);
+    this.silk.set(inventory.silk);
+    this.potions.set(inventory.potion);
+    this.online.set(online);
   }
   setStatus(status: string): void { this.status.set(status); }
   setOnline(online: boolean): void { this.online.set(online); }

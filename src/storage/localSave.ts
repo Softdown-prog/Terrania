@@ -16,10 +16,13 @@ export function loadLocalSave(): OfflineSave | null {
       typeof save.hp !== 'number' || !Number.isFinite(save.hp) ||
       !Array.isArray(save.defeated) || !save.defeated.every(id => typeof id === 'string')) return null;
     const experience = normalizeExperience(save.experience);
+    const kills = typeof save.kills === 'number' && Number.isSafeInteger(save.kills) ? Math.max(0, save.kills) : 0;
+    const slimeKills = typeof save.slimeKills === 'number' && Number.isSafeInteger(save.slimeKills) && save.slimeKills >= 0
+      ? Math.min(kills, save.slimeKills) : kills;
     return { seed: save.seed >>> 0, x: save.x, y: save.y,
       hp: Math.min(maxHpForExperience(experience), Math.max(1, save.hp)),
       experience,
-      kills: typeof save.kills === 'number' && Number.isFinite(save.kills) ? Math.max(0, save.kills) : 0,
+      kills, slimeKills,
       defeated: save.defeated.slice(-2000),
       inventory: normalizeInventory(save.inventory),
       drops: normalizeDrops(save.drops) };

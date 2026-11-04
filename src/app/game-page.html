@@ -31,7 +31,7 @@
           [attr.aria-expanded]="toolsExpanded()" aria-controls="gameToolActions"
           (click)="toolsExpanded.set(!toolsExpanded())">{{ toolsExpanded() ? 'Fechar menu' : '☰ Opções' }}</button>
         <div id="gameToolActions" class="game-tool-actions" [hidden]="!toolsExpanded()">
-          <button id="inventoryButton" [disabled]="hud.online()" (click)="open(inventoryDialog)" type="button" aria-haspopup="dialog" aria-controls="inventoryDialog">{{ hud.online() ? "Bolsa · solo" : "Bolsa (" + (hud.gel() + hud.potions()) + ")" }}</button>
+          <button id="inventoryButton" [disabled]="hud.online()" (click)="open(inventoryDialog)" type="button" aria-haspopup="dialog" aria-controls="inventoryDialog">{{ hud.online() ? "Bolsa · solo" : "Bolsa (" + (hud.gel() + hud.fang() + hud.silk() + hud.potions()) + ")" }}</button>
           <button id="playersButton" (click)="open(playersDialog)" type="button" aria-haspopup="dialog" aria-controls="playersDialog">Jogadores online</button>
           <button id="helpButton" (click)="open(helpDialog)" type="button" title="Como jogar">Ajuda</button>
           <button id="settingsButton" (click)="open(settingsDialog)" type="button">Ajustes</button>
@@ -82,11 +82,21 @@
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar bolsa">×</button>
         <span class="dialog-kicker">SEUS ITENS · AVENTURA SOLO</span>
         <h1 id="inventoryTitle">Bolsa do aventureiro</h1>
-        <p class="dialog-note">Os slimes derrotados deixam gel no chão. Aproxime-se para recolher. Aela entrega poções após você proteger a clareira.</p>
+        <p class="dialog-note">Slimes deixam gel; lobos deixam presas e aranhas deixam seda. Aproxime-se para recolher. Aela entrega poções após cinco slimes.</p>
         <div class="inventory-item">
           <span class="item-icon item-gel" aria-hidden="true">◆</span>
           <span><strong>Gel de slime</strong><small>Material coletável · guardado na bolsa</small></span>
           <b id="gelCount">{{ hud.gel() + " / 99" }}</b>
+        </div>
+        <div class="inventory-item">
+          <span class="item-icon item-gel" aria-hidden="true">▲</span>
+          <span><strong>Presa de lobo</strong><small>Material coletável · bolsa solo</small></span>
+          <b id="fangCount">{{ hud.fang() + " / 99" }}</b>
+        </div>
+        <div class="inventory-item">
+          <span class="item-icon item-gel" aria-hidden="true">✧</span>
+          <span><strong>Seda de aranha</strong><small>Material coletável · bolsa solo</small></span>
+          <b id="silkCount">{{ hud.silk() + " / 99" }}</b>
         </div>
         <div class="inventory-item">
           <span class="item-icon item-potion" aria-hidden="true">✚</span>

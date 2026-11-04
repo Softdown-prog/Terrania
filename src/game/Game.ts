@@ -80,7 +80,7 @@ export class Game {
           ? "Sua vida já está completa."
           : "Você não possui poções de cura.";
       this.save();
-      this.hud.update(this.sim.player, this.sim.kills, this.sim.experience);
+      this.hud.update(this.sim.player, this.sim.slimeKills, this.sim.experience);
       this.hud.updateInventory(this.sim.inventory, false);
       return "Poção utilizada! Vida restaurada em até 35 pontos.";
     });
@@ -128,6 +128,8 @@ export class Game {
     player.y += (self.y - player.y) * factor;
     player.hp = self.hp;
     this.sim.kills = self.kills;
+    // O multiplayer existente só contabiliza Slimes; não simular XP autoritativo.
+    this.sim.slimeKills = self.kills;
     player.hurtTime = Math.max(player.hurtTime, self.hurtTime ?? 0);
     if (Math.hypot(player.vx, player.vy) < 5) {
       player.faceX = self.faceX;
@@ -153,9 +155,9 @@ export class Game {
       this.pendingAttack = false;
     } else {
       const rewarded = npc.id === "aela" && !this.multiplayer?.connected &&
-        this.sim.inventory.claimAelaReward(this.sim.kills);
+        this.sim.inventory.claimAelaReward(this.sim.slimeKills);
       if (rewarded) this.save();
-      this.hud.showNpcDialogue(npc, this.sim.kills,
+      this.hud.showNpcDialogue(npc, this.sim.slimeKills,
         rewarded ? "Recompensa de Aela: 2 poções de cura guardadas na sua bolsa!" : undefined);
     }
   }
@@ -228,7 +230,7 @@ export class Game {
           this.saveClock += dt;
           if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
         }
-        this.hud.update(this.sim.player, this.sim.kills, this.sim.experience);
+        this.hud.update(this.sim.player, this.sim.slimeKills, this.sim.experience);
         this.hud.updateInventory(this.sim.inventory, online);
         this.hud.setInterior(room.building.name);
         this.scene.renderInterior(room, this.navigator.target, this.clock);
@@ -284,7 +286,7 @@ export class Game {
     if (feedback.hit) this.camera.shake(0.25);
     if (feedback.hurt) this.camera.shake(0.65);
     this.camera.update(dt, this.sim.player);
-    this.hud.update(this.sim.player, this.sim.kills, this.sim.experience);
+    this.hud.update(this.sim.player, this.sim.slimeKills, this.sim.experience);
     this.hud.updateInventory(this.sim.inventory, online);
     this.hud.setNearbyNpc(nearestNpc(this.sim.player.x, this.sim.player.y));
     this.scene.render(
