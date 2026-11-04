@@ -122,3 +122,21 @@ func BenchmarkRoomArenaSync200000(b *testing.B) {
         }
     }
 }
+
+func TestRoomArenaSpeciesTags(t *testing.T) {
+	r:=NewRoom("arena-mixed")
+	defer r.Close()
+	for _,k:=range []MonsterKind{SlimeKind,WolfKind,SpiderKind} {
+		id:=string(k)
+		r.mobs[id]=NewMonster(k,id,1200,1200)
+		r.mobOrder=append(r.mobOrder,id)
+	}
+	if !r.entityArena.syncRoom(r) {t.Fatal("mixed species arena sync failed")}
+	for index,k:=range []MonsterKind{SlimeKind,WolfKind,SpiderKind} {
+		id:=string(k)
+		record,ok:=r.entityArena.readHandle(r.entityArena.handles[id])
+		if !ok || record.kind!=uint16(index+1) {
+			t.Fatalf("native tag differs for %s: %+v",k,record)
+		}
+	}
+}

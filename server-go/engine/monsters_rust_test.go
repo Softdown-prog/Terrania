@@ -186,3 +186,21 @@ func TestRustMonsterScratchSteadyStateAllocations(t *testing.T) {
         t.Fatalf("expected zero allocations with room-local scratch: %.2f",allocs)
     }
 }
+
+func TestRustPlannerRejectsMixedSpeciesWithoutMutatingGoState(t *testing.T) {
+	world:=World{Seed:842136}
+	g:=&Guest{Actor:NewPlayer()}
+	g.Actor.X,g.Actor.Y=1400,1400
+	slime:=NewSlime("slime",1435,1400)
+	wolf:=NewMonster(WolfKind,"wolf",1400,1435)
+	slimeBefore,wolfBefore:=*slime,*wolf
+	var scratch monsterScratch
+	if tryRustMonsterStepWithScratch([]*Guest{g},[]*Slime{slime,wolf},.05,world,&scratch) {
+		t.Fatal("Rust planner accepted a creature whose AI/damage is unknown")
+	}
+	if *slime!=slimeBefore || *wolf!=wolfBefore || g.Actor.HP!=100 {
+		t.Fatal("rejected Rust batch mutated authoritative entities")
+	}
+	stepMonstersWithScratch([]*Guest{g},[]*Slime{slime,wolf},.05,world,&scratch)
+	if slime.pulse<=0 || wolf.pulse<=0 {t.Fatal("Go fallback did not advance both species")}
+}
