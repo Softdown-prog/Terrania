@@ -87,7 +87,11 @@ export class OfflineSimulation {
     direction: { x: number; y: number },
     attack: boolean,
     heavyAttack = false,
+    dodge = false,
   ): boolean {
+    // Evasion happens before monster AI/contact on the same authoritative
+    // offline simulation tick; neither position nor damage comes from the UI.
+    if (dodge) this.player.startDodge(direction);
     this.player.update(dt, direction, this.collision);
     this.spawnNearby();
     for (const [id, slime] of this.slimes) {
@@ -100,7 +104,7 @@ export class OfflineSimulation {
         continue;
       }
       if (distance < CHUNK_PIXELS * 2)
-        slime.update(dt, this.player, this.collision);
+        slime.update(dt, this.player, this.collision, true);
     }
     let changed = false;
     if (heavyAttack) this.player.startHeavyAttack();
