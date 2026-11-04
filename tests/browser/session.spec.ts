@@ -53,7 +53,10 @@ test('entrada online e saída da rota preservam o progresso solo recente', async
   expect(checkpoint.x).toBeGreaterThan(save.x);
   expect(checkpoint.seed).toBe(save.seed);
   expect(checkpoint.hp).toBe(save.hp);
-  expect(checkpoint.inventory).toEqual(save.inventory);
+  // Campos de material novos são adicionados na migração sem perder o inventário legado.
+  expect(checkpoint.inventory).toMatchObject(save.inventory);
+  expect(checkpoint.inventory.fang).toBe(0);
+  expect(checkpoint.inventory.silk).toBe(0);
   await page.locator('#settingsDialog .dialog-x').click();
   await page.locator('.game-brand').click();
   await expect(page.locator('canvas#game')).toHaveCount(0);
