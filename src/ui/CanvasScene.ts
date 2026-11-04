@@ -1,4 +1,5 @@
 import type { Player } from '../actors/Player.ts';
+import type { BattleViewport } from '../engine/ClassicBattleList.ts';
 import type { Slime } from '../actors/Slime.ts';
 import type { HeroState, MobState } from '../shared/protocol.ts';
 import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
@@ -120,6 +121,14 @@ export class CanvasScene {
     this.width = width; this.height = height; this.dpr = dpr;
     this.canvas.width = Math.ceil(width * dpr);
     this.canvas.height = Math.ceil(height * dpr);
+  }
+  /** Same CSS viewport and camera projection used for rendering and taps. */
+  battleViewport(camera: Camera): BattleViewport {
+    const zoom = Math.max(0.25, camera.zoom);
+    return {
+      centerX: camera.renderX, centerY: camera.renderY,
+      halfWidth: this.width / (2 * zoom), halfHeight: this.height / (2 * zoom),
+    };
   }
   worldPoint(local: Point, camera: Camera): Point | null {
     return screenToWorld(local, this.width, this.height,

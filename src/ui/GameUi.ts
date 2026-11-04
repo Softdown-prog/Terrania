@@ -1,6 +1,7 @@
 import type { Player } from '../actors/Player.ts';
 import type { Inventory } from '../engine/Inventory.ts';
 import type { Npc } from '../world/npcs.ts';
+import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 
 export interface Preferences {
   zoom: number;
@@ -23,6 +24,8 @@ export interface GameUi {
   setClassicMode(enabled: boolean): void;
   setCombatTarget(label: string | null): void;
   onStopCombat(callback: () => void): void;
+  onBattleSelect(callback: (id: string) => void): void;
+  setBattleCreatures(creatures: readonly BattleCreature[], targetId: string | null): void;
   setSeed(seed: number): void;
   setPlayerCount(count: number, online: boolean): void;
   setNearbyNpc(npc: Npc | null): void;

@@ -37,6 +37,47 @@
       </nav>
 
 
+      @if (hud.classicMode()) {
+        <section id="battleSidebar" class="classic-battle" aria-label="Battle List de criaturas visíveis">
+          <button id="battleToggle" class="battle-toggle" type="button"
+            [attr.aria-expanded]="battleOpen()" aria-controls="battlePanel"
+            (click)="battleOpen.set(!battleOpen())">
+            <span>BATTLE</span>
+            <span id="battleCount" class="battle-count">{{ hud.battleCreatures().length }}</span>
+            <span aria-hidden="true">{{ battleOpen() ? '▴' : '▾' }}</span>
+          </button>
+          <aside id="battlePanel" class="battle-panel" aria-label="Criaturas na tela"
+            [hidden]="!battleOpen()">
+            @if (hud.battleCreatures().length === 0) {
+              <p id="battleEmpty">Nenhuma criatura visível</p>
+            } @else {
+              <ul id="battleRows" class="battle-rows">
+                @for (mob of hud.battleCreatures(); track mob.id) {
+                  <li>
+                    <button type="button" class="battle-entry"
+                      [attr.data-creature-id]="mob.id"
+                      [class.selected]="hud.battleTargetId() === mob.id"
+                      [attr.aria-pressed]="hud.battleTargetId() === mob.id"
+                      [attr.aria-label]="'Selecionar ' + mob.name + ', vida ' + mob.hp + ' de ' + mob.maxHp"
+                      (click)="hud.selectBattleCreature(mob.id)">
+                      <span class="battle-icon" aria-hidden="true">◆</span>
+                      <span class="battle-details">
+                        <strong>{{ mob.name }}</strong>
+                        <span class="battle-hp" role="img"
+                          [attr.aria-label]="'Vida: ' + mob.hp + ' de ' + mob.maxHp">
+                          <span [style.width.%]="mob.hp / mob.maxHp * 100"></span>
+                        </span>
+                      </span>
+                      <small>{{ mob.distanceTiles }} tiles</small>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </aside>
+        </section>
+      }
+
       <div class="bottom-info">
         <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
         ><small id="saveMode">{{ hud.online() ? "Sala experimental · progresso temporário" : "Aventura local · progresso neste navegador" }}</small>
@@ -166,7 +207,7 @@
           </div>
           <div>
             <dt>Espaço ou J</dt>
-            <dd>{{ hud.classicMode() ? "Selecione um slime com toque/clique ou pelo botão ATACAR. O herói persegue o alvo por caminhos livres e ataca sozinho quando puder. Toque no chão para caminhar sem persegui-lo; ATACAR retoma a perseguição. Escape cancela o alvo." : "Atacar na direção em que você olha. Segure para repetir." }}</dd>
+            <dd>{{ hud.classicMode() ? "Selecione um slime no cenário ou na Battle List lateral. O herói persegue o alvo por caminhos livres e ataca sozinho quando puder. A lista mostra as criaturas visíveis e pode ser aberta ou fechada. Toque no chão para caminhar sem perseguir; ATACAR retoma a perseguição. Escape cancela." : "Atacar na direção em que você olha. Segure para repetir." }}</dd>
           </div>
           <div>
             <dt>No celular</dt>

@@ -1,42 +1,52 @@
-# Roadmap — Terrania: Origins
+# Terrania — Roadmap enxuto de RPG clássico
 
-## Fase 0 — Fundamentos (protótipo 0.2)
-- [x] Estrutura TypeScript/Angular e build estático para Cloudflare
-- [x] World seed determinística, chunks e cache limitado
-- [x] Herói procedural, caminhada e ataque
-- [x] Slimes, colisão, missão inicial e save offline
-- [x] WebSocket, salas experimentais, simulação server-authoritative
-- [x] Docker isolado e CI de verificação
-- [x] Validar build real com dependências instaladas e fluxo entre dois navegadores
+> **Direção atual:** RPG 2D de fantasia medieval inspirado nas *mecânicas* dos MMORPGs clássicos (sensação de Tibia antigo), mas com mundo, nomes, arte, interface e código próprios. Não reproduzir ativos ou conteúdo de terceiros.
+>
+> **Status:** planejamento alinhado em 04/11/2026. Esta versão está **somente na branch experimental** `feat/terrania-classic-combat-20261104`. Não representa aprovação de PR, merge ou deploy. O plano anterior foi preservado em [ROADMAP_ANTERIOR_20261104.md](ROADMAP_ANTERIOR_20261104.md).
 
-## Fase 1 — Vertical slice de RPG
-- [x] Melhorar herói procedural e animações em oito direções
-- [x] Separar site de apresentação e entrada do jogo
-- [x] Profundidade no cenário, movimento com aceleração e câmera ajustável
-- [x] Integração local com dois clientes WebSocket e build multipágina validado
-- [x] Primeiro NPC procedural (Aela) com diálogos conforme a missão, teclado e toque
-- [ ] Cidade inicial com outros NPCs, placas, interiores e diálogos encadeados (primeiro recorte: vila/NPCs/placas/interiores ilustrados; interiores caminháveis implementados; revisão visual e QA de navegação pendentes)
-- [ ] Inventário, equipamentos, loot e itens consumíveis (primeiro recorte: bolsa offline, gel de slime no chão, poção de cura e recompensa única de Aela; equipamentos/crafting/online pendentes)
-- [ ] Sistema de quests com estados e recompensas
-- [ ] Três tipos de monstros e dois tipos de ataque
-- [x] Protótipo isolado de combate clássico solo: seleção por toque, golpe automático e perseguição por caminho A* até o alcance (CLASSIC-001/002, somente branch experimental).
-- [ ] Caminhada discreta por tiles de 32×32, lista de criaturas, mana, magias, vocações e equipamentos (etapas independentes, sem replicar assets de outros jogos).
+## Princípios que guiam as próximas tarefas
 
-## Fase 2 — Multiplayer de teste
-- [x] Testar WSS público via Caddy e sincronizar dois clientes numa sala temporária
-- [ ] Autenticação, reconexão com sessão, validação e controle de abusos
-- [ ] Persistência autoritativa (SQLite/PostgreSQL) e backup externo
-- [ ] Latência simulada, interpolação, observabilidade e testes de carga
+1. **Jogo primeiro, infraestrutura depois.** Primeiro criar um ciclo de jogo compreensível e divertido em modo solo; integrar multiplayer, persistência e otimizações grandes quando os sistemas de jogo estiverem claros.
+2. **Uma mecânica pequena por vez.** Implementar, testar em navegador e no Android, avaliar jogabilidade e só então escolher a próxima. Não desenvolver dezenas de recursos de um brainstorming por inércia.
+3. **Alvo e ação clássicos.** Selecionar monstro no mapa ou Battle List, perseguir por caminho navegável e atacar automaticamente dentro do alcance, respeitando bloqueios, cooldown e morte.
+4. **Angular apresenta o HUD; Phaser mostra o mundo; a simulação aplica regras.** Não duplicar estado nem lógica de ataque na interface. O backend multiplayer, quando envolvido, deve ser a autoridade de jogo.
+5. **Sem mudanças indevidas.** Preservar modos solo e online existentes, não alterar contrato do servidor, saves, VPS ou deploy sem uma etapa específica e validação. Nada de merge automático na `main`.
 
-## Fase 3 — Mundo em expansão
-- [ ] Biomas, cavernas e ruínas, cidades conectadas
-- [ ] Missões encadeadas, chefes e eventos coletivos
-- [ ] Balanceamento de economia e progressão
-- [ ] Otimização de memória, teclado, touch e acessibilidade
+## O que já existe nesta branch experimental
 
-## Regras
-Entrega pequena com testes e plano de reversão. Não misturar o antigo C++/SDL com o frontend. Só colocar o backend na VPS após verificar rede, porta, origem HTTPS e conflito com os demais containers.
+- [x] **CLASSIC-001 — Selecionar e atacar:** alvo único por clique/toque ou botão ATACAR, ataque automático com cooldown e linha de visão. Somente `?modo=classico`.
+- [x] **CLASSIC-002 — Perseguição:** aproximação automática por A*, contorno de obstáculos, retomada e cancelamento; movimento manual tem prioridade.
+- [x] **CLASSIC-003 — Battle List:** lista lateral recolhível de slimes vivos visíveis na câmera, indicador de vida e seleção da criatura pela linha.
 
-## Migração isolada Angular + Phaser 3
+**Limitação atual:** a simulação ainda movimenta o jogador continuamente; usar tiles no planejador não equivale a caminhar em passos discretos. A Battle List conhece apenas slimes. Estes três recortes estão na branch de experimento, **não declarados entregues em produção**. Consulte [GAMEPLAY_CLASSICO.md](GAMEPLAY_CLASSICO.md) para as regras implementadas e testes.
 
-Ver [estado, validação e continuidade](MIGRACAO_ANGULAR_PHASER3.md). A branch `feat/angular-ui-phaser3` exige decisão posterior do usuário antes de PR ou merge.
+## Próximo recorte possível — escolher e validar um de cada vez
+
+- [ ] **Movimento clássico em tiles:** experimentar deslocamento discreto de 32×32 no modo clássico sem quebrar colisão, joystick, toque para caminhar ou perseguição. Validar sensação real no celular antes de aceitar o modelo.
+- [ ] **Catálogo mínimo de criaturas:** definir tipos de monstro separados das instâncias (ID, posição, HP atual), inicialmente Slime e depois outra espécie somente se necessário ao teste. Tornar Battle List e combate independentes da classe `Slime`.
+
+**Importante:** estes itens são *candidatos*, não autorização para implementá-los simultaneamente. A cada etapa deve existir uma definição curta do comportamento esperado, critérios de teste e uma decisão de continuar ou ajustar.
+
+## Ciclo jogável essencial — etapas futuras, ainda não aprovadas
+
+- [ ] Morte/respawn, cura e retorno ao jogo com regras consistentes.
+- [ ] XP, níveis e atributos básicos ao derrotar monstros; começar com uma fórmula simples testável.
+- [ ] Loot, inventário e uso de consumíveis sem duplicação de itens.
+- [ ] Equipamentos básicos e atributos que influenciem combate; balancear antes de expandir.
+- [ ] Mana, vocações e magias quando os sistemas anteriores estiverem estáveis.
+- [ ] Exploração com NPCs, cidade inicial e pequenas missões; expandir mapas só depois do ciclo funcionar.
+- [ ] Adaptar as mecânicas consolidadas ao multiplayer, com regras autoritativas e testes de sincronização; planejar infraestrutura e escalabilidade depois de medir necessidades reais.
+
+## Fora de escopo por enquanto
+
+Os brainstormings antigos sobre **golpe forte, esquiva, salto, teia, chefes, eventos coletivos, múltiplos sistemas de combate, grandes clusters e metas extremas de escala** não são prioridades desta direção. Não incorporá-los sem um pedido explícito. O PR #42 é trabalho separado e **não é aprovação dessas mecânicas**.
+
+## Critério de conclusão de cada microtarefa
+
+- Regra de jogo isolada da interface e com testes unitários de estados-limite.
+- TypeScript estrito, compilação Angular e testes automatizados aprovados.
+- Playwright com jogabilidade e controles reais em desktop e Android (retrato e paisagem, quando pertinente).
+- Nenhuma regressão dos modos existentes, saves e multiplayer; testes do servidor e Docker se a mudança os afetar.
+- A pessoa responsável pelo jogo avalia se a sensação de jogar corresponde à direção desejada **antes de iniciar a próxima mecânica ou fazer merge**.
+
+> O roadmap é uma lista de hipóteses e decisões em evolução, não uma obrigação de implementar tudo. O objetivo imediato é um núcleo de RPG clássico pequeno, coerente e testado.

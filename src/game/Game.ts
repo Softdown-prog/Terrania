@@ -17,6 +17,7 @@ import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
 import { ClassicCombat } from "../engine/ClassicCombat.ts";
 import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
+import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
@@ -28,6 +29,7 @@ export class Game {
   private readonly classicCombat = new ClassicCombat();
   private readonly classicPursuit = new ClassicPursuit();
   private classicAutoFollow = true;
+  private battleClock = 0.25;
   private classicMode = false;
   private sim = new OfflineSimulation(842136);
   private world = new WorldRenderer(842136);
@@ -48,7 +50,9 @@ export class Game {
       this.classicCombat.cancel();
       this.classicPursuit.reset();
       this.hud.setCombatTarget(null);
+      this.hud.setBattleCreatures(this.hudBattleRows(), null);
     });
+    this.hud.onBattleSelect((id) => this.selectBattleTarget(id));
     const requestedSeed = params.get("seed");
     const parsed =
       requestedSeed !== null && /^\d+$/.test(requestedSeed)
@@ -99,6 +103,21 @@ export class Game {
     });
     this.hud.updateInventory(this.sim.inventory, false);
   }
+  /** Battle entries are derived from the same camera/viewport as the canvas. */
+  private hudBattleRows() {
+    return visibleBattleCreatures(
+      this.sim.slimes.values(), this.sim.player, this.scene.battleViewport(this.camera),
+    );
+  }
+  private selectBattleTarget(id: string): void {
+    if (!this.classicMode || this.interior || this.hud.menuOpen ||
+        this.multiplayer?.connected || !this.hudBattleRows().some(row => row.id === id) ||
+        !this.classicCombat.select(id, this.sim.slimes)) return;
+    this.classicAutoFollow = true;
+    this.classicPursuit.reset();
+    this.navigator.cancel();
+    this.hud.setBattleCreatures(this.hudBattleRows(), id);
+  }
   private configure(p: Preferences): void {
     this.camera.setZoom(p.zoom);
     this.camera.reducedMotion = !p.cameraMotion;
@@ -109,6 +128,8 @@ export class Game {
     this.classicCombat.cancel();
     this.classicPursuit.reset();
     this.classicAutoFollow = true;
+    this.battleClock = 0.25;
+    this.hud.setBattleCreatures([], null);
     this.hud.setCombatTarget(null);
     this.interior = null;
     this.world.clear();
@@ -168,6 +189,7 @@ export class Game {
       this.classicCombat.cancel();
       this.classicPursuit.reset();
       this.hud.setCombatTarget(null);
+      this.hud.setBattleCreatures([], null);
       this.interior = new InteriorRoom(npc.id);
       this.accumulator = 0;
       this.pendingAttack = false;
@@ -209,6 +231,7 @@ export class Game {
   update(deltaSeconds: number): void {
     const dt = Math.max(0, Math.min(0.1, deltaSeconds));
     this.clock += dt;
+    this.battleClock += dt;
     const online = this.multiplayer?.connected === true;
     if (this.input.consumeTalk() && !this.hud.menuOpen) this.talkToNpc();
     const paused = this.hud.menuOpen || document.hidden;
@@ -345,6 +368,13 @@ export class Game {
     if (feedback.hit) this.camera.shake(0.25);
     if (feedback.hurt) this.camera.shake(0.65);
     this.camera.update(dt, this.sim.player);
+    if (this.classicMode && this.battleClock >= 0.2) {
+      this.battleClock = 0;
+      this.hud.setBattleCreatures(
+        this.interior || online ? [] : this.hudBattleRows(),
+        this.interior || online ? null : this.classicCombat.targetId,
+      );
+    }
     this.hud.update(this.sim.player, this.sim.kills);
     const focusedLabel = this.classicMode ? this.classicCombat.label(this.sim.slimes) : null;
     this.hud.setCombatTarget(focusedLabel && this.classicPursuit.destination
@@ -372,6 +402,7 @@ export class Game {
     this.multiplayer?.disconnect();
     this.navigator.cancel();
     this.classicPursuit.reset();
+    this.hud.setBattleCreatures([], null);
     this.world.clear();
     this.effects.reset();
   }
