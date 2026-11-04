@@ -105,6 +105,9 @@ func TestAuthoritativeKillXpTwoPlayersAndCheckpoint(t *testing.T) {
 			}
 		}
 	}
+	// Negative clock was only used to suppress spawns in the test fixture.
+	// Serialize a valid bounded clock as production always does.
+	r.spawnClock=0
 	raw,err:=r.ExportState()
 	if err!=nil {t.Fatal(err)}
 	restored,err:=RestoreRoomState(raw)
