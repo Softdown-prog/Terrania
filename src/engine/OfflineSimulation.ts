@@ -70,6 +70,8 @@ export class OfflineSimulation {
     dt: number,
     direction: { x: number; y: number },
     attack: boolean,
+    /** Optional classic target; null retains the original manual swing. */
+    targetId: string | null = null,
   ): boolean {
     this.player.update(dt, direction, this.collision);
     this.spawnNearby();
@@ -87,9 +89,17 @@ export class OfflineSimulation {
     }
     let changed = false;
     if (attack) this.player.startAttack();
+    // Keep a focused classic swing facing its selected creature while walking.
+    const focused = targetId === null ? null : this.slimes.get(targetId);
+    if (focused && this.player.attackTime > 0) {
+      const dx = focused.x - this.player.x, dy = focused.y - this.player.y;
+      const d = Math.hypot(dx,dy);
+      if (d > 0.01) { this.player.faceX = dx/d; this.player.faceY = dy/d; }
+    }
     if (this.player.consumeStrike()) {
       for (const [id, slime] of this.slimes) {
-        if (canStrike(this.player, slime, this.collision)) {
+        if ((targetId === null || id === targetId) &&
+            canStrike(this.player, slime, this.collision)) {
           slime.takeHit(this.player.x, this.player.y);
           if (slime.hp <= 0) {
             this.slimes.delete(id);

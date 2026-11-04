@@ -803,3 +803,39 @@ noscript a {
 @media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
   .game-tools { flex-direction: column; align-items: flex-end; }
 }
+
+/* CLASSIC-001: experimental solo combat indicator, no multiplayer overlay. */
+.classic-status {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: max(149px, calc(env(safe-area-inset-bottom) + 143px));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  max-width: min(95vw, 300px);
+  padding: 7px 13px;
+  border-radius: 7px;
+  border: 1px solid #a6c8b26b;
+  background: #17342ddc;
+  color: #e7ead3;
+  text-align: center;
+  font-size: 10px;
+  box-shadow: 0 3px 12px #10241c88;
+  pointer-events: none;
+}
+.classic-status strong { font-size: 9px; letter-spacing: .08em; }
+.classic-status button {
+  pointer-events: auto;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid #b6c9aa;
+  border-radius: 5px;
+  background: #254e41;
+  color: #f8f4dc;
+}
+@media (pointer: fine) and (min-width: 651px) {
+  .classic-status { bottom: 60px; }
+}

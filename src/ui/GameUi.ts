@@ -20,6 +20,9 @@ export interface GameUi {
   update(player: Player, kills: number): void;
   setOnline(online: boolean): void;
   setStatus(status: string): void;
+  setClassicMode(enabled: boolean): void;
+  setCombatTarget(label: string | null): void;
+  onStopCombat(callback: () => void): void;
   setSeed(seed: number): void;
   setPlayerCount(count: number, online: boolean): void;
   setNearbyNpc(npc: Npc | null): void;
