@@ -47,3 +47,10 @@ func normalizedMonsterKind(kind MonsterKind) MonsterKind {
 	if kind == "" { return SlimeKind }
 	return kind
 }
+
+// Keep legacy checkpoints valid while validating a new species at its own HP cap.
+func monsterMaximumHP(kind MonsterKind) int {
+	definition, ok := monsterDefinition(kind)
+	if !ok { return 0 }
+	return definition.HP
+}

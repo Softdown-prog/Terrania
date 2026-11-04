@@ -135,6 +135,7 @@ func TestRoomStateRejectsMalformedAndForgedState(t *testing.T) {
 		{"invalid cooldown", func(s *RoomState) { s.Players[0].Actor.Invulnerable = -1 }},
 		{"invalid input", func(s *RoomState) { s.Players[0].Input.X = 10 }},
 		{"invalid monster position", func(s *RoomState) { s.Mobs[0].X = 1_000_001 }},
+		{"forged monster kind", func(s *RoomState) { s.Mobs[0].Kind = "dragon" }},
 		{"negative kills", func(s *RoomState) { s.Players[0].Kills = -1 }},
 		{"invalid room", func(s *RoomState) { s.RoomID = "ABC" }},
 	}
@@ -172,4 +173,40 @@ func TestRoomStateExportRejectsCorruptRuntimeData(t *testing.T) {
 	if data, err := r.ExportState(); !errors.Is(err, ErrRoomStateInvalid) || data != nil {
 		t.Fatalf("exported inconsistent insertion ordering: %v", err)
 	}
+}
+
+// Mixed checkpoints keep species, health and order; legacy states omit Kind.
+func TestRoomStateRoundTripMixedSpecies(t *testing.T) {
+	r := NewRoom("origins")
+	defer r.Close()
+	r.Add("one", "Alice")
+	r.Add("two", "Bob")
+	for _, kind := range []MonsterKind{WolfKind, SpiderKind} {
+		id := string(kind) + ":fixture"
+		m := NewMonster(kind, id, 1400, 1200)
+		m.HP--
+		r.mobs[id] = m
+		r.mobOrder = append(r.mobOrder, id)
+	}
+	data, err := r.ExportState()
+	if err != nil { t.Fatal(err) }
+	clone, err := RestoreRoomState(data)
+	if err != nil { t.Fatal(err) }
+	defer clone.Close()
+	for _, id := range r.mobOrder {
+		before, after := r.mobs[id], clone.mobs[id]
+		if after == nil || after.Kind != before.Kind || after.HP != before.HP {
+			t.Fatalf("lost monster species on room restore: %s", id)
+		}
+	}
+	second, err := clone.ExportState()
+	if err != nil || !bytes.Equal(data, second) { t.Fatalf("mixed checkpoint drift: %v", err) }
+	legacy := NewRoom("origins")
+	defer legacy.Close()
+	legacy.Add("legacy", "Old")
+	legacy.mobs["old"] = NewSlime("old", 1200, 1200)
+	legacy.mobOrder = append(legacy.mobOrder, "old")
+	raw, err := legacy.ExportState()
+	if err != nil { t.Fatal(err) }
+	if bytes.Contains(raw, []byte(`"Kind"`)) { t.Fatal("legacy schema changed") }
 }

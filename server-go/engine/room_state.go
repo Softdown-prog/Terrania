@@ -59,6 +59,8 @@ type RoomPlayerState struct {
 }
 
 type RoomMobState struct {
+	// Optional tag preserves version-1 checkpoints for legacy Slimes.
+	Kind            MonsterKind `json:",omitempty"`
 	ID              string
 	X, Y            float64
 	HP              int
@@ -92,7 +94,8 @@ func validPlayerState(p RoomPlayerState) bool {
 }
 
 func validMobState(m RoomMobState) bool {
-	return validStateID(m.ID) && m.HP > 0 && m.HP <= 1_000_000 &&
+	return validStateID(m.ID) && validMonsterKind(m.Kind) && m.HP > 0 &&
+		m.HP <= monsterMaximumHP(m.Kind) &&
 		finite(m.X, m.Y, m.HurtTime, m.ContactCooldown, m.Pulse, m.KnockX, m.KnockY) &&
 		math.Abs(m.X) <= 1_000_000 && math.Abs(m.Y) <= 1_000_000 &&
 		m.HurtTime >= 0 && m.ContactCooldown >= 0
@@ -201,7 +204,7 @@ func (r *Room) ExportState() ([]byte, error) {
 			return nil, ErrRoomStateInvalid
 		}
 		s.Mobs = append(s.Mobs, RoomMobState{
-			ID: m.ID, X: m.X, Y: m.Y, HP: m.HP,
+			Kind: m.Kind, ID: m.ID, X: m.X, Y: m.Y, HP: m.HP,
 			HurtTime: m.HurtTime, ContactCooldown: m.ContactCooldown,
 			Pulse: m.pulse, KnockX: m.knockX, KnockY: m.knockY,
 		})
@@ -248,7 +251,7 @@ func RestoreRoomState(data []byte) (*Room, error) {
 		r.guestOrder = append(r.guestOrder, p.ID)
 	}
 	for _, m := range s.Mobs {
-		r.mobs[m.ID] = &Slime{ID: m.ID, X: m.X, Y: m.Y, HP: m.HP,
+		r.mobs[m.ID] = &Slime{Kind: m.Kind, ID: m.ID, X: m.X, Y: m.Y, HP: m.HP,
 			HurtTime: m.HurtTime, ContactCooldown: m.ContactCooldown,
 			pulse: m.Pulse, knockX: m.KnockX, knockY: m.KnockY}
 		r.mobOrder = append(r.mobOrder, m.ID)

@@ -133,8 +133,13 @@ func (s *roomEntityArena) syncRoom(r *Room) bool {
             s.close()
             return false
         }
+        kind := C.uint16_t(1)
+        switch mob.Species() {
+        case WolfKind: kind = C.uint16_t(2)
+        case SpiderKind: kind = C.uint16_t(3)
+        }
         entity := C.TerraniaEntity{
-            kind: 1, x: C.double(mob.X), y: C.double(mob.Y),
+            kind: kind, x: C.double(mob.X), y: C.double(mob.Y),
             hp: C.int32_t(mob.HP), state: 0,
         }
         if next >= len(s.batchHandles) {

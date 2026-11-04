@@ -36,3 +36,17 @@ catálogo, spawns e uma representação visual, sem duplicar toda a simulação.
 
 Validar `npm run typecheck`, `npm test`, `npm run build`,
 `npm run test:browser`, `npm run qa:bot -- --strict` e suíte pré-main.
+
+## MONSTER-002 — Go autoritativo
+
+O servidor Go reproduz o catálogo e o spawn determinístico em
+`server-go/engine/monster_species.go` e `monster_spawns.go`.
+O servidor decide sozinho que espécies nascem, a quem perseguem, quais
+jogadores recebem dano e quais abates são confirmados. Os snapshots WebSocket
+v3 incluem `kind` somente para Lobo/Aranha; ausência continua significando Slime.
+A serialização interna de salas mantém checkpoints v1 de Slime válidos e
+preserva a espécie durante exportação/restauração. O espelho de entidades Rust
+usa tags 1 (Slime), 2 (Lobo), 3 (Aranha), mas seu **planejador de IA** permanece
+somente para Slime: lotes mistos caem inteiramente no motor Go sem executar
+a IA errada para novas espécies. Nenhum XP online é concedido aqui; progressão
+online depende de armazenamento e contabilização autoritativos posteriores.
