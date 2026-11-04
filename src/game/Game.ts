@@ -16,6 +16,7 @@ import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
 import { ClassicCombat } from "../engine/ClassicCombat.ts";
+import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
@@ -25,6 +26,8 @@ export class Game {
   private readonly effects = new Effects();
   private readonly navigator = new TapNavigator();
   private readonly classicCombat = new ClassicCombat();
+  private readonly classicPursuit = new ClassicPursuit();
+  private classicAutoFollow = true;
   private classicMode = false;
   private sim = new OfflineSimulation(842136);
   private world = new WorldRenderer(842136);
@@ -41,7 +44,11 @@ export class Game {
       params = new URLSearchParams(location.search);
     this.classicMode = params.get("modo") === "classico";
     this.hud.setClassicMode(this.classicMode);
-    this.hud.onStopCombat(() => { this.classicCombat.cancel(); this.hud.setCombatTarget(null); });
+    this.hud.onStopCombat(() => {
+      this.classicCombat.cancel();
+      this.classicPursuit.reset();
+      this.hud.setCombatTarget(null);
+    });
     const requestedSeed = params.get("seed");
     const parsed =
       requestedSeed !== null && /^\d+$/.test(requestedSeed)
@@ -100,6 +107,8 @@ export class Game {
   private replaceWorld(seed: number, saved?: OfflineSave): void {
     this.navigator.cancel();
     this.classicCombat.cancel();
+    this.classicPursuit.reset();
+    this.classicAutoFollow = true;
     this.hud.setCombatTarget(null);
     this.interior = null;
     this.world.clear();
@@ -157,6 +166,7 @@ export class Game {
     this.multiplayer?.sendInput(0, 0, false);
     if (npc.kind === "door" && BUILDINGS.some(b => b.id === npc.id)) {
       this.classicCombat.cancel();
+      this.classicPursuit.reset();
       this.hud.setCombatTarget(null);
       this.interior = new InteriorRoom(npc.id);
       this.accumulator = 0;
@@ -171,6 +181,7 @@ export class Game {
   }
   private leaveInterior(): void {
     this.navigator.cancel();
+    this.classicPursuit.reset();
     this.interior = null;
     this.input.clear();
     this.accumulator = 0;
@@ -204,11 +215,22 @@ export class Game {
     if (paused) this.input.clear();
     const manual = paused ? { x: 0, y: 0 } : this.input.movement();
     const attack = !paused && this.input.consumeAttack();
-    if (this.classicMode && this.input.consumeCancelTarget()) this.classicCombat.cancel();
-    if (this.classicMode && attack && !paused && !this.interior && !this.classicCombat.targetId)
-      this.classicCombat.selectNearest(this.sim.player, this.sim.slimes.values());
+    const stopTarget = this.classicMode && this.input.consumeCancelTarget();
+    if (stopTarget) {
+      this.classicCombat.cancel();
+      this.classicPursuit.reset();
+    }
+    if (this.classicMode && attack && !paused && !stopTarget && !this.interior) {
+      if (!this.classicCombat.targetId)
+        this.classicCombat.selectNearest(this.sim.player, this.sim.slimes.values());
+      if (this.classicCombat.targetId) {
+        this.classicAutoFollow = true;
+        this.navigator.cancel();
+      }
+    }
     const manualActive = Math.hypot(manual.x, manual.y) > 0.02;
     if (paused || manualActive || (!this.classicMode && attack)) this.navigator.cancel();
+    if (this.classicMode && manualActive) this.classicPursuit.suspend();
     const tap = this.input.consumeTap();
     // O servidor recebe somente vetores de movimento e segue autoritativo no multiplayer.
     if (tap && !paused && !manualActive && !attack) {
@@ -219,12 +241,26 @@ export class Game {
       const collision = this.interior?.collision ?? this.sim.collision;
       if (destination && this.classicMode && !this.interior &&
           this.classicCombat.selectAt(destination, this.sim.slimes.values())) {
+        this.classicAutoFollow = true;
+        this.classicPursuit.reset();
         this.navigator.cancel();
-      } else if (destination) this.navigator.go(player, destination, collision);
+      } else if (destination) {
+        // An explicit walk command overrides automatic chasing until the
+        // next creature selection; the attack target itself is preserved.
+        if (this.classicMode) {
+          this.classicAutoFollow = false;
+          this.classicPursuit.reset();
+        }
+        this.navigator.go(player, destination, collision);
+      }
     }
     const controlled = this.interior?.player ?? this.sim.player;
-    const movement = paused ? { x: 0, y: 0 } :
-      manualActive ? manual : this.navigator.direction(controlled, dt);
+    const movement = paused ? { x: 0, y: 0 } : manualActive ? manual :
+      this.navigator.target ? this.navigator.direction(controlled, dt) :
+      this.classicMode && this.classicAutoFollow && !this.interior ?
+        this.classicPursuit.direction(dt, this.sim.player,
+          this.classicCombat.targetId, this.sim.slimes, this.sim.collision) :
+        { x: 0, y: 0 };
     this.pendingAttack ||= !this.classicMode && attack;
     if (this.interior) {
       const room = this.interior;
@@ -269,6 +305,7 @@ export class Game {
           if (this.sim.player !== before) {
             this.navigator.cancel();
             this.classicCombat.cancel();
+            this.classicPursuit.reset();
           } else if (this.sim.player.hurtTime > 0) {
             this.navigator.cancel();
           }
@@ -332,6 +369,7 @@ export class Game {
     this.input.destroy();
     this.multiplayer?.disconnect();
     this.navigator.cancel();
+    this.classicPursuit.reset();
     this.world.clear();
     this.effects.reset();
   }
