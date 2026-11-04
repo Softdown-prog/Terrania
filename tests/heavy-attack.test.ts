@@ -19,7 +19,9 @@ test("golpe forte tem preparo, dano dois, um único impacto e recarga maior", ()
   assert.equal(hero.consumeStrike(), false);
   assert.equal(hero.startAttack(), false);
   assert.equal(hero.startHeavyAttack(), false);
-  hero.update(HEAVY_ATTACK_WINDUP - .04, STAY, OPEN);
+  // O motor limita cada frame a 0,1 s; não simular saltos de tempo irreais.
+  hero.update(.1, STAY, OPEN);
+  hero.update(HEAVY_ATTACK_WINDUP - .14, STAY, OPEN);
   assert.equal(hero.consumeStrike(), false);
   hero.update(.05, STAY, OPEN);
   assert.equal(hero.consumeStrike(), true);
