@@ -4,6 +4,11 @@ export const ATTACK_DURATION = 0.28;
 export const ATTACK_COOLDOWN = 0.42;
 export const ATTACK_WINDUP = 0.07;
 export const ATTACK_REACH = 52;
+// Solo-only heavy attack: multiplayer protocol v3 is unchanged.
+export const HEAVY_ATTACK_DURATION = 0.58;
+export const HEAVY_ATTACK_WINDUP = 0.24;
+export const HEAVY_ATTACK_COOLDOWN = 1.2;
+export const HEAVY_ATTACK_DAMAGE = 2;
 
 /** Same reach, cone and line of sight for local and authoritative combat. */
 export function canStrike(

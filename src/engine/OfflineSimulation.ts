@@ -86,6 +86,7 @@ export class OfflineSimulation {
     dt: number,
     direction: { x: number; y: number },
     attack: boolean,
+    heavyAttack = false,
   ): boolean {
     this.player.update(dt, direction, this.collision);
     this.spawnNearby();
@@ -102,11 +103,12 @@ export class OfflineSimulation {
         slime.update(dt, this.player, this.collision);
     }
     let changed = false;
-    if (attack) this.player.startAttack();
+    if (heavyAttack) this.player.startHeavyAttack();
+    else if (attack) this.player.startAttack();
     if (this.player.consumeStrike()) {
       for (const [id, slime] of this.slimes) {
         if (canStrike(this.player, slime, this.collision)) {
-          slime.takeHit(this.player.x, this.player.y);
+          slime.takeHit(this.player.x, this.player.y, this.player.strikeDamage);
           if (slime.hp <= 0) {
             this.slimes.delete(id);
             this.defeated.add(id);

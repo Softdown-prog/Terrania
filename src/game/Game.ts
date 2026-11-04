@@ -30,6 +30,7 @@ export class Game {
   private interior: InteriorRoom | null = null;
   private networkClock = 0;
   private pendingAttack = false;
+  private pendingHeavy = false;
   private offlineSnapshot: OfflineSave | null = null;
   /** Online XP is not stored in localStorage, nor computed from rendered kills. */
   private onlineExperience: number | null = null;
@@ -97,6 +98,7 @@ export class Game {
   private replaceWorld(seed: number, saved?: OfflineSave): void {
     this.navigator.cancel();
     this.interior = null;
+    this.pendingHeavy = false;
     this.world.clear();
     this.world = new WorldRenderer(seed);
     this.sim = new OfflineSimulation(seed, saved);
@@ -119,6 +121,7 @@ export class Game {
     this.save();
     this.networkClock = 0;
     this.pendingAttack = false;
+    this.pendingHeavy = false;
     this.onlineExperience = null;
     this.replaceWorld(seed);
     this.hud.setOnline(true);
@@ -183,6 +186,7 @@ export class Game {
     this.input.clear();
     this.accumulator = 0;
     this.pendingAttack = false;
+    this.pendingHeavy = false;
     this.camera.snap(this.sim.player.x, this.sim.player.y);
   }
   private newWorld(): void {
@@ -212,11 +216,12 @@ export class Game {
     if (paused) this.input.clear();
     const manual = paused ? { x: 0, y: 0 } : this.input.movement();
     const attack = !paused && this.input.consumeAttack();
+    const heavyAttack = !paused && this.input.consumeHeavyAttack();
     const manualActive = Math.hypot(manual.x, manual.y) > 0.02;
-    if (paused || manualActive || attack) this.navigator.cancel();
+    if (paused || manualActive || attack || heavyAttack) this.navigator.cancel();
     const tap = this.input.consumeTap();
     // O servidor recebe somente vetores de movimento e segue autoritativo no multiplayer.
-    if (tap && !paused && !manualActive && !attack) {
+    if (tap && !paused && !manualActive && !attack && !heavyAttack) {
       const destination = this.interior
         ? this.scene.interiorPoint(tap)
         : this.scene.worldPoint(tap, this.camera);
@@ -227,10 +232,14 @@ export class Game {
     const controlled = this.interior?.player ?? this.sim.player;
     const movement = paused ? { x: 0, y: 0 } :
       manualActive ? manual : this.navigator.direction(controlled, dt);
-    this.pendingAttack ||= attack;
+    if (heavyAttack && !online && !this.interior) {
+      this.pendingHeavy = true;
+      this.pendingAttack = false;
+    } else this.pendingAttack ||= attack;
     if (this.interior) {
       const room = this.interior;
       this.pendingAttack = false; // combate indisponível em locais seguros
+      this.pendingHeavy = false;
       this.accumulator = 0;
       if (!paused) room.update(dt, movement);
       if (room.reachedExit) this.leaveInterior();
@@ -264,17 +273,19 @@ export class Game {
           if (this.pendingAttack) this.sim.player.startAttack();
         } else {
           const before = this.sim.player;
-          const changed = this.sim.update(1 / 60, movement, this.pendingAttack);
+          const changed = this.sim.update(1 / 60, movement, this.pendingAttack, this.pendingHeavy);
           // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
           if (this.sim.player !== before || this.sim.player.hurtTime > 0)
             this.navigator.cancel();
           this.pendingAttack = false;
+          this.pendingHeavy = false;
           if (changed) this.save();
         }
       }
     } else {
       this.accumulator = 0;
       this.pendingAttack = false;
+      this.pendingHeavy = false;
     }
     if (online && this.multiplayer) {
       this.networkClock += dt;

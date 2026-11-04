@@ -810,3 +810,35 @@ noscript a {
 @media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
   .game-tools { flex-direction: column; align-items: flex-end; }
 }
+
+/* RPG-004: ataque forte apenas no solo; alvo tátil separado no Android. */
+#heavyAttack {
+  display: none;
+  position: absolute;
+  right: max(105px, calc(env(safe-area-inset-right) + 99px));
+  bottom: max(28px, calc(env(safe-area-inset-bottom) + 22px));
+  z-index: 5;
+  width: 64px;
+  height: 64px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  border: 1px solid #f0b77a;
+  background: #4a2c25e8;
+  color: #fce1ae;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 4px 14px #20181288;
+}
+#heavyAttack[hidden] { display: none !important; }
+#heavyAttack:active { filter: brightness(1.2); }
+@media (pointer: coarse), (max-width: 650px) {
+  #heavyAttack { display: flex; align-items: center; justify-content: center; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  #heavyAttack { bottom: max(22px, calc(env(safe-area-inset-bottom) + 18px)); width: 60px; height: 60px; }
+}

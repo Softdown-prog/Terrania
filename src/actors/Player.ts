@@ -3,6 +3,10 @@ import {
   ATTACK_COOLDOWN,
   ATTACK_DURATION,
   ATTACK_WINDUP,
+  HEAVY_ATTACK_COOLDOWN,
+  HEAVY_ATTACK_DAMAGE,
+  HEAVY_ATTACK_DURATION,
+  HEAVY_ATTACK_WINDUP,
 } from "../engine/combat.ts";
 export class Player {
   x = 16;
@@ -16,6 +20,8 @@ export class Player {
   walkTime = 0;
   attackTime = 0;
   attackCooldown = 0;
+  attackKind: "light" | "heavy" = "light";
+  get strikeDamage(): number { return this.attackKind === "heavy" ? HEAVY_ATTACK_DAMAGE : 1; }
   hurtTime = 0;
   private invulnerable = 0;
   private knockX = 0;
@@ -35,7 +41,7 @@ export class Player {
     const speed =
       126 *
       (world.speedAt?.(this.x, this.y) ?? 1) *
-      (this.attackTime > 0 ? 0.72 : 1);
+      (this.attackTime > 0 ? (this.attackKind === "heavy" ? 0.45 : 0.72) : 1);
     const response = moving ? 18 : 25;
     const decay = Math.exp(-response * dt);
     // Exact integration of acceleration makes 20 Hz server and 60 Hz client agree.
@@ -60,16 +66,25 @@ export class Player {
   }
   startAttack(): boolean {
     if (this.attackCooldown > 0 || this.hp <= 0) return false;
+    this.attackKind = "light";
     this.attackTime = ATTACK_DURATION;
     this.attackCooldown = ATTACK_COOLDOWN;
     this.strikePending = true;
     return true;
   }
+  /** Ataque forte solo: preparação maior, dano duplo e recarga longa. */
+  startHeavyAttack(): boolean {
+    if (this.attackCooldown > 0 || this.hp <= 0) return false;
+    this.attackKind = "heavy";
+    this.attackTime = HEAVY_ATTACK_DURATION;
+    this.attackCooldown = HEAVY_ATTACK_COOLDOWN;
+    this.strikePending = true;
+    return true;
+  }
   consumeStrike(): boolean {
-    if (
-      !this.strikePending ||
-      this.attackTime > ATTACK_DURATION - ATTACK_WINDUP
-    )
+    const duration = this.attackKind === "heavy" ? HEAVY_ATTACK_DURATION : ATTACK_DURATION;
+    const windup = this.attackKind === "heavy" ? HEAVY_ATTACK_WINDUP : ATTACK_WINDUP;
+    if (!this.strikePending || this.attackTime > duration - windup)
       return false;
     this.strikePending = false;
     return this.hp > 0;

@@ -63,8 +63,9 @@ export class Monster {
     }
   }
 
-  takeHit(sourceX: number, sourceY: number): void {
-    this.hp--;
+  takeHit(sourceX: number, sourceY: number, damage = 1): void {
+    if (!Number.isSafeInteger(damage) || damage <= 0) return;
+    this.hp = Math.max(0, this.hp - damage);
     this.hurtTime = 0.22;
     const dx = this.x - sourceX, dy = this.y - sourceY;
     const distance = Math.hypot(dx, dy) || 1;

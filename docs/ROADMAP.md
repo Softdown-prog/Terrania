@@ -21,7 +21,7 @@
 - [ ] Classes, mana, habilidades e XP autoritativo no Go
 - [ ] Sistema de quests com estados e recompensas
 - [x] Três tipos de monstros no modo solo: Slime, Lobo e Aranha, com loot e XP
-- [ ] Dois tipos de ataque (o primeiro recorte ainda usa contato corpo a corpo)
+- [x] Dois tipos de ataque no solo: espada normal e golpe forte (K/toque), dano 2, preparação e recarga longa. Online permanece golpe normal autoritativo (RPG-004).
 
 ## Fase 2 — Multiplayer de teste
 - [x] Testar WSS público via Caddy e sincronizar dois clientes numa sala temporária

@@ -1,12 +1,12 @@
 import type { Player } from "../actors/Player.ts";
 import type { Slime } from "../actors/Slime.ts";
 import type { MonsterKind } from "../actors/MonsterSpecies.ts";
-import { ATTACK_DURATION, ATTACK_WINDUP } from "../engine/combat.ts";
+import { ATTACK_DURATION, ATTACK_WINDUP, HEAVY_ATTACK_DURATION, HEAVY_ATTACK_WINDUP } from "../engine/combat.ts";
 export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
-  Partial<Pick<Player, "vx" | "vy" | "hurtTime">>;
+  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackKind">>;
 export type SlimeVisual = Pick<Slime, "hp" | "bounce"> & { hurtTime?: number };
 const TAU = Math.PI * 2;
 function ellipse(
@@ -131,15 +131,18 @@ export function renderHero(
     ctx.fillRect(-4, -23, 8, 2);
   }
   const attacking = player.attackTime > 0;
+  const heavy = player.attackKind === "heavy";
   ctx.save();
   ctx.translate(0, -12);
   if (attacking) {
-    const elapsed = ATTACK_DURATION - player.attackTime;
+    const duration = heavy ? HEAVY_ATTACK_DURATION : ATTACK_DURATION;
+    const windup = heavy ? HEAVY_ATTACK_WINDUP : ATTACK_WINDUP;
+    const elapsed = duration - player.attackTime;
     const progress = Math.min(
       1,
       Math.max(
         0,
-        (elapsed - ATTACK_WINDUP * 0.55) / (ATTACK_DURATION - ATTACK_WINDUP),
+        (elapsed - windup * 0.55) / (duration - windup),
       ),
     );
     const sweep = progress * progress * (3 - 2 * progress);
@@ -147,8 +150,10 @@ export function renderHero(
     const angle = facing - 1.25 + sweep * 2.5;
     if (progress > 0.08 && progress < 0.96) {
       for (let i = 0; i < 3; i++) {
-        ctx.strokeStyle = (["#f9ebbaaa", "#e1c98a66", "#fbf5da33"][i] ?? "#fbf5da33");
-        ctx.lineWidth = 2.4 + i * 1.8;
+        ctx.strokeStyle = (heavy
+          ? ["#ffcf8add", "#f19d6288", "#fbe6ad55"][i]
+          : ["#f9ebbaaa", "#e1c98a66", "#fbf5da33"][i]) ?? "#fbf5da33";
+        ctx.lineWidth = (heavy ? 3.5 : 2.4) + i * 1.8;
         ctx.beginPath();
         ctx.arc(0, 0, 37 - i * 4, angle - 0.7, angle);
         ctx.stroke();

@@ -57,9 +57,12 @@
           <path d="m8 24 15-19 4-1-1 5-17 16M4 22l7 6M5 28l-2 2" /></svg
         ><span>ATACAR</span>
       </button>
+      @if (!hud.online()) {
+        <button id="heavyAttack" type="button" aria-label="Golpe forte, tecla K, dois pontos de dano e recarga de 1,2 segundos">FORTE</button>
+      }
       <button id="talkButton" [hidden]="!hud.talkVisible()" [attr.aria-label]="hud.talkLabel()" (click)="hud.talk()" type="button" aria-label="Conversar com personagem">{{ hud.talkLabel() }}</button>
       <div class="keyboard-hint" aria-hidden="true">
-        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar <span>·</span> <kbd>E</kbd> conversar
+        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar <span>·</span> <kbd>K</kbd> forte (solo) <span>·</span> <kbd>E</kbd> conversar
       </div>
       <dialog id="playersDialog" #playersDialog (close)="closed()" aria-labelledby="playersTitle">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar jogadores online">×</button>
@@ -169,6 +172,10 @@
           <div>
             <dt>Espaço ou J</dt>
             <dd>Atacar na direção em que você olha. Segure para repetir.</dd>
+          </div>
+          <div>
+            <dt>K ou botão FORTE (modo solo)</dt>
+            <dd>Golpe forte: causa dois pontos de dano depois de uma preparação maior, mas leva 1,2 segundos para poder atacar novamente.</dd>
           </div>
           <div>
             <dt>No celular</dt>

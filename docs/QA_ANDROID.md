@@ -36,3 +36,7 @@ A CI garante matemática do joystick, TypeScript, build e regressões. **Não su
 - [ ] Registrar observações reais do Chrome Android antes de concluir a tarefa.
 
 Alterações restritas ao input e apresentação. Velocidade, combate, colisão, protocolo e estado do servidor não são alterados.
+
+## RPG-004 — Ataque forte (modo solo)
+
+No Android, conferir botão **FORTE** ao lado de ATACAR sem sobrepor o joystick nem diálogos. Um toque executa um golpe; não deve repetir ao manter pressionado. No desktop, usar **K**. O golpe acerta depois de 0,24 s, causa 2 HP de dano por alvo em alcance/linha de visão e tem 1,2 s de recarga; ataque normal continua causando 1 HP. Interiores e menus não recebem combate; no multiplayer não há botão FORTE nem entrada de ataque novo no protocolo v3. Ver `tests/heavy-attack.test.ts` e `tests/browser/heavy-attack.spec.ts`.

@@ -9,6 +9,7 @@ export class Input {
   private joyX = 0;
   private joyY = 0;
   private attackQueued = false;
+  private heavyQueued = false;
   private talkQueued = false;
   private attackHeld = false;
   private stickPointer: number | null = null;
@@ -61,6 +62,7 @@ export class Input {
       ) event.preventDefault();
       this.keys.add(event.code);
       if (!event.repeat && event.code === "KeyE") this.talkQueued = true;
+      if (!event.repeat && event.code === "KeyK") this.heavyQueued = true;
       if (!event.repeat && (event.code === "Space" || event.code === "KeyJ"))
         this.attackQueued = true;
     }, { signal: this.lifetime.signal });
@@ -125,6 +127,16 @@ export class Input {
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"] as const)
       attack?.addEventListener(type, releaseAttack, { signal: this.lifetime.signal });
     attack?.addEventListener("contextmenu", (event) => event.preventDefault(), { signal: this.lifetime.signal });
+    const heavy = document.getElementById("heavyAttack");
+    heavy?.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      event.preventDefault();
+      this.heavyQueued = true;
+    }, { signal: this.lifetime.signal });
+    heavy?.addEventListener("click", (event) => {
+      if (event.detail === 0) this.heavyQueued = true;
+    }, { signal: this.lifetime.signal });
+    heavy?.addEventListener("contextmenu", (event) => event.preventDefault(), { signal: this.lifetime.signal });
     // Acessibilidade: Enter/Espaço também acionam o botão físico de ataque.
     attack?.addEventListener("click", (event) => {
       if (event.detail === 0) this.attackQueued = true;
@@ -134,6 +146,7 @@ export class Input {
     this.keys.clear();
     this.joyX = this.joyY = 0;
     this.attackHeld = this.attackQueued = false;
+    this.heavyQueued = false;
     this.talkQueued = false;
     this.queuedTap = null;
     const canvas = document.getElementById("game");
@@ -177,6 +190,11 @@ export class Input {
     const talk = this.talkQueued;
     this.talkQueued = false;
     return talk;
+  }
+  consumeHeavyAttack(): boolean {
+    const heavy = this.heavyQueued;
+    this.heavyQueued = false;
+    return heavy;
   }
   consumeAttack(): boolean {
     const attack =
