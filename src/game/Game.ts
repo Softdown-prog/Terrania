@@ -346,7 +346,9 @@ export class Game {
     if (feedback.hurt) this.camera.shake(0.65);
     this.camera.update(dt, this.sim.player);
     this.hud.update(this.sim.player, this.sim.kills);
-    this.hud.setCombatTarget(this.classicMode ? this.classicCombat.label(this.sim.slimes) : null);
+    const focusedLabel = this.classicMode ? this.classicCombat.label(this.sim.slimes) : null;
+    this.hud.setCombatTarget(focusedLabel && this.classicPursuit.destination
+      ? focusedLabel + " · seguindo" : focusedLabel);
     this.hud.updateInventory(this.sim.inventory, online);
     this.hud.setNearbyNpc(nearestNpc(this.sim.player.x, this.sim.player.y));
     this.scene.render(

@@ -16,7 +16,7 @@ test('modo clássico solo mostra seleção e não injeta controles rejeitados',a
   await page.keyboard.press('Escape');
   await page.locator('#gameMenuButton').click();
   await page.locator('#helpButton').click();
-  await expect(page.locator('#helpDialog')).toContainText('O herói ataca sozinho');
+  await expect(page.locator('#helpDialog')).toContainText('persegue o alvo');
   await page.locator('#helpDialog .dialog-x').click();
   await page.goto('/jogar/?modo=solo');
   await expect(page.locator('canvas#game')).toBeVisible();

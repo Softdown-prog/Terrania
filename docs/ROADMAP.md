@@ -19,6 +19,8 @@
 - [ ] Inventário, equipamentos, loot e itens consumíveis (primeiro recorte: bolsa offline, gel de slime no chão, poção de cura e recompensa única de Aela; equipamentos/crafting/online pendentes)
 - [ ] Sistema de quests com estados e recompensas
 - [ ] Três tipos de monstros e dois tipos de ataque
+- [x] Protótipo isolado de combate clássico solo: seleção por toque, golpe automático e perseguição por caminho A* até o alcance (CLASSIC-001/002, somente branch experimental).
+- [ ] Caminhada discreta por tiles de 32×32, lista de criaturas, mana, magias, vocações e equipamentos (etapas independentes, sem replicar assets de outros jogos).
 
 ## Fase 2 — Multiplayer de teste
 - [x] Testar WSS público via Caddy e sincronizar dois clientes numa sala temporária
