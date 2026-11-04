@@ -59,3 +59,7 @@ ALLOWED_ORIGINS=http://localhost:5173 go run -race ./cmd/terrania
 **Não usar `go run -race main.go` neste repositório:** o programa é dividido entre `main.go`, `room_runtime.go`, `live_probe.go`, `limits.go` e outros arquivos; o caminho correto é executar o **pacote** `./cmd/terrania`. O gateway pode ser executado com `go run -race ./cmd/gateway`.
 
 O `-race` identifica acessos concorrentes inseguros **nos caminhos realmente executados**; ele não prova ausência de todas as corridas. Para ampliar a cobertura, a CI executa os testes do módulo inteiro e um smoke que inicializa o WebSocket verdadeiro com o detector ativo. O `-race` e o linter rodam no GitHub runner, **não dentro da VPS de produção**, para evitar overhead em partidas de jogadores.
+
+### RPG-003: identidade persistente (ainda desativada)
+
+O módulo `server-go/characters/` contém um adaptador `database/sql` e uma migração PostgreSQL **opcional**, com token secreto de 256 bits (somente hash no banco), validação de XP/HP e CAS de revisões. Não há driver PostgreSQL registrado, endpoints de cadastro ou autenticação, cookie, conexão ao banco ou alteração do WebSocket no servidor atual. A sessão multiplayer ainda é anônima e temporária. Consulte [a especificação de segurança](../docs/IDENTIDADE_PERSONAGEM.md) antes de ativar.
