@@ -27,11 +27,59 @@ export class Player {
   private knockX = 0;
   private knockY = 0;
   private strikePending = false;
+  /** Solo-only evasion state, never provided by the multiplayer protocol. */
+  dodgeTime = 0;
+  dodgeCooldown = 0;
+  webSlowTime = 0;
+  private dodgeX = 0;
+  private dodgeY = 0;
+
+  /** Collision-aware burst; invulnerability starts on the same simulation tick. */
+  startDodge(dir: { x: number; y: number }): boolean {
+    if (this.hp <= 0 || this.attackTime > 0 || this.dodgeTime > 0 ||
+        this.dodgeCooldown > 0) return false;
+    const requested = Math.hypot(dir.x, dir.y);
+    const fallback = Math.hypot(this.faceX, this.faceY);
+    const x = Number.isFinite(requested) && requested > 0.05 ? dir.x
+      : fallback > 0 ? this.faceX : 0;
+    const y = Number.isFinite(requested) && requested > 0.05 ? dir.y
+      : fallback > 0 ? this.faceY : 1;
+    const length = Math.hypot(x, y);
+    if (!Number.isFinite(length) || length < 0.05) return false;
+    this.dodgeX = x / length;
+    this.dodgeY = y / length;
+    this.faceX = this.dodgeX;
+    this.faceY = this.dodgeY;
+    this.dodgeTime = 0.22;
+    this.dodgeCooldown = 1.1;
+    this.invulnerable = Math.max(this.invulnerable, 0.26);
+    this.vx = this.vy = 0;
+    return true;
+  }
+
+  /** Applied only after a confirmed spider hit in the solo simulation. */
+  applyWebSlow(seconds: number): void {
+    if (Number.isFinite(seconds) && seconds > 0)
+      this.webSlowTime = Math.max(this.webSlowTime, Math.min(seconds, 1.5));
+  }
   update(dt: number, dir: { x: number; y: number }, world: CollisionMap): void {
     if (!Number.isFinite(dt) || dt <= 0) return;
     dt = Math.min(dt, 0.1);
     const length = Math.hypot(dir.x, dir.y);
     const moving = Number.isFinite(length) && length > 0.001;
+    this.dodgeCooldown = Math.max(0, this.dodgeCooldown - dt);
+    this.webSlowTime = Math.max(0, this.webSlowTime - dt);
+    if (this.dodgeTime > 0) {
+      const slice = Math.min(dt, this.dodgeTime);
+      const beforeX = this.x, beforeY = this.y;
+      moveBody(this, this.dodgeX * 285 * slice, this.dodgeY * 285 * slice, world);
+      this.walkTime += Math.hypot(this.x - beforeX, this.y - beforeY) * 0.12;
+      this.dodgeTime = Math.max(0, this.dodgeTime - dt);
+      this.hurtTime = Math.max(0, this.hurtTime - dt);
+      this.invulnerable = Math.max(0, this.invulnerable - dt);
+      this.vx = this.vy = 0;
+      return;
+    }
     const nx = moving ? dir.x / Math.max(1, length) : 0;
     const ny = moving ? dir.y / Math.max(1, length) : 0;
     if (moving && this.attackTime <= 0) {
@@ -41,7 +89,8 @@ export class Player {
     const speed =
       126 *
       (world.speedAt?.(this.x, this.y) ?? 1) *
-      (this.attackTime > 0 ? (this.attackKind === "heavy" ? 0.45 : 0.72) : 1);
+      (this.attackTime > 0 ? (this.attackKind === "heavy" ? 0.45 : 0.72) : 1) *
+      (this.webSlowTime > 0 ? 0.58 : 1);
     const response = moving ? 18 : 25;
     const decay = Math.exp(-response * dt);
     // Exact integration of acceleration makes 20 Hz server and 60 Hz client agree.
@@ -65,7 +114,7 @@ export class Player {
     this.invulnerable = Math.max(0, this.invulnerable - dt);
   }
   startAttack(): boolean {
-    if (this.attackCooldown > 0 || this.hp <= 0) return false;
+    if (this.attackCooldown > 0 || this.hp <= 0 || this.dodgeTime > 0) return false;
     this.attackKind = "light";
     this.attackTime = ATTACK_DURATION;
     this.attackCooldown = ATTACK_COOLDOWN;
@@ -74,7 +123,7 @@ export class Player {
   }
   /** Ataque forte solo: preparação maior, dano duplo e recarga longa. */
   startHeavyAttack(): boolean {
-    if (this.attackCooldown > 0 || this.hp <= 0) return false;
+    if (this.attackCooldown > 0 || this.hp <= 0 || this.dodgeTime > 0) return false;
     this.attackKind = "heavy";
     this.attackTime = HEAVY_ATTACK_DURATION;
     this.attackCooldown = HEAVY_ATTACK_COOLDOWN;
