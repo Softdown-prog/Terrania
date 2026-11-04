@@ -88,7 +88,9 @@ test("Battle List não aparece no solo original ou multiplayer e não cobre cont
       battle!.y + battle!.height > button!.y;
     expect(overlap, "Battle List must not overlap " + id).toBe(false);
   }
-  await page.setViewportSize({ width: 780, height: 390 });
+  // Keep a mobile-width landscape viewport in both Playwright projects,
+  // otherwise the desktop project correctly hides touch-only controls.
+  await page.setViewportSize({ width: 600, height: 390 });
   await expect(page.locator("#battlePanel")).toBeVisible();
   const battle = await page.locator("#battlePanel").boundingBox();
   const attack = await page.locator("#attack").boundingBox();
