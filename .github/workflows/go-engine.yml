@@ -89,6 +89,11 @@ jobs:
           node --experimental-strip-types server-go/scripts/gameplay-reference.mjs > /tmp/terrania-gameplay-ts.json
           (cd server-go && go run ./cmd/gameplay-parity) > /tmp/terrania-gameplay-go.json
           node server-go/scripts/compare.mjs /tmp/terrania-gameplay-ts.json /tmp/terrania-gameplay-go.json
+      - name: Comparar catálogo e 162 chunks de monstros com TypeScript
+        run: |
+          node --experimental-strip-types server-go/scripts/monster-reference.mjs > /tmp/terrania-monsters-ts.json
+          (cd server-go && go run ./cmd/monster-parity) > /tmp/terrania-monsters-go.json
+          node server-go/scripts/compare.mjs /tmp/terrania-monsters-ts.json /tmp/terrania-monsters-go.json
       - name: Imagem independente e resposta de saúde
         run: |
           docker build -f server-go/Dockerfile -t terrania-go:ci .

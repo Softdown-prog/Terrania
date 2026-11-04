@@ -54,3 +54,10 @@ func monsterMaximumHP(kind MonsterKind) int {
 	if !ok { return 0 }
 	return definition.HP
 }
+
+// MonsterStats exposes read-only numeric values for the cross-language parity tool.
+// Unknown kinds return zero values and are rejected by validation elsewhere.
+func MonsterStats(kind MonsterKind) MonsterDefinition {
+	definition, _ := monsterDefinition(kind)
+	return definition
+}
