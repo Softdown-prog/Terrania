@@ -1,5 +1,5 @@
 import type { Player } from '../actors/Player.ts';
-import type { Monster } from '../actors/Monster.ts';
+import { Monster } from '../actors/Monster.ts';
 import type { HeroState, MobState } from '../shared/protocol.ts';
 import { renderHero, renderMonster, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
@@ -61,6 +61,32 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
     actors.push({ y: npc.y, draw: () =>
       renderNpc(ctx, npc, npc.x - left, npc.y - top,
         Math.hypot(player.x - npc.x, player.y - npc.y) <= NPC_TALK_RANGE) });
+  }
+  // Only local Monster instances expose special-target telegraphs. Never
+  // fabricate the preview for remote WebSocket snapshots.
+  for (const mob of mobs) {
+    if (!(mob instanceof Monster) || mob.specialWindup <= 0) continue;
+    const markX = mob.specialTargetX - left, markY = mob.specialTargetY - top;
+    if (Math.abs(markX) > width + 40 || Math.abs(markY) > height + 40) continue;
+    ctx.save();
+    const wolf = mob.kind === 'wolf';
+    ctx.strokeStyle = wolf ? '#ffd098' : '#e2b3ff';
+    ctx.fillStyle = wolf ? '#e97e3e30' : '#b65dec30';
+    ctx.lineWidth = 2.6;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.arc(markX, markY, wolf ? 33 : 26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.setLineDash([]);
+    if (wolf) {
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(mob.x - left, mob.y - top);
+      ctx.lineTo(markX, markY);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
   for (const mob of mobs) if (Math.abs(mob.x - cameraX) < width / 2 + 30 && Math.abs(mob.y - cameraY) < height / 2 + 40) {
     actors.push({ y: mob.y, draw: () => renderMonster(ctx, mob, mob.x - left, mob.y - top) });
