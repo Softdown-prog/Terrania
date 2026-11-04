@@ -28,3 +28,15 @@ Não confundir esse QA de gameplay com Playwright ou teste de servidor.
 **Não testa** experiência, classes, personagens persistidos em banco,
 renderização Phaser, Angular, mobile físico ou multiplayer WebSocket.
 Nenhum código é executado automaticamente na VPS.
+
+
+## MONSTER-001 — catálogo e progressão solo
+
+A suíte `tests/monsters.test.ts` verifica criação determinística das três espécies,
+atributos imutáveis, IA corpo a corpo e resistência, XP por abate, distinção da missão
+de cinco slimes, materiais de cada espécie, persistência e limite de pilhas.
+A expedição natural agora contabiliza XP real do motor. A exploração padrão perto
+da vila permanece com spawns de slime idênticos aos anteriores.
+
+Lobos e aranhas ficam apenas no modo solo neste recorte. O backend Go autoritativo
+ainda deve receber os novos tipos antes de habilitá-los online.

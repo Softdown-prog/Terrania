@@ -34,6 +34,8 @@ export interface ExpeditionQaReport {
   readonly ticks: number;
   readonly kills: number;
   readonly gelCollected: number;
+  readonly experience: number;
+  readonly level: number;
   readonly deaths: number;
   readonly walkedUnits: number;
   readonly tilesVisited: number;
@@ -58,7 +60,7 @@ export interface ExpeditionQaReport {
     readonly deathObservation: true;
     readonly browser: false;
     readonly multiplayer: false;
-    readonly experience: false;
+    readonly experience: true;
   };
 }
 export interface ExpeditionQaOptions {
@@ -278,7 +280,7 @@ export function runExpeditionQa(options: ExpeditionQaOptions = {}): ExpeditionQa
     environment: "natural-expedition-offline", seed,
     status: failed ? "failed" : skipped ? "incomplete" : "passed",
     targetKills, ticks, kills: sim.kills,
-    gelCollected: collected, deaths,
+    gelCollected: collected, experience: sim.experience, level: sim.level, deaths,
     walkedUnits: Number(walkedUnits.toFixed(2)),
     tilesVisited: visitedTiles.size,
     regionsVisited: [...visitedRegions].sort(),
@@ -287,7 +289,7 @@ export function runExpeditionQa(options: ExpeditionQaOptions = {}): ExpeditionQa
     capabilities: {
       naturalSpawns: true, multipleEncounters: true,
       realMovement: true, realAiAndCombat: true, naturalLoot: true,
-      deathObservation: true, browser: false, multiplayer: false, experience: false,
+      deathObservation: true, browser: false, multiplayer: false, experience: true,
     },
   };
 }

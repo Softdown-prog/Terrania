@@ -92,3 +92,12 @@ Desenvolvida e validada em `feat/angular-ui-phaser3`. Em 31/10/2026, Rodrigo aut
 Para testes de navegador: `npm ci --prefix server`, `npx playwright install chromium` e `npm run test:browser`. Os testes usam servidores locais e emulação de tela Android.
 
 Leia [o estado da migração e como continuar](docs/MIGRACAO_ANGULAR_PHASER3.md).
+
+
+## Três espécies de monstros (solo)
+
+O catálogo tipado `src/actors/MonsterSpecies.ts` controla Slime, Lobo e Aranha,
+com vida, IA, dano de contato, XP e materiais diferentes. A área inicial preserva
+os Slimes tradicionais; criaturas novas surgem em regiões mais distantes.
+A missão da Aela conta somente Slimes. Veja [biblioteca de monstros](docs/MONSTROS.md).
+O multiplayer autoritativo Go continua com Slimes até a homologação de paridade.

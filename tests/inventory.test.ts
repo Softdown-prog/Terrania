@@ -10,7 +10,7 @@ const still = { x: 0, y: 0 };
 
 test("bolsa nova, validação de dados e limite de pilhas", () => {
   const empty = new Inventory();
-  assert.deepEqual(empty.snapshot(), { gel: 0, potion: 0, questRewardClaimed: false });
+  assert.deepEqual(empty.snapshot(), { gel: 0, fang: 0, silk: 0, potion: 0, questRewardClaimed: false });
   assert.deepEqual(normalizeInventory({ gel: -3, potion: Infinity, questRewardClaimed: "true" }),
     empty.snapshot());
   const bag = new Inventory({ gel: MAX_STACK + 10, potion: 5.5, questRewardClaimed: true });

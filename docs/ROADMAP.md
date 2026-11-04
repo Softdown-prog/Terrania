@@ -20,7 +20,8 @@
 - [x] XP e níveis solo com vida crescente e save compatível (RPG-001)
 - [ ] Classes, mana, habilidades e XP autoritativo no Go
 - [ ] Sistema de quests com estados e recompensas
-- [ ] Três tipos de monstros e dois tipos de ataque
+- [x] Três tipos de monstros no modo solo: Slime, Lobo e Aranha, com loot e XP
+- [ ] Dois tipos de ataque (o primeiro recorte ainda usa contato corpo a corpo)
 
 ## Fase 2 — Multiplayer de teste
 - [x] Testar WSS público via Caddy e sincronizar dois clientes numa sala temporária

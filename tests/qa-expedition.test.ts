@@ -6,6 +6,8 @@ test("expedição enfrenta múltiplos slimes naturais, coletando e cruzando regi
   const report = runExpeditionQa();
   assert.equal(report.status, "passed", JSON.stringify(report.findings.filter(f => f.status !== "passed")));
   assert.ok(report.kills >= 2);
+  assert.equal(report.experience, report.kills * 10);
+  assert.ok(report.level >= 1);
   assert.equal(report.gelCollected, 2);
   assert.ok(report.regionsVisited.length >= 2);
   assert.ok(report.walkedUnits > 100);
