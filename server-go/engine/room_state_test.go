@@ -189,9 +189,13 @@ func TestRoomStateRoundTripMixedSpecies(t *testing.T) {
 		r.mobOrder = append(r.mobOrder, id)
 	}
 	data, err := r.ExportState()
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	clone, err := RestoreRoomState(data)
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer clone.Close()
 	for _, id := range r.mobOrder {
 		before, after := r.mobs[id], clone.mobs[id]
@@ -200,13 +204,19 @@ func TestRoomStateRoundTripMixedSpecies(t *testing.T) {
 		}
 	}
 	second, err := clone.ExportState()
-	if err != nil || !bytes.Equal(data, second) { t.Fatalf("mixed checkpoint drift: %v", err) }
+	if err != nil || !bytes.Equal(data, second) {
+		t.Fatalf("mixed checkpoint drift: %v", err)
+	}
 	legacy := NewRoom("origins")
 	defer legacy.Close()
 	legacy.Add("legacy", "Old")
 	legacy.mobs["old"] = NewSlime("old", 1200, 1200)
 	legacy.mobOrder = append(legacy.mobOrder, "old")
 	raw, err := legacy.ExportState()
-	if err != nil { t.Fatal(err) }
-	if bytes.Contains(raw, []byte(`"Kind"`)) { t.Fatal("legacy schema changed") }
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(raw, []byte(`"Kind"`)) {
+		t.Fatal("legacy schema changed")
+	}
 }
