@@ -6,7 +6,7 @@ export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
-  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackKind">>;
+  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackKind" | "dodgeTime">>;
 export type SlimeVisual = Pick<Slime, "hp" | "bounce"> & { hurtTime?: number };
 const TAU = Math.PI * 2;
 function ellipse(
@@ -37,6 +37,14 @@ export function renderHero(
   const back = player.faceY < -0.35,
     side = player.faceX > 0.3 ? 1 : player.faceX < -0.3 ? -1 : 0;
   ellipse(ctx, 1, 3, 11, 4, "#102e2a55");
+  if ((player.dodgeTime ?? 0) > 0) {
+    ctx.strokeStyle = "#a1f2f4cc";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.ellipse(0, 1, 15, 7, 0, 0, TAU);
+    ctx.stroke();
+    ctx.globalAlpha = 0.75;
+  }
   ctx.translate(0, bob);
   // Traveling cloak, leather boots and layered armor.
   ctx.fillStyle = "#203e46";
