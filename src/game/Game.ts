@@ -319,6 +319,7 @@ export class Game {
       this.effects,
       this.navigator.target,
       online ? [] : [...this.sim.drops.values()],
+      this.classicMode ? this.classicCombat.targetId : null,
     );
   }
   destroy(): void {
