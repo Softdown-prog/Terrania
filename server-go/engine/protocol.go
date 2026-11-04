@@ -59,6 +59,8 @@ type HeroState struct {
 }
 
 type MobState struct {
+	// Omitted kind indicates Slime, compatible with the current v3 protocol.
+	Kind MonsterKind `json:"kind,omitempty"`
 	ID string `json:"id"`
 	X float64 `json:"x"`
 	Y float64 `json:"y"`

@@ -61,6 +61,12 @@ func tryRustMonsterStepWithScratch(guests []*Guest, mobs []*Slime, dt float64, w
         return false
     }
 
+    // The current Rust planner implements Slimes only. Mixed species must
+    // use the complete authoritative Go path, never Slime damage/AI in Rust.
+    for _, mob := range mobs {
+        if mob == nil || mob.Species() != SlimeKind { return false }
+    }
+
     scratch.ensure(len(guests), len(mobs))
     for i, g := range guests {
         if g == nil || g.Actor == nil {

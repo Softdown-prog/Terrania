@@ -133,7 +133,7 @@ func (r *Room) spawnNearGuests(guests []*Guest) {
 		cx,cy:=ChunkOf(g.Actor.X),ChunkOf(g.Actor.Y)
 		for dy:=-1;dy<=1;dy++ {
 			for dx:=-1;dx<=1;dx++ {
-				for _,mob:=range SpawnSlimes(cx+dx,cy+dy,r.World) {
+				for _,mob:=range SpawnMonsters(cx+dx,cy+dy,r.World) {
 					if len(r.mobs)>=MaxMobs { return }
 					if !r.defeated[mob.ID]&&r.mobs[mob.ID]==nil {
 						r.mobs[mob.ID]=mob
@@ -156,7 +156,7 @@ func (r *Room) SnapshotFor(id string) *Snapshot {
 			AttackTime:a.AttackTime,VX:a.VX,VY:a.VY,HurtTime:a.HurtTime})
 	})
 	visitVisibleMobs(r.mobsInOrder(),me.Actor.X,me.Actor.Y,func(m *Slime) {
-		result.Mobs=append(result.Mobs,MobState{ID:m.ID,X:m.X,Y:m.Y,HP:m.HP,
+		result.Mobs=append(result.Mobs,MobState{Kind:m.Kind,ID:m.ID,X:m.X,Y:m.Y,HP:m.HP,
 			Bounce:m.Bounce(),HurtTime:m.HurtTime})
 	})
 	return result
