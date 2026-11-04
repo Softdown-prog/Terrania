@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import type { Player } from '../actors/Player.ts';
 import type { Inventory } from '../engine/Inventory.ts';
 import type { GameUi, Preferences } from '../ui/GameUi.ts';
+import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import { npcDialogue, type Npc } from '../world/npcs.ts';
 
 @Injectable()
@@ -11,6 +12,8 @@ export class HudService implements GameUi {
   readonly nearby = signal(0);
   readonly classicMode = signal(false);
   readonly combatTarget = signal<string | null>(null);
+  readonly battleCreatures = signal<readonly BattleCreature[]>([]);
+  readonly battleTargetId = signal<string | null>(null);
   readonly hp = signal(100);
   readonly maxHp = signal(100);
   readonly quest = signal('Proteja a clareira');
@@ -38,6 +41,7 @@ export class HudService implements GameUi {
   private talkCallback: () => void = () => {};
   private potionCallback: () => string = () => '';
   private stopCombatCallback: () => void = () => {};
+  private battleSelectCallback: (id: string) => void = () => {};
 
   loadPreferences(): Preferences {
     let saved: Partial<Preferences> = {};
@@ -64,6 +68,18 @@ export class HudService implements GameUi {
   onTalk(callback: () => void): void { this.talkCallback = callback; }
   onPotionUse(callback: () => string): void { this.potionCallback = callback; }
   onStopCombat(callback: () => void): void { this.stopCombatCallback = callback; }
+  onBattleSelect(callback: (id: string) => void): void { this.battleSelectCallback = callback; }
+  selectBattleCreature(id: string): void { this.battleSelectCallback(id); }
+  setBattleCreatures(creatures: readonly BattleCreature[], targetId: string | null): void {
+    const previous = this.battleCreatures();
+    const same = creatures.length === previous.length && creatures.every((row, i) => {
+      const old = previous[i];
+      return old !== undefined && row.id === old.id && row.hp === old.hp &&
+        row.distanceTiles === old.distanceTiles;
+    });
+    if (!same) this.battleCreatures.set(creatures);
+    if (this.battleTargetId() !== targetId) this.battleTargetId.set(targetId);
+  }
   stopCombat(): void { this.stopCombatCallback(); }
   newWorld(): void { this.newWorldCallback(); }
   talk(): void { this.talkCallback(); }

@@ -20,6 +20,7 @@
 - [ ] Sistema de quests com estados e recompensas
 - [ ] Três tipos de monstros e dois tipos de ataque
 - [x] Protótipo isolado de combate clássico solo: seleção por toque, golpe automático e perseguição por caminho A* até o alcance (CLASSIC-001/002, somente branch experimental).
+- [x] Battle List expansível para criaturas visíveis no Canvas, seleção por linha e indicação de HP/distância (CLASSIC-003, somente branch experimental).
 - [ ] Caminhada discreta por tiles de 32×32, lista de criaturas, mana, magias, vocações e equipamentos (etapas independentes, sem replicar assets de outros jogos).
 
 ## Fase 2 — Multiplayer de teste

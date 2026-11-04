@@ -839,3 +839,151 @@ noscript a {
 @media (pointer: fine) and (min-width: 651px) {
   .classic-status { bottom: 60px; }
 }
+
+/* CLASSIC-003 — Collapsible Battle List. Isolated to ?modo=classico. */
+.classic-battle {
+  position: absolute;
+  z-index: 7;
+  top: max(88px, calc(env(safe-area-inset-top) + 80px));
+  right: max(22px, env(safe-area-inset-right));
+  width: min(242px, calc(100vw - 30px));
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #f1e5c4;
+}
+.battle-toggle {
+  align-self: flex-end;
+  width: min(100%, 168px);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #b4aa8499;
+  background: #1b342cfa;
+  color: #f1e4bb;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .08em;
+  box-shadow: 0 4px 16px #071b1cb8;
+}
+.battle-count {
+  background: #3d604c;
+  border-radius: 5px;
+  padding: 3px 7px;
+  letter-spacing: normal;
+  font-variant-numeric: tabular-nums;
+}
+.battle-panel {
+  background: #142b25f5;
+  border: 1px solid #afaa856b;
+  border-radius: 7px;
+  box-shadow: 0 12px 30px #081b17be;
+  max-height: min(38dvh, 340px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+.battle-panel[hidden] { display: none !important; }
+#battleEmpty {
+  margin: 0;
+  padding: 16px 12px;
+  font-size: 12px;
+  text-align: center;
+  color: #c7cbb8;
+}
+.battle-rows {
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+}
+.battle-rows li + li { margin-top: 4px; }
+.battle-entry {
+  width: 100%;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+  padding: 6px 8px;
+  background: #26483a;
+  border: 1px solid #a2b59d55;
+  color: #ededd5;
+  border-radius: 5px;
+  text-align: left;
+  font-size: 11px;
+  touch-action: manipulation;
+}
+.battle-entry:hover { background: #365c4a; }
+.battle-entry.selected,
+.battle-entry[aria-pressed="true"] {
+  border-color: #ffcf75;
+  background: #50513b;
+  box-shadow: inset 3px 0 0 #f3cc78;
+}
+.battle-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  color: #96e0b4;
+  border-radius: 5px;
+  background: #1a5948;
+  border: 1px solid #8bbd9b7a;
+}
+.battle-details { min-width: 0; }
+.battle-details strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+}
+.battle-entry small {
+  color: #e0d9af;
+  white-space: nowrap;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.battle-hp {
+  display: block;
+  height: 5px;
+  margin-top: 5px;
+  background: #492f2c;
+  border: 1px solid #ccb98755;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.battle-hp > span {
+  display: block;
+  height: 100%;
+  background: #86c995;
+}
+@media (min-width: 651px) and (max-width: 1060px) {
+  .classic-battle { top: max(150px, calc(env(safe-area-inset-top) + 145px)); }
+}
+@media (max-width: 650px) {
+  .classic-battle {
+    top: max(70px, calc(env(safe-area-inset-top) + 64px));
+    right: max(12px, env(safe-area-inset-right));
+    width: min(224px, calc(100vw - 134px));
+  }
+  .battle-panel { max-height: min(33dvh, 260px); }
+}
+@media (max-width: 370px) {
+  .classic-battle { width: min(170px, calc(100vw - 148px)); }
+  .battle-entry { grid-template-columns: 24px minmax(0, 1fr); }
+  .battle-entry small { grid-column: 2; }
+  .battle-icon { width: 24px; height: 24px; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  .classic-battle {
+    top: max(54px, calc(env(safe-area-inset-top) + 48px));
+    width: min(218px, calc(100vw - 40px));
+  }
+  .battle-panel { max-height: min(20dvh, 75px); }
+}

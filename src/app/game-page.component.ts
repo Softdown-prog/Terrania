@@ -12,6 +12,7 @@ export class GamePageComponent implements AfterViewInit {
   readonly notice = signal('');
   readonly fullscreenActive = signal(false);
   readonly toolsExpanded = signal(false);
+  readonly battleOpen = signal(false);
   readonly playersDialogOpen = signal(false);
   private readonly mount = viewChild.required<ElementRef<HTMLElement>>('mount');
   private readonly npcDialog = viewChild.required<ElementRef<HTMLDialogElement>>('npcDialog');
@@ -24,6 +25,8 @@ export class GamePageComponent implements AfterViewInit {
     });
   }
   ngAfterViewInit(): void {
+    // An open sidebar fits a desktop; Android stays collapsed until requested.
+    this.battleOpen.set(window.matchMedia('(pointer: fine) and (min-width: 651px)').matches);
     try { this.destroy.onDestroy(mountGame(this.mount().nativeElement, this.hud, runtimeConfig.multiplayerUrl)); }
     catch { this.notice.set('Não foi possível iniciar o jogo neste navegador. Recarregue a página para tentar novamente.'); }
   }
