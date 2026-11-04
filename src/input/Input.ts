@@ -10,6 +10,7 @@ export class Input {
   private joyY = 0;
   private attackQueued = false;
   private heavyQueued = false;
+  private dodgeQueued = false;
   private talkQueued = false;
   private attackHeld = false;
   private stickPointer: number | null = null;
@@ -63,6 +64,8 @@ export class Input {
       this.keys.add(event.code);
       if (!event.repeat && event.code === "KeyE") this.talkQueued = true;
       if (!event.repeat && event.code === "KeyK") this.heavyQueued = true;
+      if (!event.repeat && (event.code === "ShiftLeft" || event.code === "ShiftRight"))
+        this.dodgeQueued = true;
       if (!event.repeat && (event.code === "Space" || event.code === "KeyJ"))
         this.attackQueued = true;
     }, { signal: this.lifetime.signal });
@@ -137,6 +140,16 @@ export class Input {
       if (event.detail === 0) this.heavyQueued = true;
     }, { signal: this.lifetime.signal });
     heavy?.addEventListener("contextmenu", (event) => event.preventDefault(), { signal: this.lifetime.signal });
+    const dodge = document.getElementById("dodge");
+    dodge?.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      event.preventDefault();
+      this.dodgeQueued = true;
+    }, { signal: this.lifetime.signal });
+    dodge?.addEventListener("click", (event) => {
+      if (event.detail === 0) this.dodgeQueued = true;
+    }, { signal: this.lifetime.signal });
+    dodge?.addEventListener("contextmenu", (event) => event.preventDefault(), { signal: this.lifetime.signal });
     // Acessibilidade: Enter/Espaço também acionam o botão físico de ataque.
     attack?.addEventListener("click", (event) => {
       if (event.detail === 0) this.attackQueued = true;
@@ -147,6 +160,7 @@ export class Input {
     this.joyX = this.joyY = 0;
     this.attackHeld = this.attackQueued = false;
     this.heavyQueued = false;
+    this.dodgeQueued = false;
     this.talkQueued = false;
     this.queuedTap = null;
     const canvas = document.getElementById("game");
@@ -190,6 +204,11 @@ export class Input {
     const talk = this.talkQueued;
     this.talkQueued = false;
     return talk;
+  }
+  consumeDodge(): boolean {
+    const requested = this.dodgeQueued;
+    this.dodgeQueued = false;
+    return requested;
   }
   consumeHeavyAttack(): boolean {
     const heavy = this.heavyQueued;
