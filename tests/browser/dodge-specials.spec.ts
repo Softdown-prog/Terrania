@@ -21,7 +21,7 @@ test('esquiva no Android não sobrepõe ataques nem joystick e fecha ao entrar o
   await page.keyboard.press('Shift');
   await page.locator('#gameMenuButton').click();
   await page.locator('#helpButton').click();
-  await expect(page.locator('#helpDialog')).toContainText('Esquiva');
+  await expect(page.locator('#helpDialog')).toContainText('ESQUIVA');
   await page.locator('#helpDialog .dialog-x').click();
   await page.goto('/jogar/?room=no-dodge-online');
   await expect(page.locator('#multiplayerStatus')).toContainText('Online');
@@ -30,7 +30,9 @@ test('esquiva no Android não sobrepõe ataques nem joystick e fecha ao entrar o
 });
 
 test('esquiva também não sobrepõe os botões na orientação paisagem', async ({page}) => {
-  await page.setViewportSize({width:780,height:390});
+  // 600x390 remains landscape while using the mobile touch layout even in
+  // the desktop Playwright project (which emulates a fine pointer).
+  await page.setViewportSize({width:600,height:390});
   await page.goto('/jogar/?modo=solo');
   const d=await page.locator('#dodge').boundingBox();
   const normal=await page.locator('#attack').boundingBox();
