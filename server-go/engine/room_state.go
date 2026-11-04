@@ -43,8 +43,8 @@ type RoomGuestState struct {
 	LastInputAt  time.Time
 	Kills        int
 	// Version-1 legacy snapshots omit XP; new snapshots store it explicitly.
-	Experience   int `json:",omitempty"`
-	SlimeKills   *int `json:",omitempty"`
+	Experience int  `json:",omitempty"`
+	SlimeKills *int `json:",omitempty"`
 }
 
 type RoomPlayerState struct {
@@ -273,7 +273,9 @@ func RestoreRoomState(data []byte) (*Room, error) {
 
 // Legacy room checkpoints had only Slimes; absent slimeKills migrates to Kills.
 func restoredSlimeKills(state RoomGuestState) int {
-	if state.SlimeKills == nil { return state.Kills }
+	if state.SlimeKills == nil {
+		return state.Kills
+	}
 	return *state.SlimeKills
 }
 
