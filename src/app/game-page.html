@@ -59,10 +59,11 @@
       </button>
       @if (!hud.online()) {
         <button id="heavyAttack" type="button" aria-label="Golpe forte, tecla K, dois pontos de dano e recarga de 1,2 segundos">FORTE</button>
+        <button id="dodge" type="button" aria-label="Esquivar, tecla Shift, recarga de 1,1 segundo">ESQUIVA</button>
       }
       <button id="talkButton" [hidden]="!hud.talkVisible()" [attr.aria-label]="hud.talkLabel()" (click)="hud.talk()" type="button" aria-label="Conversar com personagem">{{ hud.talkLabel() }}</button>
       <div class="keyboard-hint" aria-hidden="true">
-        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar <span>·</span> <kbd>K</kbd> forte (solo) <span>·</span> <kbd>E</kbd> conversar
+        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> atacar <span>·</span> <kbd>K</kbd> forte (solo) <span>·</span> <kbd>SHIFT</kbd> esquivar (solo) <span>·</span> <kbd>E</kbd> conversar
       </div>
       <dialog id="playersDialog" #playersDialog (close)="closed()" aria-labelledby="playersTitle">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar jogadores online">×</button>
@@ -176,6 +177,10 @@
           <div>
             <dt>K ou botão FORTE (modo solo)</dt>
             <dd>Golpe forte: causa dois pontos de dano depois de uma preparação maior, mas leva 1,2 segundos para poder atacar novamente.</dd>
+          </div>
+          <div>
+            <dt>Shift ou botão ESQUIVA (modo solo)</dt>
+            <dd>Deslocamento rápido na direção do movimento ou do olhar, com breve proteção contra dano e recarga de 1,1 segundo. Lobos avisam antes de saltar; aranhas marcam onde lançarão a teia que desacelera.</dd>
           </div>
           <div>
             <dt>No celular</dt>
