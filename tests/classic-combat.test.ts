@@ -69,3 +69,14 @@ test("classic auto-strike damages only its selected slime; old manual strike sta
   assert.equal(a.hp,1);
   assert.equal(b.hp,1,"legacy manual attack remains unchanged outside classic mode");
 });
+
+test("classic without a live target never turns a pending strike into area damage",()=> {
+  const sim=new OfflineSimulation(842136);
+  sim.update(0,STILL,false);sim.slimes.clear();
+  const bystander=new Slime("bystander",50,16);
+  sim.slimes.set(bystander.id,bystander);
+  sim.player.faceX=1;sim.player.faceY=0;
+  assert.equal(sim.player.startAttack(),true);
+  for(let i=0;i<18;i++)sim.update(1/60,STILL,false,null);
+  assert.equal(bystander.hp,2);
+});

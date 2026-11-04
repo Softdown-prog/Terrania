@@ -264,10 +264,14 @@ export class Game {
             this.classicCombat.tick(1 / 60, this.sim.player, this.sim.slimes, this.sim.collision);
           const changed = this.sim.update(1 / 60, movement,
             classicStrike || this.pendingAttack,
-            this.classicMode ? this.classicCombat.targetId : null);
+            this.classicMode ? this.classicCombat.targetId : undefined);
           // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
-          if (this.sim.player !== before || this.sim.player.hurtTime > 0)
+          if (this.sim.player !== before) {
             this.navigator.cancel();
+            this.classicCombat.cancel();
+          } else if (this.sim.player.hurtTime > 0) {
+            this.navigator.cancel();
+          }
           this.pendingAttack = false;
           if (changed) this.save();
         }
