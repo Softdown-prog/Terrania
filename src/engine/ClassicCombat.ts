@@ -17,14 +17,21 @@ const isPoint = (p: Point): boolean =>
 /** A selected target never authorizes an out-of-range or wall-penetrating strike. */
 export class ClassicCombat {
   private selected: string | null = null;
+  private swingTarget: string | null = null;
   private remaining = 0;
 
   get targetId(): string | null { return this.selected; }
+  get strikeTargetId(): string | null { return this.swingTarget; }
   get cooldown(): number { return this.remaining; }
 
-  /** Cancel focus, not the attack clock: Escape/HUD cannot accelerate combat. */
+  private setTarget(id: string | null): void {
+    if (this.selected !== id) this.swingTarget = null;
+    this.selected = id;
+  }
+
+  /** Cancel focus and its pending strike while preserving the attack clock. */
   cancel(): void {
-    this.selected = null;
+    this.setTarget(null);
   }
 
   /** A fresh world/player has no attack state from the previous simulation. */
@@ -37,7 +44,7 @@ export class ClassicCombat {
     const target = mobs.get(id);
     if (!target || target.hp <= 0) return false;
     // Switching targets is allowed, but cannot bypass an existing attack timer.
-    this.selected = id;
+    this.setTarget(id);
     return true;
   }
 
@@ -51,7 +58,7 @@ export class ClassicCombat {
       if (distance <= best) { nearest = mob; best = distance; }
     }
     if (!nearest) return false;
-    this.selected = nearest.id;
+    this.setTarget(nearest.id);
     return true;
   }
 
@@ -78,6 +85,7 @@ export class ClassicCombat {
     if (!canStrike(facing, mob, collision)) return false;
     player.faceX = facing.faceX;
     player.faceY = facing.faceY;
+    this.swingTarget = mob.id;
     this.remaining = CLASSIC_ATTACK_INTERVAL;
     return true;
   }

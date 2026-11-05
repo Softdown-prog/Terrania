@@ -38,6 +38,43 @@ test('classico preserves the previous offline save and works in landscape',async
   await expect(page.locator('canvas#game')).toBeVisible();
 });
 
+test('trocar de criatura durante a preparação descarta o golpe em andamento', async ({page}, info) => {
+  const android = info.project.name === 'android';
+  await page.setViewportSize(android ? {width:390,height:844} : {width:1200,height:800});
+  await page.addInitScript(() => localStorage.setItem('terrania-origins-v1', JSON.stringify({
+    seed: 842136, x: -3984, y: -4016, hp: 100, kills: 0, defeated: [],
+  })));
+  // Advance the real Phaser loop between selections without racing the 70 ms windup.
+  const start = new Date('2026-01-01T00:00:00Z');
+  await page.clock.install({time:start});
+  await page.clock.pauseAt(new Date(start.getTime() + 1000));
+  await page.goto('/jogar/?modo=classico');
+  await expect.poll(async () => {
+    await page.clock.runFor(32);
+    return page.locator('canvas#game').count();
+  }).toBe(1);
+  if (android) await page.locator('#battleToggle').dispatchEvent('click');
+  await page.clock.runFor(240);
+  const first = page.locator('.battle-entry[data-creature-id="-8,-8,0"]');
+  const second = page.locator('.battle-entry[data-creature-id="-8,-8,1"]');
+  const fullHp = 'Selecionar Slime, vida 2 de 2';
+  await expect(first).toHaveAttribute('aria-label',fullHp);
+  await expect(second).toHaveAttribute('aria-label',fullHp);
+
+  await first.dispatchEvent('click');
+  await page.clock.runFor(48);
+  await expect(first).toHaveAttribute('aria-pressed','true');
+  await second.dispatchEvent('click');
+  await page.clock.runFor(320);
+  await expect(second).toHaveAttribute('aria-pressed','true');
+  await expect(first).toHaveAttribute('aria-label',fullHp);
+  await expect(second).toHaveAttribute('aria-label',fullHp);
+
+  await page.clock.runFor(1500);
+  await expect(first).toHaveAttribute('aria-label',fullHp);
+  await expect(second).toHaveAttribute('aria-label','Selecionar Slime, vida 1 de 2');
+});
+
 for (const cancel of ['button', 'escape'] as const) {
   test(`cancelar por ${cancel} não encurta a recarga ao selecionar novamente`, async ({page}, info) => {
     const errors: string[] = [];

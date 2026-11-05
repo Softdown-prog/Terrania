@@ -55,7 +55,7 @@ test("classic auto-strike damages only its selected slime; old manual strike sta
   c.select(one.id,sim.slimes);
   for(let i=0;i<19;i++){
     const attack=c.tick(1/60,sim.player,sim.slimes,sim.collision);
-    sim.update(1/60,STILL,attack,c.targetId);
+    sim.update(1/60,STILL,attack,c.strikeTargetId);
   }
   assert.equal(one.hp,1);
   assert.equal(two.hp,2);
@@ -80,6 +80,40 @@ test("classic without a live target never turns a pending strike into area damag
   for(let i=0;i<18;i++)sim.update(1/60,STILL,false,null);
   assert.equal(bystander.hp,2);
 });
+
+for (const [change, afterWindup, afterNextSwing] of [
+  ["switch", [2, 2], [2, 1]],
+  ["cancel and reselect", [2, 2], [1, 2]],
+  ["reselect same target", [1, 2], [0, 2]],
+] as const) {
+  test(`a classic swing respects its original selection during windup: ${change}`, () => {
+    const sim = new OfflineSimulation(842136);
+    sim.update(0, STILL, false);
+    sim.slimes.clear();
+    const first = new Slime("first", 50, 16);
+    const second = new Slime("second", 44, 16);
+    sim.slimes.set(first.id, first);
+    sim.slimes.set(second.id, second);
+    const fight = new ClassicCombat();
+    fight.select(first.id, sim.slimes);
+    const step = () => {
+      const attack = fight.tick(1 / 60, sim.player, sim.slimes, sim.collision);
+      sim.update(1 / 60, STILL, attack, fight.strikeTargetId);
+    };
+
+    step();
+    assert.ok(sim.player.attackTime > 0);
+    if (change === "cancel and reselect") fight.cancel();
+    fight.select(change === "switch" ? second.id : first.id, sim.slimes);
+    for (let frame = 0; frame < 20; frame++) step();
+
+    assert.deepEqual([first.hp, second.hp], afterWindup);
+    assert.ok(fight.cooldown > 1);
+
+    for (let frame = 0; frame < 90; frame++) step();
+    assert.deepEqual([first.hp, second.hp], afterNextSwing);
+  });
+}
 
 test("cancelar e selecionar novamente não antecipa o intervalo clássico", () => {
   const fight = new ClassicCombat(), hero = new Player(), { slime, mobs } = pair();
