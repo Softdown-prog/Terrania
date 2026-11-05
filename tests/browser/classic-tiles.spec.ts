@@ -7,9 +7,12 @@ test("CLASSIC-004: passos opt-in avançam uma célula e param quando o controle 
   await expect(page.locator("canvas#game")).toBeVisible();
   await expect(page.locator("#classicTileHint")).toContainText("PASSOS 32×32");
   await expect(page.locator("#coords")).toContainText("X 0 · Y 0");
+  // Do not wait for the HUD to report X 1 while the key remains pressed:
+  // on a busy runner that can queue a second step before keyup arrives.
   await page.keyboard.down("d");
-  await expect(page.locator("#coords")).toContainText("X 1 · Y 0", { timeout: 8000 });
+  await page.waitForTimeout(100);
   await page.keyboard.up("d");
+  await expect(page.locator("#coords")).toContainText("X 1 · Y 0", { timeout: 8000 });
   // A committed step is allowed to finish, but no second step is queued.
   await page.waitForTimeout(550);
   await expect(page.locator("#coords")).toContainText("X 1 · Y 0");
