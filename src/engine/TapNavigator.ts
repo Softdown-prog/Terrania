@@ -146,10 +146,11 @@ export class TapNavigator {
     return true;
   }
 
-  direction(at: Point, dt: number): Point {
+  direction(at: Point, dt: number, arrivalRadius = 7): Point {
     const zero = { x: 0, y: 0 };
     if (!this.waypoints.length) return zero;
-    while (this.waypoints[0] && dist(at, this.waypoints[0]) < 7)
+    const radius = Number.isFinite(arrivalRadius) ? Math.max(1, Math.min(23, arrivalRadius)) : 7;
+    while (this.waypoints[0] && dist(at, this.waypoints[0]) < radius)
       this.waypoints.shift();
     if (!this.waypoints.length) {
       this.cancel();

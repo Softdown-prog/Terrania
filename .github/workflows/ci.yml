@@ -14,6 +14,8 @@ jobs:
           node-version: '24'
       - name: Instalar front-end e servidor de teste
         run: npm ci && npm ci --prefix server
+      - name: Conferir registro de módulos, limites e índices gerados
+        run: npm run architecture:check
       - run: npm run typecheck
       - run: npm test
       - run: npm run build

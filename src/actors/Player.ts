@@ -21,9 +21,18 @@ export class Player {
   private knockX = 0;
   private knockY = 0;
   private strikePending = false;
-  update(dt: number, dir: { x: number; y: number }, world: CollisionMap): void {
+  update(dt: number, dir: { x: number; y: number }, world: CollisionMap,
+    timersOnly = false): void {
     if (!Number.isFinite(dt) || dt <= 0) return;
     dt = Math.min(dt, 0.1);
+    if (timersOnly) {
+      // A classic tile controller owns displacement; still tick attack,
+      // damage immunity and animation timers exactly once per simulation tick.
+      this.vx = 0; this.vy = 0;
+      this.knockX = 0; this.knockY = 0;
+      this.advanceTimers(dt);
+      return;
+    }
     const length = Math.hypot(dir.x, dir.y);
     const moving = Number.isFinite(length) && length > 0.001;
     const nx = moving ? dir.x / Math.max(1, length) : 0;
@@ -53,6 +62,9 @@ export class Player {
     this.walkTime += Math.hypot(this.x - oldX, this.y - oldY) * 0.12;
     this.knockX *= Math.exp(-12 * dt);
     this.knockY *= Math.exp(-12 * dt);
+    this.advanceTimers(dt);
+  }
+  private advanceTimers(dt: number): void {
     this.attackTime = Math.max(0, this.attackTime - dt);
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
     this.hurtTime = Math.max(0, this.hurtTime - dt);

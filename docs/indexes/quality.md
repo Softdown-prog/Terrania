@@ -1,0 +1,52 @@
+# QA e testes
+
+> Gerado automaticamente a partir de `architecture/modules.json`. Estado: **active** · Camada: **quality**
+
+Testes unitários e navegador desktop/Android; cenários de regressão e robôs de QA.
+
+**Documentação de manutenção:** [`tests/README.md`](../../tests/README.md)
+
+## Pontos de entrada
+
+- [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
+- [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
+
+## Todos os arquivos deste módulo (37)
+
+- [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
+- [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
+- [`src/qa/QaExpedition.ts`](../../src/qa/QaExpedition.ts)
+- [`src/qa/QaNatural.ts`](../../src/qa/QaNatural.ts)
+- [`tests/README.md`](../../tests/README.md)
+- [`tests/architecture-index.test.ts`](../../tests/architecture-index.test.ts)
+- [`tests/browser/app.spec.ts`](../../tests/browser/app.spec.ts)
+- [`tests/browser/classic-battle-list.spec.ts`](../../tests/browser/classic-battle-list.spec.ts)
+- [`tests/browser/classic-combat.spec.ts`](../../tests/browser/classic-combat.spec.ts)
+- [`tests/browser/classic-tiles.spec.ts`](../../tests/browser/classic-tiles.spec.ts)
+- [`tests/browser/session.spec.ts`](../../tests/browser/session.spec.ts)
+- [`tests/browser/tap-online.spec.ts`](../../tests/browser/tap-online.spec.ts)
+- [`tests/classic-battle-list.test.ts`](../../tests/classic-battle-list.test.ts)
+- [`tests/classic-combat.test.ts`](../../tests/classic-combat.test.ts)
+- [`tests/classic-pursuit.test.ts`](../../tests/classic-pursuit.test.ts)
+- [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
+- [`tests/cloudflare-deploy.test.ts`](../../tests/cloudflare-deploy.test.ts)
+- [`tests/interior.test.ts`](../../tests/interior.test.ts)
+- [`tests/inventory-storage.test.ts`](../../tests/inventory-storage.test.ts)
+- [`tests/inventory.test.ts`](../../tests/inventory.test.ts)
+- [`tests/mcp-navigator.test.ts`](../../tests/mcp-navigator.test.ts)
+- [`tests/mobile-controls.test.ts`](../../tests/mobile-controls.test.ts)
+- [`tests/mobile-layout.test.ts`](../../tests/mobile-layout.test.ts)
+- [`tests/npcs.test.ts`](../../tests/npcs.test.ts)
+- [`tests/phaser-install.test.ts`](../../tests/phaser-install.test.ts)
+- [`tests/physics.test.ts`](../../tests/physics.test.ts)
+- [`tests/presence.test.ts`](../../tests/presence.test.ts)
+- [`tests/published-frontend.test.ts`](../../tests/published-frontend.test.ts)
+- [`tests/qa-bot.test.ts`](../../tests/qa-bot.test.ts)
+- [`tests/qa-combat.test.ts`](../../tests/qa-combat.test.ts)
+- [`tests/qa-expedition.test.ts`](../../tests/qa-expedition.test.ts)
+- [`tests/qa-natural.test.ts`](../../tests/qa-natural.test.ts)
+- [`tests/simulation.test.ts`](../../tests/simulation.test.ts)
+- [`tests/site-theme.test.ts`](../../tests/site-theme.test.ts)
+- [`tests/tap-navigation.test.ts`](../../tests/tap-navigation.test.ts)
+- [`tests/village.test.ts`](../../tests/village.test.ts)
+- [`tests/world.test.ts`](../../tests/world.test.ts)

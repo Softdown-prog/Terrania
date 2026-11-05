@@ -17,6 +17,8 @@ import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
 import { ClassicCombat } from "../engine/ClassicCombat.ts";
 import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
+import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
+import { TILE_SIZE } from "../world/terrain.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
@@ -28,6 +30,8 @@ export class Game {
   private readonly navigator = new TapNavigator();
   private readonly classicCombat = new ClassicCombat();
   private readonly classicPursuit = new ClassicPursuit();
+  private readonly classicTileWalker = new ClassicTileWalker();
+  private readonly classicTiles: boolean;
   private classicAutoFollow = true;
   private battleClock = 0.25;
   private classicMode = false;
@@ -45,7 +49,11 @@ export class Game {
     const saved = loadLocalSave(),
       params = new URLSearchParams(location.search);
     this.classicMode = params.get("modo") === "classico";
+    // Deliberately opt-in: compare 32px steps against the validated
+    // continuous classic prototype before changing its default behavior.
+    this.classicTiles = this.classicMode && params.get("passos") === "1";
     this.hud.setClassicMode(this.classicMode);
+    this.hud.setClassicTileMode(this.classicTiles);
     this.hud.onStopCombat(() => {
       this.classicCombat.cancel();
       this.classicPursuit.reset();
@@ -118,6 +126,12 @@ export class Game {
     this.navigator.cancel();
     this.hud.setBattleCreatures(this.hudBattleRows(), id);
   }
+  private tileCenter(point: { x: number; y: number }): { x: number; y: number } {
+    return {
+      x: (Math.floor(point.x / TILE_SIZE) + 0.5) * TILE_SIZE,
+      y: (Math.floor(point.y / TILE_SIZE) + 0.5) * TILE_SIZE,
+    };
+  }
   private configure(p: Preferences): void {
     this.camera.setZoom(p.zoom);
     this.camera.reducedMotion = !p.cameraMotion;
@@ -127,6 +141,7 @@ export class Game {
     this.navigator.cancel();
     this.classicCombat.cancel();
     this.classicPursuit.reset();
+    this.classicTileWalker.reset();
     this.classicAutoFollow = true;
     this.battleClock = 0.25;
     this.hud.setBattleCreatures([], null);
@@ -190,6 +205,7 @@ export class Game {
       this.classicPursuit.reset();
       this.hud.setCombatTarget(null);
       this.hud.setBattleCreatures([], null);
+      this.classicTileWalker.reset();
       this.interior = new InteriorRoom(npc.id);
       this.accumulator = 0;
       this.pendingAttack = false;
@@ -202,6 +218,7 @@ export class Game {
     }
   }
   private leaveInterior(): void {
+    this.classicTileWalker.reset();
     this.navigator.cancel();
     this.classicPursuit.reset();
     this.interior = null;
@@ -274,15 +291,18 @@ export class Game {
           this.classicAutoFollow = false;
           this.classicPursuit.reset();
         }
-        this.navigator.go(player, destination, collision);
+        this.navigator.go(player,
+          this.classicTiles && !this.interior ? this.tileCenter(destination) : destination,
+          collision);
       }
     }
     const controlled = this.interior?.player ?? this.sim.player;
     const movement = paused ? { x: 0, y: 0 } : manualActive ? manual :
-      this.navigator.target ? this.navigator.direction(controlled, dt) :
+      this.navigator.target ? this.navigator.direction(controlled, dt,
+        this.classicTiles && !this.interior ? TILE_SIZE * 0.68 : 7) :
       this.classicMode && this.classicAutoFollow && !this.interior ?
         this.classicPursuit.direction(dt, this.sim.player,
-          this.classicCombat.targetId, this.sim.slimes, this.sim.collision) :
+          this.classicCombat.targetId, this.sim.slimes, this.sim.collision, this.classicTiles) :
         { x: 0, y: 0 };
     this.pendingAttack ||= !this.classicMode && attack;
     if (this.interior) {
@@ -323,12 +343,14 @@ export class Game {
             this.classicCombat.tick(1 / 60, this.sim.player, this.sim.slimes, this.sim.collision);
           const changed = this.sim.update(1 / 60, movement,
             classicStrike || this.pendingAttack,
-            this.classicMode ? this.classicCombat.targetId : undefined);
+            this.classicMode ? this.classicCombat.targetId : undefined,
+            this.classicTiles ? this.classicTileWalker : undefined);
           // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
           if (this.sim.player !== before) {
             this.navigator.cancel();
             this.classicCombat.cancel();
             this.classicPursuit.reset();
+            this.classicTileWalker.reset();
           } else if (this.sim.player.hurtTime > 0) {
             this.navigator.cancel();
           }
@@ -402,6 +424,7 @@ export class Game {
     this.multiplayer?.disconnect();
     this.navigator.cancel();
     this.classicPursuit.reset();
+    this.classicTileWalker.reset();
     this.hud.setBattleCreatures([], null);
     this.world.clear();
     this.effects.reset();

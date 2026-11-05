@@ -1,5 +1,11 @@
 # Terrania: Origins
 
+> **Para desenvolver e investigar:** comece por [índice de módulos](docs/INDEX.md),
+> [registro central versionado](architecture/modules.json), [guia para agentes](AGENTS.md),
+> [política de arquitetura](docs/ARQUITETURA_POLICY.md) e [manutenção/recuperação](docs/MANUTENCAO.md).
+> Gerar índices com `npm run architecture:index` e validar com `npm run architecture:check`.
+> Os protótipos Go/Rust e modos clássicos experimentais não devem ser confundidos com produção.
+
 RPG **2D top-down e procedural** para navegador, com **Angular 22 na interface e Phaser 3.90 no jogo**. A arte procedural continua em Canvas 2D, convertida em textura Phaser em memória, sem sprites externos. Inspirado em ideias de mundo/RPG do antigo Terranium (`Softdown-prog/2d2`), sem transportar o motor C++/SDL3.
 
 ## Versão 0.3 — site, mundo e movimento
@@ -92,3 +98,7 @@ Desenvolvida e validada em `feat/angular-ui-phaser3`. Em 31/10/2026, Rodrigo aut
 Para testes de navegador: `npm ci --prefix server`, `npx playwright install chromium` e `npm run test:browser`. Os testes usam servidores locais e emulação de tela Android.
 
 Leia [o estado da migração e como continuar](docs/MIGRACAO_ANGULAR_PHASER3.md).
+
+## Navegação MCP de código (experimental e local)
+
+O MCP somente leitura da branch experimental usa `scripts/mcp/server.mjs` por stdio. Consulte [instruções e limites](docs/MCP_NAVEGACAO.md) e [ADR 0002](docs/adr/0002-mcp-navegador-local.md); **não está implantado na VPS nem conectado automaticamente ao ChatGPT**.

@@ -93,6 +93,7 @@ export class ClassicPursuit {
     selectedId: string | null,
     mobs: ReadonlyMap<string, Creature>,
     collision: CollisionMap,
+    tileSteps = false,
   ): Point {
     if (!Number.isFinite(dt) || dt <= 0 || !selectedId || player.hp <= 0) {
       this.reset();
@@ -140,6 +141,6 @@ export class ClassicPursuit {
       }
       if (!found) this.navigator.cancel();
     }
-    return this.navigator.direction(player, dt);
+    return this.navigator.direction(player, dt, tileSteps ? TILE_SIZE * 0.68 : 7);
   }
 }

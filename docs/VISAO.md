@@ -4,7 +4,7 @@
 RPG de exploração 2D top-down para navegador, com mundo procedural consistente, criaturas, NPCs, tarefas e evolução. O jogador começa em uma clareira e, nas próximas etapas, alcançará vilarejos, florestas, cavernas e ruínas.
 
 ## Pilares
-- Jogo **HTML5 + TypeScript + Canvas 2D**, sem PNGs, sem spritesheets e sem React.
+- Jogo **HTML5 + TypeScript + Angular 22 (HUD) + Phaser 3 (loop/cena) + Canvas 2D procedural**, sem React. A referência histórica ao protótipo puro Canvas foi preservada no histórico Git.
 - Projeção top-down (90 graus), personagens desenhados com formas no Canvas.
 - Mundo em chunks; gerar terreno por seed e coordenada global, evitando cortes entre chunks.
 - Renderizar apenas área observada e entidades próximas; cache limitado por memória.
@@ -24,3 +24,7 @@ Herói procedural, caminhada, ataque, slimes, missão de cinco criaturas, terren
 - Teste de duas abas na mesma sala e reconexão em rede instável.
 - Renderização com limite de chunks e sem vazamento de memória após exploração longa.
 - Verificação de uso de CPU, RAM, largura de banda e latência antes da produção.
+
+## Visão vigente e histórico
+
+Este documento descreve a ideia de origem, não todas as prioridades de 2026. A direção atual do RPG clássico está em [ROADMAP](ROADMAP.md), os módulos em [INDEX](INDEX.md) e as decisões técnicas em [ADR](adr/0001-catalogo-e-fronteiras.md). Não interpretar as seções "vertical slice 0.2" como cronograma atual.
