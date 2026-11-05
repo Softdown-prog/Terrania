@@ -1,4 +1,5 @@
 import { BUILDINGS, SIGNS } from "./village.ts";
+import { aelaQuestProgress } from "./aelaQuest.ts";
 /** NPCs e diálogos locais. Não modificam o estado autoritativo do multiplayer. */
 export interface Npc {
   readonly id: string;
@@ -38,30 +39,30 @@ export function nearestNpc(x: number, y: number): Npc | null {
 
 /** Falas de orientação; sem conceder itens nem mutar a missão. */
 export function npcDialogue(npc: Npc, kills: number): readonly string[] {
-  const progress = Number.isFinite(kills) ? Math.max(0, Math.floor(kills)) : 0;
-  if (npc.id === "mira") return progress >= 5
+  const { defeated, goal, completed } = aelaQuestProgress(kills);
+  if (npc.id === "mira") return completed
     ? ["Aela me contou sobre sua vitória!", "Há ruínas e cavernas além da floresta. Por enquanto, conheça a vila."]
     : ["Sou Mira, cartógrafa da Vila da Travessia.", "Siga para leste, leia as placas e conheça os moradores.", "Aela ainda precisa de ajuda com os slimes."];
-  if (npc.id === "toren") return progress >= 5
+  if (npc.id === "toren") return completed
     ? ["Parabéns por proteger a clareira!", "Minha oficina está aberta para visitas. Equipamentos serão adicionados depois."]
     : ["Sou Toren, ferreiro.", "Chegue perto da porta e pressione E para visitar a oficina.", "Ainda não ofereço comércio."];
-  if (npc.id === "lina") return progress >= 5
+  if (npc.id === "lina") return completed
     ? ["Obrigado por ajudar Aela!", "Visite a hospedaria. Mais histórias e tarefas chegarão depois."]
     : ["Sou Lina, anfitriã da Travessia.", "Entre na hospedaria pela porta atrás de mim.", "Por enquanto não há serviço de descanso."];
   if (npc.id === "entrance") return ["Vila da Travessia — bem-vindo!", "Ao leste fica a praça. Ao sul, a hospedaria."];
   if (npc.id === "square") return ["Aviso: cuidado com os monstros fora da vila!", "Ajude Aela na clareira. Outras tarefas virão em etapas futuras."];
   if (npc.kind === "door") return ["Use E perto da porta para entrar em " + npc.name + "."];
-  if (npc.id === "aela" && progress >= 5) {
+  if (npc.id === "aela" && completed) {
     return [
       "Você conseguiu! Cinco slimes derrotados. A clareira pode descansar por enquanto.",
       "Além das árvores há trilhas antigas e ruínas. Esta terra guarda muitos segredos.",
       "Volte quando quiser conversar. Novas missões chegarão com a expansão do mundo.",
     ];
   }
-  if (npc.id === "aela" && progress > 0) {
+  if (npc.id === "aela" && defeated > 0) {
     return [
       "Vejo que já começou a proteger a clareira. Continue firme!",
-      "Você derrotou " + Math.min(progress, 5) + " de 5 slimes. Explore as trilhas fora do círculo de pedras.",
+      `Você derrotou ${defeated} de ${goal} slimes. Explore as trilhas fora do círculo de pedras.`,
       "Use a espada com Espaço ou J; no celular, toque no botão ATACAR.",
     ];
   }

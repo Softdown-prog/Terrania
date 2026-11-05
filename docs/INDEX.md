@@ -11,7 +11,7 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Renderização e adaptadores Canvas](indexes/renderer.md) | active | 11 | Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo. |
 | [Regras e simulação offline](indexes/simulation.md) | active | 11 | Combate, inventário, loot, navegação e experimento clássico; sem DOM, Phaser ou Angular. |
 | [Entidades jogáveis](indexes/actors.md) | active | 4 | Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias. |
-| [Terreno, colisões e NPCs](indexes/world.md) | active | 7 | Mundo procedural determinístico, tiles, colisão, vila e marcos. |
+| [Terreno, colisões e NPCs](indexes/world.md) | active | 8 | Mundo procedural determinístico, tiles, colisão, vila e marcos. |
 | [Entrada e controles](indexes/input.md) | active | 4 | Normalização de teclado, joystick e toque; regras de gameplay pertencem à simulação. |
 | [Rede cliente e protocolo](indexes/client-network.md) | active | 4 | Conexão WebSocket e contrato de mensagens; servidor é autoridade online. |
 | [Persistência local](indexes/local-save.md) | active | 2 | Save no navegador, versão e compatibilidade; não é persistência autoritativa online. |

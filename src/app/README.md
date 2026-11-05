@@ -9,3 +9,5 @@
 **Verificação:** typecheck Angular, build e Playwright mobile/desktop.
 
 **Limites:** O Angular não é autoridade de dano, posição, loot ou XP.
+
+O HUD recebe o progresso calculado da missão da Aela e as falas prontas para exibição. Ele formata a barra de progresso e pagina as mensagens. Vida, bolsa e NPC próximo ainda chegam ao contrato `GameUi` como tipos do domínio (`Player`, `Inventory` e `Npc`).

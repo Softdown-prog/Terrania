@@ -11,7 +11,9 @@ import {
 import { loadLocalSave, saveLocal } from "../storage/localSave.ts";
 import { CanvasScene } from "../ui/CanvasScene.ts";
 import type { GameUi, Preferences } from "../ui/GameUi.ts";
-import { nearestNpc } from "../world/npcs.ts";
+import { nearestNpc, npcDialogue } from "../world/npcs.ts";
+import { aelaQuestProgress } from "../world/aelaQuest.ts";
+import { QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
@@ -105,7 +107,7 @@ export class Game {
           ? "Sua vida já está completa."
           : "Você não possui poções de cura.";
       this.save();
-      this.hud.update(this.sim.player, this.sim.kills);
+      this.hud.update(this.sim.player, aelaQuestProgress(this.sim.kills));
       this.hud.updateInventory(this.sim.inventory, false);
       return "Poção utilizada! Vida restaurada em até 35 pontos.";
     });
@@ -213,8 +215,10 @@ export class Game {
       const rewarded = npc.id === "aela" && !this.multiplayer?.connected &&
         this.sim.inventory.claimAelaReward(this.sim.kills);
       if (rewarded) this.save();
-      this.hud.showNpcDialogue(npc, this.sim.kills,
-        rewarded ? "Recompensa de Aela: 2 poções de cura guardadas na sua bolsa!" : undefined);
+      const lines = npcDialogue(npc, this.sim.kills);
+      this.hud.showNpcDialogue(npc.name, npc.role, rewarded
+        ? [...lines, `Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`]
+        : lines);
     }
   }
   private leaveInterior(): void {
@@ -323,7 +327,7 @@ export class Game {
           this.saveClock += dt;
           if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
         }
-        this.hud.update(this.sim.player, this.sim.kills);
+        this.hud.update(this.sim.player, aelaQuestProgress(this.sim.kills));
         this.hud.updateInventory(this.sim.inventory, online);
         this.hud.setInterior(room.building.name);
         this.scene.renderInterior(room, this.navigator.target, this.clock);
@@ -397,7 +401,7 @@ export class Game {
         this.interior || online ? null : this.classicCombat.targetId,
       );
     }
-    this.hud.update(this.sim.player, this.sim.kills);
+    this.hud.update(this.sim.player, aelaQuestProgress(this.sim.kills));
     const focusedLabel = this.classicMode ? this.classicCombat.label(this.sim.slimes) : null;
     this.hud.setCombatTarget(focusedLabel && this.classicPursuit.destination
       ? focusedLabel + " · seguindo" : focusedLabel);

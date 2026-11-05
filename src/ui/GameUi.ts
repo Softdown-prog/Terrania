@@ -1,6 +1,7 @@
 import type { Player } from '../actors/Player.ts';
 import type { Inventory } from '../engine/Inventory.ts';
 import type { Npc } from '../world/npcs.ts';
+import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 
 export interface Preferences {
@@ -18,7 +19,7 @@ export interface GameUi {
   onTalk(callback: () => void): void;
   onPotionUse(callback: () => string): void;
   updateInventory(inventory: Inventory, online: boolean): void;
-  update(player: Player, kills: number): void;
+  update(player: Player, quest: AelaQuestProgress): void;
   setOnline(online: boolean): void;
   setStatus(status: string): void;
   setClassicMode(enabled: boolean): void;
@@ -30,6 +31,6 @@ export interface GameUi {
   setSeed(seed: number): void;
   setPlayerCount(count: number, online: boolean): void;
   setNearbyNpc(npc: Npc | null): void;
-  showNpcDialogue(npc: Npc, kills: number, reward?: string): void;
+  showNpcDialogue(name: string, role: string, lines: readonly string[]): void;
   setInterior(name: string): void;
 }

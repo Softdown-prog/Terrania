@@ -94,7 +94,8 @@
       "entrypoints": [
         "src/world/terrain.ts",
         "src/world/collision.ts",
-        "src/world/npcs.ts"
+        "src/world/npcs.ts",
+        "src/world/aelaQuest.ts"
       ],
       "doc": "src/world/README.md",
       "description": "Mundo procedural determinístico, tiles, colisão, vila e marcos."
