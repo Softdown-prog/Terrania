@@ -3,6 +3,8 @@ import test from "node:test";
 import { Player } from "../src/actors/Player.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { ClassicPursuit, inClassicAttackPosition } from "../src/engine/ClassicPursuit.ts";
+import { ClassicCombat, CLASSIC_ATTACK_INTERVAL } from "../src/engine/ClassicCombat.ts";
+import { canStrike } from "../src/engine/combat.ts";
 import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
 import type { CollisionMap } from "../src/world/collision.ts";
 
@@ -120,4 +122,52 @@ test("entradas inválidas não geram NaN nem deslocamentos fantasma", () => {
   walker.advance(NaN, EAST, hero, OPEN);
   assert.equal(hero.x, 16);
   assert.equal(hero.y, 16);
+});
+
+test("perseguição em passos alcança alvos fora da malha sem parar antes da espada", () => {
+  const failures: { target: { x: number; y: number }; stopped: { x: number; y: number } }[] = [];
+  // Off-grid targets reproduce the continuous-ring/32px arrival mismatch.
+  for (let x = 110; x <= 270; x += 20) for (let y = -150; y <= 190; y += 20) {
+    const hero = new Player(), mob = new Slime("target", x, y);
+    const mobs = new Map([[mob.id, mob]]);
+    const follow = new ClassicPursuit(), walker = new ClassicTileWalker();
+    let reached = false;
+    for (let frame = 0; frame < 450; frame++) {
+      walker.advance(DT, follow.direction(DT, hero, mob.id, mobs, OPEN, true), hero, OPEN);
+      if (walker.destination === null && inClassicAttackPosition(hero, mob, OPEN)) {
+        reached = true;
+        assert.equal((hero.x - 16) % 32, 0);
+        assert.equal(Math.abs((hero.y - 16) % 32), 0);
+        break;
+      }
+    }
+    if (!reached) failures.push({ target: { x, y }, stopped: { x: hero.x, y: hero.y } });
+  }
+  assert.deepEqual(failures, [], "each reachable target must end in actual attack range");
+});
+
+test("perseguir em passos preserva ataque único, intervalo e cancelamento do alvo morto", () => {
+  const hero = new Player(), mob = new Slime("off-grid", 110, 130);
+  const bystander = new Slime("bystander", 111, 130);
+  const mobs = new Map([[mob.id, mob], [bystander.id, bystander]]);
+  const follow = new ClassicPursuit(), walker = new ClassicTileWalker();
+  const fight = new ClassicCombat();
+  fight.select(mob.id, mobs);
+  const hits: number[] = [];
+  for (let frame = 0; frame < 600; frame++) {
+    const movement = follow.direction(DT, hero, fight.targetId, mobs, OPEN, true);
+    const attack = fight.tick(DT, hero, mobs, OPEN);
+    walker.advance(DT, movement, hero, OPEN);
+    if (attack) hero.startAttack();
+    if (hero.consumeStrike() && canStrike(hero, mob, OPEN)) {
+      hits.push(frame);mob.hp--;
+      if (mob.hp === 0) mobs.delete(mob.id);
+    }
+  }
+  assert.equal(mob.hp, 0);
+  assert.equal(bystander.hp, 2);
+  assert.equal(hits.length, 2);
+  assert.ok((hits[1]! - hits[0]!) * DT >= CLASSIC_ATTACK_INTERVAL - DT);
+  assert.deepEqual(follow.direction(DT, hero, fight.targetId, mobs, OPEN, true), STILL);
+  assert.equal(fight.label(mobs), null);
 });

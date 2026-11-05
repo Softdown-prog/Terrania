@@ -34,24 +34,37 @@ export function inClassicAttackPosition(
   }, creature, collision);
 }
 
-/** Search safe standing points around the target, not inside the creature. */
-export function findClassicApproach(
-  player: Point, creature: Point, collision: CollisionMap,
-): Point | null {
-  if (!finite(player) || !finite(creature) || !collision.canMove(player.x, player.y))
-    return null;
-  const distance = Math.hypot(player.x - creature.x, player.y - creature.y);
-  if (distance > CLASSIC_FOLLOW_LIMIT || distance < 0.01) return null;
-
-  // Candidate rings are anchored on the 32px world grid and slightly inside
-  // melee reach. Nearby choices first minimize detours.
-  const directions = Array.from({ length: 12 }, (_, index) => {
+/** Tile walking must aim at actual 32px endpoints, not a continuous ring. */
+function approachPoints(creature: Point, tileSteps: boolean): Point[] {
+  if (tileSteps) {
+    const cx = Math.floor(creature.x / TILE_SIZE), cy = Math.floor(creature.y / TILE_SIZE);
+    const points: Point[] = [];
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      points.push({ x: (cx + dx + 0.5) * TILE_SIZE, y: (cy + dy + 0.5) * TILE_SIZE });
+    }
+    return points;
+  }
+  return Array.from({ length: 12 }, (_, index) => {
     const angle = (Math.PI * 2 * index) / 12;
     return {
       x: creature.x + Math.cos(angle) * (TILE_SIZE + 5),
       y: creature.y + Math.sin(angle) * (TILE_SIZE + 5),
     };
   });
+}
+
+/** Search safe standing points around the target, not inside the creature. */
+export function findClassicApproach(
+  player: Point, creature: Point, collision: CollisionMap, tileSteps = false,
+): Point | null {
+  if (!finite(player) || !finite(creature) || !collision.canMove(player.x, player.y))
+    return null;
+  const distance = Math.hypot(player.x - creature.x, player.y - creature.y);
+  if (distance > CLASSIC_FOLLOW_LIMIT || distance < 0.01) return null;
+
+  // Continuous movement keeps its ring. Tile mode selects reachable grid centers
+  // that will still be inside melee range after the committed step finishes.
+  const directions = approachPoints(creature, tileSteps);
   directions.sort((a, b) =>
     Math.hypot(a.x - player.x, a.y - player.y) -
     Math.hypot(b.x - player.x, b.y - player.y)
@@ -126,14 +139,12 @@ export class ClassicPursuit {
       this.lastCreature = { x: mob.x, y: mob.y };
       // Try multiple safe tiles around the monster: a single blocked
       // destination must not abort a reachable pursuit.
-      const first = findClassicApproach(player, mob, collision);
+      const first = findClassicApproach(player, mob, collision, tileSteps);
       let found = first !== null && this.navigator.go(player, first, collision);
       if (!found) {
         this.navigator.cancel();
-        for (let n = 0; n < 12 && !found; n++) {
-          const angle = Math.PI * 2 * n / 12;
-          const point = { x: mob.x + Math.cos(angle) * (TILE_SIZE + 5),
-            y: mob.y + Math.sin(angle) * (TILE_SIZE + 5) };
+        for (const point of approachPoints(mob, tileSteps)) {
+          if (found) break;
           if (!collision.canMove(point.x, point.y) ||
               !inClassicAttackPosition(point, mob, collision)) continue;
           found = this.navigator.go(player, point, collision);

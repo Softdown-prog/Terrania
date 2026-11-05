@@ -45,3 +45,9 @@ Este trabalho começa da main `6ce58c1`, **sem** trazer os RPG-004/005 de golpe 
 - O temporizador de ataque/recarga, dano e invulnerabilidade continua avançando uma vez por tick através de `Player.update(..., timersOnly=true)`. Deslocamento e colisão permanecem isolados em `ClassicTileWalker`.
 - Navegação por toque e perseguição usam a direção A* existente e um raio de chegada ampliado no experimento, já que pontos do planejador podem cair entre centros da malha de 32 px. Caso um caminho exija passagem incompatível com passos de 32 px, o personagem deve parar com segurança, nunca atravessar a colisão.
 - Este é um **teste de sensação e compatibilidade**, não migração aprovada de todo o motor para tiles. Validar jogabilidade real no Android e desktop; não mudar o padrão até essa avaliação. Unitários `tests/classic-tile-walker.test.ts` e browser `tests/browser/classic-tiles.spec.ts`.
+
+### Correção de alcance na perseguição por passos
+
+Na opção `?modo=classico&passos=1`, os destinos ao redor do alvo são centros reais de tiles de 32 px, validados contra colisão, alcance da espada e linha de visão. O planejador anterior usava pontos de um anel contínuo: a tolerância de chegada podia encerrar a aproximação antes de alcançar o monstro, mesmo em terreno livre. A regressão cobre 162 posições de alvo fora da malha e o ciclo de dois ataques sem atingir outra criatura.
+
+O modo clássico contínuo conserva seus destinos anteriores. O A* existente e suas limitações em passagens incompatíveis com passos de 32 px permanecem: nesses casos o herói para com segurança. Esta correção não promove o experimento a padrão nem altera saves, cooldown, colisão, joystick ou protocolo online.
