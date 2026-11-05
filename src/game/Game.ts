@@ -32,8 +32,7 @@ export class Game {
   private readonly navigator = new TapNavigator();
   private readonly classicCombat = new ClassicCombat();
   private readonly classicPursuit = new ClassicPursuit();
-  private readonly classicTileWalker = new ClassicTileWalker();
-  private readonly classicTiles: boolean;
+  private readonly tileWalker = new ClassicTileWalker();
   private classicAutoFollow = true;
   private battleClock = 0.25;
   private classicMode = false;
@@ -51,11 +50,7 @@ export class Game {
     const saved = loadLocalSave(),
       params = new URLSearchParams(location.search);
     this.classicMode = params.get("modo") === "classico";
-    // Deliberately opt-in: compare 32px steps against the validated
-    // continuous classic prototype before changing its default behavior.
-    this.classicTiles = this.classicMode && params.get("passos") === "1";
     this.hud.setClassicMode(this.classicMode);
-    this.hud.setClassicTileMode(this.classicTiles);
     this.hud.onStopCombat(() => {
       this.classicCombat.cancel();
       this.classicPursuit.reset();
@@ -94,6 +89,7 @@ export class Game {
         this.save();
         this.input.clear();
         this.navigator.cancel();
+        this.multiplayer?.cancelWalk();
         this.multiplayer?.sendInput(0, 0, false);
       }
       this.accumulator = 0;
@@ -143,7 +139,7 @@ export class Game {
     this.navigator.cancel();
     this.classicCombat.reset();
     this.classicPursuit.reset();
-    this.classicTileWalker.reset();
+    this.tileWalker.reset();
     this.classicAutoFollow = true;
     this.battleClock = 0.25;
     this.hud.setBattleCreatures([], null);
@@ -174,22 +170,36 @@ export class Game {
     this.hud.setOnline(true);
   }
   private applySnapshot(self: HeroState): void {
-    const player = this.sim.player,
-      distance = Math.hypot(self.x - player.x, self.y - player.y);
+    const player = this.sim.player;
+    player.hp = self.hp;
+    this.sim.kills = self.kills;
+    this.hud.setPlayerCount(this.multiplayer?.players.length ?? 1, true);
+    if (this.multiplayer?.tileMovement) return;
+
+    const distance = Math.hypot(self.x - player.x, self.y - player.y);
     // A correção autoritativa pode invalidar uma rota local iniciada por toque.
     if (distance > 100) this.navigator.cancel();
     const factor = distance > 100 ? 1 : 0.35;
     player.x += (self.x - player.x) * factor;
     player.y += (self.y - player.y) * factor;
-    player.hp = self.hp;
-    this.sim.kills = self.kills;
     player.hurtTime = Math.max(player.hurtTime, self.hurtTime ?? 0);
     if (Math.hypot(player.vx, player.vy) < 5) {
       player.faceX = self.faceX;
       player.faceY = self.faceY;
     }
     player.attackTime = Math.max(player.attackTime, self.attackTime);
-    this.hud.setPlayerCount(this.multiplayer?.players.length ?? 1, true);
+  }
+  private updateOnlineView(dt: number, multiplayer: MultiplayerClient): void {
+    multiplayer.interpolate(dt);
+    const self = multiplayer.tileMovement ? multiplayer.self : undefined;
+    if (!self) return;
+    const player = this.sim.player;
+    player.x = self.x; player.y = self.y;
+    player.vx = self.vx ?? 0; player.vy = self.vy ?? 0;
+    player.faceX = self.faceX; player.faceY = self.faceY;
+    player.walkTime = self.walkTime;
+    player.attackTime = self.attackTime;
+    player.hurtTime = self.hurtTime ?? 0;
   }
   private talkToNpc(): void {
     if (this.hud.menuOpen) return;
@@ -201,13 +211,14 @@ export class Game {
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
     if (!npc) return;
     this.input.clear();
+    this.multiplayer?.cancelWalk();
     this.multiplayer?.sendInput(0, 0, false);
     if (npc.kind === "door" && BUILDINGS.some(b => b.id === npc.id)) {
       this.classicCombat.cancel();
       this.classicPursuit.reset();
       this.hud.setCombatTarget(null);
       this.hud.setBattleCreatures([], null);
-      this.classicTileWalker.reset();
+      this.tileWalker.reset();
       this.interior = new InteriorRoom(npc.id);
       this.accumulator = 0;
       this.pendingAttack = false;
@@ -222,7 +233,7 @@ export class Game {
     }
   }
   private leaveInterior(): void {
-    this.classicTileWalker.reset();
+    this.tileWalker.reset();
     this.navigator.cancel();
     this.classicPursuit.reset();
     this.interior = null;
@@ -254,6 +265,7 @@ export class Game {
     this.clock += dt;
     this.battleClock += dt;
     const online = this.multiplayer?.connected === true;
+    const onlineTiles = this.multiplayer?.tileMovement === true;
     if (this.input.consumeTalk() && !this.hud.menuOpen) this.talkToNpc();
     const paused = this.hud.menuOpen || document.hidden;
     if (paused) this.input.clear();
@@ -275,11 +287,11 @@ export class Game {
     }
     const manualActive = Math.hypot(manual.x, manual.y) > 0.02;
     if (paused || manualActive || (!this.classicMode && attack)) this.navigator.cancel();
+    if (onlineTiles && (paused || manualActive || attack)) this.multiplayer?.cancelWalk();
     if (this.classicMode && manualActive) this.classicPursuit.suspend();
     const tap = this.input.consumeTap();
-    const walkByTiles = this.classicTiles && !this.interior;
-    const committedStep = walkByTiles ? this.classicTileWalker.destination : null;
-    // O servidor recebe somente vetores de movimento e segue autoritativo no multiplayer.
+    const walkByTiles = !online && !this.interior;
+    const committedStep = walkByTiles ? this.tileWalker.destination : null;
     if (tap && !paused && !manualActive && !attack) {
       const destination = this.interior
         ? this.scene.interiorPoint(tap)
@@ -291,6 +303,8 @@ export class Game {
         this.classicAutoFollow = true;
         this.classicPursuit.reset();
         this.navigator.cancel();
+      } else if (destination && onlineTiles && !this.interior) {
+        this.multiplayer?.walkTo(destination);
       } else if (destination) {
         // An explicit walk command overrides automatic chasing until the
         // next creature selection; the attack target itself is preserved.
@@ -308,7 +322,7 @@ export class Game {
       this.navigator.target ? this.navigator.direction(controlled, dt) :
       this.classicMode && this.classicAutoFollow && !this.interior ?
         this.classicPursuit.direction(dt, this.sim.player,
-          this.classicCombat.targetId, this.sim.slimes, this.sim.collision, this.classicTiles) :
+          this.classicCombat.targetId, this.sim.slimes, this.sim.collision, true) :
         still;
     this.pendingAttack ||= !this.classicMode && attack;
     if (this.interior) {
@@ -324,7 +338,7 @@ export class Game {
             this.networkClock %= 0.05;
             this.multiplayer.sendInput(0, 0, false);
           }
-          this.multiplayer.interpolate(dt);
+          this.updateOnlineView(dt, this.multiplayer);
         } else {
           this.saveClock += dt;
           if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
@@ -341,26 +355,29 @@ export class Game {
       while (this.accumulator >= 1 / 60) {
         this.accumulator -= 1 / 60;
         if (online) {
-          this.sim.player.update(1 / 60, movement, this.sim.collision);
-          if (this.pendingAttack) this.sim.player.startAttack();
+          // Legacy backends still use the continuous prediction path.
+          if (!onlineTiles) {
+            this.sim.player.update(1 / 60, movement, this.sim.collision);
+            if (this.pendingAttack) this.sim.player.startAttack();
+          }
         } else {
           const before = this.sim.player;
           const classicStrike = this.classicMode &&
             this.classicCombat.tick(1 / 60, this.sim.player, this.sim.slimes, this.sim.collision);
           // A rendered frame can advance multiple simulation ticks. Pick the
           // next tile only when the previous step has reached its center.
-          const stepDirection = tileRoute && this.classicTileWalker.destination === null
+          const stepDirection = tileRoute && this.tileWalker.destination === null
             ? this.navigator.direction(this.sim.player, 1 / 60) : movement;
           const changed = this.sim.update(1 / 60, stepDirection,
             classicStrike || this.pendingAttack,
             this.classicMode ? this.classicCombat.strikeTargetId : undefined,
-            this.classicTiles ? this.classicTileWalker : undefined);
+            this.tileWalker);
           // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
           if (this.sim.player !== before) {
             this.navigator.cancel();
             this.classicCombat.reset();
             this.classicPursuit.reset();
-            this.classicTileWalker.reset();
+            this.tileWalker.reset();
           } else if (this.sim.player.hurtTime > 0) {
             this.navigator.cancel();
           }
@@ -379,7 +396,7 @@ export class Game {
         this.multiplayer.sendInput(movement.x, movement.y, this.pendingAttack);
         this.pendingAttack = false;
       }
-      this.multiplayer.interpolate(dt);
+      this.updateOnlineView(dt, this.multiplayer);
     } else {
       this.saveClock += dt;
       if (this.saveClock > 12) {
@@ -422,7 +439,7 @@ export class Game {
       online ? (this.multiplayer?.id ?? null) : null,
       this.clock,
       this.effects,
-      this.navigator.target,
+      onlineTiles ? this.multiplayer?.walkTarget ?? null : this.navigator.target,
       online ? [] : [...this.sim.drops.values()],
       this.classicMode ? this.classicCombat.targetId : null,
     );
@@ -434,7 +451,7 @@ export class Game {
     this.multiplayer?.disconnect();
     this.navigator.cancel();
     this.classicPursuit.reset();
-    this.classicTileWalker.reset();
+    this.tileWalker.reset();
     this.hud.setBattleCreatures([], null);
     this.world.clear();
     this.effects.reset();

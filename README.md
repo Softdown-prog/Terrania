@@ -14,13 +14,15 @@ A raiz agora é o site de apresentação. **Jogar** abre `/jogar/`, com tela ded
 
 O cenário ganhou vegetação com profundidade, texturas, margens de água e marcos na clareira. O herói ganhou animação direcional, aceleração/frenagem e combate com preparo, recuo e efeitos. A câmera tem antecipação, zoom e opção de movimento reduzido.
 
+No exterior, o solo e as salas Node com suporte usam passos de 32 px na entrada normal de **Jogar**. Clique ou toque no terreno para traçar uma rota e use teclado ou joystick para assumir o controle.
+
 ### Primeira personagem não jogável
 
 **Aela, guardiã da clareira**, está perto do ponto inicial e oferece pistas sobre a missão dos cinco slimes. Aproxime-se e pressione **E** ou toque em **Conversar**. As falas mudam conforme os slimes derrotados, sem mudar o protocolo ou o estado autoritativo da VPS. É o primeiro passo dos NPCs do mundo — no modo solo, entrega duas poções após a missão.
 
 ### Multiplayer experimental
 
-**Front-end no Cloudflare Pages; servidor WebSocket Node.js na VPS.** A mesma seed produz o mapa no cliente e orienta colisões no servidor. O servidor controla posições, vida, monstros, ataques e progresso da missão de cinco slimes. O navegador só envia movimento/ataque e desenha os personagens.
+**Front-end no Cloudflare Pages; servidor WebSocket Node.js na VPS.** A mesma seed produz o mapa no cliente e orienta colisões no servidor. O servidor controla posições, rotas, vida, monstros, ataques e progresso da missão de cinco slimes. O navegador envia direções, destinos e ataques e desenha os personagens.
 
 - Jogadores anônimos em salas (`?room=origins` ou `?room=amigos`), com outros heróis visíveis pelo nome.
 - Slimes compartilhados e combate calculado no servidor; 20 ticks/s e cerca de 10 snapshots/s para entidades próximas.

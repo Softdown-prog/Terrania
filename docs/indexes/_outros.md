@@ -43,6 +43,7 @@
 - [`docs/VISAO.md`](../../docs/VISAO.md)
 - [`docs/adr/0001-catalogo-e-fronteiras.md`](../../docs/adr/0001-catalogo-e-fronteiras.md)
 - [`docs/adr/0002-mcp-navegador-local.md`](../../docs/adr/0002-mcp-navegador-local.md)
+- [`docs/adr/0003-caminhada-por-tiles.md`](../../docs/adr/0003-caminhada-por-tiles.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

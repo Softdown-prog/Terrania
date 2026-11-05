@@ -1,10 +1,22 @@
 import { Player } from "../../src/actors/Player.ts";
 import { Slime, slimeSpawns } from "../../src/actors/Slime.ts";
-import type { HeroState, MobState } from "../../src/shared/protocol.ts";
+import type { HeroState, MobState, WalkTarget } from "../../src/shared/protocol.ts";
 import { SeedCollision } from "../../src/world/collision.ts";
 import { seedFromText } from "../../src/world/random.ts";
-import { CHUNK_PIXELS, chunkOf } from "../../src/world/terrain.ts";
+import { CHUNK_PIXELS, TILE_SIZE, chunkOf } from "../../src/world/terrain.ts";
 import { canStrike } from "../../src/engine/combat.ts";
+import { ClassicTileWalker } from "../../src/engine/ClassicTileWalker.ts";
+import { TapNavigator } from "../../src/engine/TapNavigator.ts";
+
+const STILL = { x: 0, y: 0 };
+const MAX_TAP_DISTANCE = 480;
+const TAP_REPLAN_MS = 350;
+
+interface TileMovement {
+  readonly walker: ClassicTileWalker;
+  readonly navigator: TapNavigator;
+  nextPlanAt: number;
+}
 
 export interface Guest {
   id: string;
@@ -14,6 +26,7 @@ export interface Guest {
   attackQueued: boolean;
   lastInputAt: number;
   kills: number;
+  readonly walking: TileMovement | null;
 }
 
 /** Uma única instância de simulação por sala. Sem estado permanente nesta primeira versão. */
@@ -23,6 +36,7 @@ export class Room {
   readonly guests = new Map<string, Guest>();
   private readonly mobs = new Map<string, Slime>();
   private readonly defeated = new Set<string>();
+  private readonly walkRequests = new Map<string, WalkTarget>();
   private spawnClock = 0;
   private readonly maxMobs = 96;
   readonly id: string;
@@ -31,7 +45,7 @@ export class Room {
     this.seed = id === "origins" ? 842136 : seedFromText(id);
     this.world = new SeedCollision(this.seed);
   }
-  add(id: string, name: string): Guest {
+  add(id: string, name: string, tiles = false): Guest {
     const guest: Guest = {
       id,
       name,
@@ -40,25 +54,70 @@ export class Room {
       attackQueued: false,
       lastInputAt: Date.now(),
       kills: 0,
+      walking: tiles ? { walker: new ClassicTileWalker(), navigator: new TapNavigator(), nextPlanAt: 0 } : null,
     };
     this.guests.set(id, guest);
     return guest;
   }
   remove(id: string): void {
     this.guests.delete(id);
+    this.walkRequests.delete(id);
   }
   receiveInput(id: string, x: number, y: number, attack: boolean): void {
     const guest = this.guests.get(id);
     if (!guest) return;
     guest.input = { x, y };
     guest.lastInputAt = Date.now();
+    if (guest.walking && (attack || Math.hypot(x, y) >= 0.08)) this.cancelWalk(guest);
     if (attack) guest.attackQueued = true;
   }
+  receiveWalk(id: string, target: WalkTarget | null): void {
+    const guest = this.guests.get(id);
+    if (!guest?.walking) return;
+    guest.walking.navigator.cancel();
+    if (target === null) {
+      this.walkRequests.delete(id);
+      return;
+    }
+    guest.input = STILL;
+    // Replace the queued target in place so one guest cannot monopolize the queue.
+    this.walkRequests.set(id, target);
+  }
+  private cancelWalk(guest: Guest): void {
+    guest.walking?.navigator.cancel();
+    this.walkRequests.delete(guest.id);
+  }
+  private planNextWalk(now: number): void {
+    // At most one bounded path search per room tick and one per guest per window.
+    for (const [id, target] of this.walkRequests) {
+      const guest = this.guests.get(id);
+      if (!guest?.walking) { this.walkRequests.delete(id); continue; }
+      const { walking, actor } = guest;
+      if (now < walking.nextPlanAt) continue;
+      this.walkRequests.delete(id);
+      walking.nextPlanAt = now + TAP_REPLAN_MS;
+      if (actor.hp > 0 && actor.hurtTime === 0) {
+        const center = {
+          x: (Math.floor(target.x / TILE_SIZE) + 0.5) * TILE_SIZE,
+          y: (Math.floor(target.y / TILE_SIZE) + 0.5) * TILE_SIZE,
+        };
+        walking.navigator.go(walking.walker.destination ?? actor, center, this.world, true, MAX_TAP_DISTANCE);
+      }
+      break;
+    }
+  }
   tick(dt: number, now = Date.now()): void {
+    this.planNextWalk(now);
     for (const guest of this.guests.values()) {
       const input =
-        now - guest.lastInputAt < 350 ? guest.input : { x: 0, y: 0 };
-      guest.actor.update(dt, input, this.world);
+        now - guest.lastInputAt < 350 ? guest.input : STILL;
+      const { walking, actor } = guest;
+      if (walking) {
+        const direction = walking.navigator.target
+          ? walking.walker.destination ? STILL : walking.navigator.direction(actor, dt)
+          : input;
+        walking.walker.advance(dt, direction, actor, this.world);
+      } else actor.update(dt, input, this.world);
     }
     this.spawnClock += dt;
     if (this.spawnClock > 1.5) {
@@ -110,7 +169,9 @@ export class Room {
         this.mobs.delete(id);
     }
     for (const guest of this.guests.values()) {
+      if (guest.walking && guest.actor.hurtTime > 0) this.cancelWalk(guest);
       if (guest.actor.hp <= 0) {
+        guest.walking?.walker.reset();
         guest.actor = new Player();
         guest.input = { x: 0, y: 0 };
         guest.lastInputAt = 0;
@@ -133,7 +194,7 @@ export class Room {
     }
   }
   /** Interesse espacial: não transmitir o mapa todo nem entidades distantes. */
-  snapshotFor(id: string): { players: HeroState[]; mobs: MobState[] } | null {
+  snapshotFor(id: string): { players: HeroState[]; mobs: MobState[]; walkTarget?: WalkTarget | null } | null {
     const me = this.guests.get(id);
     if (!me) return null;
     const near = (x: number, y: number): boolean =>
@@ -170,6 +231,6 @@ export class Room {
           hurtTime: mob.hurtTime,
         });
       }
-    return { players, mobs };
+    return me.walking ? { players, mobs, walkTarget: me.walking.navigator.target } : { players, mobs };
   }
 }

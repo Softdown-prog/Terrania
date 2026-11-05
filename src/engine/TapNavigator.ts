@@ -3,6 +3,7 @@ import { TILE_SIZE } from "../world/terrain.ts";
 
 export interface Point { readonly x: number; readonly y: number }
 const STEP = 16;
+const MAX_ROUTE_DISTANCE = 650;
 const DIRECTIONS = [
   [1, 0], [-1, 0], [0, 1], [0, -1],
   [1, 1], [1, -1], [-1, 1], [-1, -1],
@@ -32,7 +33,7 @@ export function clearPath(from: Point, to: Point, collision: CollisionMap): bool
  */
 export function findWalkingPath(from: Point, target: Point, collision: CollisionMap): Point[] | null {
   if (![from.x, from.y, target.x, target.y].every(Number.isFinite) ||
-      dist(from, target) > 650 ||
+      dist(from, target) > MAX_ROUTE_DISTANCE ||
       !collision.canMove(from.x, from.y) || !collision.canMove(target.x, target.y)) return null;
   if (clearPath(from, target, collision)) return [target];
 
@@ -61,7 +62,7 @@ export function findWalkingPath(from: Point, target: Point, collision: Collision
 
   const points = searchGrid(
     [{ x: start.x, y: start.y, g: 0, f: dist(start.point, target) / STEP }],
-    goals, target, collision, { x: fx, y: fy, size: STEP },
+    goals, target, collision, { x: fx, y: fy, size: STEP, maxOffset: 43 },
   );
   if (!points) return null;
   points.push(target);
@@ -87,10 +88,9 @@ type Entry = { x: number; y: number; g: number; f: number };
 
 function searchGrid(
   open: Entry[], goals: ReadonlySet<string>, target: Point, collision: CollisionMap,
-  origin: Point & { size: number },
+  origin: Point & { size: number; maxOffset: number },
 ): Point[] | null {
-  const { size } = origin;
-  const maxOffset = Math.ceil(680 / size);
+  const { size, maxOffset } = origin;
   const score = new Map(open.map(entry => [cellKey(entry.x, entry.y), entry.g]));
   const parent = new Map<string, string>();
   const closed = new Set<string>();
@@ -131,11 +131,16 @@ function searchGrid(
   return null;
 }
 
-function findTileWalkingPath(from: Point, target: Point, collision: CollisionMap): Point[] | null {
+function findTileWalkingPath(
+  from: Point, target: Point, collision: CollisionMap, maxDistance: number,
+): Point[] | null {
   if (![from.x, from.y, target.x, target.y].every(Number.isFinite) ||
-      dist(from, target) > 650 ||
+      dist(from, target) > maxDistance ||
       !collision.canMove(from.x, from.y) || !collision.canMove(target.x, target.y)) return null;
-  const origin = { x: tile(from.x), y: tile(from.y), size: TILE_SIZE };
+  const origin = {
+    x: tile(from.x), y: tile(from.y), size: TILE_SIZE,
+    maxOffset: Math.ceil(maxDistance / TILE_SIZE) + 1,
+  };
   const tx = tile(target.x), ty = tile(target.y);
   if (!samePoint(target, cellPoint(tx, ty, TILE_SIZE))) return null;
   const goal = cellKey(tx, ty);
@@ -174,10 +179,11 @@ export class TapNavigator {
   }
 
   /** Tile routes expect the destination at the center of a tile. */
-  go(from: Point, target: Point, collision: CollisionMap, tileSteps = false): boolean {
+  go(from: Point, target: Point, collision: CollisionMap, tileSteps = false,
+    maxTileDistance = MAX_ROUTE_DISTANCE): boolean {
     this.cancel();
     const waypoints = tileSteps
-      ? findTileWalkingPath(from, target, collision)
+      ? findTileWalkingPath(from, target, collision, maxTileDistance)
       : findWalkingPath(from, target, collision);
     if (!waypoints) return false;
     if (!waypoints.length) return true;

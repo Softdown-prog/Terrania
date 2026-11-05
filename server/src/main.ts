@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { WebSocket, WebSocketServer } from 'ws';
 import { Room } from './Room.ts';
-import { isValidInput, PROTOCOL_VERSION, validRoom, type ServerMessage } from '../../src/shared/protocol.ts';
+import { isValidInput, isValidWalk, PROTOCOL_VERSION, validRoom, type ServerMessage } from '../../src/shared/protocol.ts';
 
 const port = Number(process.env.PORT ?? 8787);
 const originList = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()).filter(Boolean)
@@ -71,9 +71,11 @@ server.on('upgrade', (req, socket, head) => {
   wss.handleUpgrade(req, socket, head, ws => {
     const id = randomUUID();
     const name = 'Aventureiro ' + (++guestNumber);
-    selectedRoom.add(id, name);
+    const tiles = path.searchParams.get('movement') === 'tiles';
+    selectedRoom.add(id, name, tiles);
     clients.set(ws, { id, room: selectedRoom, alive: true, count: 0, windowStart: Date.now() });
-    send(ws, { type: 'welcome', version: PROTOCOL_VERSION, id, room: roomId, seed: selectedRoom.seed });
+    const welcome = { type: 'welcome', version: PROTOCOL_VERSION, id, room: roomId, seed: selectedRoom.seed } as const;
+    send(ws, tiles ? { ...welcome, movement: 'tiles' } : welcome);
     wss.emit('connection', ws, req);
   });
 });
@@ -88,8 +90,9 @@ wss.on('connection', ws => {
     let message: unknown;
     try { message = JSON.parse(data.toString('utf8')); }
     catch { ws.close(1007, 'JSON inválido'); return; }
-    if (!isValidInput(message)) { ws.close(1008, 'Comando inválido'); return; }
-    c.room.receiveInput(c.id, message.x, message.y, message.attack);
+    if (isValidInput(message)) c.room.receiveInput(c.id, message.x, message.y, message.attack);
+    else if (c.room.guests.get(c.id)?.walking && isValidWalk(message)) c.room.receiveWalk(c.id, message.target);
+    else ws.close(1008, 'Comando inválido');
   });
   ws.on('close', () => {
     const c = clients.get(ws);

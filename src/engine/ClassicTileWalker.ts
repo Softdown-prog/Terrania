@@ -9,7 +9,7 @@ const STILL = { x: 0, y: 0 } as const;
 export const CLASSIC_WALK_SPEED = 126;
 
 /**
- * CLASSIC-004 opt-in experiment: one committed 32px cell at a time.
+ * One committed 32px cell at a time in the solo game and tile-enabled rooms.
  * A step animates smoothly, but its endpoint is always a world tile center.
  * No DOM, storage, server or Phaser dependency. The player's default update
  * still owns its combat/status timers; classic stepping owns position only.
@@ -22,7 +22,7 @@ export class ClassicTileWalker {
 
   /** 8-direction input. Diagonal traversal costs sqrt(2) times a cardinal step. */
   advance(dt: number, dir: Point, player: Player, collision: CollisionMap): void {
-    // Classic movement is opt-in; do not change normal or online Player.update.
+    // Player still owns combat and status timers in both movement modes.
     player.update(dt, STILL, collision, true);
     if (!Number.isFinite(dt) || dt <= 0 || player.hp <= 0) {
       this.reset();

@@ -3,8 +3,9 @@ import type {
   HeroState,
   MobState,
   ServerMessage,
+  WalkTarget,
 } from "../shared/protocol.ts";
-import { PROTOCOL_VERSION, validRoom } from "../shared/protocol.ts";
+import { isWalkTarget, PROTOCOL_VERSION, validRoom } from "../shared/protocol.ts";
 
 export class MultiplayerClient {
   private closed = false;
@@ -13,11 +14,15 @@ export class MultiplayerClient {
   private backoff = 1500;
   id: string | null = null;
   connected = false;
+  tileMovement = false;
+  walkTarget: WalkTarget | null = null;
+  private walkRequested = false;
   players: HeroState[] = [];
   mobs: MobState[] = [];
   private targetPlayers: HeroState[] = [];
   private targetMobs: MobState[] = [];
   private incompatible = false;
+  get self(): HeroState | undefined { return this.players.find(hero => hero.id === this.id); }
   constructor(
     private readonly endpoint: string,
     public readonly room: string,
@@ -41,6 +46,7 @@ export class MultiplayerClient {
         return;
       }
       url.searchParams.set("room", this.room);
+      url.searchParams.set("movement", "tiles");
       this.onStatus("Conectando à VPS…");
       const socket = new WebSocket(url);
       this.socket = socket;
@@ -69,6 +75,7 @@ export class MultiplayerClient {
         ) {
           this.id = msg.id;
           this.connected = true;
+          this.tileMovement = msg.movement === "tiles";
           this.incompatible = false;
           this.onWelcome(msg.seed);
           this.onStatus("Online · sala " + msg.room);
@@ -84,6 +91,7 @@ export class MultiplayerClient {
             mobs = this.mobs;
           this.targetPlayers = msg.players;
           this.targetMobs = msg.mobs;
+          this.walkTarget = this.tileMovement && isWalkTarget(msg.walkTarget) ? msg.walkTarget : null;
           this.players = msg.players.map((p) => {
             const old = heroes.find((h) => h.id === p.id);
             return old
@@ -105,6 +113,9 @@ export class MultiplayerClient {
       socket.onclose = () => {
         if (this.socket !== socket) return;
         this.connected = false;
+        this.tileMovement = false;
+        this.walkTarget = null;
+        this.walkRequested = false;
         this.id = null;
         this.players = [];
         this.mobs = [];
@@ -134,6 +145,9 @@ export class MultiplayerClient {
     const socket = this.socket;
     this.socket = null;
     this.connected = false;
+    this.tileMovement = false;
+    this.walkTarget = null;
+    this.walkRequested = false;
     this.id = null;
     this.players = []; this.mobs = [];
     this.targetPlayers = []; this.targetMobs = [];
@@ -143,9 +157,22 @@ export class MultiplayerClient {
     }
   }
   sendInput(x: number, y: number, attack: boolean): void {
-    if (!this.connected || this.socket?.readyState !== WebSocket.OPEN) return;
-    const msg: ClientMessage = { type: "input", x, y, attack };
-    this.socket.send(JSON.stringify(msg));
+    this.send({ type: "input", x, y, attack });
+  }
+  walkTo(target: WalkTarget): void {
+    if (!this.tileMovement) return;
+    this.walkRequested = this.send({ type: "walk", target });
+  }
+  cancelWalk(): void {
+    if (!this.walkRequested) return;
+    this.walkRequested = false;
+    this.walkTarget = null;
+    this.send({ type: "walk", target: null });
+  }
+  private send(message: ClientMessage): boolean {
+    if (!this.connected || this.socket?.readyState !== WebSocket.OPEN) return false;
+    this.socket.send(JSON.stringify(message));
+    return true;
   }
   /** Smooth visual positions between 10 Hz snapshots; never feeds simulation. */
   interpolate(dt: number): void {

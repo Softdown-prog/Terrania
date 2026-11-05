@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Room } from '../src/Room.ts';
-import { isValidInput, validRoom } from '../../src/shared/protocol.ts';
+import { isValidInput, isValidWalk, validRoom } from '../../src/shared/protocol.ts';
 import { canMoveOnSeed } from '../../src/world/collision.ts';
 
 test('protocolo rejeita coordenadas falsas ou movimento fora da velocidade', () => {
@@ -22,6 +22,51 @@ test('sala usa seed estável e não recebe posição nem HP do cliente', () => {
   assert.equal(guest.actor.hp, 100);
   assert.ok(room.snapshotFor('a')?.players.some(p => p.id === 'a'));
   assert.equal(room.snapshotFor('outro'), null);
+});
+test('o servidor limita destinos de caminhada e preserva a autoridade de posição', () => {
+  assert.equal(isValidWalk({ type: 'walk', target: null }), true);
+  assert.equal(isValidWalk({ type: 'walk', target: { x: 304, y: -48 } }), true);
+  assert.equal(isValidWalk({ type: 'walk', target: { x: 1e12, y: 0 } }), false);
+  assert.equal(isValidWalk({ type: 'walk', target: { x: 0, y: NaN } }), false);
+  assert.equal(isValidWalk({ type: 'walk' }), false);
+
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro', true);
+  Object.assign(guest.actor, { x: 240, y: -144 });
+  let now = guest.lastInputAt;
+  room.receiveWalk('a', { x: 900, y: -48 });
+  room.tick(0.05, now += 50);
+  assert.equal(room.snapshotFor('a')?.walkTarget, null);
+  assert.equal(guest.actor.x, 240);
+  // Several requests within the limit collapse to the latest target.
+  room.receiveWalk('a', { x: 368, y: -48 });
+  room.receiveWalk('a', { x: 301, y: -49 });
+  for (let frame = 0; frame < 45; frame++) {
+    room.tick(0.05, now += 50);
+    assert.ok(room.world.canMove(guest.actor.x, guest.actor.y));
+  }
+  assert.deepEqual([guest.actor.x, guest.actor.y], [304, -48]);
+  assert.equal(room.snapshotFor('a')?.walkTarget, null);
+});
+
+test('soltar a direção ou cancelar o caminho termina somente o passo comprometido', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro', true);
+  let now = guest.lastInputAt;
+  room.receiveWalk('a', { x: 112, y: 16 });
+  room.tick(0.05, now += 50);
+  assert.ok(guest.actor.x > 16 && guest.actor.x < 48);
+  room.receiveWalk('a', null);
+  for (let frame = 0; frame < 16; frame++) room.tick(0.05, now += 50);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [48, 16]);
+
+  room.receiveInput('a', 1, 0, false);
+  now = guest.lastInputAt;
+  room.tick(0.05, now + 50);
+  assert.ok(guest.actor.x > 48 && guest.actor.x < 80);
+  room.receiveInput('a', 0, 0, false);
+  for (let frame = 0; frame < 16; frame++) room.tick(0.05, now += 50);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [80, 16]);
 });
 test('movimento em terreno sólido é determinado pela seed do servidor', () => {
   assert.equal(canMoveOnSeed(16, 16, 842136), true);

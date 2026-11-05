@@ -9,7 +9,7 @@ COPY server/src ./src
 COPY src/actors /work/src/actors
 COPY src/world /work/src/world
 COPY src/shared /work/src/shared
-COPY src/engine/combat.ts /work/src/engine/combat.ts
+COPY src/engine/combat.ts src/engine/ClassicTileWalker.ts src/engine/TapNavigator.ts /work/src/engine/
 # smoke-test: verifica que as regras compartilhadas foram emitidas como ES Modules.
 RUN npm run build \
     && node --input-type=module -e "Promise.all([import('./dist/server/src/Room.js'),import('./dist/src/world/terrain.js')]).then(([r,t])=>{if(typeof r.Room!=='function'||!Number.isFinite(t.CHUNK_PIXELS))process.exit(1)})" \

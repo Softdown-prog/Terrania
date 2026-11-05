@@ -2,7 +2,7 @@
 
 > **Direção atual:** RPG 2D de fantasia medieval inspirado nas *mecânicas* dos MMORPGs clássicos (sensação de Tibia antigo), mas com mundo, nomes, arte, interface e código próprios. Não reproduzir ativos ou conteúdo de terceiros.
 >
-> **Status:** planejamento alinhado em 04/11/2026. Os recortes clássicos continuam experimentais. A presença de código na main não implica publicação. O plano anterior foi preservado em [ROADMAP_ANTERIOR_20261104.md](ROADMAP_ANTERIOR_20261104.md).
+> **Status:** caminhada por tiles integrada à entrada normal do solo e às salas Node com suporte. O combate por alvo segue na entrada clássica. O plano anterior foi preservado em [ROADMAP_ANTERIOR_20261104.md](ROADMAP_ANTERIOR_20261104.md).
 
 ## Organização que acompanha cada etapa
 
@@ -16,20 +16,14 @@ Cada microtarefa deve identificar seu módulo no [índice de arquitetura](INDEX.
 4. **Angular apresenta o HUD; Phaser mostra o mundo; a simulação aplica regras.** Não duplicar estado nem lógica de ataque na interface. O backend multiplayer, quando envolvido, deve ser a autoridade de jogo.
 5. **Sem mudanças indevidas.** Preservar modos solo e online existentes, não alterar contrato do servidor, saves, VPS ou deploy sem uma etapa específica e validação. Nada de merge automático na `main`.
 
-## O que já existe nesta branch experimental
+## O que já existe
 
 - [x] **CLASSIC-001 — Selecionar e atacar:** alvo único por clique/toque ou botão ATACAR, ataque automático com cooldown e linha de visão. Somente `?modo=classico`.
 - [x] **CLASSIC-002 — Perseguição:** aproximação automática por A*, contorno de obstáculos, retomada e cancelamento; movimento manual tem prioridade.
 - [x] **CLASSIC-003 — Battle List:** lista lateral recolhível de slimes vivos visíveis na câmera, indicador de vida e seleção da criatura pela linha.
 - [x] **Catálogo mínimo de criaturas:** `CreatureCatalog.ts` separa os dados fixos do Slime do ID, posição e HP atual de cada instância. Battle List, combate e perseguição leem `CreatureView`. Novas espécies seguem como recortes separados.
 
-**Limitação atual:** a caminhada por tiles é opt-in. A Battle List usa o catálogo, que contém somente Slime. Os recortes são experimentais. Consulte [GAMEPLAY_CLASSICO.md](GAMEPLAY_CLASSICO.md) para as regras implementadas e testes.
-
-## Próximo recorte possível — escolher e validar um de cada vez
-
-- [ ] **Movimento clássico em tiles:** experimento CLASSIC-004 implementado na branch com opção `?modo=classico&passos=1`, ainda sujeito à avaliação de jogabilidade em Android e desktop. O movimento normal permanece o padrão; colisão, joystick, toque e perseguição devem ser reavaliados antes de aprovar a mudança.
-
-**Importante:** estes itens são *candidatos*, não autorização para implementá-los simultaneamente. A cada etapa deve existir uma definição curta do comportamento esperado, critérios de teste e uma decisão de continuar ou ajustar.
+- [x] **CLASSIC-004 — Movimento em tiles:** passos de 32 px por teclado, joystick e toque no exterior solo e nas salas Node compatíveis. Consulte [GAMEPLAY_CLASSICO.md](GAMEPLAY_CLASSICO.md) para as regras e testes.
 
 ## Ciclo jogável essencial — etapas futuras, ainda não aprovadas
 
