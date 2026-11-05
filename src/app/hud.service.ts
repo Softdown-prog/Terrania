@@ -11,6 +11,7 @@ export class HudService implements GameUi {
   readonly online = signal(false);
   readonly nearby = signal(0);
   readonly classicMode = signal(false);
+  readonly classicTileMode = signal(false);
   readonly combatTarget = signal<string | null>(null);
   readonly battleCreatures = signal<readonly BattleCreature[]>([]);
   readonly battleTargetId = signal<string | null>(null);
@@ -89,6 +90,7 @@ export class HudService implements GameUi {
   }
   setStatus(status: string): void { this.status.set(status); }
   setClassicMode(enabled: boolean): void { this.classicMode.set(enabled); }
+  setClassicTileMode(enabled: boolean): void { this.classicTileMode.set(enabled); }
   setCombatTarget(label: string | null): void { this.combatTarget.set(label); }
   setOnline(online: boolean): void { this.online.set(online); }
   setSeed(seed: number): void { this.seed.set(seed); }

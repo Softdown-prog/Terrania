@@ -22,6 +22,7 @@ export interface GameUi {
   setOnline(online: boolean): void;
   setStatus(status: string): void;
   setClassicMode(enabled: boolean): void;
+  setClassicTileMode(enabled: boolean): void;
   setCombatTarget(label: string | null): void;
   onStopCombat(callback: () => void): void;
   onBattleSelect(callback: (id: string) => void): void;

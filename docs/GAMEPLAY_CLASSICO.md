@@ -35,3 +35,13 @@ Este trabalho começa da main `6ce58c1`, **sem** trazer os RPG-004/005 de golpe 
 - Atualização aproximadamente a cada 0,2 s; Angular só recebe novos sinais quando a lista muda. Ao entrar em interior, trocar mundo ou sair, a lista limpa. Estado não é persistido no save.
 - Não inclui criaturas online, jogadores, PvP, novos monstros, drag and drop, magias ou inventário. O modo solo normal e o multiplayer permanecem inalterados. Não usar assets de Tibia.
 - Regressões: tests/classic-battle-list.test.ts e tests/browser/classic-battle-list.spec.ts, além da CI do frontend Angular/Phaser, Node, Playwright Android e desktop, e Docker.
+
+## CLASSIC-004 — Experimento opt-in de caminhada por tiles
+
+- Abrir `/jogar/?modo=classico&passos=1`. Sem `passos=1`, o modo clássico continua com a caminhada contínua aprovada; `?modo=solo` e multiplayer permanecem iguais.
+- Personagem segue passos **visualmente interpolados** entre centros de tiles de 32×32, em oito direções. Cada passo iniciado termina em um centro de tile; diagonais demoram mais que passos cardinais em função da distância real.
+- Valida a rota inteira contra `CollisionMap` a cada início de passo, e cada submovimento passa por `moveBody`; recusa passos atravessando paredes, quinas e terreno bloqueado. Saves antigos fora do centro não são teletransportados: o primeiro passo termina no centro da célula adjacente.
+- Mesmo se soltar o controle no meio do passo, ele termina; a próxima direção só é interpretada quando começa o passo seguinte. Somente o deslocamento do **jogador no mundo externo clássico** muda; slimes e multiplayer continuam no modelo atual.
+- O temporizador de ataque/recarga, dano e invulnerabilidade continua avançando uma vez por tick através de `Player.update(..., timersOnly=true)`. Deslocamento e colisão permanecem isolados em `ClassicTileWalker`.
+- Navegação por toque e perseguição usam a direção A* existente e um raio de chegada ampliado no experimento, já que pontos do planejador podem cair entre centros da malha de 32 px. Caso um caminho exija passagem incompatível com passos de 32 px, o personagem deve parar com segurança, nunca atravessar a colisão.
+- Este é um **teste de sensação e compatibilidade**, não migração aprovada de todo o motor para tiles. Validar jogabilidade real no Android e desktop; não mudar o padrão até essa avaliação. Unitários `tests/classic-tile-walker.test.ts` e browser `tests/browser/classic-tiles.spec.ts`.

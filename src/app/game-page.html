@@ -86,6 +86,9 @@
       @if (hud.classicMode()) {
         <aside id="classicCombat" class="classic-status" aria-label="Combate clássico experimental">
           <strong>COMBATE CLÁSSICO · SOLO</strong>
+          @if (hud.classicTileMode()) {
+            <span id="classicTileHint">PASSOS 32×32 · TESTE</span>
+          }
           @if (hud.combatTarget(); as target) {
             <span id="classicTarget">Alvo: {{ target }}</span>
             <button id="stopTarget" type="button" (click)="hud.stopCombat()">Cancelar alvo</button>
@@ -207,7 +210,7 @@
           </div>
           <div>
             <dt>Espaço ou J</dt>
-            <dd>{{ hud.classicMode() ? "Selecione um slime no cenário ou na Battle List lateral. O herói persegue o alvo por caminhos livres e ataca sozinho quando puder. A lista mostra as criaturas visíveis e pode ser aberta ou fechada. Toque no chão para caminhar sem perseguir; ATACAR retoma a perseguição. Escape cancela." : "Atacar na direção em que você olha. Segure para repetir." }}</dd>
+            <dd>{{ hud.classicMode() ? "Selecione um slime no cenário ou na Battle List lateral. O herói persegue o alvo por caminhos livres e ataca sozinho quando puder. A lista mostra as criaturas visíveis e pode ser aberta ou fechada. Toque no chão para caminhar sem perseguir; ATACAR retoma a perseguição. Escape cancela. Experimente a caminhada em tiles usando ?modo=classico&passos=1." : "Atacar na direção em que você olha. Segure para repetir." }}</dd>
           </div>
           <div>
             <dt>No celular</dt>

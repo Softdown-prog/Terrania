@@ -3,6 +3,7 @@ import { Slime, slimeSpawns } from "../actors/Slime.ts";
 import { SeedCollision } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { canStrike } from "./combat.ts";
+import type { ClassicTileWalker } from "./ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./Inventory.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
 
@@ -74,8 +75,11 @@ export class OfflineSimulation {
      * Null: classic attack with no live target (must NOT splash).
      */
     targetId?: string | null,
+    /** Opt-in, local-only classic tile movement; defaults to legacy movement. */
+    tileWalker?: ClassicTileWalker,
   ): boolean {
-    this.player.update(dt, direction, this.collision);
+    if (tileWalker) tileWalker.advance(dt, direction, this.player, this.collision);
+    else this.player.update(dt, direction, this.collision);
     this.spawnNearby();
     for (const [id, slime] of this.slimes) {
       const distance = Math.hypot(

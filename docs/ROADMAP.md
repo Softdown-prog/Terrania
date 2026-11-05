@@ -22,7 +22,7 @@
 
 ## Próximo recorte possível — escolher e validar um de cada vez
 
-- [ ] **Movimento clássico em tiles:** experimentar deslocamento discreto de 32×32 no modo clássico sem quebrar colisão, joystick, toque para caminhar ou perseguição. Validar sensação real no celular antes de aceitar o modelo.
+- [ ] **Movimento clássico em tiles:** experimento CLASSIC-004 implementado na branch com opção `?modo=classico&passos=1`, ainda sujeito à avaliação de jogabilidade em Android e desktop. O movimento normal permanece o padrão; colisão, joystick, toque e perseguição devem ser reavaliados antes de aprovar a mudança.
 - [ ] **Catálogo mínimo de criaturas:** definir tipos de monstro separados das instâncias (ID, posição, HP atual), inicialmente Slime e depois outra espécie somente se necessário ao teste. Tornar Battle List e combate independentes da classe `Slime`.
 
 **Importante:** estes itens são *candidatos*, não autorização para implementá-los simultaneamente. A cada etapa deve existir uma definição curta do comportamento esperado, critérios de teste e uma decisão de continuar ou ajustar.
