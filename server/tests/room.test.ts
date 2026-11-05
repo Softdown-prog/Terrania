@@ -28,3 +28,16 @@ test('movimento em terreno sólido é determinado pela seed do servidor', () => 
   assert.equal(canMoveOnSeed(Number.NaN, 16, 842136), false);
   assert.equal(canMoveOnSeed(1e12, 0, 842136), false);
 });
+
+test('snapshot conserva o formato v3 e a vida do Slime com catálogo local', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro 1');
+  guest.actor.x = -660;
+  guest.actor.y = -1008;
+  const start = guest.lastInputAt;
+  for (let frame = 0; frame < 32; frame++) room.tick(0.05, start + frame * 50);
+  const slime = room.snapshotFor('a')?.mobs.find(mob => mob.id === '-2,-2,0');
+  assert.ok(slime, 'slime gerado naturalmente na seed 842136');
+  assert.equal(slime.hp, 2);
+  assert.deepEqual(Object.keys(slime).sort(), ['bounce', 'hp', 'hurtTime', 'id', 'x', 'y']);
+});

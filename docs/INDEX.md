@@ -10,12 +10,12 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Orquestração Phaser](indexes/phaser-game.md) | active | 3 | Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir regras do motor para este adaptador. |
 | [Renderização e adaptadores Canvas](indexes/renderer.md) | active | 11 | Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo. |
 | [Regras e simulação offline](indexes/simulation.md) | active | 11 | Combate, inventário, loot, navegação e experimento clássico; sem DOM, Phaser ou Angular. |
-| [Entidades jogáveis](indexes/actors.md) | active | 3 | Estado e comportamento de herói e criaturas existentes; catálogo de espécies ainda não generalizado. |
+| [Entidades jogáveis](indexes/actors.md) | active | 4 | Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias. |
 | [Terreno, colisões e NPCs](indexes/world.md) | active | 7 | Mundo procedural determinístico, tiles, colisão, vila e marcos. |
 | [Entrada e controles](indexes/input.md) | active | 4 | Normalização de teclado, joystick e toque; regras de gameplay pertencem à simulação. |
 | [Rede cliente e protocolo](indexes/client-network.md) | active | 4 | Conexão WebSocket e contrato de mensagens; servidor é autoridade online. |
 | [Persistência local](indexes/local-save.md) | active | 2 | Save no navegador, versão e compatibilidade; não é persistência autoritativa online. |
-| [QA e testes](indexes/quality.md) | active | 37 | Testes unitários e navegador desktop/Android; cenários de regressão e robôs de QA. |
+| [QA e testes](indexes/quality.md) | active | 38 | Testes unitários e navegador desktop/Android; cenários de regressão e robôs de QA. |
 | [Servidor Node atual](indexes/node-server.md) | active | 12 | Backend WebSocket ainda utilizado como referência funcional/produção segundo a documentação; não confundir com Go shadow. |
 | [Motor Go autoritativo em validação](indexes/go-engine.md) | experimental | 20 | Implementação Go de regras e paridade; substituição do backend ativo requer decisão e validação separadas. |
 | [Executáveis e presença Go](indexes/go-runtime.md) | experimental | 28 | Worker, gateway, laboratório de capacidade, presença e scripts de paridade. |

@@ -54,6 +54,7 @@ test("Battle List acompanha a câmera, seleciona alvo real e inicia perseguiçã
   await expect(panel).toBeVisible();
   const row = page.locator('.battle-entry[data-creature-id="' + encounter.mob.id + '"]');
   await expect(row).toBeVisible();
+  await expect(row).toHaveAttribute("aria-label", "Selecionar Slime, vida 2 de 2");
   await expect(page.locator("#battleCount")).not.toHaveText("0");
   await expect(page.locator(".battle-entry[data-creature-id]")).toHaveCount(
     await page.locator(".battle-entry").count(),
@@ -64,6 +65,7 @@ test("Battle List acompanha a câmera, seleciona alvo real e inicia perseguiçã
   await expect(page.locator(".battle-entry[aria-pressed=true]")).toHaveCount(1);
   await expect.poll(() => page.locator("#coords").textContent(), { timeout: 8000 })
     .not.toBe(initialCoords);
+  await expect(row).toHaveAttribute("aria-label", "Selecionar Slime, vida 1 de 2");
   await toggle.click();
   await expect(panel).toBeHidden();
   await expect(toggle).toHaveAttribute("aria-expanded", "false");

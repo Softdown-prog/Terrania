@@ -1,4 +1,4 @@
-import type { Slime } from "../actors/Slime.ts";
+import { CREATURE_CATALOG, type CreatureView } from "../actors/CreatureCatalog.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 
 /** CLASSIC-003: viewport-only projection for a Battle List.
@@ -12,18 +12,17 @@ export interface BattleViewport {
 }
 export interface BattleCreature {
   readonly id: string;
-  readonly name: "Slime";
+  readonly name: string;
   readonly hp: number;
-  readonly maxHp: 2;
+  readonly maxHp: number;
   readonly distanceTiles: number;
 }
 type Point = Readonly<{ x: number; y: number }>;
-type Creature = Pick<Slime, "id" | "x" | "y" | "hp">;
 export const MAX_BATTLE_CREATURES = 24;
 const SPRITE_EDGE = 10;
 
 export function visibleBattleCreatures(
-  creatures: Iterable<Creature>,
+  creatures: Iterable<CreatureView>,
   hero: Point,
   view: BattleViewport,
 ): BattleCreature[] {
@@ -37,9 +36,10 @@ export function visibleBattleCreatures(
     // A 10px edge allowance includes visible sprite pixels at the screen border.
     if (Math.abs(mob.x - view.centerX) > view.halfWidth + SPRITE_EDGE ||
         Math.abs(mob.y - view.centerY) > view.halfHeight + SPRITE_EDGE) continue;
+    const definition = CREATURE_CATALOG[mob.kind];
     rows.push({
-      id: mob.id, name: "Slime",
-      hp: Math.min(2, Math.max(0, mob.hp)), maxHp: 2,
+      id: mob.id, name: definition.name,
+      hp: Math.min(definition.maxHp, mob.hp), maxHp: definition.maxHp,
       distanceTiles: Math.ceil(Math.hypot(mob.x - hero.x, mob.y - hero.y) / TILE_SIZE),
     });
   }

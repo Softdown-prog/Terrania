@@ -29,12 +29,16 @@ Este trabalho começa da main `6ce58c1`, **sem** trazer os RPG-004/005 de golpe 
 ## CLASSIC-003 — Battle List lateral (protótipo offline)
 
 - A janela BATTLE lista os Slimes vivos cujos sprites estão dentro da viewport do Canvas (câmera real + zoom, com tolerância de 10 unidades na borda). Monstros que saem da tela, morrem ou deixam de existir saem da lista automaticamente.
-- Exibe nome, vida (2 HP de referência, com barra de proporção), distância em tiles de 32 px e destaque do alvo selecionado. Ordena por distância e ID, limitado a 24 criaturas por atualização.
+- Exibe nome e vida máxima vindos do catálogo (Slime: 2 HP), vida atual com barra de proporção, distância em tiles de 32 px e destaque do alvo selecionado. Ordena por distância e ID, limitado a 24 criaturas por atualização.
 - Clicar/tocar numa linha valida novamente que aquele monstro está visível e vivo antes de chamar a mesma seleção de alvo do cenário. A perseguição A* já existente continua responsável por aproximar o herói, respeitando alcance, paredes e tempo de ataque.
 - Painel lateral expansível ou recolhível por botão BATTLE; aberto por padrão no desktop com mouse, fechado por padrão em telas pequenas/touch para não cobrir o mapa. Um painel recolhido continua atualizando a contagem.
 - Atualização aproximadamente a cada 0,2 s; Angular só recebe novos sinais quando a lista muda. Ao entrar em interior, trocar mundo ou sair, a lista limpa. Estado não é persistido no save.
 - Não inclui criaturas online, jogadores, PvP, novos monstros, drag and drop, magias ou inventário. O modo solo normal e o multiplayer permanecem inalterados. Não usar assets de Tibia.
 - Regressões: tests/classic-battle-list.test.ts e tests/browser/classic-battle-list.spec.ts, além da CI do frontend Angular/Phaser, Node, Playwright Android e desktop, e Docker.
+
+### Catálogo de criaturas
+
+`src/actors/CreatureCatalog.ts` define o nome, a vida máxima e o dano de contato do Slime (2 HP e 9 de dano). Cada instância mantém seus próprios ID, posição e HP atual. A Battle List e o rótulo do alvo leem a definição pelo tipo; a perseguição usa somente a visão da criatura. Esta etapa conserva a IA, colisão, loot e spawn existentes, sem acrescentar espécies nem campos ao protocolo ou ao save.
 
 ## CLASSIC-004 — Experimento opt-in de caminhada por tiles
 
