@@ -9,3 +9,5 @@
 **Verificação:** npm test; Playwright ao afetar movimento/seleção.
 
 **Limites:** Não importar Angular, Phaser ou browser; motor online Go/Node é separado e requer paridade.
+
+**Perseguição em passos:** o modo opt-in escolhe centros de tiles caminháveis já dentro do alcance e da linha de visão da espada. O anel contínuo de aproximação continua exclusivo do movimento contínuo. A regressão de alvos fora da malha fica nos testes de perseguição e caminhada clássica.

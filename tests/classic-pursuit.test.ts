@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { Player } from "../src/actors/Player.ts";
 import { Slime } from "../src/actors/Slime.ts";
+import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
 import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
 import { canStrike } from "../src/engine/combat.ts";
 import {
@@ -144,4 +145,33 @@ test("perseguição e golpe clássico conservam temporização do alvo único", 
   assert.equal(others.hp, 2);
   assert.equal(follow.direction(DT, hero, fight.targetId, mobs, OPEN).x, 0);
   assert.equal(fight.label(mobs), null);
+});
+
+test("destinos de perseguição em passos são centros caminháveis dentro do alcance real", () => {
+  const hero = new Player(), mob = new Slime("off-grid", 110, 130);
+  const point = findClassicApproach(hero, mob, OPEN, true);
+  assert.ok(point);
+  assert.equal(Math.abs((point.x - 16) % 32), 0);
+  assert.equal(Math.abs((point.y - 16) % 32), 0);
+  assert.equal(inClassicAttackPosition(point, mob, OPEN), true);
+  const blocked: CollisionMap = { canMove: (x, y) => x !== point.x || y !== point.y };
+  const alternative = findClassicApproach(hero, mob, blocked, true);
+  assert.ok(alternative);
+  assert.notDeepEqual(alternative, point);
+  assert.equal(blocked.canMove(alternative.x, alternative.y), true);
+  assert.equal(inClassicAttackPosition(alternative, mob, blocked), true);
+});
+
+test("pontos em tiles não liberam ataques nem aproximação do outro lado de muro", () => {
+  const world: CollisionMap = { canMove: x => x < 64 || x > 96 };
+  const hero = new Player(), mob = new Slime("separated", 110, 130);
+  assert.equal(inClassicAttackPosition({ x: 48, y: 112 }, mob, world), false);
+  const follow = new ClassicPursuit(), walker = new ClassicTileWalker();
+  const mobs = new Map([[mob.id, mob]]);
+  for (let frame = 0; frame < 60; frame++) {
+    walker.advance(DT, follow.direction(DT, hero, mob.id, mobs, world, true), hero, world);
+    assert.ok(hero.x < 64);
+    assert.equal(world.canMove(hero.x, hero.y), true);
+  }
+  assert.equal(inClassicAttackPosition(hero, mob, world), false);
 });
