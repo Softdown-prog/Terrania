@@ -343,7 +343,7 @@ export class Game {
             this.classicCombat.tick(1 / 60, this.sim.player, this.sim.slimes, this.sim.collision);
           const changed = this.sim.update(1 / 60, movement,
             classicStrike || this.pendingAttack,
-            this.classicMode ? this.classicCombat.targetId : undefined,
+            this.classicMode ? this.classicCombat.strikeTargetId : undefined,
             this.classicTiles ? this.classicTileWalker : undefined);
           // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
           if (this.sim.player !== before) {
