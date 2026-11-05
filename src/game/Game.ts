@@ -139,7 +139,7 @@ export class Game {
   }
   private replaceWorld(seed: number, saved?: OfflineSave): void {
     this.navigator.cancel();
-    this.classicCombat.cancel();
+    this.classicCombat.reset();
     this.classicPursuit.reset();
     this.classicTileWalker.reset();
     this.classicAutoFollow = true;
@@ -348,7 +348,7 @@ export class Game {
           // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
           if (this.sim.player !== before) {
             this.navigator.cancel();
-            this.classicCombat.cancel();
+            this.classicCombat.reset();
             this.classicPursuit.reset();
             this.classicTileWalker.reset();
           } else if (this.sim.player.hurtTime > 0) {

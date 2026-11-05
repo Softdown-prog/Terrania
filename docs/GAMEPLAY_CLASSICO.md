@@ -9,7 +9,7 @@ Este trabalho começa da main `6ce58c1`, **sem** trazer os RPG-004/005 de golpe 
 ## Recorte CLASSIC-001
 - `?modo=classico`: modo solo experimental. O modo `?modo=solo` original continua igual.
 - Clique ou toque sobre criatura para selecionar alvo; Space/J ou botão ATACAR escolhe a criatura mais próxima. Escape cancela o alvo. Clicar no chão continua a caminhar.
-- Personagem executa ataques automáticos periódicos contra **o único alvo selecionado**, apenas quando alcance, linha de visão, estado do herói e intervalo permitem. O motor continua decidindo impacto, kill, loot e inventário. Selecionar outro alvo não zera a recarga.
+- Personagem executa ataques automáticos periódicos contra **o único alvo selecionado**, apenas quando alcance, linha de visão, estado do herói e intervalo permitem. O motor continua decidindo impacto, kill, loot e inventário. Selecionar outro alvo, cancelar por Escape ou pelo botão e perder um alvo morto/removido não zeram a recarga de 1,6 s. O relógio continua avançando nos ticks de simulação mesmo sem alvo; menus e interiores mantêm a pausa existente. Somente a substituição do mundo ou o respawn com um novo jogador reiniciam o estado de combate.
 - Ataque automático não muda o contrato Go, não cria PvP, magia, vocação ou créditos arbitrários de XP.
 - A apresentação Angular mostra o alvo sem painel de jogadores sobre o mapa; input funciona com teclado e touch.
 - Asterisco importante: deslocamento **por passos discretos** em tiles de 32 px, battle list, mana, vocações, runas, equipamentos e IA de respawn ainda serão recortes separados. Não afirmar que o sistema inteiro do Tibia já foi reproduzido.

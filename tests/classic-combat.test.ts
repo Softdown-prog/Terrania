@@ -80,3 +80,83 @@ test("classic without a live target never turns a pending strike into area damag
   for(let i=0;i<18;i++)sim.update(1/60,STILL,false,null);
   assert.equal(bystander.hp,2);
 });
+
+test("cancelar e selecionar novamente não antecipa o intervalo clássico", () => {
+  const fight = new ClassicCombat(), hero = new Player(), { slime, mobs } = pair();
+  fight.select(slime.id, mobs);
+  assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), true);
+  hero.startAttack();
+  for (let frame = 0; frame < 40; frame++) {
+    hero.update(1 / 60, STILL, OPEN);
+    assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), false);
+  }
+  assert.equal(hero.attackCooldown, 0, "a recarga do jogador já acabou, mas a clássica não");
+  const remaining = fight.cooldown;
+  fight.cancel();
+  assert.equal(fight.targetId, null);
+  assert.equal(fight.cooldown, remaining);
+  fight.select(slime.id, mobs);
+  assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), false);
+});
+
+test("perder um alvo pela simulação ou pelo HUD preserva a recarga para o próximo", () => {
+  for (const loss of ["removed", "dead", "label"] as const) {
+    const fight = new ClassicCombat(), hero = new Player(), { slime, mobs } = pair();
+    const next = new Slime("next", 48, 16);
+    mobs.set(next.id, next);
+    fight.select(slime.id, mobs);
+    assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), true);
+    if (loss === "dead") slime.hp = 0;
+    else mobs.delete(slime.id);
+    if (loss === "label") assert.equal(fight.label(mobs), null);
+    else assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), false);
+    assert.equal(fight.targetId, null);
+    assert.ok(fight.cooldown > 1.5);
+    fight.select(next.id, mobs);
+    assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), false);
+  }
+});
+
+test("cancelar repetidamente não aumenta a cadência de ataques", () => {
+  const fight = new ClassicCombat(), hero = new Player(), { slime, mobs } = pair();
+  const attacks: number[] = [];
+  for (let frame = 0; frame < 200; frame++) {
+    fight.cancel();
+    fight.select(slime.id, mobs);
+    if (fight.tick(1 / 60, hero, mobs, OPEN)) {
+      assert.equal(hero.startAttack(), true);
+      attacks.push(frame);
+    }
+    hero.update(1 / 60, STILL, OPEN);
+  }
+  assert.equal(attacks.length, 3);
+  for (let i = 1; i < attacks.length; i++)
+    assert.ok((attacks[i]! - attacks[i - 1]!) / 60 >= CLASSIC_ATTACK_INTERVAL - 1 / 60);
+});
+
+test("a recarga continua contando sem alvo e entradas inválidas não a alteram", () => {
+  const fight = new ClassicCombat(), hero = new Player(), { slime, mobs } = pair();
+  fight.select(slime.id, mobs);
+  assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), true);
+  fight.cancel();
+  for (const dt of [NaN, Infinity, 0, -1]) {
+    assert.equal(fight.tick(dt, hero, mobs, OPEN), false);
+    assert.equal(fight.cooldown, CLASSIC_ATTACK_INTERVAL);
+  }
+  for (let frame = 0; frame < 97; frame++)
+    assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), false);
+  assert.equal(fight.cooldown, 0);
+  fight.select(slime.id, mobs);
+  assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), true);
+});
+
+test("reset de mundo ou herói novo limpa foco e relógio da simulação anterior", () => {
+  const fight = new ClassicCombat(), { slime, mobs } = pair();
+  fight.select(slime.id, mobs);
+  assert.equal(fight.tick(1 / 60, new Player(), mobs, OPEN), true);
+  fight.reset();
+  assert.equal(fight.targetId, null);
+  assert.equal(fight.cooldown, 0);
+  fight.select(slime.id, mobs);
+  assert.equal(fight.tick(1 / 60, new Player(), mobs, OPEN), true);
+});

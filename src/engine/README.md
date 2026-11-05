@@ -6,6 +6,8 @@
 
 **Ao alterar:** Adicionar regra isolada com teste de casos-limite, atualizar GAMEPLAY_CLASSICO quando alterar combate.
 
+**Relógio clássico:** `ClassicCombat.cancel()` remove somente o foco e preserva a recarga, inclusive quando o alvo morre ou deixa de existir. `reset()` é exclusivo da troca de simulação/jogador; cancelar e selecionar de novo não permite acelerar os ataques. A regressão está em `tests/classic-combat.test.ts`.
+
 **Verificação:** npm test; Playwright ao afetar movimento/seleção.
 
 **Limites:** Não importar Angular, Phaser ou browser; motor online Go/Node é separado e requer paridade.
