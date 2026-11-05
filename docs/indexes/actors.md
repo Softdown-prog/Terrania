@@ -2,7 +2,7 @@
 
 > Gerado automaticamente a partir de `architecture/modules.json`. Estado: **active** · Camada: **domain**
 
-Estado e comportamento de herói e criaturas existentes; catálogo de espécies ainda não generalizado.
+Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias.
 
 **Documentação de manutenção:** [`src/actors/README.md`](../../src/actors/README.md)
 
@@ -10,9 +10,11 @@ Estado e comportamento de herói e criaturas existentes; catálogo de espécies 
 
 - [`src/actors/Player.ts`](../../src/actors/Player.ts)
 - [`src/actors/Slime.ts`](../../src/actors/Slime.ts)
+- [`src/actors/CreatureCatalog.ts`](../../src/actors/CreatureCatalog.ts)
 
-## Todos os arquivos deste módulo (3)
+## Todos os arquivos deste módulo (4)
 
+- [`src/actors/CreatureCatalog.ts`](../../src/actors/CreatureCatalog.ts)
 - [`src/actors/Player.ts`](../../src/actors/Player.ts)
 - [`src/actors/README.md`](../../src/actors/README.md)
 - [`src/actors/Slime.ts`](../../src/actors/Slime.ts)

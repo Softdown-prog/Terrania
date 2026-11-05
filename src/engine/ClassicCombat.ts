@@ -1,4 +1,4 @@
-import type { Slime } from "../actors/Slime.ts";
+import { CREATURE_CATALOG, type CreatureView } from "../actors/CreatureCatalog.ts";
 import type { Player } from "../actors/Player.ts";
 import type { CollisionMap } from "../world/collision.ts";
 import { canStrike } from "./combat.ts";
@@ -11,7 +11,6 @@ export const CLASSIC_SELECT_RADIUS = 24;
 export const CLASSIC_NEAREST_RADIUS = 145;
 
 type Point = Readonly<{ x: number; y: number }>;
-type Target = Pick<Slime, "id" | "x" | "y" | "hp">;
 const isPoint = (p: Point): boolean =>
   Number.isFinite(p.x) && Number.isFinite(p.y);
 
@@ -34,7 +33,7 @@ export class ClassicCombat {
     this.remaining = 0;
   }
 
-  select(id: string, mobs: ReadonlyMap<string, Target>): boolean {
+  select(id: string, mobs: ReadonlyMap<string, CreatureView>): boolean {
     const target = mobs.get(id);
     if (!target || target.hp <= 0) return false;
     // Switching targets is allowed, but cannot bypass an existing attack timer.
@@ -42,9 +41,9 @@ export class ClassicCombat {
     return true;
   }
 
-  selectAt(at: Point, mobs: Iterable<Target>, radius = CLASSIC_SELECT_RADIUS): boolean {
+  selectAt(at: Point, mobs: Iterable<CreatureView>, radius = CLASSIC_SELECT_RADIUS): boolean {
     if (!isPoint(at) || !Number.isFinite(radius) || radius <= 0) return false;
-    let nearest: Target | null = null;
+    let nearest: CreatureView | null = null;
     let best = radius;
     for (const mob of mobs) {
       if (mob.hp <= 0 || !isPoint(mob)) continue;
@@ -56,14 +55,14 @@ export class ClassicCombat {
     return true;
   }
 
-  selectNearest(hero: Point, mobs: Iterable<Target>): boolean {
+  selectNearest(hero: Point, mobs: Iterable<CreatureView>): boolean {
     return this.selectAt(hero, mobs, CLASSIC_NEAREST_RADIUS);
   }
 
   /** Call exactly once per fixed simulation tick, BEFORE sim.update.
    * The simulation still decides when the wind-up lands and grants loot/kills.
    */
-  tick(dt: number, player: Player, mobs: ReadonlyMap<string, Target>,
+  tick(dt: number, player: Player, mobs: ReadonlyMap<string, CreatureView>,
       collision: CollisionMap): boolean {
     if (!Number.isFinite(dt) || dt <= 0) return false;
     this.remaining = Math.max(0, this.remaining - Math.min(dt, 0.1));
@@ -83,10 +82,10 @@ export class ClassicCombat {
     return true;
   }
 
-  label(mobs: ReadonlyMap<string, Target>): string | null {
+  label(mobs: ReadonlyMap<string, CreatureView>): string | null {
     if (!this.selected) return null;
     const mob = mobs.get(this.selected);
     if (!mob || mob.hp <= 0) { this.cancel(); return null; }
-    return "Slime";
+    return CREATURE_CATALOG[mob.kind].name;
   }
 }

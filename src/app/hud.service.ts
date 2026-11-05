@@ -75,8 +75,8 @@ export class HudService implements GameUi {
     const previous = this.battleCreatures();
     const same = creatures.length === previous.length && creatures.every((row, i) => {
       const old = previous[i];
-      return old !== undefined && row.id === old.id && row.hp === old.hp &&
-        row.distanceTiles === old.distanceTiles;
+      return old !== undefined && row.id === old.id && row.name === old.name &&
+        row.hp === old.hp && row.maxHp === old.maxHp && row.distanceTiles === old.distanceTiles;
     });
     if (!same) this.battleCreatures.set(creatures);
     if (this.battleTargetId() !== targetId) this.battleTargetId.set(targetId);

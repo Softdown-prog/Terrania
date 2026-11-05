@@ -77,10 +77,11 @@
       ],
       "entrypoints": [
         "src/actors/Player.ts",
-        "src/actors/Slime.ts"
+        "src/actors/Slime.ts",
+        "src/actors/CreatureCatalog.ts"
       ],
       "doc": "src/actors/README.md",
-      "description": "Estado e comportamento de herói e criaturas existentes; catálogo de espécies ainda não generalizado."
+      "description": "Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias."
     },
     {
       "id": "world",

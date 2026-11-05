@@ -1,5 +1,6 @@
 import type { Player } from "../actors/Player.ts";
 import type { Slime } from "../actors/Slime.ts";
+import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { ATTACK_DURATION, ATTACK_WINDUP } from "../engine/combat.ts";
 export type HeroVisual = Pick<
   Player,
@@ -214,11 +215,12 @@ export function renderSlime(
   ctx.fillRect(5, -8, 2, 4);
   ctx.fillStyle = "#1f514a";
   ctx.fillRect(-1, -2, 3, 1);
-  if (slime.hp < 2) {
+  const { maxHp } = CREATURE_CATALOG.slime;
+  if (slime.hp < maxHp) {
     ctx.fillStyle = "#17342f";
     ctx.fillRect(-10, -27, 20, 4);
     ctx.fillStyle = "#e0b578";
-    ctx.fillRect(-9, -26, 9, 2);
+    ctx.fillRect(-9, -26, 18 * Math.max(0, slime.hp) / maxHp, 2);
   }
   ctx.restore();
 }

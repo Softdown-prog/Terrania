@@ -3,8 +3,13 @@ import { hash2 } from "../world/random.ts";
 import { CHUNK_TILES, TILE_SIZE } from "../world/terrain.ts";
 import { villageGround } from "../world/village.ts";
 import type { Player } from "./Player.ts";
-export class Slime {
-  hp = 2;
+import { CREATURE_CATALOG, type CreatureView } from "./CreatureCatalog.ts";
+
+const DEFINITION = CREATURE_CATALOG.slime;
+
+export class Slime implements CreatureView {
+  readonly kind = "slime";
+  hp: number = DEFINITION.maxHp;
   x: number;
   y: number;
   private pulse = 0;
@@ -36,7 +41,7 @@ export class Slime {
         moveBody(this, (dx / d) * speed * dt, (dy / d) * speed * dt, world);
     }
     if (d < 24 && this.contactCooldown === 0) {
-      player.takeDamage(9, this.x, this.y);
+      player.takeDamage(DEFINITION.contactDamage, this.x, this.y);
       this.contactCooldown = 1.2;
     }
   }

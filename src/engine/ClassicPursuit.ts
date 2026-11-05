@@ -1,5 +1,5 @@
 import type { Player } from "../actors/Player.ts";
-import type { Slime } from "../actors/Slime.ts";
+import type { CreatureView } from "../actors/CreatureCatalog.ts";
 import type { CollisionMap } from "../world/collision.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import { ATTACK_REACH, canStrike } from "./combat.ts";
@@ -16,7 +16,6 @@ const REPATH_SECONDS = 0.4;
 const REPATH_DISTANCE = TILE_SIZE * 0.5;
 const ZERO = { x: 0, y: 0 } as const;
 type Point = Readonly<{ x: number; y: number }>;
-type Creature = Pick<Slime, "id" | "x" | "y" | "hp">;
 
 const finite = (point: Point): boolean =>
   Number.isFinite(point.x) && Number.isFinite(point.y);
@@ -104,7 +103,7 @@ export class ClassicPursuit {
     dt: number,
     player: Player,
     selectedId: string | null,
-    mobs: ReadonlyMap<string, Creature>,
+    mobs: ReadonlyMap<string, CreatureView>,
     collision: CollisionMap,
     tileSteps = false,
   ): Point {
