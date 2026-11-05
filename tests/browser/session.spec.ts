@@ -66,6 +66,12 @@ test('entrada online e saída da rota preservam o progresso solo recente', async
   await page.locator('#inventoryButton').click();
   await expect(page.locator('#gelCount')).toHaveText('9 / 99');
   await expect(page.locator('#potionCount')).toHaveText('2 / 99');
+  await page.locator('#usePotion').click();
+  await expect(page.locator('#inventoryFeedback')).toContainText('Poção utilizada');
+  await expect(page.locator('#hpText')).toHaveText('100 / 100');
+  await expect(page.locator('#potionCount')).toHaveText('1 / 99');
+  const healed = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
+  expect(healed).toMatchObject({ hp: 100, inventory: { gel: 9, potion: 1, questRewardClaimed: true } });
 });
 
 test('voltar ao painel não fica preso numa consulta cancelada da tela anterior', async ({ page }) => {
