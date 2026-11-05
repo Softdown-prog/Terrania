@@ -12,6 +12,6 @@
 
 **Limites:** Não importar Angular, Phaser ou browser; motor online Go/Node é separado e requer paridade.
 
-**Perseguição em passos:** o modo opt-in escolhe centros de tiles caminháveis já dentro do alcance e da linha de visão da espada. O anel contínuo de aproximação continua exclusivo do movimento contínuo. A regressão de alvos fora da malha fica nos testes de perseguição e caminhada clássica.
+**Perseguição em passos:** solo e Node procuram, em uma busca A*, um centro de tile caminhável dentro do alcance e da linha de visão da espada. O orçamento de recálculo continua valendo ao trocar ou cancelar alvos.
 
 **Toque em passos:** o `TapNavigator` usa a malha de 32 px para cliques e toques no terreno do solo e nas sessões Node com passos. A rota conserva os centros adjacentes que o `ClassicTileWalker` consegue executar. Alterar o destino durante um passo preserva o movimento até seu centro final e inicia a nova rota a partir dali.

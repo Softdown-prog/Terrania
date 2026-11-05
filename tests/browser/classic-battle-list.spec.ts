@@ -72,11 +72,11 @@ test("Battle List acompanha a câmera, seleciona alvo real e inicia perseguiçã
   expect(errors).toEqual([]);
 });
 
-test("Battle List não aparece no solo original ou multiplayer e não cobre controles no Android", async ({ page }) => {
+test("Battle List do solo normal não cobre controles no Android e some no servidor legado", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", e => errors.push(e.message));
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/jogar/?modo=classico");
+  await page.goto("/jogar/?modo=solo");
   await expect(page.locator("#battleToggle")).toBeVisible();
   await page.locator("#battleToggle").click();
   await expect(page.locator("#battlePanel")).toBeVisible();
@@ -100,9 +100,10 @@ test("Battle List não aparece no solo original ou multiplayer e não cobre cont
   expect(battle!.y + battle!.height <= attack!.y ||
     battle!.x + battle!.width <= attack!.x ||
     attack!.x + attack!.width <= battle!.x).toBe(true);
-  await page.goto("/jogar/?modo=solo");
-  await expect(page.locator("#battleToggle")).toHaveCount(0);
-  await page.goto("/jogar/?room=battle-not-online");
+  await page.routeWebSocket("ws://127.0.0.1:18787/ws*", socket => {
+    socket.send(JSON.stringify({ type: "welcome", version: 3, id: "legacy", room: "legacy", seed: 842136 }));
+  });
+  await page.goto("/jogar/?room=legacy");
   await expect(page.locator("#multiplayerStatus")).toContainText("Online");
   await expect(page.locator("#battleSidebar")).toHaveCount(0);
   expect(errors).toEqual([]);

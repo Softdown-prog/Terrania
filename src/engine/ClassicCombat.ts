@@ -4,7 +4,7 @@ import type { CollisionMap } from "../world/collision.ts";
 import { canStrike } from "./combat.ts";
 
 /** Terrania's original classic-RPG prototype: target-and-wait, not an action combo.
- * Solo only. No browser, network, persistence or Go authority in this class.
+ * Shared by the solo simulation and the authoritative Node room.
  */
 export const CLASSIC_ATTACK_INTERVAL = 1.6;
 export const CLASSIC_SELECT_RADIUS = 24;
@@ -49,14 +49,7 @@ export class ClassicCombat {
   }
 
   selectAt(at: Point, mobs: Iterable<CreatureView>, radius = CLASSIC_SELECT_RADIUS): boolean {
-    if (!isPoint(at) || !Number.isFinite(radius) || radius <= 0) return false;
-    let nearest: CreatureView | null = null;
-    let best = radius;
-    for (const mob of mobs) {
-      if (mob.hp <= 0 || !isPoint(mob)) continue;
-      const distance = Math.hypot(mob.x - at.x, mob.y - at.y);
-      if (distance <= best) { nearest = mob; best = distance; }
-    }
+    const nearest = nearestCombatCreature(at, mobs, radius);
     if (!nearest) return false;
     this.setTarget(nearest.id);
     return true;
@@ -96,4 +89,17 @@ export class ClassicCombat {
     if (!mob || mob.hp <= 0) { this.cancel(); return null; }
     return CREATURE_CATALOG[mob.kind].name;
   }
+}
+
+export function nearestCombatCreature(at: Point, mobs: Iterable<CreatureView>,
+  radius = CLASSIC_SELECT_RADIUS): CreatureView | null {
+  if (!isPoint(at) || !Number.isFinite(radius) || radius <= 0) return null;
+  let nearest: CreatureView | null = null;
+  let best = radius;
+  for (const mob of mobs) {
+    if (mob.hp <= 0 || !isPoint(mob)) continue;
+    const distance = Math.hypot(mob.x - at.x, mob.y - at.y);
+    if (distance <= best) { nearest = mob; best = distance; }
+  }
+  return nearest;
 }

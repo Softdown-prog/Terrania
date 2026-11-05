@@ -2,7 +2,7 @@
 
 > **Direção atual:** RPG 2D de fantasia medieval inspirado nas *mecânicas* dos MMORPGs clássicos (sensação de Tibia antigo), mas com mundo, nomes, arte, interface e código próprios. Não reproduzir ativos ou conteúdo de terceiros.
 >
-> **Status:** caminhada por tiles integrada à entrada normal do solo e às salas Node com suporte. O combate por alvo segue na entrada clássica. O plano anterior foi preservado em [ROADMAP_ANTERIOR_20261104.md](ROADMAP_ANTERIOR_20261104.md).
+> **Status:** caminhada por tiles e combate por alvo integrados à entrada normal do solo e às salas Node com suporte. O plano anterior foi preservado em [ROADMAP_ANTERIOR_20261104.md](ROADMAP_ANTERIOR_20261104.md).
 
 ## Organização que acompanha cada etapa
 
@@ -18,7 +18,7 @@ Cada microtarefa deve identificar seu módulo no [índice de arquitetura](INDEX.
 
 ## O que já existe
 
-- [x] **CLASSIC-001 — Selecionar e atacar:** alvo único por clique/toque ou botão ATACAR, ataque automático com cooldown e linha de visão. Somente `?modo=classico`.
+- [x] **CLASSIC-001 — Selecionar e atacar:** alvo único por clique/toque ou botão ATACAR, ataque automático com recarga e linha de visão no solo e nas salas Node compatíveis.
 - [x] **CLASSIC-002 — Perseguição:** aproximação automática por A*, contorno de obstáculos, retomada e cancelamento; movimento manual tem prioridade.
 - [x] **CLASSIC-003 — Battle List:** lista lateral recolhível de slimes vivos visíveis na câmera, indicador de vida e seleção da criatura pela linha.
 - [x] **Catálogo mínimo de criaturas:** `CreatureCatalog.ts` separa os dados fixos do Slime do ID, posição e HP atual de cada instância. Battle List, combate e perseguição leem `CreatureView`. Novas espécies seguem como recortes separados.

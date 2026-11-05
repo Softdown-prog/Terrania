@@ -37,7 +37,7 @@
       </nav>
 
 
-      @if (hud.classicMode()) {
+      @if (hud.targetCombat()) {
         <section id="battleSidebar" class="classic-battle" aria-label="Battle List de criaturas visíveis">
           <button id="battleToggle" class="battle-toggle" type="button"
             [attr.aria-expanded]="battleOpen()" aria-controls="battlePanel"
@@ -83,9 +83,9 @@
         ><small id="saveMode">{{ hud.online() ? "Sala experimental · progresso temporário" : "Aventura local · progresso neste navegador" }}</small>
       </div>
       <p id="gameNotice" role="status">{{ notice() }}</p>
-      @if (hud.classicMode()) {
-        <aside id="classicCombat" class="classic-status" aria-label="Combate clássico experimental">
-          <strong>COMBATE CLÁSSICO · SOLO</strong>
+      @if (hud.targetCombat()) {
+        <aside id="classicCombat" class="classic-status" aria-label="Combate por alvo">
+          <strong>COMBATE POR ALVO</strong>
           <span id="classicTileHint">PASSOS 32×32</span>
           @if (hud.combatTarget(); as target) {
             <span id="classicTarget">Alvo: {{ target }}</span>
@@ -109,7 +109,7 @@
       </button>
       <button id="talkButton" [hidden]="!hud.talkVisible()" [attr.aria-label]="hud.talkLabel()" (click)="hud.talk()" type="button" aria-label="Conversar com personagem">{{ hud.talkLabel() }}</button>
       <div class="keyboard-hint" aria-hidden="true">
-        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> {{ hud.classicMode() ? 'selecionar alvo' : 'atacar' }} <span>·</span> <kbd>E</kbd> conversar
+        <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> {{ hud.targetCombat() ? 'selecionar alvo' : 'atacar' }} <span>·</span> <kbd>E</kbd> conversar
       </div>
       <dialog id="playersDialog" #playersDialog (close)="closed()" aria-labelledby="playersTitle">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar jogadores online">×</button>
@@ -208,7 +208,7 @@
           </div>
           <div>
             <dt>Espaço ou J</dt>
-            <dd>{{ hud.classicMode() ? "Selecione um slime no cenário ou na Battle List lateral. O herói persegue o alvo por caminhos livres e ataca sozinho quando puder. A lista mostra as criaturas visíveis e pode ser aberta ou fechada. Toque no chão para caminhar sem perseguir; ATACAR retoma a perseguição. Escape cancela." : "Atacar na direção em que você olha. Segure para repetir." }}</dd>
+            <dd>{{ hud.targetCombat() ? "Selecione um slime no cenário ou na Battle List lateral. O herói persegue o alvo por caminhos livres e ataca sozinho quando puder. A lista mostra as criaturas visíveis e pode ser aberta ou fechada. Toque no chão para caminhar sem perseguir; ATACAR retoma a perseguição. Escape cancela." : "Atacar na direção em que você olha. Segure para repetir." }}</dd>
           </div>
           <div>
             <dt>No celular</dt>
