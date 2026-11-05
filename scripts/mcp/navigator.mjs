@@ -54,7 +54,12 @@ export function createNavigator(root = DEFAULT_ROOT) {
     const fileMap = new Map();
     for (const m of [...mods, {id: "_outros"}]) {
       const content = safeRead("docs/indexes/" + m.id + ".md");
-      for (const row of content.split("\n")) {
+      // The entrypoint links repeat paths listed in "Todos os arquivos".
+      // Index only the complete file list; never treat expected repeats as duplicate ownership.
+      const section = m.id === "_outros" ? content :
+        content.split("## Todos os arquivos deste módulo")[1];
+      if (!section) throw new Error("Índice de módulo sem lista de arquivos: " + m.id);
+      for (const row of section.split("\n")) {
         // Parse only file links emitted by scripts/index-project.mjs.
         const found = /^- \[\x60([^\x60]+)\x60\]\(\.\.\/\.\.\/([^)]+)\)$/.exec(row);
         if (!found || found[1] !== found[2] || !cleanPath(found[1])) continue;

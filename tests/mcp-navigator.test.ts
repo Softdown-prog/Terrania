@@ -41,7 +41,7 @@ test("MCP consulta documentos de módulo e ADR sem acessar código-fonte", () =>
 
 test("MCP rejeita IDs maliciosos, argumentos desconhecidos e limites excessivos", () => {
   assert.throws(()=>nav.read_module_docs({module_id:"../../.env"}), /inválido/);
-  assert.throws(()=>nav.locate_file({query:"game",limit:99}), /limite/);
+  assert.throws(()=>nav.locate_file({query:"game",limit:99}), /limit/);
   assert.throws(()=>nav.locate_file({query:"/etc/passwd\n"}), /Consulta/);
   assert.throws(()=>nav.list_modules({unexpected:"foo"}), /Argumentos/);
   assert.throws(()=>nav.find_tests({}), /Indique/);
