@@ -24,11 +24,11 @@ Cada microtarefa deve identificar seu módulo no [índice de arquitetura](INDEX.
 - [x] **Catálogo mínimo de criaturas:** `CreatureCatalog.ts` separa os dados fixos do Slime do ID, posição e HP atual de cada instância. Battle List, combate e perseguição leem `CreatureView`. Novas espécies seguem como recortes separados.
 
 - [x] **CLASSIC-004 — Movimento em tiles:** passos de 32 px por teclado, joystick e toque no exterior solo e nas salas Node compatíveis. Consulte [GAMEPLAY_CLASSICO.md](GAMEPLAY_CLASSICO.md) para as regras e testes.
+- [x] **Progressão:** abates geram XP, níveis e aumento de vida máxima no solo e na sessão Node. Veja o [contrato de progressão](adr/0005-progressao-por-abates.md).
 
 ## Ciclo jogável essencial — etapas futuras, ainda não aprovadas
 
 - [ ] Morte/respawn, cura e retorno ao jogo com regras consistentes.
-- [ ] XP, níveis e atributos básicos ao derrotar monstros; começar com uma fórmula simples testável.
 - [ ] Loot, inventário e uso de consumíveis sem duplicação de itens.
 - [ ] Equipamentos básicos e atributos que influenciem combate; balancear antes de expandir.
 - [ ] Mana, vocações e magias quando os sistemas anteriores estiverem estáveis.

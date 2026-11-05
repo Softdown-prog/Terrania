@@ -23,6 +23,7 @@ import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
 import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
+import { experienceProgress, maxHpForExperience, normalizeExperience } from "../engine/Experience.ts";
 
 const NPC_ACTIONS = { character: "talk", sign: "read", door: "enter" } as const;
 
@@ -45,6 +46,7 @@ export class Game {
   private networkClock = 0;
   private pendingAttack = false;
   private offlineSnapshot: OfflineSave | null = null;
+  private onlineExperience: number | null = null;
   private saveClock = 0;
   private accumulator = 0;
   private clock = 0;
@@ -107,11 +109,13 @@ export class Game {
   }
   private updateHud(online: boolean): void {
     const { player, inventory, kills } = this.sim;
+    const experience = online ? this.onlineExperience : this.sim.experience;
     this.hud.updateHero({
       hp: player.hp,
       maxHp: player.maxHp,
       tileX: Math.floor(player.x / TILE_SIZE),
       tileY: Math.floor(player.y / TILE_SIZE),
+      progression: experience === null ? null : experienceProgress(experience),
     }, aelaQuestProgress(kills));
     this.hud.updateInventory(inventory.gel, inventory.potion, online);
   }
@@ -173,6 +177,7 @@ export class Game {
     this.world.clear();
     this.world = new WorldRenderer(seed);
     this.sim = new OfflineSimulation(seed, saved);
+    this.onlineExperience = null;
     this.camera.snap(this.sim.player.x, this.sim.player.y);
     this.effects.reset();
     this.accumulator = 0;
@@ -198,7 +203,10 @@ export class Game {
   }
   private applySnapshot(self: HeroState): void {
     const player = this.sim.player;
-    player.hp = self.hp;
+    const experience = normalizeExperience(self.experience);
+    this.onlineExperience = self.experience === experience ? experience : null;
+    player.maxHp = maxHpForExperience(this.onlineExperience ?? 0);
+    player.hp = Math.min(player.maxHp, self.hp);
     this.sim.kills = self.kills;
     this.hud.setPlayerCount(this.multiplayer?.players.length ?? 1, true);
     if (this.multiplayer?.tileMovement) return;

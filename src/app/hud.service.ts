@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import type { GameUi, HeroHudState, NearbyAction, Preferences } from '../ui/GameUi.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
+import type { ExperienceProgress } from '../engine/Experience.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
   talk: 'Conversar',
@@ -20,6 +21,10 @@ export class HudService implements GameUi {
   readonly battleTargetId = signal<string | null>(null);
   readonly hp = signal(100);
   readonly maxHp = signal(100);
+  readonly progression = signal<ExperienceProgress | null>(null, {
+    equal: (previous, next) => previous === next || (previous !== null && next !== null &&
+      previous.level === next.level && previous.earned === next.earned && previous.needed === next.needed),
+  });
   readonly quest = signal('Proteja a clareira');
   readonly questProgress = signal('');
   readonly questPercent = signal(0);
@@ -125,6 +130,7 @@ export class HudService implements GameUi {
   }
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void {
     this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);
+    this.progression.set(hero.progression);
     this.quest.set(quest.completed ? 'Clareira protegida' : 'Proteja a clareira');
     this.questProgress.set(quest.completed ? 'Missão concluída ✓' : `${quest.defeated} / ${quest.goal} slimes`);
     this.questPercent.set(quest.defeated / quest.goal * 100);

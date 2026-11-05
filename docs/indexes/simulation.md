@@ -2,7 +2,7 @@
 
 > Gerado automaticamente a partir de `architecture/modules.json`. Estado: **active** · Camada: **domain**
 
-Combate, inventário, loot, navegação e experimento clássico; sem DOM, Phaser ou Angular.
+Combate, progressão, inventário, loot e navegação; sem DOM, Phaser ou Angular.
 
 **Documentação de manutenção:** [`src/engine/README.md`](../../src/engine/README.md)
 
@@ -11,13 +11,15 @@ Combate, inventário, loot, navegação e experimento clássico; sem DOM, Phaser
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
 - [`src/engine/ClassicCombat.ts`](../../src/engine/ClassicCombat.ts)
 - [`src/engine/ClassicTileWalker.ts`](../../src/engine/ClassicTileWalker.ts)
+- [`src/engine/Experience.ts`](../../src/engine/Experience.ts)
 
-## Todos os arquivos deste módulo (11)
+## Todos os arquivos deste módulo (12)
 
 - [`src/engine/ClassicBattleList.ts`](../../src/engine/ClassicBattleList.ts)
 - [`src/engine/ClassicCombat.ts`](../../src/engine/ClassicCombat.ts)
 - [`src/engine/ClassicPursuit.ts`](../../src/engine/ClassicPursuit.ts)
 - [`src/engine/ClassicTileWalker.ts`](../../src/engine/ClassicTileWalker.ts)
+- [`src/engine/Experience.ts`](../../src/engine/Experience.ts)
 - [`src/engine/InteriorRoom.ts`](../../src/engine/InteriorRoom.ts)
 - [`src/engine/Inventory.ts`](../../src/engine/Inventory.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)

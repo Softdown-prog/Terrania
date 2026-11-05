@@ -99,6 +99,27 @@ test('troca de alvo durante o preparo invalida o golpe na sala autoritativa', ()
   assert.equal(room.snapshotFor('a')?.focus, null);
 });
 
+test('abate online dá XP apenas ao autor e o respawn conserva o nível', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro', true, true, true);
+  const other = room.add('b', 'Observador', true, true, true);
+  Object.assign(guest.actor, { x: 48, y: -272 });
+  guest.experience = 20;
+  let now = guest.lastInputAt;
+  for (let frame = 0; frame < 32; frame++) room.tick(0.05, now += 50);
+  room.receiveTarget('a', '0,-1,0');
+  for (let frame = 0; frame < 120 && guest.kills === 0; frame++) room.tick(0.05, now += 50);
+  assert.equal(guest.kills, 1);
+  assert.equal(guest.experience, 30);
+  assert.equal(guest.actor.maxHp, 110);
+  assert.equal(other.experience, 0);
+  assert.equal(room.snapshotFor('a')?.players.find(hero => hero.id === 'a')?.experience, 30);
+  guest.actor.hp = 0;
+  room.tick(0.05, now += 50);
+  assert.equal(guest.actor.hp, 110);
+  assert.equal(guest.experience, 30);
+});
+
 test('snapshot conserva o formato v3 e a vida do Slime com catálogo local', () => {
   const room = new Room('origins');
   const guest = room.add('a', 'Aventureiro 1');

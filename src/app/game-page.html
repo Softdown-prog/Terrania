@@ -8,11 +8,20 @@
         >
         <div class="vitals">
           <div class="stat-heading">
-            <span>AVENTUREIRO</span><b id="hpText">{{ hud.hp() + " / " + hud.maxHp() }}</b>
+            <span id="heroLevel">{{ hud.progression() ? "NÍVEL " + hud.progression()?.level : "AVENTUREIRO" }}</span>
+            <b id="hpText">{{ hud.hp() + " / " + hud.maxHp() }}</b>
           </div>
           <div class="meter" role="img" aria-label="Barra de vida">
             <div id="hpFill" [style.width.%]="hud.hp() / hud.maxHp() * 100"></div>
           </div>
+          @if (hud.progression(); as xp) {
+            <div class="xp-progress">
+              <div class="xp-track" aria-hidden="true">
+                <div id="xpFill" [style.width.%]="xp.needed ? xp.earned / xp.needed * 100 : 100"></div>
+              </div>
+              <span id="xpText">{{ xp.needed ? "XP " + xp.earned + " / " + xp.needed : "Nível máximo" }}</span>
+            </div>
+          }
         </div>
         <div class="quest">
           <span class="stat-heading">MISSÃO DA CLAREIRA</span

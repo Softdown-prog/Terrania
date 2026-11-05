@@ -62,10 +62,11 @@
       "entrypoints": [
         "src/engine/OfflineSimulation.ts",
         "src/engine/ClassicCombat.ts",
-        "src/engine/ClassicTileWalker.ts"
+        "src/engine/ClassicTileWalker.ts",
+        "src/engine/Experience.ts"
       ],
       "doc": "src/engine/README.md",
-      "description": "Combate, inventário, loot, navegação e experimento clássico; sem DOM, Phaser ou Angular."
+      "description": "Combate, progressão, inventário, loot e navegação; sem DOM, Phaser ou Angular."
     },
     {
       "id": "actors",

@@ -1,5 +1,6 @@
 import { Player } from "../../src/actors/Player.ts";
 import { Slime, slimeSpawns } from "../../src/actors/Slime.ts";
+import { CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
 import type { CombatFocus, HeroState, MobState, WalkTarget } from "../../src/shared/protocol.ts";
 import { SeedCollision } from "../../src/world/collision.ts";
 import { seedFromText } from "../../src/world/random.ts";
@@ -9,6 +10,7 @@ import { ClassicTileWalker } from "../../src/engine/ClassicTileWalker.ts";
 import { TapNavigator } from "../../src/engine/TapNavigator.ts";
 import { ClassicCombat } from "../../src/engine/ClassicCombat.ts";
 import { CLASSIC_FOLLOW_LIMIT, ClassicPursuit } from "../../src/engine/ClassicPursuit.ts";
+import { grantExperience, maxHpForExperience } from "../../src/engine/Experience.ts";
 
 const STILL = { x: 0, y: 0 };
 const MAX_TAP_DISTANCE = 480;
@@ -35,6 +37,7 @@ export interface Guest {
   attackQueued: boolean;
   lastInputAt: number;
   kills: number;
+  experience: number | null;
   readonly walking: TileMovement | null;
   readonly targeting: TargetCombat | null;
 }
@@ -55,7 +58,7 @@ export class Room {
     this.seed = id === "origins" ? 842136 : seedFromText(id);
     this.world = new SeedCollision(this.seed);
   }
-  add(id: string, name: string, tiles = false, targetCombat = false): Guest {
+  add(id: string, name: string, tiles = false, targetCombat = false, progression = false): Guest {
     const guest: Guest = {
       id,
       name,
@@ -64,6 +67,7 @@ export class Room {
       attackQueued: false,
       lastInputAt: Date.now(),
       kills: 0,
+      experience: progression ? 0 : null,
       walking: tiles ? { walker: new ClassicTileWalker(), navigator: new TapNavigator(), nextPlanAt: 0 } : null,
       targeting: tiles && targetCombat
         ? { combat: new ClassicCombat(), pursuit: new ClassicPursuit(), follow: false, nextSelectionAt: 0 }
@@ -198,6 +202,8 @@ export class Room {
               if (oldest) this.defeated.delete(oldest);
             }
             guest.kills++;
+            if (guest.experience !== null)
+              guest.experience = grantExperience(guest.experience, CREATURE_CATALOG[mob.kind].experience, guest.actor);
           }
         }
       }
@@ -234,7 +240,7 @@ export class Room {
           guest.targeting.pursuit.reset();
           guest.targeting.follow = false;
         }
-        guest.actor = new Player();
+        guest.actor = new Player(maxHpForExperience(guest.experience ?? 0));
         guest.input = { x: 0, y: 0 };
         guest.lastInputAt = 0;
       }
@@ -274,6 +280,7 @@ export class Room {
         y: a.y,
         hp: a.hp,
         kills: g.kills,
+        ...(g === me && g.experience !== null ? { experience: g.experience } : {}),
         faceX: a.faceX,
         faceY: a.faceY,
         walkTime: a.walkTime,

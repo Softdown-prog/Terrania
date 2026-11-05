@@ -92,6 +92,7 @@ test('Battle List da sala Node persegue e derrota um Slime do servidor', async (
   }));
   await page.goto('/jogar/?room=origins');
   await expect(page.locator('#multiplayerStatus')).toContainText('Online');
+  await expect(page.locator('#xpText')).toHaveText('XP 0 / 30');
   const toggle = page.locator('#battleToggle');
   if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.tap();
   const row = page.locator('[data-creature-id="0,-1,0"]');
@@ -100,6 +101,7 @@ test('Battle List da sala Node persegue e derrota um Slime do servidor', async (
   else await row.click();
   await expect(page.locator('#classicTarget')).toContainText('Slime');
   await expect.poll(() => kills, { timeout: 15000 }).toBe(1);
+  await expect(page.locator('#xpText')).toHaveText('XP 10 / 30');
   await expect(row).toHaveCount(0);
   await expect(page.locator('#classicTarget')).toHaveCount(0);
 });

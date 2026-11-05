@@ -73,7 +73,7 @@ server.on('upgrade', (req, socket, head) => {
     const name = 'Aventureiro ' + (++guestNumber);
     const tiles = path.searchParams.get('movement') === 'tiles';
     const targeting = tiles && path.searchParams.get('combat') === 'target';
-    selectedRoom.add(id, name, tiles, targeting);
+    selectedRoom.add(id, name, tiles, targeting, path.searchParams.get('progression') === 'xp');
     clients.set(ws, { id, room: selectedRoom, alive: true, count: 0, windowStart: Date.now() });
     const welcome = { type: 'welcome', version: PROTOCOL_VERSION, id, room: roomId, seed: selectedRoom.seed } as const;
     send(ws, { ...welcome,

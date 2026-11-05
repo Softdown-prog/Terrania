@@ -1,5 +1,6 @@
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
+import type { ExperienceProgress } from '../engine/Experience.ts';
 
 export interface Preferences {
   zoom: number;
@@ -12,6 +13,7 @@ export interface HeroHudState {
   readonly maxHp: number;
   readonly tileX: number;
   readonly tileY: number;
+  readonly progression: ExperienceProgress | null;
 }
 
 export type NearbyAction = 'talk' | 'read' | 'enter';

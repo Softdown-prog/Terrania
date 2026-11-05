@@ -87,11 +87,11 @@ for (const layout of ["normal", "landscape"] as const) {
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(error.message));
     // A naturally generated slime on seed 842136, with a verified clear approach.
-    // Only seed the supported legacy save; no injected game/HUD state or fake hits.
+    // Start one real abate short of level 2 via the supported solo save.
     const mobId = "-2,-2,0";
     await page.addInitScript(() => {
       localStorage.setItem("terrania-origins-v1", JSON.stringify({
-        seed: 842136, x: -660, y: -1008, hp: 100, kills: 0, defeated: [],
+        seed: 842136, x: -660, y: -1008, hp: 100, kills: 0, defeated: [], experience: 20,
       }));
     });
     await page.setViewportSize(layout === "landscape" ? { width: 600, height: 390 } :
@@ -99,6 +99,7 @@ for (const layout of ["normal", "landscape"] as const) {
     await page.goto("/jogar/?modo=classico");
     await expect(page.locator("canvas#game")).toBeVisible();
     await expect(page.locator("#classicTileHint")).toBeVisible();
+    await expect(page.locator("#xpText")).toHaveText("XP 20 / 30");
     const toggle = page.locator("#battleToggle");
     const activate = async (locator: ReturnType<typeof page.locator>) => {
       if (info.project.name === "android") await locator.tap();
@@ -113,9 +114,11 @@ for (const layout of ["normal", "landscape"] as const) {
     await expect.poll(() => page.locator("#coords").textContent()).not.toBe(before);
     await expect.poll(() => page.evaluate(id => {
       const save = JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
-      return save?.defeated?.includes(id) === true && save.kills >= 1;
+      return save?.defeated?.includes(id) === true && save.kills >= 1 && save.experience === 30;
     }, mobId), { timeout: 15000 }).toBe(true);
     await expect(row).toHaveCount(0);
+    await expect(page.locator("#heroLevel")).toHaveText("NÍVEL 2");
+    await expect(page.locator("#hpText")).toHaveText(/\/ 110$/);
     expect(errors).toEqual([]);
   });
 }

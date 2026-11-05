@@ -7,6 +7,7 @@ export interface HeroState {
   y: number;
   hp: number;
   kills: number;
+  experience?: number;
   faceX: number;
   faceY: number;
   walkTime: number;
