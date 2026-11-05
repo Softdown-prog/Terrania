@@ -28,6 +28,6 @@
 - Registre decisões em `docs/adr/` com contexto, escolha, consequências e alternativa rejeitada. Mudanças novas **não reescrevem o passado**: marcar ADR como substituído e relacionar nova decisão.
 - Código legado não deve ser duplicado indefinidamente em pastas `legacy-v3`; usar Git tag/branch, testes de compatibilidade e módulos opcionais **somente com utilidade e isolamento comprovados**.
 
-## 5. MCP para navegação — contrato futuro
+## 5. MCP para navegação local — implementado somente na branch
 
-A primeira fonte consultável é `architecture/modules.json` com `docs/INDEX.md` e índices por módulo. Um MCP **somente leitura** poderá expor `list_modules`, `locate_file`, `read_module_docs`, `find_tests` e `find_decisions`. Nenhum MCP foi instalado por este recorte. Futuras ferramentas com escrita/execução requerem autenticação, autorização, auditoria, limites de diretório e aprovação humana; sem shell irrestrito.
+O servidor MCP de leitura do catálogo em `scripts/mcp/` disponibiliza `list_modules`, `locate_file`, `read_module_docs`, `find_tests` e `find_decisions` via **stdio local**. Veja [MCP_NAVEGACAO](MCP_NAVEGACAO.md) e [ADR 0002](adr/0002-mcp-navegador-local.md). Ele **não está implantado na VPS, nem ligado automaticamente ao ChatGPT**. Futuras operações com escrita/execução requerem autenticação, autorização, auditoria, limites explícitos e aprovação humana; nada de shell irrestrito.

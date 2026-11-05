@@ -9,3 +9,5 @@
 **Verificação:** npm test; npm run test:browser; check de arquitetura.
 
 **Limites:** Testes não substituem observabilidade real nem carga de 500 jogadores.
+
+**MCP:** `mcp-navigator.test.ts` verifica leitura limitada dos índices, respostas de protocolo stdio, bloqueio de caminhos maliciosos e ausência de comandos de escrita.

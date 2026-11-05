@@ -10,8 +10,9 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 
 - [`scripts/verify-build.mjs`](../../scripts/verify-build.mjs)
 - [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+- [`scripts/mcp/server.mjs`](../../scripts/mcp/server.mjs)
 
-## Todos os arquivos deste módulo (22)
+## Todos os arquivos deste módulo (24)
 
 - [`.github/workflows/autoscale-lab.yml`](../../.github/workflows/autoscale-lab.yml)
 - [`.github/workflows/capacity-lab.yml`](../../.github/workflows/capacity-lab.yml)
@@ -29,6 +30,8 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`scripts/check-published-frontend.mjs`](../../scripts/check-published-frontend.mjs)
 - [`scripts/emit-route-shells.mjs`](../../scripts/emit-route-shells.mjs)
 - [`scripts/index-project.mjs`](../../scripts/index-project.mjs)
+- [`scripts/mcp/navigator.mjs`](../../scripts/mcp/navigator.mjs)
+- [`scripts/mcp/server.mjs`](../../scripts/mcp/server.mjs)
 - [`scripts/qa-bot.mjs`](../../scripts/qa-bot.mjs)
 - [`scripts/resolve-worker-target.mjs`](../../scripts/resolve-worker-target.mjs)
 - [`scripts/routes.json`](../../scripts/routes.json)

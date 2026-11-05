@@ -37,3 +37,7 @@ O [registro central](../architecture/modules.json) é a fonte versionada de owne
 As fronteiras de domínio são testadas por `npm run architecture:check`: regras em `src/engine`, `src/world` e `src/actors` não podem importar Angular, Phaser, apresentação, rede nem armazenamento. Isso é uma proteção limitada, **não** uma prova de arquitetura completa.
 
 As implantações Node, protótipos Go/Rust e laboratórios de cluster possuem estados separados. Para a fase clássica e decisões ainda experimentais, veja [GAMEPLAY_CLASSICO](GAMEPLAY_CLASSICO.md) e [ROADMAP](ROADMAP.md). Para diagnóstico, crescimento, compatibilidade e restauração, veja [MANUTENCAO](MANUTENCAO.md).
+
+## MCP de navegação (sem acoplamento ao motor)
+
+O processo local `scripts/mcp/server.mjs` consulta apenas `architecture/modules.json`, índices derivados e docs permitidos, sem importar `Game.ts`, Angular ou o backend. É um adaptador de conhecimento, não um serviço de gameplay. Veja [MCP_NAVEGACAO.md](MCP_NAVEGACAO.md) e [ADR 0002](adr/0002-mcp-navegador-local.md).

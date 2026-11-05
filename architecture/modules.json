@@ -247,7 +247,8 @@
       ],
       "entrypoints": [
         "scripts/verify-build.mjs",
-        ".github/workflows/ci.yml"
+        ".github/workflows/ci.yml",
+        "scripts/mcp/server.mjs"
       ],
       "doc": "scripts/README.md",
       "description": "Build, verificação, testes automatizados, deploys e índice; operações de produção são fluxos distintos."

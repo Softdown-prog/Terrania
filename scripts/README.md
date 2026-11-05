@@ -9,3 +9,7 @@
 **Verificação:** npm run architecture:check, typecheck, unit e browser.
 
 **Limites:** Scripts de documentação não devem ler segredos nem chamar serviços/SSH da VPS.
+
+## MCP de navegação (local e somente leitura)
+
+`scripts/mcp/navigator.mjs` consulta os índices e docs. `scripts/mcp/server.mjs` oferece cinco ferramentas pelo protocolo MCP via stdio, sem abrir portas nem alterar o repositório. Execute `npm run architecture:check` antes de iniciar `npm run mcp:navigator`. Veja [guia completo](../docs/MCP_NAVEGACAO.md).
