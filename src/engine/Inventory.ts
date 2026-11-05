@@ -1,3 +1,5 @@
+import { aelaQuestProgress } from "../world/aelaQuest.ts";
+
 /** Inventário da aventura solo. Não faz parte do protocolo autoritativo online. */
 export const MAX_STACK = 99;
 export const QUEST_REWARD_POTIONS = 2;
@@ -51,7 +53,7 @@ export class Inventory {
 
   /** Recompensa única de Aela ao completar a missão de cinco slimes. */
   claimAelaReward(kills: number): boolean {
-    if (!Number.isFinite(kills) || kills < 5 || this.claimed ||
+    if (!aelaQuestProgress(kills).completed || this.claimed ||
         this.potionCount > MAX_STACK - QUEST_REWARD_POTIONS) return false;
     this.potionCount += QUEST_REWARD_POTIONS;
     this.claimed = true;

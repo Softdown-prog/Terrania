@@ -62,6 +62,48 @@ test('Phaser 3 inicia o mundo, Angular controla ajustes/bolsa e sair libera o jo
   expect(errors).toEqual([]);
 });
 
+test('HUD e diálogo da Aela exibem o progresso do jogo e a recompensa é entregue uma vez', async ({ page }, info) => {
+  await page.addInitScript(() => {
+    const mode = new URLSearchParams(location.search).get('modo');
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({
+      seed: 842136, x: 16, y: 16, hp: 100, kills: mode === 'classico' ? 5 : 4, defeated: [],
+    }));
+  });
+  const talk = page.locator('#talkButton');
+  const npcDialog = page.locator('#npcDialog');
+  const next = page.locator('#npcNext');
+  const interact = () => info.project.name === 'android' ? talk.tap() : talk.click();
+
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('#questProgress')).toHaveText('4 / 5 slimes');
+  await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\s*80%/);
+  await interact();
+  await expect(npcDialog).toBeVisible();
+  await expect(page.locator('#npcName')).toHaveText('Aela');
+  await next.click();
+  await expect(page.locator('#npcSpeech')).toContainText('Você derrotou 4 de 5 slimes');
+  await expect(page.locator('#npcStep')).toHaveText('Mensagem 2 de 3');
+
+  await page.goto('/jogar/?modo=classico');
+  await expect(page.locator('#questProgress')).toHaveText('Missão concluída ✓');
+  await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\s*100%/);
+  await interact();
+  await expect(page.locator('#npcSpeech')).toContainText('Você conseguiu!');
+  await expect(page.locator('#npcStep')).toHaveText('Mensagem 1 de 4');
+  for (let index = 0; index < 3; index++) await next.click();
+  await expect(page.locator('#npcSpeech')).toContainText('2 poções de cura guardadas na sua bolsa');
+  await next.click();
+  await expect(npcDialog).toBeHidden();
+  await expect(page.locator('canvas#game')).toBeFocused();
+
+  await interact();
+  await expect(page.locator('#npcStep')).toHaveText('Mensagem 1 de 3');
+  expect(await page.evaluate(() => {
+    const save = JSON.parse(localStorage.getItem('terrania-origins-v1') ?? '{}');
+    return save.inventory;
+  })).toEqual({ gel: 0, potion: 2, questRewardClaimed: true });
+});
+
 test('painel consulta conexões reais em duas salas, atualiza 2→1→0 e não inventa zero nas falhas', async ({ page, context }) => {
   await page.goto('/comunidade/');
   const first = await context.newPage();

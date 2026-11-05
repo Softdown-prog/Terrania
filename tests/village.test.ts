@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { getTile } from "../src/world/terrain.ts";
 import { canMoveOnSeed } from "../src/world/collision.ts";
 import { NPCS, nearestNpc, npcDialogue } from "../src/world/npcs.ts";
+import { aelaQuestProgress } from "../src/world/aelaQuest.ts";
 import { BUILDINGS, SIGNS } from "../src/world/village.ts";
 import { PROTOCOL_VERSION } from "../src/shared/protocol.ts";
 
@@ -40,6 +41,20 @@ test("moradores e placas respondem perto sem recompensas novas", () => {
     assert.ok(npcDialogue(npc, 5).length > 1);
   }
   assert.equal(nearestNpc(SIGNS[0].x, SIGNS[0].y)?.id, SIGNS[0].id);
+});
+
+test("progresso e diálogo da Aela usam a mesma meta da missão", () => {
+  const aela = NPCS.find(npc => npc.id === "aela");
+  assert.ok(aela);
+  for (const kills of [-1, NaN, Infinity]) {
+    assert.deepEqual(aelaQuestProgress(kills), { defeated: 0, goal: 5, completed: false });
+  }
+  assert.deepEqual(aelaQuestProgress(4.9), { defeated: 4, goal: 5, completed: false });
+  assert.match(npcDialogue(aela, 4.9)[1]!, /4 de 5 slimes/);
+  for (const kills of [5, 20]) {
+    assert.deepEqual(aelaQuestProgress(kills), { defeated: 5, goal: 5, completed: true });
+    assert.match(npcDialogue(aela, kills)[0]!, /Você conseguiu!/);
+  }
 });
 
 test("criaturas não atacam viajantes na vila e não nascem na praça", async () => {

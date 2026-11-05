@@ -3,7 +3,8 @@ import type { Player } from '../actors/Player.ts';
 import type { Inventory } from '../engine/Inventory.ts';
 import type { GameUi, Preferences } from '../ui/GameUi.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
-import { npcDialogue, type Npc } from '../world/npcs.ts';
+import type { Npc } from '../world/npcs.ts';
+import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 
 @Injectable()
 export class HudService implements GameUi {
@@ -18,7 +19,7 @@ export class HudService implements GameUi {
   readonly hp = signal(100);
   readonly maxHp = signal(100);
   readonly quest = signal('Proteja a clareira');
-  readonly questProgress = signal('0 / 5 slimes');
+  readonly questProgress = signal('');
   readonly questPercent = signal(0);
   readonly coords = signal('X 0 · Y 0');
   readonly seed = signal(842136);
@@ -99,10 +100,10 @@ export class HudService implements GameUi {
     this.talkVisible.set(npc !== null);
     if (npc) this.talkLabel.set((npc.kind === 'door' ? 'Entrar' : npc.kind === 'sign' ? 'Ler' : 'Conversar') + ' (E)');
   }
-  showNpcDialogue(npc: Npc, kills: number, reward?: string): void {
-    this.npcLines = reward ? [...npcDialogue(npc, kills), reward] : npcDialogue(npc, kills);
+  showNpcDialogue(name: string, role: string, lines: readonly string[]): void {
+    this.npcLines = lines;
     this.npcPage = 0;
-    this.npcName.set(npc.name); this.npcRole.set(npc.role); this.updateNpcPage();
+    this.npcName.set(name); this.npcRole.set(role); this.updateNpcPage();
     // Pause synchronously; the component opens the native dialog on the next render.
     this.menuOpen = true;
     this.dialogueRequested.update(value => value + 1);
@@ -121,11 +122,11 @@ export class HudService implements GameUi {
     this.quest.set(name); this.questProgress.set('E ou porta: sair');
     this.coords.set('Interior · Vila da Travessia');
   }
-  update(player: Player, kills: number): void {
+  update(player: Player, quest: AelaQuestProgress): void {
     this.hp.set(player.hp); this.maxHp.set(player.maxHp);
-    this.quest.set(kills >= 5 ? 'Clareira protegida' : 'Proteja a clareira');
-    this.questProgress.set(kills >= 5 ? 'Missão concluída ✓' : Math.min(kills, 5) + ' / 5 slimes');
-    this.questPercent.set(Math.min(100, kills / 5 * 100));
+    this.quest.set(quest.completed ? 'Clareira protegida' : 'Proteja a clareira');
+    this.questProgress.set(quest.completed ? 'Missão concluída ✓' : `${quest.defeated} / ${quest.goal} slimes`);
+    this.questPercent.set(quest.defeated / quest.goal * 100);
     this.coords.set(`X ${Math.floor(player.x / 32)} · Y ${Math.floor(player.y / 32)}`);
   }
 }
