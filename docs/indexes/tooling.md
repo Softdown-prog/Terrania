@@ -1,0 +1,37 @@
+# Scripts, automação e CI
+
+> Gerado automaticamente a partir de `architecture/modules.json`. Estado: **active** · Camada: **tooling**
+
+Build, verificação, testes automatizados, deploys e índice; operações de produção são fluxos distintos.
+
+**Documentação de manutenção:** [`scripts/README.md`](../../scripts/README.md)
+
+## Pontos de entrada
+
+- [`scripts/verify-build.mjs`](../../scripts/verify-build.mjs)
+- [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+
+## Todos os arquivos deste módulo (22)
+
+- [`.github/workflows/autoscale-lab.yml`](../../.github/workflows/autoscale-lab.yml)
+- [`.github/workflows/capacity-lab.yml`](../../.github/workflows/capacity-lab.yml)
+- [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+- [`.github/workflows/deploy-go-shadow.yml`](../../.github/workflows/deploy-go-shadow.yml)
+- [`.github/workflows/deploy-pages.yml`](../../.github/workflows/deploy-pages.yml)
+- [`.github/workflows/deploy-vps.yml`](../../.github/workflows/deploy-vps.yml)
+- [`.github/workflows/go-engine.yml`](../../.github/workflows/go-engine.yml)
+- [`.github/workflows/online-smoke.yml`](../../.github/workflows/online-smoke.yml)
+- [`.github/workflows/pre-main-suite.yml`](../../.github/workflows/pre-main-suite.yml)
+- [`.github/workflows/qa-bot.yml`](../../.github/workflows/qa-bot.yml)
+- [`.github/workflows/region-cluster.yml`](../../.github/workflows/region-cluster.yml)
+- [`.github/workflows/rust-spatial.yml`](../../.github/workflows/rust-spatial.yml)
+- [`scripts/README.md`](../../scripts/README.md)
+- [`scripts/check-published-frontend.mjs`](../../scripts/check-published-frontend.mjs)
+- [`scripts/emit-route-shells.mjs`](../../scripts/emit-route-shells.mjs)
+- [`scripts/index-project.mjs`](../../scripts/index-project.mjs)
+- [`scripts/qa-bot.mjs`](../../scripts/qa-bot.mjs)
+- [`scripts/resolve-worker-target.mjs`](../../scripts/resolve-worker-target.mjs)
+- [`scripts/routes.json`](../../scripts/routes.json)
+- [`scripts/verify-build.mjs`](../../scripts/verify-build.mjs)
+- [`scripts/verify-live-theme.mjs`](../../scripts/verify-live-theme.mjs)
+- [`scripts/write-runtime-config.mjs`](../../scripts/write-runtime-config.mjs)

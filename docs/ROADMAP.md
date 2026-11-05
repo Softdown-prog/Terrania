@@ -4,6 +4,10 @@
 >
 > **Status:** planejamento alinhado em 04/11/2026. Esta versão está **somente na branch experimental** `feat/terrania-classic-combat-20261104`. Não representa aprovação de PR, merge ou deploy. O plano anterior foi preservado em [ROADMAP_ANTERIOR_20261104.md](ROADMAP_ANTERIOR_20261104.md).
 
+## Organização que acompanha cada etapa
+
+Cada microtarefa deve identificar seu módulo no [índice de arquitetura](INDEX.md), atualizar sua documentação se alterar comportamento ou contrato e passar por `npm run architecture:check`. O catálogo e os ADRs descrevem o histórico; não substituem revisão de gameplay, testes de carga ou restauração de dados.
+
 ## Princípios que guiam as próximas tarefas
 
 1. **Jogo primeiro, infraestrutura depois.** Primeiro criar um ciclo de jogo compreensível e divertido em modo solo; integrar multiplayer, persistência e otimizações grandes quando os sistemas de jogo estiverem claros.

@@ -29,3 +29,11 @@ O site usa renderização Angular no cliente. O pós-build emite dez entradas HT
 A contagem online usa conexões WebSocket, pois ainda não existem contas para deduplicar pessoas em várias abas. Solo e visitantes do site não entram na contagem. No Go, reservas do lobby não são usadas como jogadores confirmados; se um worker falhar, o total é declarado indisponível.
 
 Os Dockerfiles são só para os backends. O frontend não exige Docker. Nunca colocar segredos nas variáveis públicas `VITE_*`.
+
+## Catálogo e regras para evolução
+
+O [registro central](../architecture/modules.json) é a fonte versionada de ownership, camadas, estado e pontos de entrada. Use o [índice navegável](INDEX.md) para navegar por arquivos agrupados e os READMEs de seção para suas responsabilidades. O índice é gerado, verificado pela CI e documentado em [ADR 0001](adr/0001-catalogo-e-fronteiras.md).
+
+As fronteiras de domínio são testadas por `npm run architecture:check`: regras em `src/engine`, `src/world` e `src/actors` não podem importar Angular, Phaser, apresentação, rede nem armazenamento. Isso é uma proteção limitada, **não** uma prova de arquitetura completa.
+
+As implantações Node, protótipos Go/Rust e laboratórios de cluster possuem estados separados. Para a fase clássica e decisões ainda experimentais, veja [GAMEPLAY_CLASSICO](GAMEPLAY_CLASSICO.md) e [ROADMAP](ROADMAP.md). Para diagnóstico, crescimento, compatibilidade e restauração, veja [MANUTENCAO](MANUTENCAO.md).
