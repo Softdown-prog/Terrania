@@ -17,7 +17,8 @@ import { QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
-import { ClassicCombat } from "../engine/ClassicCombat.ts";
+import { ClassicCombat, nearestCombatCreature } from "../engine/ClassicCombat.ts";
+import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
 import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
@@ -37,7 +38,6 @@ export class Game {
   private readonly tileWalker = new ClassicTileWalker();
   private classicAutoFollow = true;
   private battleClock = 0.25;
-  private classicMode = false;
   private sim = new OfflineSimulation(842136);
   private world = new WorldRenderer(842136);
   private multiplayer: MultiplayerClient | null = null;
@@ -51,14 +51,8 @@ export class Game {
   constructor(private readonly scene: CanvasScene, private readonly hud: GameUi, multiplayerUrl: string) {
     const saved = loadLocalSave(),
       params = new URLSearchParams(location.search);
-    this.classicMode = params.get("modo") === "classico";
-    this.hud.setClassicMode(this.classicMode);
-    this.hud.onStopCombat(() => {
-      this.classicCombat.cancel();
-      this.classicPursuit.reset();
-      this.hud.setCombatTarget(null);
-      this.hud.setBattleCreatures(this.hudBattleRows(), null);
-    });
+    this.hud.setTargetCombat(true);
+    this.hud.onStopCombat(() => this.cancelTarget());
     this.hud.onBattleSelect((id) => this.selectBattleTarget(id));
     const requestedSeed = params.get("seed");
     const parsed =
@@ -76,7 +70,7 @@ export class Game {
     this.hud.onPreferences((p) => this.configure(p));
     this.hud.setOnline(false);
     const url = multiplayerUrl;
-    if (url && params.get("modo") !== "solo" && !this.classicMode) {
+    if (url && !["solo", "classico"].includes(params.get("modo") ?? "")) {
       this.multiplayer = new MultiplayerClient(
         url,
         params.get("room") ?? "origins",
@@ -84,7 +78,7 @@ export class Game {
         (self) => this.applySnapshot(self),
         (status) => this.updateConnectionStatus(status),
       );
-    } else this.hud.setStatus(this.classicMode ? "Offline · combate clássico experimental" : "Offline · aventura local");
+    } else this.hud.setStatus("Offline · aventura local");
     window.addEventListener("pagehide", () => this.save(), { signal: this.lifecycle.signal });
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
@@ -92,6 +86,7 @@ export class Game {
         this.input.clear();
         this.navigator.cancel();
         this.multiplayer?.cancelWalk();
+        this.multiplayer?.cancelTarget();
         this.multiplayer?.sendInput(0, 0, false);
       }
       this.accumulator = 0;
@@ -121,19 +116,38 @@ export class Game {
     this.hud.updateInventory(inventory.gel, inventory.potion, online);
   }
   /** Battle entries are derived from the same camera/viewport as the canvas. */
+  private battleCreatures() {
+    if (this.multiplayer?.connected)
+      return this.multiplayer.mobs.map(mob => ({ ...mob, kind: "slime" as const }));
+    return this.sim.slimes.values();
+  }
   private hudBattleRows() {
     return visibleBattleCreatures(
-      this.sim.slimes.values(), this.sim.player, this.scene.battleViewport(this.camera),
+      this.battleCreatures(), this.sim.player, this.scene.battleViewport(this.camera),
     );
   }
   private selectBattleTarget(id: string): void {
-    if (!this.classicMode || this.interior || this.hud.menuOpen ||
-        this.multiplayer?.connected || !this.hudBattleRows().some(row => row.id === id) ||
-        !this.classicCombat.select(id, this.sim.slimes)) return;
+    if (this.interior || this.hud.menuOpen || !this.hudBattleRows().some(row => row.id === id)) return;
+    this.selectTarget(id);
+  }
+  private selectTarget(id: string): void {
+    if (this.multiplayer?.connected) {
+      this.multiplayer.selectTarget(id);
+      return;
+    }
+    if (!this.classicCombat.select(id, this.sim.slimes)) return;
     this.classicAutoFollow = true;
     this.classicPursuit.reset();
     this.navigator.cancel();
     this.hud.setBattleCreatures(this.hudBattleRows(), id);
+  }
+  private cancelTarget(): void {
+    this.multiplayer?.cancelTarget();
+    this.classicCombat.cancel();
+    this.classicPursuit.reset();
+    this.pendingAttack = false;
+    this.battleClock = 0.25;
+    this.hud.setCombatTarget(null);
   }
   private tileCenter(point: { x: number; y: number }): { x: number; y: number } {
     return {
@@ -170,6 +184,7 @@ export class Game {
       this.replaceWorld(this.offlineSnapshot.seed, this.offlineSnapshot);
       this.offlineSnapshot = null;
       this.hud.setOnline(false);
+      this.hud.setTargetCombat(true);
     }
   }
   private setOnlineWorld(seed: number): void {
@@ -179,6 +194,7 @@ export class Game {
     this.pendingAttack = false;
     this.replaceWorld(seed);
     this.hud.setOnline(true);
+    this.hud.setTargetCombat(this.multiplayer?.targetCombat === true);
   }
   private applySnapshot(self: HeroState): void {
     const player = this.sim.player;
@@ -223,6 +239,7 @@ export class Game {
     if (!npc) return;
     this.input.clear();
     this.multiplayer?.cancelWalk();
+    this.multiplayer?.cancelTarget();
     this.multiplayer?.sendInput(0, 0, false);
     if (npc.kind === "door" && BUILDINGS.some(b => b.id === npc.id)) {
       this.classicCombat.cancel();
@@ -277,18 +294,20 @@ export class Game {
     this.battleClock += dt;
     const online = this.multiplayer?.connected === true;
     const onlineTiles = this.multiplayer?.tileMovement === true;
+    const targetCombat = !online || this.multiplayer?.targetCombat === true;
     if (this.input.consumeTalk() && !this.hud.menuOpen) this.talkToNpc();
     const paused = this.hud.menuOpen || document.hidden;
     if (paused) this.input.clear();
     const still = { x: 0, y: 0 };
     const manual = paused ? still : this.input.movement();
     const attack = !paused && this.input.consumeAttack();
-    const stopTarget = this.classicMode && this.input.consumeCancelTarget();
-    if (stopTarget) {
-      this.classicCombat.cancel();
-      this.classicPursuit.reset();
+    const stopTarget = this.input.consumeCancelTarget();
+    if (stopTarget) this.cancelTarget();
+    if (online && paused) {
+      this.multiplayer?.cancelTarget();
+      this.pendingAttack = false;
     }
-    if (this.classicMode && attack && !paused && !stopTarget && !this.interior) {
+    if (!online && attack && !stopTarget && !this.interior) {
       if (!this.classicCombat.targetId)
         this.classicCombat.selectNearest(this.sim.player, this.sim.slimes.values());
       if (this.classicCombat.targetId) {
@@ -297,9 +316,9 @@ export class Game {
       }
     }
     const manualActive = Math.hypot(manual.x, manual.y) > 0.02;
-    if (paused || manualActive || (!this.classicMode && attack)) this.navigator.cancel();
+    if (paused || manualActive || (!targetCombat && attack)) this.navigator.cancel();
     if (onlineTiles && (paused || manualActive || attack)) this.multiplayer?.cancelWalk();
-    if (this.classicMode && manualActive) this.classicPursuit.suspend();
+    if (!online && manualActive) this.classicPursuit.suspend();
     const tap = this.input.consumeTap();
     const walkByTiles = !online && !this.interior;
     const committedStep = walkByTiles ? this.tileWalker.destination : null;
@@ -309,17 +328,16 @@ export class Game {
         : this.scene.worldPoint(tap, this.camera);
       const player = this.interior?.player ?? this.sim.player;
       const collision = this.interior?.collision ?? this.sim.collision;
-      if (destination && this.classicMode && !this.interior &&
-          this.classicCombat.selectAt(destination, this.sim.slimes.values())) {
-        this.classicAutoFollow = true;
-        this.classicPursuit.reset();
-        this.navigator.cancel();
+      const creature = destination && targetCombat && !this.interior
+        ? nearestCombatCreature(destination, this.battleCreatures()) : null;
+      if (creature) {
+        this.selectTarget(creature.id);
       } else if (destination && onlineTiles && !this.interior) {
         this.multiplayer?.walkTo(destination);
       } else if (destination) {
         // An explicit walk command overrides automatic chasing until the
         // next creature selection; the attack target itself is preserved.
-        if (this.classicMode) {
+        if (walkByTiles) {
           this.classicAutoFollow = false;
           this.classicPursuit.reset();
         }
@@ -330,12 +348,8 @@ export class Game {
     const controlled = this.interior?.player ?? this.sim.player;
     const tileRoute = walkByTiles && this.navigator.target !== null;
     const movement = paused ? still : manualActive ? manual : tileRoute ? still :
-      this.navigator.target ? this.navigator.direction(controlled, dt) :
-      this.classicMode && this.classicAutoFollow && !this.interior ?
-        this.classicPursuit.direction(dt, this.sim.player,
-          this.classicCombat.targetId, this.sim.slimes, this.sim.collision, true) :
-        still;
-    this.pendingAttack ||= !this.classicMode && attack;
+      this.navigator.target ? this.navigator.direction(controlled, dt) : still;
+    this.pendingAttack ||= online && attack && !stopTarget;
     if (this.interior) {
       const room = this.interior;
       this.pendingAttack = false; // combate indisponível em locais seguros
@@ -372,15 +386,17 @@ export class Game {
           }
         } else {
           const before = this.sim.player;
-          const classicStrike = this.classicMode &&
-            this.classicCombat.tick(1 / 60, this.sim.player, this.sim.slimes, this.sim.collision);
+          const classicStrike = this.classicCombat.tick(1 / 60, before, this.sim.slimes, this.sim.collision);
           // A rendered frame can advance multiple simulation ticks. Pick the
           // next tile only when the previous step has reached its center.
-          const stepDirection = tileRoute && this.tileWalker.destination === null
-            ? this.navigator.direction(this.sim.player, 1 / 60) : movement;
+          let stepDirection = movement;
+          if (tileRoute && this.tileWalker.destination === null)
+            stepDirection = this.navigator.direction(before, 1 / 60);
+          else if (!manualActive && !tileRoute && this.classicAutoFollow)
+            stepDirection = this.classicPursuit.direction(1 / 60, before, this.classicCombat.targetId,
+              this.sim.slimes, this.sim.collision, true, this.tileWalker.destination);
           const changed = this.sim.update(1 / 60, stepDirection,
-            classicStrike || this.pendingAttack,
-            this.classicMode ? this.classicCombat.strikeTargetId : undefined,
+            classicStrike, this.classicCombat.strikeTargetId,
             this.tileWalker);
           // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
           if (this.sim.player !== before) {
@@ -427,16 +443,21 @@ export class Game {
     if (feedback.hit) this.camera.shake(0.25);
     if (feedback.hurt) this.camera.shake(0.65);
     this.camera.update(dt, this.sim.player);
-    if (this.classicMode && this.battleClock >= 0.2) {
+    const onlineFocus = this.multiplayer?.combatFocus;
+    const focusedLabel = online
+      ? onlineFocus && mobs.some(mob => mob.id === onlineFocus.id && mob.hp > 0)
+        ? CREATURE_CATALOG.slime.name : null
+      : this.classicCombat.label(this.sim.slimes);
+    const targetId = online ? onlineFocus?.id ?? null : this.classicCombat.targetId;
+    if (targetCombat && this.battleClock >= 0.2) {
       this.battleClock = 0;
       this.hud.setBattleCreatures(
-        this.interior || online ? [] : this.hudBattleRows(),
-        this.interior || online ? null : this.classicCombat.targetId,
+        this.hudBattleRows(), targetId,
       );
     }
     this.updateHud(online);
-    const focusedLabel = this.classicMode ? this.classicCombat.label(this.sim.slimes) : null;
-    this.hud.setCombatTarget(focusedLabel && this.classicPursuit.destination
+    const following = online ? onlineFocus?.following : this.classicPursuit.destination !== null;
+    this.hud.setCombatTarget(focusedLabel && following
       ? focusedLabel + " · seguindo" : focusedLabel);
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
     this.hud.setNearbyAction(npc ? NPC_ACTIONS[npc.kind ?? "character"] : null);
@@ -451,7 +472,7 @@ export class Game {
       this.effects,
       onlineTiles ? this.multiplayer?.walkTarget ?? null : this.navigator.target,
       online ? [] : [...this.sim.drops.values()],
-      this.classicMode ? this.classicCombat.targetId : null,
+      targetId,
     );
   }
   destroy(): void {

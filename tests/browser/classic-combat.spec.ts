@@ -1,13 +1,13 @@
 import {test, expect} from '@playwright/test';
 
-test('modo clássico solo mostra seleção e não injeta controles rejeitados',async({page})=>{
+test('o solo normal oferece combate por alvo e ajuda',async({page})=>{
   const errors:string[]=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.setViewportSize({width:390,height:844});
-  await page.goto('/jogar/?modo=classico');
+  await page.goto('/jogar/?modo=solo');
   await expect(page.locator('canvas#game')).toBeVisible();
   await expect(page.locator('#classicCombat')).toBeVisible();
-  await expect(page.locator('#classicCombat')).toContainText('COMBATE CLÁSSICO');
+  await expect(page.locator('#classicCombat')).toContainText('COMBATE POR ALVO');
   await expect(page.locator('#classicHint')).toContainText('Toque em um slime');
   await expect(page.locator('#multiplayerStatus')).toContainText('Offline');
   await expect(page.locator('#heavyAttack')).toHaveCount(0);
@@ -18,9 +18,9 @@ test('modo clássico solo mostra seleção e não injeta controles rejeitados',a
   await page.locator('#helpButton').click();
   await expect(page.locator('#helpDialog')).toContainText('persegue o alvo');
   await page.locator('#helpDialog .dialog-x').click();
-  await page.goto('/jogar/?modo=solo');
+  await page.goto('/jogar/?modo=classico');
   await expect(page.locator('canvas#game')).toBeVisible();
-  await expect(page.locator('#classicCombat')).toHaveCount(0);
+  await expect(page.locator('#classicCombat')).toBeVisible();
   expect(errors).toEqual([]);
 });
 

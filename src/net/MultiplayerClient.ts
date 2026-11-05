@@ -1,5 +1,6 @@
 import type {
   ClientMessage,
+  CombatFocus,
   HeroState,
   MobState,
   ServerMessage,
@@ -15,6 +16,9 @@ export class MultiplayerClient {
   id: string | null = null;
   connected = false;
   tileMovement = false;
+  targetCombat = false;
+  combatFocus: CombatFocus | null = null;
+  private targetingRequested = false;
   walkTarget: WalkTarget | null = null;
   private walkRequested = false;
   players: HeroState[] = [];
@@ -47,6 +51,7 @@ export class MultiplayerClient {
       }
       url.searchParams.set("room", this.room);
       url.searchParams.set("movement", "tiles");
+      url.searchParams.set("combat", "target");
       this.onStatus("Conectando à VPS…");
       const socket = new WebSocket(url);
       this.socket = socket;
@@ -76,6 +81,7 @@ export class MultiplayerClient {
           this.id = msg.id;
           this.connected = true;
           this.tileMovement = msg.movement === "tiles";
+          this.targetCombat = this.tileMovement && msg.combat === "target";
           this.incompatible = false;
           this.onWelcome(msg.seed);
           this.onStatus("Online · sala " + msg.room);
@@ -92,6 +98,9 @@ export class MultiplayerClient {
           this.targetPlayers = msg.players;
           this.targetMobs = msg.mobs;
           this.walkTarget = this.tileMovement && isWalkTarget(msg.walkTarget) ? msg.walkTarget : null;
+          this.combatFocus = this.targetCombat && this.targetingRequested &&
+            typeof msg.focus?.id === "string" && typeof msg.focus.following === "boolean"
+            ? msg.focus : null;
           this.players = msg.players.map((p) => {
             const old = heroes.find((h) => h.id === p.id);
             return old
@@ -114,6 +123,9 @@ export class MultiplayerClient {
         if (this.socket !== socket) return;
         this.connected = false;
         this.tileMovement = false;
+        this.targetCombat = false;
+        this.combatFocus = null;
+        this.targetingRequested = false;
         this.walkTarget = null;
         this.walkRequested = false;
         this.id = null;
@@ -146,6 +158,9 @@ export class MultiplayerClient {
     this.socket = null;
     this.connected = false;
     this.tileMovement = false;
+    this.targetCombat = false;
+    this.combatFocus = null;
+    this.targetingRequested = false;
     this.walkTarget = null;
     this.walkRequested = false;
     this.id = null;
@@ -157,7 +172,17 @@ export class MultiplayerClient {
     }
   }
   sendInput(x: number, y: number, attack: boolean): void {
-    this.send({ type: "input", x, y, attack });
+    if (this.send({ type: "input", x, y, attack }) && attack && this.targetCombat)
+      this.targetingRequested = true;
+  }
+  selectTarget(id: string): void {
+    if (this.targetCombat && this.send({ type: "target", id })) this.targetingRequested = true;
+  }
+  cancelTarget(): void {
+    if (!this.targetingRequested) return;
+    this.targetingRequested = false;
+    this.combatFocus = null;
+    this.send({ type: "target", id: null });
   }
   walkTo(target: WalkTarget): void {
     if (!this.tileMovement) return;

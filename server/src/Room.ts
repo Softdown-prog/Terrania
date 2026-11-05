@@ -1,21 +1,30 @@
 import { Player } from "../../src/actors/Player.ts";
 import { Slime, slimeSpawns } from "../../src/actors/Slime.ts";
-import type { HeroState, MobState, WalkTarget } from "../../src/shared/protocol.ts";
+import type { CombatFocus, HeroState, MobState, WalkTarget } from "../../src/shared/protocol.ts";
 import { SeedCollision } from "../../src/world/collision.ts";
 import { seedFromText } from "../../src/world/random.ts";
 import { CHUNK_PIXELS, TILE_SIZE, chunkOf } from "../../src/world/terrain.ts";
 import { canStrike } from "../../src/engine/combat.ts";
 import { ClassicTileWalker } from "../../src/engine/ClassicTileWalker.ts";
 import { TapNavigator } from "../../src/engine/TapNavigator.ts";
+import { ClassicCombat } from "../../src/engine/ClassicCombat.ts";
+import { CLASSIC_FOLLOW_LIMIT, ClassicPursuit } from "../../src/engine/ClassicPursuit.ts";
 
 const STILL = { x: 0, y: 0 };
 const MAX_TAP_DISTANCE = 480;
 const TAP_REPLAN_MS = 350;
+const TARGET_CHANGE_MS = 350;
 
 interface TileMovement {
   readonly walker: ClassicTileWalker;
   readonly navigator: TapNavigator;
   nextPlanAt: number;
+}
+interface TargetCombat {
+  readonly combat: ClassicCombat;
+  readonly pursuit: ClassicPursuit;
+  follow: boolean;
+  nextSelectionAt: number;
 }
 
 export interface Guest {
@@ -27,6 +36,7 @@ export interface Guest {
   lastInputAt: number;
   kills: number;
   readonly walking: TileMovement | null;
+  readonly targeting: TargetCombat | null;
 }
 
 /** Uma única instância de simulação por sala. Sem estado permanente nesta primeira versão. */
@@ -45,7 +55,7 @@ export class Room {
     this.seed = id === "origins" ? 842136 : seedFromText(id);
     this.world = new SeedCollision(this.seed);
   }
-  add(id: string, name: string, tiles = false): Guest {
+  add(id: string, name: string, tiles = false, targetCombat = false): Guest {
     const guest: Guest = {
       id,
       name,
@@ -55,6 +65,9 @@ export class Room {
       lastInputAt: Date.now(),
       kills: 0,
       walking: tiles ? { walker: new ClassicTileWalker(), navigator: new TapNavigator(), nextPlanAt: 0 } : null,
+      targeting: tiles && targetCombat
+        ? { combat: new ClassicCombat(), pursuit: new ClassicPursuit(), follow: false, nextSelectionAt: 0 }
+        : null,
     };
     this.guests.set(id, guest);
     return guest;
@@ -69,7 +82,33 @@ export class Room {
     guest.input = { x, y };
     guest.lastInputAt = Date.now();
     if (guest.walking && (attack || Math.hypot(x, y) >= 0.08)) this.cancelWalk(guest);
-    if (attack) guest.attackQueued = true;
+    if (!attack) return;
+    const { targeting } = guest;
+    if (!targeting) {
+      guest.attackQueued = true;
+    } else if (targeting.combat.targetId) {
+      targeting.follow = true;
+    } else if (guest.lastInputAt >= targeting.nextSelectionAt) {
+      targeting.nextSelectionAt = guest.lastInputAt + TARGET_CHANGE_MS;
+      targeting.follow = targeting.combat.selectNearest(guest.actor, this.mobs.values());
+    }
+  }
+  receiveTarget(id: string, targetId: string | null): void {
+    const guest = this.guests.get(id);
+    const targeting = guest?.targeting;
+    if (!guest || !targeting) return;
+    if (targetId === null) {
+      targeting.combat.cancel();
+      targeting.pursuit.reset();
+      targeting.follow = false;
+      return;
+    }
+    const target = this.mobs.get(targetId);
+    if (!target || guest.actor.hp <= 0 ||
+        Math.hypot(target.x - guest.actor.x, target.y - guest.actor.y) > CLASSIC_FOLLOW_LIMIT) return;
+    if (!targeting.combat.select(targetId, this.mobs)) return;
+    targeting.follow = true;
+    this.cancelWalk(guest);
   }
   receiveWalk(id: string, target: WalkTarget | null): void {
     const guest = this.guests.get(id);
@@ -80,6 +119,10 @@ export class Room {
       return;
     }
     guest.input = STILL;
+    if (guest.targeting) {
+      guest.targeting.follow = false;
+      guest.targeting.pursuit.reset();
+    }
     // Replace the queued target in place so one guest cannot monopolize the queue.
     this.walkRequests.set(id, target);
   }
@@ -111,11 +154,15 @@ export class Room {
     for (const guest of this.guests.values()) {
       const input =
         now - guest.lastInputAt < 350 ? guest.input : STILL;
-      const { walking, actor } = guest;
+      const { walking, actor, targeting } = guest;
       if (walking) {
-        const direction = walking.navigator.target
-          ? walking.walker.destination ? STILL : walking.navigator.direction(actor, dt)
-          : input;
+        let direction = input;
+        if (Math.hypot(input.x, input.y) >= 0.08) targeting?.pursuit.suspend();
+        else if (walking.navigator.target)
+          direction = walking.walker.destination ? STILL : walking.navigator.direction(actor, dt);
+        else if (targeting?.follow)
+          direction = targeting.pursuit.direction(dt, actor, targeting.combat.targetId,
+            this.mobs, this.world, true, walking.walker.destination);
         walking.walker.advance(dt, direction, actor, this.world);
       } else actor.update(dt, input, this.world);
     }
@@ -125,12 +172,22 @@ export class Room {
       this.spawnNearGuests();
     }
     for (const guest of this.guests.values()) {
-      if (guest.attackQueued) {
+      const combat = guest.targeting?.combat;
+      if (combat?.tick(dt, guest.actor, this.mobs, this.world) || guest.attackQueued) {
         guest.actor.startAttack();
         guest.attackQueued = false;
       }
       if (!guest.actor.consumeStrike()) continue;
       for (const [id, mob] of this.mobs) {
+        if (combat) {
+          if (combat.strikeTargetId !== id) continue;
+          const dx = mob.x - guest.actor.x, dy = mob.y - guest.actor.y;
+          const distance = Math.hypot(dx, dy);
+          if (distance > 0.01) {
+            guest.actor.faceX = dx / distance;
+            guest.actor.faceY = dy / distance;
+          }
+        }
         if (canStrike(guest.actor, mob, this.world)) {
           mob.takeHit(guest.actor.x, guest.actor.y);
           if (mob.hp <= 0) {
@@ -172,6 +229,11 @@ export class Room {
       if (guest.walking && guest.actor.hurtTime > 0) this.cancelWalk(guest);
       if (guest.actor.hp <= 0) {
         guest.walking?.walker.reset();
+        if (guest.targeting) {
+          guest.targeting.combat.reset();
+          guest.targeting.pursuit.reset();
+          guest.targeting.follow = false;
+        }
         guest.actor = new Player();
         guest.input = { x: 0, y: 0 };
         guest.lastInputAt = 0;
@@ -194,7 +256,9 @@ export class Room {
     }
   }
   /** Interesse espacial: não transmitir o mapa todo nem entidades distantes. */
-  snapshotFor(id: string): { players: HeroState[]; mobs: MobState[]; walkTarget?: WalkTarget | null } | null {
+  snapshotFor(id: string): {
+    players: HeroState[]; mobs: MobState[]; walkTarget?: WalkTarget | null; focus?: CombatFocus | null;
+  } | null {
     const me = this.guests.get(id);
     if (!me) return null;
     const near = (x: number, y: number): boolean =>
@@ -231,6 +295,14 @@ export class Room {
           hurtTime: mob.hurtTime,
         });
       }
-    return me.walking ? { players, mobs, walkTarget: me.walking.navigator.target } : { players, mobs };
+    const targetId = me.targeting?.combat.targetId;
+    const focus = targetId && me.targeting && this.mobs.has(targetId)
+      ? { id: targetId, following: me.targeting.pursuit.destination !== null }
+      : null;
+    return {
+      players, mobs,
+      ...(me.walking ? { walkTarget: me.walking.navigator.target } : {}),
+      ...(me.targeting ? { focus } : {}),
+    };
   }
 }

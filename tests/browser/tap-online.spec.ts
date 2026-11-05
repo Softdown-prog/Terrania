@@ -76,3 +76,30 @@ test('toque para caminhar online transmite movimento autoritativo observado pelo
     await visitor.close();
   }
 });
+
+test('Battle List da sala Node persegue e derrota um Slime do servidor', async ({ page }, info) => {
+  const android = info.project.name === 'android';
+  await page.setViewportSize({ width: android ? 390 : 1200, height: 900 });
+  await page.addInitScript(() => localStorage.setItem('terrania-preferences-v1', JSON.stringify({
+    zoom: 1, effects: false, cameraMotion: false,
+  })));
+  let selfId = '';
+  let kills = 0;
+  page.on('websocket', socket => socket.on('framereceived', ({ payload }) => {
+    const message = JSON.parse(String(payload));
+    if (message.type === 'welcome') selfId = message.id;
+    if (message.type === 'state') kills = message.players.find((hero: {id: string}) => hero.id === selfId)?.kills ?? 0;
+  }));
+  await page.goto('/jogar/?room=origins');
+  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
+  const toggle = page.locator('#battleToggle');
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.tap();
+  const row = page.locator('[data-creature-id="0,-1,0"]');
+  await expect(row).toBeVisible();
+  if (android) await row.tap();
+  else await row.click();
+  await expect(page.locator('#classicTarget')).toContainText('Slime');
+  await expect.poll(() => kills, { timeout: 15000 }).toBe(1);
+  await expect(row).toHaveCount(0);
+  await expect(page.locator('#classicTarget')).toHaveCount(0);
+});

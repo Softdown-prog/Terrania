@@ -83,6 +83,7 @@ export class ClassicPursuit {
   private trackedId: string | null = null;
   private lastCreature: Point | null = null;
   private replanSeconds = 0;
+  private tileReplanSeconds = 0;
 
   get destination(): Point | null { return this.navigator.target; }
 
@@ -106,11 +107,13 @@ export class ClassicPursuit {
     mobs: ReadonlyMap<string, CreatureView>,
     collision: CollisionMap,
     tileSteps = false,
+    committedStep: Point | null = null,
   ): Point {
     if (!Number.isFinite(dt) || dt <= 0 || !selectedId || player.hp <= 0) {
       this.reset();
       return ZERO;
     }
+    if (tileSteps) this.tileReplanSeconds = Math.max(0, this.tileReplanSeconds - Math.min(dt, 0.1));
     const mob = mobs.get(selectedId);
     if (!mob || mob.hp <= 0 || !finite(mob) || !finite(player)) {
       this.reset();
@@ -120,15 +123,25 @@ export class ClassicPursuit {
       this.reset();
       this.trackedId = selectedId;
     }
-    if (inClassicAttackPosition(player, mob, collision)) {
+    const from = committedStep ?? player;
+    if (inClassicAttackPosition(from, mob, collision)) {
       this.navigator.cancel();
       this.lastCreature = { x: mob.x, y: mob.y };
       this.replanSeconds = 0;
       return ZERO;
     }
-    if (Math.hypot(mob.x - player.x, mob.y - player.y) > CLASSIC_FOLLOW_LIMIT) {
+    if (Math.hypot(mob.x - from.x, mob.y - from.y) > CLASSIC_FOLLOW_LIMIT) {
       this.navigator.cancel();
       return ZERO;
+    }
+    if (tileSteps) {
+      if (this.tileReplanSeconds === 0) {
+        this.tileReplanSeconds = REPATH_SECONDS;
+        const candidates = approachPoints(mob, true)
+          .filter(point => inClassicAttackPosition(point, mob, collision));
+        this.navigator.goToTiles(from, candidates, collision, CLASSIC_FOLLOW_LIMIT);
+      }
+      return committedStep ? ZERO : this.navigator.direction(player, dt);
     }
     this.replanSeconds = Math.max(0, this.replanSeconds - Math.min(dt, 0.1));
     const moved = this.lastCreature !== null &&
@@ -138,11 +151,11 @@ export class ClassicPursuit {
       this.lastCreature = { x: mob.x, y: mob.y };
       // Try multiple safe tiles around the monster: a single blocked
       // destination must not abort a reachable pursuit.
-      const first = findClassicApproach(player, mob, collision, tileSteps);
+      const first = findClassicApproach(player, mob, collision);
       let found = first !== null && this.navigator.go(player, first, collision);
       if (!found) {
         this.navigator.cancel();
-        for (const point of approachPoints(mob, tileSteps)) {
+        for (const point of approachPoints(mob, false)) {
           if (found) break;
           if (!collision.canMove(point.x, point.y) ||
               !inClassicAttackPosition(point, mob, collision)) continue;
@@ -151,6 +164,6 @@ export class ClassicPursuit {
       }
       if (!found) this.navigator.cancel();
     }
-    return this.navigator.direction(player, dt, tileSteps ? TILE_SIZE * 0.68 : 7);
+    return committedStep ? ZERO : this.navigator.direction(player, dt);
   }
 }

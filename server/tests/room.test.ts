@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Room } from '../src/Room.ts';
-import { isValidInput, isValidWalk, validRoom } from '../../src/shared/protocol.ts';
+import { isValidInput, isValidTarget, isValidWalk, validRoom } from '../../src/shared/protocol.ts';
 import { canMoveOnSeed } from '../../src/world/collision.ts';
 
 test('protocolo rejeita coordenadas falsas ou movimento fora da velocidade', () => {
@@ -72,6 +72,31 @@ test('movimento em terreno sólido é determinado pela seed do servidor', () => 
   assert.equal(canMoveOnSeed(16, 16, 842136), true);
   assert.equal(canMoveOnSeed(Number.NaN, 16, 842136), false);
   assert.equal(canMoveOnSeed(1e12, 0, 842136), false);
+});
+
+test('troca de alvo durante o preparo invalida o golpe na sala autoritativa', () => {
+  assert.equal(isValidTarget({ type: 'target', id: '-8,-8,0' }), true);
+  assert.equal(isValidTarget({ type: 'target', id: null }), true);
+  assert.equal(isValidTarget({ type: 'target', id: 'x'.repeat(65) }), false);
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro', true, true);
+  Object.assign(guest.actor, { x: -3984, y: -4016 });
+  let now = guest.lastInputAt;
+  for (let frame = 0; frame < 32; frame++) room.tick(0.05, now += 50);
+  const first = '-8,-8,0', second = '-8,-8,1';
+  const hp = (id: string) => room.snapshotFor('a')?.mobs.find(mob => mob.id === id)?.hp;
+  assert.deepEqual([hp(first), hp(second)], [2, 2]);
+  room.receiveTarget('a', 'criatura-inexistente');
+  assert.equal(room.snapshotFor('a')?.focus, null);
+  room.receiveTarget('a', first);
+  room.tick(0.05, now += 50);
+  assert.ok(guest.actor.attackTime > 0);
+  room.receiveTarget('a', second);
+  for (let frame = 0; frame < 4; frame++) room.tick(0.05, now += 50);
+  assert.deepEqual([hp(first), hp(second)], [2, 2]);
+  assert.equal(room.snapshotFor('a')?.focus?.id, second);
+  room.receiveTarget('a', null);
+  assert.equal(room.snapshotFor('a')?.focus, null);
 });
 
 test('snapshot conserva o formato v3 e a vida do Slime com catálogo local', () => {

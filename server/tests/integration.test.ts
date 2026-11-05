@@ -12,7 +12,7 @@ import {
 
 test(
   "two websocket clients share authoritative movement and versioned state",
-  { timeout: 10_000 },
+  { timeout: 20_000 },
   async () => {
     const probe = createServer();
     probe.listen(0, "127.0.0.1");
@@ -38,10 +38,10 @@ test(
       },
     );
     const sockets: WebSocket[] = [];
-    async function until(predicate: () => boolean): Promise<void> {
+    async function until(predicate: () => boolean, timeout = 4_000): Promise<void> {
       const start = Date.now();
       while (!predicate()) {
-        if (Date.now() - start > 4_000)
+        if (Date.now() - start > timeout)
           throw new Error("Timed out waiting for shared state");
         await pause(20);
       }
@@ -65,7 +65,7 @@ test(
       const streams: ServerMessage[][] = [[], []];
       for (let i = 0; i < 2; i++) {
         const ws = new WebSocket(
-          "ws://127.0.0.1:" + port + "/ws?room=origins" + (i === 0 ? "&movement=tiles" : ""),
+          "ws://127.0.0.1:" + port + "/ws?room=origins" + (i === 0 ? "&movement=tiles&combat=target" : ""),
           { origin: "http://localhost:5173" },
         );
         sockets.push(ws);
@@ -91,9 +91,11 @@ test(
       assert.equal(welcome.version, PROTOCOL_VERSION);
       assert.equal(welcome.seed, 842136);
       assert.equal(welcome.movement, "tiles");
+      assert.equal(welcome.combat, "target");
       const legacy = streams[1].find((m) => m.type === "welcome");
       assert.ok(legacy?.type === "welcome");
       assert.equal(legacy.movement, undefined);
+      assert.equal(legacy.combat, undefined);
       sockets[0].send(JSON.stringify({ type: "walk", target: { x: 78, y: 18 } }));
       sockets[1].send(JSON.stringify({ type: "input", x: 1, y: 0, attack: false }));
       await until(() =>
@@ -114,6 +116,13 @@ test(
           ),
         ),
       );
+      const target = "0,-1,0";
+      await until(() => streams[0].some(m => m.type === "state" && m.mobs.some(mob => mob.id === target)));
+      sockets[0].send(JSON.stringify({ type: "target", id: target }));
+      await until(() => streams[0].some(m => m.type === "state" && m.focus?.id === target));
+      await until(() => streams[1].some(m => m.type === "state" && m.focus === undefined &&
+        m.players.some(p => p.id === welcome.id && p.kills === 1) &&
+        !m.mobs.some(mob => mob.id === target)), 8_000);
       sockets[1].terminate();
       let count = await presence();
       for (let i = 0; i < 40 && count.online !== 1; i++) { await pause(20); count = await presence(); }
