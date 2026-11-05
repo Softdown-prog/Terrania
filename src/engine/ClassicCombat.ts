@@ -23,8 +23,14 @@ export class ClassicCombat {
   get targetId(): string | null { return this.selected; }
   get cooldown(): number { return this.remaining; }
 
+  /** Cancel focus, not the attack clock: Escape/HUD cannot accelerate combat. */
   cancel(): void {
     this.selected = null;
+  }
+
+  /** A fresh world/player has no attack state from the previous simulation. */
+  reset(): void {
+    this.cancel();
     this.remaining = 0;
   }
 

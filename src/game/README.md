@@ -9,3 +9,5 @@
 **Verificação:** tests/browser, navegação, combate e sessões online.
 
 **Limites:** Não criar segundo loop nem duplicar lógica de simulação na UI.
+
+**Ciclo de vida do combate clássico:** troca de mundo e respawn chamam `ClassicCombat.reset()` para limpar o estado anterior. Escape, botão Cancelar e entrada em interior apenas cancelam o alvo, preservando o relógio de ataque e a pausa da simulação.
