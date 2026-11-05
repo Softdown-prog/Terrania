@@ -11,8 +11,9 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`scripts/verify-build.mjs`](../../scripts/verify-build.mjs)
 - [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 - [`scripts/mcp/server.mjs`](../../scripts/mcp/server.mjs)
+- [`scripts/mcp/actions-query.mjs`](../../scripts/mcp/actions-query.mjs)
 
-## Todos os arquivos deste módulo (24)
+## Todos os arquivos deste módulo (26)
 
 - [`.github/workflows/autoscale-lab.yml`](../../.github/workflows/autoscale-lab.yml)
 - [`.github/workflows/capacity-lab.yml`](../../.github/workflows/capacity-lab.yml)
@@ -21,6 +22,7 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`.github/workflows/deploy-pages.yml`](../../.github/workflows/deploy-pages.yml)
 - [`.github/workflows/deploy-vps.yml`](../../.github/workflows/deploy-vps.yml)
 - [`.github/workflows/go-engine.yml`](../../.github/workflows/go-engine.yml)
+- [`.github/workflows/mcp-navigator.yml`](../../.github/workflows/mcp-navigator.yml)
 - [`.github/workflows/online-smoke.yml`](../../.github/workflows/online-smoke.yml)
 - [`.github/workflows/pre-main-suite.yml`](../../.github/workflows/pre-main-suite.yml)
 - [`.github/workflows/qa-bot.yml`](../../.github/workflows/qa-bot.yml)
@@ -30,6 +32,7 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`scripts/check-published-frontend.mjs`](../../scripts/check-published-frontend.mjs)
 - [`scripts/emit-route-shells.mjs`](../../scripts/emit-route-shells.mjs)
 - [`scripts/index-project.mjs`](../../scripts/index-project.mjs)
+- [`scripts/mcp/actions-query.mjs`](../../scripts/mcp/actions-query.mjs)
 - [`scripts/mcp/navigator.mjs`](../../scripts/mcp/navigator.mjs)
 - [`scripts/mcp/server.mjs`](../../scripts/mcp/server.mjs)
 - [`scripts/qa-bot.mjs`](../../scripts/qa-bot.mjs)

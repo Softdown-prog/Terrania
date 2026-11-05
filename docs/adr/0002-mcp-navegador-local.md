@@ -26,3 +26,10 @@ O Terrania já possui 16 módulos catalogados, índices gerados e regras de cama
 ## Alternativas rejeitadas
 
 Servidor com shell/sudo, HTTP público sem autenticação, base vetorial obrigatória, dependências grandes para um protocolo simples e importação de todo o repositório para o contexto de um modelo.
+
+## Complemento — ponte GitHub Actions (fase 2)
+
+Foi acrescentado um workflow de consulta **sem shell input, HTTP ou VPS**: após `architecture:check`, o Actions em runner hospedado inicializa o MCP real por stdio, testa o protocolo e disponibiliza uma consulta selecionada por parâmetros previamente permitidos. Limites de token e leitura são os mesmos do MCP local. `contents: read` e `persist-credentials: false` impedem escalonamento acidental de privilégios via checkout.
+
+O evento `push` da branch experimental valida a ponte. O evento manual `workflow_dispatch` só se torna acessível pelo GitHub quando este workflow existir no branch padrão; a introdução em `main` continua condicionada à aprovação humana. Não há integração automática com ferramentas do ChatGPT nem autonomia de edição.
+

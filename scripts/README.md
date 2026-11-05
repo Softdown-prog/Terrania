@@ -13,3 +13,5 @@
 ## MCP de navegação (local e somente leitura)
 
 `scripts/mcp/navigator.mjs` consulta os índices e docs. `scripts/mcp/server.mjs` oferece cinco ferramentas pelo protocolo MCP via stdio, sem abrir portas nem alterar o repositório. Execute `npm run architecture:check` antes de iniciar `npm run mcp:navigator`. Veja [guia completo](../docs/MCP_NAVEGACAO.md).
+
+**Consulta por Actions:** `scripts/mcp/actions-query.mjs` valida a lista de parâmetros permitidos, abre o MCP por stdio e publica o resultado escapado no resumo do job. O workflow `.github/workflows/mcp-navigator.yml` tem apenas `contents: read`. Não há execução de comandos recebidos como entrada.

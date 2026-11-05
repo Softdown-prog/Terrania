@@ -102,3 +102,5 @@ Leia [o estado da migração e como continuar](docs/MIGRACAO_ANGULAR_PHASER3.md)
 ## Navegação MCP de código (experimental e local)
 
 O MCP somente leitura da branch experimental usa `scripts/mcp/server.mjs` por stdio. Consulte [instruções e limites](docs/MCP_NAVEGACAO.md) e [ADR 0002](docs/adr/0002-mcp-navegador-local.md); **não está implantado na VPS nem conectado automaticamente ao ChatGPT**.
+
+**Consulta via GitHub Actions (experimental):** existe um adaptador de consulta somente leitura em `.github/workflows/mcp-navigator.yml`. Enquanto este workflow só existir na branch experimental, o teste é acionado por push; a ação manual `workflow_dispatch` depende de o arquivo estar no branch padrão. Veja [guia MCP](docs/MCP_NAVEGACAO.md).

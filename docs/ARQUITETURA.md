@@ -41,3 +41,5 @@ As implantações Node, protótipos Go/Rust e laboratórios de cluster possuem e
 ## MCP de navegação (sem acoplamento ao motor)
 
 O processo local `scripts/mcp/server.mjs` consulta apenas `architecture/modules.json`, índices derivados e docs permitidos, sem importar `Game.ts`, Angular ou o backend. É um adaptador de conhecimento, não um serviço de gameplay. Veja [MCP_NAVEGACAO.md](MCP_NAVEGACAO.md) e [ADR 0002](adr/0002-mcp-navegador-local.md).
+
+O workflow de leitura [mcp-navigator.yml](../.github/workflows/mcp-navigator.yml) reutiliza o MCP local em runner efêmero, valida o índice e publica somente um resumo de diagnóstico. Não integra o loop de jogo nem o backend online. Consulte a seção **Fase 2 — consultas por GitHub Actions** no [manual](MCP_NAVEGACAO.md).

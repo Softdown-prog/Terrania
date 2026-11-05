@@ -26,3 +26,5 @@ Consultar [docs/MANUTENCAO.md](docs/MANUTENCAO.md). Índice, testes e MCP ajudam
 ## MCP local para navegação
 
 Quando houver um cliente MCP stdio disponível, inicie `node scripts/mcp/server.mjs` no checkout da branch. Use primeiro `list_modules`, `locate_file` e `find_tests` para reduzir a área de investigação. Consulte [MCP_NAVEGACAO.md](docs/MCP_NAVEGACAO.md). Os resultados não autorizam edição, shell, deploy ou promoção dos laboratórios Go/Rust.
+
+**GitHub Actions (navegação):** o workflow `.github/workflows/mcp-navigator.yml` oferece consultas exclusivamente de leitura após `architecture:check` e testes MCP. Execute na branch quando houver workflow aprovado, consulte o resumo do job e jamais considere saída de índice como autorização para deploy ou mudanças em produção.

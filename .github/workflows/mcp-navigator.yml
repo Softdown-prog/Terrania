@@ -1,0 +1,77 @@
+name: Terrania MCP — consultar índices (somente leitura)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tool:
+        description: Ferramenta de leitura do catálogo
+        required: true
+        type: choice
+        default: list_modules
+        options:
+          - list_modules
+          - locate_file
+          - read_module_docs
+          - find_tests
+          - find_decisions
+      query:
+        description: Termo de busca; exigido por locate_file
+        required: false
+        type: string
+      module_id:
+        description: Identificador de módulo; exigido por read_module_docs
+        required: false
+        type: string
+      status:
+        description: Filtro de list_modules (active, experimental, lab, reference)
+        required: false
+        type: string
+      limit:
+        description: Limite opcional de 1 a 20
+        required: false
+        type: string
+  # Exercises the read-only adapter while this workflow lives only on
+  # the experimental branch. It never deploys to the VPS or Cloudflare.
+  push:
+    branches:
+      - feat/terrania-classic-combat-20261104
+    paths:
+      - '.github/workflows/mcp-navigator.yml'
+      - 'scripts/mcp/**'
+      - 'architecture/modules.json'
+      - 'docs/indexes/**'
+      - 'tests/mcp-*.test.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terrania-navigation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consulta:
+    name: Consultar catálogo via MCP local
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout da revisão solicitada
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Preparar Node.js para o MCP stdio
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verificar limites, registro e índices
+        run: node scripts/index-project.mjs --check
+      - name: Exercitar ferramentas e recusas do MCP
+        run: node --test --experimental-strip-types tests/mcp-navigator.test.ts tests/mcp-actions-query.test.ts
+      - name: Consulta MCP (sem escrita no repositório)
+        env:
+          TERRANIA_MCP_TOOL: ${{ inputs.tool || 'list_modules' }}
+          TERRANIA_MCP_QUERY: ${{ inputs.query || '' }}
+          TERRANIA_MCP_MODULE_ID: ${{ inputs.module_id || '' }}
+          TERRANIA_MCP_STATUS: ${{ inputs.status || '' }}
+          TERRANIA_MCP_LIMIT: ${{ inputs.limit || '' }}
+        run: node scripts/mcp/actions-query.mjs

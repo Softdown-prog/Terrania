@@ -63,3 +63,26 @@ npm test
 A suíte `tests/mcp-navigator.test.ts` cobre consultas reais, isolamento, IDs e argumentos inválidos, symlinks fora da raiz e a troca de mensagens stdio. A CI também valida índices, build, navegador e Docker no fluxo existente.
 
 Fase 2, somente após aprovação: planejar indexação semântica opcional, atualização incremental para 5–10 mil arquivos e integração com clientes externos por um transporte autorizado. Não acrescentar ferramentas de execução ou deploy sem desenho de permissão.
+
+## Fase 2 — consultas por GitHub Actions (somente leitura)
+
+**Nesta branch:** o workflow [mcp-navigator.yml](../.github/workflows/mcp-navigator.yml) faz um checkout descartável no **runner hospedado pelo GitHub**, verifica índices, executa testes MCP e consulta o processo MCP por **stdin/stdout** usando [actions-query.mjs](../scripts/mcp/actions-query.mjs). A consulta e a revisão Git aparecem no **resumo da execução**. O processo não tem endpoint HTTP, chave SSH, acesso à VPS, escrita no repositório, deploy ou ferramenta para executar comandos enviados no formulário.
+
+- Entradas permitidas: `tool` (uma das cinco ferramentas MCP), `query`, `module_id`, `status` e `limit` (1 a 20). Cada ferramenta aceita **somente** os parâmetros compatíveis. Entradas de usuário são entregues via **variáveis de ambiente**, nunca interpoladas como shell.
+- O token do workflow recebe somente `contents: read`; `checkout` utiliza `persist-credentials: false`. Não há `npm ci` nem pacotes adicionais para essa consulta: o MCP utiliza Node e arquivos versionados.
+- Na branch experimental, o workflow também executa um teste automático `push` **apenas** quando mudarem seus próprios arquivos/índices. Isso comprova a integração sem habilitar produção.
+- **Limite importante do GitHub:** o botão **Run workflow** de `workflow_dispatch` só aparece quando o arquivo do workflow existe no branch padrão. Portanto, enquanto a integração permanecer nesta branch de experimento, sua execução automática em `push` serve como prova; a consulta manual pelo painel de Actions **não está disponível ainda**. Não fazer merge na `main` só para liberar o botão.
+- Quando o workflow for aprovado e incluído na `main`, a pessoa que executa poderá escolher o branch/revisão no formulário, sempre respeitando as permissões GitHub. A consulta lerá o **checkout dessa revisão**, não dados live da VPS.
+
+### Exemplos de entradas
+
+| tool | query | module_id | status | Resultado |
+| --- | --- | --- | --- | --- |
+| `list_modules` | — | — | `lab` | Somente módulos de laboratório |
+| `locate_file` | `ClassicTileWalker.ts` | — | — | Localizar arquivo e módulo dono |
+| `read_module_docs` | — | `simulation` | — | Documentação de manutenção do motor |
+| `find_tests` | `ClassicCombat` | — | — | Arquivos de testes relacionados |
+| `find_decisions` | `MCP` | — | — | ADRs relacionados |
+
+Resultados são dados do repositório e podem conter conteúdo não confiável de contribuições. A integração **não conecta diretamente a interface do ChatGPT ao MCP**, não cria canal de retorno interativo e não permite editar arquivos pelo Actions. Consulte [ADR 0002](adr/0002-mcp-navegador-local.md) para a decisão.
+
