@@ -3,6 +3,7 @@ import { Slime, slimeSpawns } from "../actors/Slime.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { SeedCollision } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
+import { VILLAGE_RESPAWN } from "../world/village.ts";
 import { canStrike } from "./combat.ts";
 import type { ClassicTileWalker } from "./ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./Inventory.ts";
@@ -21,6 +22,7 @@ export interface OfflineSave {
   inventory?: InventoryState;
   drops?: LootDrop[];
   experience?: number;
+  awaitingRespawn?: true;
 }
 
 /** Motor puro: nenhuma dependência de Canvas, DOM, UI, rede ou localStorage. */
@@ -48,7 +50,8 @@ export class OfflineSimulation {
       }
       this.experience = normalizeExperience(saved.experience);
       this.player.maxHp = maxHpForExperience(this.experience);
-      this.player.hp = Math.min(this.player.maxHp, Math.max(1, saved.hp));
+      this.player.hp = saved.awaitingRespawn === true && saved.hp === 0
+        ? 0 : Math.min(this.player.maxHp, Math.max(1, saved.hp));
       this.kills = saved.kills;
       for (const id of saved.defeated) this.defeated.add(id);
       for (const drop of normalizeDrops(saved.drops)) {
@@ -56,6 +59,19 @@ export class OfflineSimulation {
         if (this.defeated.has(drop.id)) this.drops.set(drop.id, drop);
       }
     }
+  }
+
+  get awaitingRespawn(): boolean {
+    return this.player.hp <= 0;
+  }
+
+  respawn(): boolean {
+    if (!this.awaitingRespawn) return false;
+    this.player = new Player(maxHpForExperience(this.experience));
+    this.player.x = VILLAGE_RESPAWN.x;
+    this.player.y = VILLAGE_RESPAWN.y;
+    this.spawnedChunk = "";
+    return true;
   }
 
   private spawnNearby(): void {
@@ -84,6 +100,7 @@ export class OfflineSimulation {
     /** Opt-in, local-only classic tile movement; defaults to legacy movement. */
     tileWalker?: ClassicTileWalker,
   ): boolean {
+    if (this.awaitingRespawn) return false;
     if (tileWalker) tileWalker.advance(dt, direction, this.player, this.collision);
     else this.player.update(dt, direction, this.collision);
     this.spawnNearby();
@@ -96,8 +113,10 @@ export class OfflineSimulation {
         this.slimes.delete(id);
         continue;
       }
-      if (distance < CHUNK_PIXELS * 2)
+      if (distance < CHUNK_PIXELS * 2) {
         slime.update(dt, this.player, this.collision);
+        if (this.awaitingRespawn) return true;
+      }
     }
     let changed = false;
     if (attack) this.player.startAttack();
@@ -140,11 +159,6 @@ export class OfflineSimulation {
         changed = true;
       }
     }
-    if (this.player.hp <= 0) {
-      this.player = new Player(maxHpForExperience(this.experience));
-      this.spawnedChunk = "";
-      changed = true;
-    }
     return changed;
   }
   snapshot(): OfflineSave {
@@ -155,6 +169,7 @@ export class OfflineSimulation {
       hp: this.player.hp,
       kills: this.kills,
       experience: this.experience,
+      ...(this.awaitingRespawn ? { awaitingRespawn: true } : {}),
       defeated: [...this.defeated].slice(-2000),
       inventory: this.inventory.snapshot(),
       drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),

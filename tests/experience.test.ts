@@ -43,7 +43,37 @@ test("abates solo creditam XP uma vez e sobrevivem ao save e ao respawn", () => 
   assert.equal(restored.experience, 30);
   assert.equal(restored.player.maxHp, 110);
   restored.player.takeDamage(1000, 16, 26);
-  restored.update(1 / 60, STILL, false);
+  assert.equal(restored.respawn(), true);
   assert.equal(restored.player.hp, 110);
   assert.equal(restored.experience, 30);
+});
+
+test("dano letal impede coleta e ataques até retornar à vila uma única vez", () => {
+  const seed = 842136;
+  const drop = { id: "previous", item: "gel" as const, x: -560, y: -1008 };
+  const inventory = { gel: 3, potion: 2, questRewardClaimed: true };
+  const sim = new OfflineSimulation(seed, {
+    seed, x: drop.x, y: drop.y, hp: 1, kills: 5, defeated: [drop.id],
+    experience: 50, inventory, drops: [drop],
+  });
+  const killer = "-2,-2,0";
+  assert.equal(sim.update(1 / 60, STILL, true, killer), true);
+  assert.equal(sim.awaitingRespawn, true);
+  assert.equal(sim.slimes.get(killer)?.hp, 2);
+  const checkpoint = sim.snapshot();
+  assert.equal(checkpoint.hp, 0);
+  assert.equal(checkpoint.awaitingRespawn, true);
+  assert.deepEqual(checkpoint.inventory, inventory);
+  assert.deepEqual(checkpoint.drops, [drop]);
+  assert.equal(sim.update(0.1, { x: 1, y: 0 }, true, killer), false);
+  assert.deepEqual(sim.snapshot(), checkpoint);
+
+  const restored = new OfflineSimulation(seed, checkpoint);
+  assert.equal(restored.awaitingRespawn, true);
+  assert.equal(restored.inventory.usePotion(restored.player), false);
+  assert.equal(restored.respawn(), true);
+  assert.equal(restored.respawn(), false);
+  assert.equal(restored.collision.canMove(restored.player.x, restored.player.y), true);
+  const { awaitingRespawn: _defeat, ...progress } = checkpoint;
+  assert.deepEqual(restored.snapshot(), { ...progress, x: 432, y: 48, hp: 110 });
 });

@@ -10,6 +10,8 @@
 
 **Progressão:** XP é a fonte para nível e vida máxima. A simulação solo e a sala Node creditam a recompensa do catálogo no abate e compartilham a curva de `Experience.ts`.
 
+**Derrota no solo:** dano letal encerra o tick antes de ataque ou coleta. Com vida zerada, a simulação aguarda o comando de retorno. O herói reaparece na Vila da Travessia com a vida máxima do seu nível. XP, missão, bolsa e itens no chão permanecem no mesmo mundo.
+
 **Verificação:** npm test; Playwright ao afetar movimento/seleção.
 
 **Limites:** Não importar Angular, Phaser ou browser; motor online Go/Node é separado e requer paridade.

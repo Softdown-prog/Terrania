@@ -10,4 +10,4 @@
 
 **Limites:** Não criar segundo loop nem duplicar lógica de simulação na UI.
 
-**Ciclo de vida do combate clássico:** troca de mundo e respawn chamam `ClassicCombat.reset()` para limpar o estado anterior. Escape, botão Cancelar e entrada em interior limpam o alvo e o golpe pendente, preservando o relógio de ataque e a pausa da simulação.
+**Ciclo de vida do combate clássico:** troca de mundo e derrota solo chamam `ClassicCombat.reset()` para limpar o estado anterior. O orquestrador cancela passos e rotas ao detectar a derrota, e o HUD envia o comando de retorno à vila. Escape, botão Cancelar e entrada em interior limpam o alvo e o golpe pendente, preservando o relógio de ataque e a pausa da simulação.

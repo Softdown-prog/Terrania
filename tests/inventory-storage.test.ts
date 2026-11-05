@@ -54,6 +54,12 @@ test("localStorage antigo migra para bolsa e a recompensa única sobrevive ao re
     assert.equal(new OfflineSimulation(nextGame.seed, progressed ?? undefined).player.maxHp, 110);
     store.set(KEY, JSON.stringify({ ...nextGame.snapshot(), experience: -20, hp: 107 }));
     assert.equal(loadLocalSave()?.hp, 100);
+    for (const [hp, mark, expectedHp] of [[0, undefined, 1], [0, "true", 1], [10, true, 10], [0, true, 0]] as const) {
+      store.set(KEY, JSON.stringify({ ...nextGame.snapshot(), hp, awaitingRespawn: mark }));
+      const loaded = loadLocalSave();
+      assert.equal(loaded?.hp, expectedHp);
+      assert.equal(loaded?.awaitingRespawn, expectedHp === 0 ? true : undefined);
+    }
   } finally {
     if (original) Object.defineProperty(globalThis, "localStorage", original);
     else Reflect.deleteProperty(globalThis, "localStorage");

@@ -14,6 +14,7 @@ export interface HeroHudState {
   readonly tileX: number;
   readonly tileY: number;
   readonly progression: ExperienceProgress | null;
+  readonly awaitingRespawn: boolean;
 }
 
 export type NearbyAction = 'talk' | 'read' | 'enter';
@@ -26,6 +27,7 @@ export interface GameUi {
   onNewWorld(callback: () => void): void;
   onTalk(callback: () => void): void;
   onPotionUse(callback: () => string): void;
+  onRespawn(callback: () => void): void;
   updateInventory(gel: number, potions: number, online: boolean): void;
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void;
   setOnline(online: boolean): void;

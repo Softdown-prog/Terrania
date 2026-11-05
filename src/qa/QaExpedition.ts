@@ -120,15 +120,15 @@ export function runExpeditionQa(options: ExpeditionQaOptions = {}): ExpeditionQa
   };
   const step = (input: Point, attack = false): boolean => {
     const before = at();
-    const actor = sim.player;
     sim.update(DT, input, attack);
     ticks++;
     const travelled = distance(before, sim.player);
     walkedUnits += travelled;
     if (Math.hypot(input.x, input.y) > 0.2 && travelled < 0.02) blockedSteps++;
-    if (sim.player !== actor) deaths++;
+    const died = sim.respawn();
+    if (died) deaths++;
     mark();
-    return sim.player !== actor;
+    return died;
   };
 
   mark();

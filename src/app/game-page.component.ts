@@ -16,12 +16,20 @@ export class GamePageComponent implements AfterViewInit {
   readonly playersDialogOpen = signal(false);
   private readonly mount = viewChild.required<ElementRef<HTMLElement>>('mount');
   private readonly npcDialog = viewChild.required<ElementRef<HTMLDialogElement>>('npcDialog');
+  private readonly defeatDialog = viewChild<ElementRef<HTMLDialogElement>>('defeatDialog');
   private readonly playersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('playersDialog');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroy = inject(DestroyRef);
   constructor() {
     effect(() => {
       if (this.hud.dialogueRequested() > 0) this.open(this.npcDialog().nativeElement);
+    });
+    effect(() => {
+      const awaitingRespawn = this.hud.awaitingRespawn();
+      const dialog = this.defeatDialog()?.nativeElement;
+      if (!dialog || dialog.open === awaitingRespawn) return;
+      if (awaitingRespawn) dialog.showModal();
+      else dialog.close();
     });
   }
   ngAfterViewInit(): void {
