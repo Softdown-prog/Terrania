@@ -1,11 +1,13 @@
 import { Player } from "../actors/Player.ts";
 import { Slime, slimeSpawns } from "../actors/Slime.ts";
+import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { SeedCollision } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { canStrike } from "./combat.ts";
 import type { ClassicTileWalker } from "./ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./Inventory.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
+import { grantExperience, maxHpForExperience, normalizeExperience } from "./Experience.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
 export interface OfflineSave {
@@ -18,6 +20,7 @@ export interface OfflineSave {
   /** Campos opcionais mantêm compatibilidade com saves antigos. */
   inventory?: InventoryState;
   drops?: LootDrop[];
+  experience?: number;
 }
 
 /** Motor puro: nenhuma dependência de Canvas, DOM, UI, rede ou localStorage. */
@@ -30,6 +33,7 @@ export class OfflineSimulation {
   readonly collision: SeedCollision;
   readonly seed: number;
   kills = 0;
+  experience = 0;
   private spawnedChunk = "";
 
   constructor(seed: number, saved?: OfflineSave) {
@@ -42,7 +46,9 @@ export class OfflineSimulation {
         this.player.x = saved.x;
         this.player.y = saved.y;
       }
-      this.player.hp = saved.hp;
+      this.experience = normalizeExperience(saved.experience);
+      this.player.maxHp = maxHpForExperience(this.experience);
+      this.player.hp = Math.min(this.player.maxHp, Math.max(1, saved.hp));
       this.kills = saved.kills;
       for (const id of saved.defeated) this.defeated.add(id);
       for (const drop of normalizeDrops(saved.drops)) {
@@ -111,6 +117,7 @@ export class OfflineSimulation {
             this.slimes.delete(id);
             this.defeated.add(id);
             this.kills++;
+            this.experience = grantExperience(this.experience, CREATURE_CATALOG[slime.kind].experience, this.player);
             if (this.drops.size < MAX_WORLD_DROPS) {
               this.drops.set(slime.id, {
                 id: slime.id,
@@ -134,7 +141,7 @@ export class OfflineSimulation {
       }
     }
     if (this.player.hp <= 0) {
-      this.player = new Player();
+      this.player = new Player(maxHpForExperience(this.experience));
       this.spawnedChunk = "";
       changed = true;
     }
@@ -147,6 +154,7 @@ export class OfflineSimulation {
       y: this.player.y,
       hp: this.player.hp,
       kills: this.kills,
+      experience: this.experience,
       defeated: [...this.defeated].slice(-2000),
       inventory: this.inventory.snapshot(),
       drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),

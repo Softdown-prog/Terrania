@@ -65,7 +65,7 @@ test(
       const streams: ServerMessage[][] = [[], []];
       for (let i = 0; i < 2; i++) {
         const ws = new WebSocket(
-          "ws://127.0.0.1:" + port + "/ws?room=origins" + (i === 0 ? "&movement=tiles&combat=target" : ""),
+          "ws://127.0.0.1:" + port + "/ws?room=origins" + (i === 0 ? "&movement=tiles&combat=target&progression=xp" : ""),
           { origin: "http://localhost:5173" },
         );
         sockets.push(ws);
@@ -96,6 +96,9 @@ test(
       assert.ok(legacy?.type === "welcome");
       assert.equal(legacy.movement, undefined);
       assert.equal(legacy.combat, undefined);
+      assert.ok(streams[0].some(m => m.type === "state" &&
+        m.players.some(p => p.id === welcome.id && p.experience === 0)));
+      sockets[0].send(JSON.stringify({ type: "input", x: 0, y: 0, attack: false, experience: 3000 }));
       sockets[0].send(JSON.stringify({ type: "walk", target: { x: 78, y: 18 } }));
       sockets[1].send(JSON.stringify({ type: "input", x: 1, y: 0, attack: false }));
       await until(() =>
@@ -121,8 +124,10 @@ test(
       sockets[0].send(JSON.stringify({ type: "target", id: target }));
       await until(() => streams[0].some(m => m.type === "state" && m.focus?.id === target));
       await until(() => streams[1].some(m => m.type === "state" && m.focus === undefined &&
-        m.players.some(p => p.id === welcome.id && p.kills === 1) &&
+        m.players.some(p => p.id === welcome.id && p.kills === 1 && p.experience === undefined) &&
         !m.mobs.some(mob => mob.id === target)), 8_000);
+      await until(() => streams[0].some(m => m.type === "state" &&
+        m.players.some(p => p.id === welcome.id && p.kills === 1 && p.experience === 10)));
       sockets[1].terminate();
       let count = await presence();
       for (let i = 0; i < 40 && count.online !== 1; i++) { await pause(20); count = await presence(); }

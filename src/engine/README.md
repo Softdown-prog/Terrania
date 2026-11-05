@@ -8,6 +8,8 @@
 
 **Ataque clássico:** o golpe é vinculado ao alvo no início da preparação. Trocar, cancelar ou perder esse alvo invalida o golpe pendente e preserva a recarga. Selecionar novamente a criatura antes do impacto não recupera o golpe invalidado. `reset()` é exclusivo da troca de simulação/jogador. A regressão está em `tests/classic-combat.test.ts`.
 
+**Progressão:** XP é a fonte para nível e vida máxima. A simulação solo e a sala Node creditam a recompensa do catálogo no abate e compartilham a curva de `Experience.ts`.
+
 **Verificação:** npm test; Playwright ao afetar movimento/seleção.
 
 **Limites:** Não importar Angular, Phaser ou browser; motor online Go/Node é separado e requer paridade.

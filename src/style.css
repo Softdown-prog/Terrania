@@ -119,6 +119,26 @@ input:focus-visible {
   background: linear-gradient(90deg, #af6249, #dfab73);
   transition: width 0.15s;
 }
+.xp-progress {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  color: #e4caff;
+  font-size: 8px;
+  white-space: nowrap;
+}
+.xp-track {
+  flex: 1;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #2d203e;
+}
+#xpFill {
+  height: 100%;
+  background: #b986ff;
+}
 .quest {
   border-left: 1px solid var(--line);
   padding-left: 24px;

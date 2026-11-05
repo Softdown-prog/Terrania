@@ -4,11 +4,12 @@ import {
   ATTACK_DURATION,
   ATTACK_WINDUP,
 } from "../engine/combat.ts";
+import { BASE_MAX_HP } from "../engine/Experience.ts";
 export class Player {
   x = 16;
   y = 16;
-  hp = 100;
-  maxHp = 100;
+  hp: number;
+  maxHp: number;
   vx = 0;
   vy = 0;
   faceX = 0;
@@ -21,6 +22,10 @@ export class Player {
   private knockX = 0;
   private knockY = 0;
   private strikePending = false;
+  constructor(maxHp = BASE_MAX_HP) {
+    this.hp = maxHp;
+    this.maxHp = maxHp;
+  }
   update(dt: number, dir: { x: number; y: number }, world: CollisionMap,
     timersOnly = false): void {
     if (!Number.isFinite(dt) || dt <= 0) return;

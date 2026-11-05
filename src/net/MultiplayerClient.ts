@@ -52,6 +52,7 @@ export class MultiplayerClient {
       url.searchParams.set("room", this.room);
       url.searchParams.set("movement", "tiles");
       url.searchParams.set("combat", "target");
+      url.searchParams.set("progression", "xp");
       this.onStatus("Conectando à VPS…");
       const socket = new WebSocket(url);
       this.socket = socket;

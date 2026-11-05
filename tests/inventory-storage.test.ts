@@ -22,6 +22,7 @@ test("localStorage antigo migra para bolsa e a recompensa única sobrevive ao re
     const oldSave = loadLocalSave();
     assert.ok(oldSave);
     assert.equal(oldSave.kills, 5);
+    assert.equal(oldSave.experience, 0);
     const originalGame = new OfflineSimulation(oldSave.seed, oldSave);
     assert.equal(originalGame.inventory.potion, 0);
     assert.equal(originalGame.inventory.claimAelaReward(originalGame.kills), true);
@@ -46,6 +47,13 @@ test("localStorage antigo migra para bolsa e a recompensa única sobrevive ao re
     assert.equal(sanitized?.inventory?.potion, 0);
     assert.equal(sanitized?.inventory?.questRewardClaimed, false);
     assert.deepEqual(sanitized?.drops, []);
+    store.set(KEY, JSON.stringify({ ...nextGame.snapshot(), experience: 30, hp: 107 }));
+    const progressed = loadLocalSave();
+    assert.equal(progressed?.experience, 30);
+    assert.equal(progressed?.hp, 107);
+    assert.equal(new OfflineSimulation(nextGame.seed, progressed ?? undefined).player.maxHp, 110);
+    store.set(KEY, JSON.stringify({ ...nextGame.snapshot(), experience: -20, hp: 107 }));
+    assert.equal(loadLocalSave()?.hp, 100);
   } finally {
     if (original) Object.defineProperty(globalThis, "localStorage", original);
     else Reflect.deleteProperty(globalThis, "localStorage");
