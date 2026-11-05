@@ -1,10 +1,13 @@
 import { Injectable, signal } from '@angular/core';
-import type { Player } from '../actors/Player.ts';
-import type { Inventory } from '../engine/Inventory.ts';
-import type { GameUi, Preferences } from '../ui/GameUi.ts';
+import type { GameUi, HeroHudState, NearbyAction, Preferences } from '../ui/GameUi.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
-import type { Npc } from '../world/npcs.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
+
+const ACTION_LABELS: Record<NearbyAction, string> = {
+  talk: 'Conversar',
+  read: 'Ler',
+  enter: 'Entrar',
+};
 
 @Injectable()
 export class HudService implements GameUi {
@@ -86,8 +89,8 @@ export class HudService implements GameUi {
   newWorld(): void { this.newWorldCallback(); }
   talk(): void { this.talkCallback(); }
   usePotion(): void { this.inventoryFeedback.set(this.potionCallback()); }
-  updateInventory(inventory: Inventory, online: boolean): void {
-    this.gel.set(inventory.gel); this.potions.set(inventory.potion); this.online.set(online);
+  updateInventory(gel: number, potions: number, online: boolean): void {
+    this.gel.set(gel); this.potions.set(potions); this.online.set(online);
   }
   setStatus(status: string): void { this.status.set(status); }
   setClassicMode(enabled: boolean): void { this.classicMode.set(enabled); }
@@ -96,9 +99,9 @@ export class HudService implements GameUi {
   setOnline(online: boolean): void { this.online.set(online); }
   setSeed(seed: number): void { this.seed.set(seed); }
   setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }
-  setNearbyNpc(npc: Npc | null): void {
-    this.talkVisible.set(npc !== null);
-    if (npc) this.talkLabel.set((npc.kind === 'door' ? 'Entrar' : npc.kind === 'sign' ? 'Ler' : 'Conversar') + ' (E)');
+  setNearbyAction(action: NearbyAction | null): void {
+    this.talkVisible.set(action !== null);
+    if (action) this.talkLabel.set(`${ACTION_LABELS[action]} (E)`);
   }
   showNpcDialogue(name: string, role: string, lines: readonly string[]): void {
     this.npcLines = lines;
@@ -122,11 +125,11 @@ export class HudService implements GameUi {
     this.quest.set(name); this.questProgress.set('E ou porta: sair');
     this.coords.set('Interior · Vila da Travessia');
   }
-  update(player: Player, quest: AelaQuestProgress): void {
-    this.hp.set(player.hp); this.maxHp.set(player.maxHp);
+  updateHero(hero: HeroHudState, quest: AelaQuestProgress): void {
+    this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);
     this.quest.set(quest.completed ? 'Clareira protegida' : 'Proteja a clareira');
     this.questProgress.set(quest.completed ? 'Missão concluída ✓' : `${quest.defeated} / ${quest.goal} slimes`);
     this.questPercent.set(quest.defeated / quest.goal * 100);
-    this.coords.set(`X ${Math.floor(player.x / 32)} · Y ${Math.floor(player.y / 32)}`);
+    this.coords.set(`X ${hero.tileX} · Y ${hero.tileY}`);
   }
 }

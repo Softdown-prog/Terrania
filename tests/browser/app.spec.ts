@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { BUILDINGS, SIGNS } from '../../src/world/village.ts';
 
 test('site Angular preserva páginas, menu, links de sala e carregamento direto', async ({ page }) => {
   const errors: string[] = [];
@@ -102,6 +103,39 @@ test('HUD e diálogo da Aela exibem o progresso do jogo e a recompensa é entreg
     const save = JSON.parse(localStorage.getItem('terrania-origins-v1') ?? '{}');
     return save.inventory;
   })).toEqual({ gel: 0, potion: 2, questRewardClaimed: true });
+});
+
+test('HUD oferece ler placa, entrar e sair conforme a interação do mundo', async ({ page }, info) => {
+  const [council] = BUILDINGS;
+  const [sign] = SIGNS;
+  await page.addInitScript(({ sign, door }) => {
+    const seed = Number(new URLSearchParams(location.search).get('seed'));
+    const point = seed === 42 ? sign : door;
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({
+      seed, x: point.x, y: point.y, hp: 100, kills: 0, defeated: [],
+    }));
+  }, { sign: { x: sign.x, y: sign.y + 24 }, door: { x: council.x, y: council.y + 29 } });
+  const action = page.locator('#talkButton');
+  const interact = () => info.project.name === 'android' ? action.tap() : action.click();
+
+  await page.goto('/jogar/?modo=solo&seed=42');
+  await expect(action).toHaveAccessibleName('Ler (E)');
+  await interact();
+  await expect(page.locator('#npcDialog')).toBeVisible();
+  await expect(page.locator('#npcName')).toHaveText(sign.name);
+
+  await page.goto('/jogar/?modo=solo&seed=842136');
+  await expect(action).toHaveAccessibleName('Entrar (E)');
+  const outside = page.locator('#coords');
+  await expect(outside).toHaveText('X 11 · Y -2');
+  await interact();
+  await expect(action).toHaveAccessibleName('Sair (E)');
+  await expect(page.locator('#quest')).toHaveText(council.name);
+  await expect(page.locator('#npcDialog')).toBeHidden();
+  await interact();
+  await expect(action).toHaveAccessibleName('Entrar (E)');
+  await expect(outside).toHaveText('X 11 · Y -2');
+  await expect(page.locator('#questProgress')).toHaveText('0 / 5 slimes');
 });
 
 test('painel consulta conexões reais em duas salas, atualiza 2→1→0 e não inventa zero nas falhas', async ({ page, context }) => {

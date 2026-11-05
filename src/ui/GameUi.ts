@@ -1,6 +1,3 @@
-import type { Player } from '../actors/Player.ts';
-import type { Inventory } from '../engine/Inventory.ts';
-import type { Npc } from '../world/npcs.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 
@@ -10,7 +7,16 @@ export interface Preferences {
   cameraMotion: boolean;
 }
 
-/** The simulation knows this port, never Angular components or DOM panels. */
+export interface HeroHudState {
+  readonly hp: number;
+  readonly maxHp: number;
+  readonly tileX: number;
+  readonly tileY: number;
+}
+
+export type NearbyAction = 'talk' | 'read' | 'enter';
+
+/** Data and commands exchanged between the game coordinator and the HUD. */
 export interface GameUi {
   readonly menuOpen: boolean;
   loadPreferences(): Preferences;
@@ -18,8 +24,8 @@ export interface GameUi {
   onNewWorld(callback: () => void): void;
   onTalk(callback: () => void): void;
   onPotionUse(callback: () => string): void;
-  updateInventory(inventory: Inventory, online: boolean): void;
-  update(player: Player, quest: AelaQuestProgress): void;
+  updateInventory(gel: number, potions: number, online: boolean): void;
+  updateHero(hero: HeroHudState, quest: AelaQuestProgress): void;
   setOnline(online: boolean): void;
   setStatus(status: string): void;
   setClassicMode(enabled: boolean): void;
@@ -30,7 +36,7 @@ export interface GameUi {
   setBattleCreatures(creatures: readonly BattleCreature[], targetId: string | null): void;
   setSeed(seed: number): void;
   setPlayerCount(count: number, online: boolean): void;
-  setNearbyNpc(npc: Npc | null): void;
+  setNearbyAction(action: NearbyAction | null): void;
   showNpcDialogue(name: string, role: string, lines: readonly string[]): void;
   setInterior(name: string): void;
 }

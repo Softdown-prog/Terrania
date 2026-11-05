@@ -3,18 +3,29 @@ import { expect, test } from "@playwright/test";
 test("CLASSIC-004: passos opt-in avançam uma célula e param quando o controle é solto", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
+  const start = new Date("2026-01-01T00:00:00Z");
+  await page.clock.install({ time: start });
+  await page.clock.pauseAt(new Date(start.getTime() + 1000));
   await page.goto("/jogar/?modo=classico&passos=1");
-  await expect(page.locator("canvas#game")).toBeVisible();
+  await expect.poll(async () => {
+    await page.clock.runFor(32);
+    return page.locator("canvas#game").count();
+  }).toBe(1);
+  await page.clock.runFor(64);
   await expect(page.locator("#classicTileHint")).toContainText("PASSOS 32×32");
   await expect(page.locator("#coords")).toContainText("X 0 · Y 0");
+  // Release after crossing the tile edge and before the first step finishes.
   await page.keyboard.down("d");
-  await expect(page.locator("#coords")).toContainText("X 1 · Y 0", { timeout: 8000 });
+  await page.clock.runFor(180);
   await page.keyboard.up("d");
-  // A committed step is allowed to finish, but no second step is queued.
-  await page.waitForTimeout(550);
   await expect(page.locator("#coords")).toContainText("X 1 · Y 0");
-  await page.waitForTimeout(250);
+  await page.clock.runFor(800);
   await expect(page.locator("#coords")).toContainText("X 1 · Y 0");
+  expect(await page.evaluate(() => {
+    window.dispatchEvent(new Event("pagehide"));
+    const save = JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
+    return [save?.x, save?.y];
+  })).toEqual([48, 16]);
   await expect(page.locator("#battleToggle")).toBeVisible();
   expect(errors).toEqual([]);
 });

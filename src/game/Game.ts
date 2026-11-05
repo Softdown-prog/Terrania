@@ -23,6 +23,8 @@ import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 
+const NPC_ACTIONS = { character: "talk", sign: "read", door: "enter" } as const;
+
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
   private readonly input = new Input();
@@ -107,11 +109,20 @@ export class Game {
           ? "Sua vida já está completa."
           : "Você não possui poções de cura.";
       this.save();
-      this.hud.update(this.sim.player, aelaQuestProgress(this.sim.kills));
-      this.hud.updateInventory(this.sim.inventory, false);
+      this.updateHud(false);
       return "Poção utilizada! Vida restaurada em até 35 pontos.";
     });
-    this.hud.updateInventory(this.sim.inventory, false);
+    this.updateHud(false);
+  }
+  private updateHud(online: boolean): void {
+    const { player, inventory, kills } = this.sim;
+    this.hud.updateHero({
+      hp: player.hp,
+      maxHp: player.maxHp,
+      tileX: Math.floor(player.x / TILE_SIZE),
+      tileY: Math.floor(player.y / TILE_SIZE),
+    }, aelaQuestProgress(kills));
+    this.hud.updateInventory(inventory.gel, inventory.potion, online);
   }
   /** Battle entries are derived from the same camera/viewport as the canvas. */
   private hudBattleRows() {
@@ -327,8 +338,7 @@ export class Game {
           this.saveClock += dt;
           if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
         }
-        this.hud.update(this.sim.player, aelaQuestProgress(this.sim.kills));
-        this.hud.updateInventory(this.sim.inventory, online);
+        this.updateHud(online);
         this.hud.setInterior(room.building.name);
         this.scene.renderInterior(room, this.navigator.target, this.clock);
         return;
@@ -401,12 +411,12 @@ export class Game {
         this.interior || online ? null : this.classicCombat.targetId,
       );
     }
-    this.hud.update(this.sim.player, aelaQuestProgress(this.sim.kills));
+    this.updateHud(online);
     const focusedLabel = this.classicMode ? this.classicCombat.label(this.sim.slimes) : null;
     this.hud.setCombatTarget(focusedLabel && this.classicPursuit.destination
       ? focusedLabel + " · seguindo" : focusedLabel);
-    this.hud.updateInventory(this.sim.inventory, online);
-    this.hud.setNearbyNpc(nearestNpc(this.sim.player.x, this.sim.player.y));
+    const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
+    this.hud.setNearbyAction(npc ? NPC_ACTIONS[npc.kind ?? "character"] : null);
     this.scene.render(
       this.world,
       this.camera,
