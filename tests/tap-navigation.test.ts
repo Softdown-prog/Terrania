@@ -1,10 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { findWalkingPath, clearPath, TapNavigator } from "../src/engine/TapNavigator.ts";
+import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
 import { Player } from "../src/actors/Player.ts";
 import { isShortTap, screenToWorld, screenToInterior } from "../src/input/tap.ts";
 import { interiorCollision, ROOM_FURNITURE } from "../src/engine/InteriorRoom.ts";
-import type { CollisionMap } from "../src/world/collision.ts";
+import { SeedCollision, type CollisionMap } from "../src/world/collision.ts";
 
 const open: CollisionMap = { canMove: () => true };
 const wall: CollisionMap = { canMove: (x, y) =>
@@ -86,5 +87,53 @@ test("personagem realmente alcança o destino contornando parede sem atravessá-
   }
   assert.ok(Math.hypot(player.x - destination.x, player.y - destination.y) < 12,
     "o herói deve chegar próximo ao toque depois do desvio");
+  assert.equal(navigator.target, null);
+});
+
+function walkTileRoute(
+  hero: Player, navigator: TapNavigator, walker: ClassicTileWalker, world: CollisionMap,
+): void {
+  for (let frame = 0; frame < 600 && (navigator.target || walker.destination); frame++) {
+    const direction = walker.destination ? { x: 0, y: 0 } : navigator.direction(hero, 1 / 60);
+    walker.advance(1 / 60, direction, hero, world);
+    assert.equal(world.canMove(hero.x, hero.y), true);
+  }
+  assert.equal(navigator.target, null);
+  assert.equal(walker.destination, null);
+}
+
+test("toque clássico contorna a Casa do Conselho com passos executáveis de 32 px", () => {
+  const world = new SeedCollision(842136);
+  const hero = new Player(), navigator = new TapNavigator(), walker = new ClassicTileWalker();
+  Object.assign(hero, { x: 240, y: -144 });
+  const target = { x: 304, y: -48 };
+  assert.equal(clearPath({ x: 272, y: -112 }, { x: 304, y: -80 }, world), false);
+  assert.equal(navigator.go(hero, target, world, true), true);
+  assert.deepEqual(navigator.target, target);
+  walkTileRoute(hero, navigator, walker, world);
+  assert.deepEqual({ x: hero.x, y: hero.y }, target);
+});
+
+test("toque clássico durante um passo muda a rota depois de chegar ao centro", () => {
+  const hero = new Player(), navigator = new TapNavigator(), walker = new ClassicTileWalker();
+  hero.x = 25;
+  hero.y = 12;
+  assert.equal(navigator.go(hero, { x: 112, y: 16 }, open, true), true);
+  walker.advance(1 / 60, navigator.direction(hero, 1 / 60), hero, open);
+  const committed = walker.destination;
+  assert.deepEqual(committed, { x: 48, y: 16 });
+  assert.ok(committed);
+  assert.ok(hero.x > 25 && hero.x < 48, "o save antigo não deve ser teleportado");
+  assert.equal(navigator.go(committed, { x: 48, y: -48 }, open, true), true);
+  walkTileRoute(hero, navigator, walker, open);
+  assert.deepEqual({ x: hero.x, y: hero.y }, { x: 48, y: -48 });
+});
+
+test("toque clássico ignora o tile atual e rejeita destinos bloqueados ou desconectados", () => {
+  const hero = new Player(), navigator = new TapNavigator();
+  const split: CollisionMap = { canMove: x => x < 32 || x > 64 };
+  assert.equal(navigator.go(hero, { x: 16, y: 16 }, open, true), true);
+  assert.equal(navigator.go(hero, { x: 48, y: 16 }, split, true), false);
+  assert.equal(navigator.go(hero, { x: 80, y: 16 }, split, true), false);
   assert.equal(navigator.target, null);
 });

@@ -65,7 +65,7 @@ test(
       const streams: ServerMessage[][] = [[], []];
       for (let i = 0; i < 2; i++) {
         const ws = new WebSocket(
-          "ws://127.0.0.1:" + port + "/ws?room=origins",
+          "ws://127.0.0.1:" + port + "/ws?room=origins" + (i === 0 ? "&movement=tiles" : ""),
           { origin: "http://localhost:5173" },
         );
         sockets.push(ws);
@@ -90,19 +90,22 @@ test(
       assert.ok(welcome?.type === "welcome");
       assert.equal(welcome.version, PROTOCOL_VERSION);
       assert.equal(welcome.seed, 842136);
-      for (let i = 0; i < 6; i++) {
-        sockets[0].send(
-          JSON.stringify({ type: "input", x: 1, y: 0, attack: i === 0 }),
-        );
-        await pause(50);
-      }
+      assert.equal(welcome.movement, "tiles");
+      const legacy = streams[1].find((m) => m.type === "welcome");
+      assert.ok(legacy?.type === "welcome");
+      assert.equal(legacy.movement, undefined);
+      sockets[0].send(JSON.stringify({ type: "walk", target: { x: 78, y: 18 } }));
+      sockets[1].send(JSON.stringify({ type: "input", x: 1, y: 0, attack: false }));
       await until(() =>
         streams[1].some(
           (m) =>
             m.type === "state" &&
-            m.players.some((p) => p.id === welcome.id && p.x > 32),
+            m.players.some((p) => p.id === welcome.id && p.x === 80 && p.y === 16) &&
+            m.players.some((p) => p.id === legacy.id && p.x > 16),
         ),
       );
+      await until(() => streams[0].some(m => m.type === "state" && m.walkTarget === null &&
+        m.players.some(p => p.id === welcome.id && p.x === 80 && p.y === 16)));
       const states = streams[1].filter((m) => m.type === "state");
       assert.ok(
         states.every((state) =>

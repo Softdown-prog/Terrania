@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("CLASSIC-004: passos opt-in avançam uma célula e param quando o controle é solto", async ({ page }) => {
+test("a URL clássica legada termina o passo quando o controle é solto", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   const start = new Date("2026-01-01T00:00:00Z");
@@ -30,19 +30,43 @@ test("CLASSIC-004: passos opt-in avançam uma célula e param quando o controle 
   expect(errors).toEqual([]);
 });
 
-test("o experimento não invade solo normal, clássico contínuo nem multiplayer", async ({ page }) => {
+test("o painel de combate clássico pertence somente à entrada clássica", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/jogar/?modo=classico");
   await expect(page.locator("canvas#game")).toBeVisible();
-  await expect(page.locator("#classicTileHint")).toHaveCount(0);
-  await page.goto("/jogar/?modo=solo&passos=1");
+  await expect(page.locator("#classicTileHint")).toBeVisible();
+  await page.goto("/jogar/?modo=solo");
   await expect(page.locator("canvas#game")).toBeVisible();
   await expect(page.locator("#classicTileHint")).toHaveCount(0);
-  await page.goto("/jogar/?room=tile-isolation&passos=1");
+  await page.goto("/jogar/?room=tile-isolation");
   await expect(page.locator("#multiplayerStatus")).toContainText("Online");
   await expect(page.locator("#classicTileHint")).toHaveCount(0);
   expect(errors).toEqual([]);
+});
+
+test("toque no solo normal contorna a Casa do Conselho e chega ao centro do tile", async ({ page }, info) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("terrania-origins-v1", JSON.stringify({
+      seed: 842136, x: 240, y: -144, hp: 100, kills: 0, defeated: [],
+    }));
+    localStorage.setItem("terrania-preferences-v1", JSON.stringify({
+      zoom: 1, effects: false, cameraMotion: false,
+    }));
+  });
+  await page.goto("/jogar/?modo=solo");
+  const canvas = page.locator("canvas#game");
+  await expect(page.locator("#coords")).toHaveText("X 7 · Y -5");
+  const size = await canvas.boundingBox();
+  expect(size).not.toBeNull();
+  const position = { x: size!.width / 2 + 64, y: size!.height / 2 + 96 };
+  if (info.project.name === "android") await canvas.tap({ position });
+  else await canvas.click({ position });
+  await expect.poll(() => page.evaluate(() => {
+    window.dispatchEvent(new Event("pagehide"));
+    const save = JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
+    return [save?.x, save?.y];
+  }), { timeout: 8000 }).toEqual([304, -48]);
 });
 
 test("CLASSIC-004 usa controles responsivos também em paisagem", async ({ page }) => {
@@ -72,7 +96,7 @@ for (const layout of ["normal", "landscape"] as const) {
     });
     await page.setViewportSize(layout === "landscape" ? { width: 600, height: 390 } :
       { width: info.project.name === "android" ? 390 : 1200, height: 844 });
-    await page.goto("/jogar/?modo=classico&passos=1");
+    await page.goto("/jogar/?modo=classico");
     await expect(page.locator("canvas#game")).toBeVisible();
     await expect(page.locator("#classicTileHint")).toBeVisible();
     const toggle = page.locator("#battleToggle");

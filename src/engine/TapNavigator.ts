@@ -1,14 +1,19 @@
 import type { CollisionMap } from "../world/collision.ts";
+import { TILE_SIZE } from "../world/terrain.ts";
 
 export interface Point { readonly x: number; readonly y: number }
 const STEP = 16;
+const MAX_ROUTE_DISTANCE = 650;
 const DIRECTIONS = [
   [1, 0], [-1, 0], [0, 1], [0, -1],
   [1, 1], [1, -1], [-1, 1], [-1, -1],
 ] as const;
 const dist = (a: Point, b: Point): number => Math.hypot(a.x - b.x, a.y - b.y);
-const cellPoint = (gx: number, gy: number): Point => ({ x: gx * STEP + STEP / 2, y: gy * STEP + STEP / 2 });
+const cellPoint = (gx: number, gy: number, size = STEP): Point =>
+  ({ x: (gx + 0.5) * size, y: (gy + 0.5) * size });
 const cellKey = (gx: number, gy: number): string => gx + "," + gy;
+const samePoint = (a: Point, b: Point): boolean => a.x === b.x && a.y === b.y;
+const tile = (position: number): number => Math.floor(position / TILE_SIZE);
 
 /** Segmento verificado a cada 4 unidades: evita cortar quinas, árvores e móveis. */
 export function clearPath(from: Point, to: Point, collision: CollisionMap): boolean {
@@ -28,7 +33,7 @@ export function clearPath(from: Point, to: Point, collision: CollisionMap): bool
  */
 export function findWalkingPath(from: Point, target: Point, collision: CollisionMap): Point[] | null {
   if (![from.x, from.y, target.x, target.y].every(Number.isFinite) ||
-      dist(from, target) > 650 ||
+      dist(from, target) > MAX_ROUTE_DISTANCE ||
       !collision.canMove(from.x, from.y) || !collision.canMove(target.x, target.y)) return null;
   if (clearPath(from, target, collision)) return [target];
 
@@ -55,9 +60,38 @@ export function findWalkingPath(from: Point, target: Point, collision: Collision
   }
   if (!goals.size) return null;
 
-  type Entry = { x: number; y: number; g: number; f: number };
-  const open: Entry[] = [{ x: start.x, y: start.y, g: 0, f: dist(start.point, target) }];
-  const score = new Map<string, number>([[cellKey(start.x, start.y), 0]]);
+  const points = searchGrid(
+    [{ x: start.x, y: start.y, g: 0, f: dist(start.point, target) / STEP }],
+    goals, target, collision, { x: fx, y: fy, size: STEP, maxOffset: 43 },
+  );
+  if (!points) return null;
+  points.push(target);
+  // Remove curvas desnecessárias para quem anda com movimento contínuo.
+  const result: Point[] = [];
+  let previous = from;
+  for (let i = 0; i < points.length;) {
+    let next = i;
+    for (let j = i + 1; j < points.length; j++) {
+      const candidate = points[j];
+      if (candidate && clearPath(previous, candidate, collision)) next = j;
+    }
+    const waypoint = points[next];
+    if (!waypoint) return null;
+    result.push(waypoint);
+    previous = waypoint;
+    i = next + 1;
+  }
+  return result;
+}
+
+type Entry = { x: number; y: number; g: number; f: number };
+
+function searchGrid(
+  open: Entry[], goals: ReadonlySet<string>, target: Point, collision: CollisionMap,
+  origin: Point & { size: number; maxOffset: number },
+): Point[] | null {
+  const { size, maxOffset } = origin;
+  const score = new Map(open.map(entry => [cellKey(entry.x, entry.y), entry.g]));
   const parent = new Map<string, string>();
   const closed = new Set<string>();
   for (let visited = 0; open.length && visited < 2200; visited++) {
@@ -74,51 +108,58 @@ export function findWalkingPath(from: Point, target: Point, collision: Collision
     closed.add(key);
     if (goals.has(key)) {
       const points: Point[] = [];
-      let cursor = key;
-      while (cursor !== cellKey(start.x, start.y)) {
+      for (let cursor: string | undefined = key; cursor !== undefined; cursor = parent.get(cursor)) {
         const [x, y] = cursor.split(",").map(Number);
         if (x === undefined || y === undefined) return null;
-        points.push(cellPoint(x, y));
-        const previous = parent.get(cursor);
-        if (!previous) return null;
-        cursor = previous;
+        points.push(cellPoint(x, y, size));
       }
-      points.reverse();
-      // Começar no centro alcançável é necessário quando o primeiro desvio
-      // não é visível diretamente da posição exata do herói.
-      points.unshift(start.point);
-      points.push(target);
-      // Remove curvas desnecessárias sem atravessar colisões.
-      const result: Point[] = [];
-      let previous = from;
-      for (let i = 0; i < points.length;) {
-        let next = i;
-        for (let j = i + 1; j < points.length; j++) {
-          const candidate = points[j];
-          if (candidate && clearPath(previous, candidate, collision)) next = j;
-        }
-        const waypoint = points[next];
-        if (!waypoint) return null;
-        result.push(waypoint);
-        previous = waypoint;
-        i = next + 1;
-      }
-      return result;
+      return points.reverse();
     }
-    const center = cellPoint(current.x, current.y);
+    const center = cellPoint(current.x, current.y, size);
     for (const [dx, dy] of DIRECTIONS) {
       const x = current.x + dx, y = current.y + dy;
-      if (Math.abs(x - fx) > 43 || Math.abs(y - fy) > 43) continue;
-      const neighbor = cellPoint(x, y), neighborKey = cellKey(x, y);
+      if (Math.abs(x - origin.x) > maxOffset || Math.abs(y - origin.y) > maxOffset) continue;
+      const neighbor = cellPoint(x, y, size), neighborKey = cellKey(x, y);
       if (closed.has(neighborKey) || !clearPath(center, neighbor, collision)) continue;
       const g = current.g + (dx && dy ? Math.SQRT2 : 1);
       if (g >= (score.get(neighborKey) ?? Infinity)) continue;
       score.set(neighborKey, g);
       parent.set(neighborKey, key);
-      open.push({ x, y, g, f: g + dist(neighbor, target) / STEP });
+      open.push({ x, y, g, f: g + dist(neighbor, target) / size });
     }
   }
   return null;
+}
+
+function findTileWalkingPath(
+  from: Point, target: Point, collision: CollisionMap, maxDistance: number,
+): Point[] | null {
+  if (![from.x, from.y, target.x, target.y].every(Number.isFinite) ||
+      dist(from, target) > maxDistance ||
+      !collision.canMove(from.x, from.y) || !collision.canMove(target.x, target.y)) return null;
+  const origin = {
+    x: tile(from.x), y: tile(from.y), size: TILE_SIZE,
+    maxOffset: Math.ceil(maxDistance / TILE_SIZE) + 1,
+  };
+  const tx = tile(target.x), ty = tile(target.y);
+  if (!samePoint(target, cellPoint(tx, ty, TILE_SIZE))) return null;
+  const goal = cellKey(tx, ty);
+  if (cellKey(origin.x, origin.y) === goal) return [];
+
+  const starts: Entry[] = [];
+  const centered = samePoint(from, cellPoint(origin.x, origin.y, TILE_SIZE));
+  // Old saves may start off-center. The first step must reach an adjacent center.
+  const offsets = centered ? [[0, 0] as const] : DIRECTIONS;
+  for (const [dx, dy] of offsets) {
+    const x = origin.x + dx, y = origin.y + dy;
+    const point = cellPoint(x, y, TILE_SIZE);
+    if (!clearPath(from, point, collision)) continue;
+    const g = dist(from, point) / TILE_SIZE;
+    starts.push({ x, y, g, f: g + dist(point, target) / TILE_SIZE });
+  }
+  const path = searchGrid(starts, new Set([goal]), target, collision, origin);
+  if (centered) path?.shift();
+  return path;
 }
 
 export class TapNavigator {
@@ -126,6 +167,7 @@ export class TapNavigator {
   private destination: Point | null = null;
   private last: Point | null = null;
   private stuckFor = 0;
+  private tileSteps = false;
 
   get target(): Point | null { return this.destination; }
 
@@ -136,10 +178,16 @@ export class TapNavigator {
     this.stuckFor = 0;
   }
 
-  go(from: Point, target: Point, collision: CollisionMap): boolean {
+  /** Tile routes expect the destination at the center of a tile. */
+  go(from: Point, target: Point, collision: CollisionMap, tileSteps = false,
+    maxTileDistance = MAX_ROUTE_DISTANCE): boolean {
     this.cancel();
-    const waypoints = findWalkingPath(from, target, collision);
+    const waypoints = tileSteps
+      ? findTileWalkingPath(from, target, collision, maxTileDistance)
+      : findWalkingPath(from, target, collision);
     if (!waypoints) return false;
+    if (!waypoints.length) return true;
+    this.tileSteps = tileSteps;
     this.waypoints = waypoints;
     this.destination = target;
     this.last = { x: from.x, y: from.y };
@@ -150,7 +198,8 @@ export class TapNavigator {
     const zero = { x: 0, y: 0 };
     if (!this.waypoints.length) return zero;
     const radius = Number.isFinite(arrivalRadius) ? Math.max(1, Math.min(23, arrivalRadius)) : 7;
-    while (this.waypoints[0] && dist(at, this.waypoints[0]) < radius)
+    while (this.waypoints[0] &&
+        (this.tileSteps ? samePoint(at, this.waypoints[0]) : dist(at, this.waypoints[0]) < radius))
       this.waypoints.shift();
     if (!this.waypoints.length) {
       this.cancel();
@@ -166,6 +215,13 @@ export class TapNavigator {
     this.last = { x: at.x, y: at.y };
     const next = this.waypoints[0];
     if (!next) { this.cancel(); return zero; }
+    if (this.tileSteps) {
+      const x = tile(next.x) - tile(at.x);
+      const y = tile(next.y) - tile(at.y);
+      if (Math.abs(x) <= 1 && Math.abs(y) <= 1) return { x, y };
+      this.cancel();
+      return zero;
+    }
     const distance = dist(at, next);
     // Aproximação fina impede oscilações e ultrapassagem da marca de destino.
     const intensity = this.waypoints.length === 1 ? Math.min(1, distance / 23) : 1;

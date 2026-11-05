@@ -4,7 +4,7 @@
 - Navegadores acessam o front-end estático no Cloudflare Pages por HTTPS.
 - Para jogar online, clientes usam WSS na porta 443 com domínio dedicado.
 - Caddy na VPS faz reverse_proxy até o container Node/ws do jogo.
-- O servidor valida movimento, colisão, dano e entidades; o cliente só desenha e envia direção/ataque.
+- O servidor valida movimento, colisão, dano e entidades. Nas sessões com passos por tiles, calcula também a rota para o destino recebido. O navegador interpola os snapshots. Veja o [contrato de caminhada](adr/0003-caminhada-por-tiles.md).
 - Terreno é reproduzível pela mesma seed em cliente e servidor.
 
 ## Funcionalidades iniciais
