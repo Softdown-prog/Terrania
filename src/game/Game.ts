@@ -257,7 +257,8 @@ export class Game {
     if (this.input.consumeTalk() && !this.hud.menuOpen) this.talkToNpc();
     const paused = this.hud.menuOpen || document.hidden;
     if (paused) this.input.clear();
-    const manual = paused ? { x: 0, y: 0 } : this.input.movement();
+    const still = { x: 0, y: 0 };
+    const manual = paused ? still : this.input.movement();
     const attack = !paused && this.input.consumeAttack();
     const stopTarget = this.classicMode && this.input.consumeCancelTarget();
     if (stopTarget) {
@@ -276,6 +277,8 @@ export class Game {
     if (paused || manualActive || (!this.classicMode && attack)) this.navigator.cancel();
     if (this.classicMode && manualActive) this.classicPursuit.suspend();
     const tap = this.input.consumeTap();
+    const walkByTiles = this.classicTiles && !this.interior;
+    const committedStep = walkByTiles ? this.classicTileWalker.destination : null;
     // O servidor recebe somente vetores de movimento e segue autoritativo no multiplayer.
     if (tap && !paused && !manualActive && !attack) {
       const destination = this.interior
@@ -295,19 +298,18 @@ export class Game {
           this.classicAutoFollow = false;
           this.classicPursuit.reset();
         }
-        this.navigator.go(player,
-          this.classicTiles && !this.interior ? this.tileCenter(destination) : destination,
-          collision);
+        this.navigator.go(committedStep ?? player,
+          walkByTiles ? this.tileCenter(destination) : destination, collision, walkByTiles);
       }
     }
     const controlled = this.interior?.player ?? this.sim.player;
-    const movement = paused ? { x: 0, y: 0 } : manualActive ? manual :
-      this.navigator.target ? this.navigator.direction(controlled, dt,
-        this.classicTiles && !this.interior ? TILE_SIZE * 0.68 : 7) :
+    const tileRoute = walkByTiles && this.navigator.target !== null;
+    const movement = paused ? still : manualActive ? manual : tileRoute ? still :
+      this.navigator.target ? this.navigator.direction(controlled, dt) :
       this.classicMode && this.classicAutoFollow && !this.interior ?
         this.classicPursuit.direction(dt, this.sim.player,
           this.classicCombat.targetId, this.sim.slimes, this.sim.collision, this.classicTiles) :
-        { x: 0, y: 0 };
+        still;
     this.pendingAttack ||= !this.classicMode && attack;
     if (this.interior) {
       const room = this.interior;
@@ -345,7 +347,11 @@ export class Game {
           const before = this.sim.player;
           const classicStrike = this.classicMode &&
             this.classicCombat.tick(1 / 60, this.sim.player, this.sim.slimes, this.sim.collision);
-          const changed = this.sim.update(1 / 60, movement,
+          // A rendered frame can advance multiple simulation ticks. Pick the
+          // next tile only when the previous step has reached its center.
+          const stepDirection = tileRoute && this.classicTileWalker.destination === null
+            ? this.navigator.direction(this.sim.player, 1 / 60) : movement;
+          const changed = this.sim.update(1 / 60, stepDirection,
             classicStrike || this.pendingAttack,
             this.classicMode ? this.classicCombat.strikeTargetId : undefined,
             this.classicTiles ? this.classicTileWalker : undefined);

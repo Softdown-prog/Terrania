@@ -34,6 +34,30 @@ test("o experimento não invade solo normal, clássico contínuo nem multiplayer
   expect(errors).toEqual([]);
 });
 
+test("toque no terreno contorna a Casa do Conselho e chega ao centro do tile", async ({ page }, info) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("terrania-origins-v1", JSON.stringify({
+      seed: 842136, x: 240, y: -144, hp: 100, kills: 0, defeated: [],
+    }));
+    localStorage.setItem("terrania-preferences-v1", JSON.stringify({
+      zoom: 1, effects: false, cameraMotion: false,
+    }));
+  });
+  await page.goto("/jogar/?modo=classico&passos=1");
+  const canvas = page.locator("canvas#game");
+  await expect(page.locator("#coords")).toHaveText("X 7 · Y -5");
+  const size = await canvas.boundingBox();
+  expect(size).not.toBeNull();
+  const position = { x: size!.width / 2 + 64, y: size!.height / 2 + 96 };
+  if (info.project.name === "android") await canvas.tap({ position });
+  else await canvas.click({ position });
+  await expect.poll(() => page.evaluate(() => {
+    window.dispatchEvent(new Event("pagehide"));
+    const save = JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
+    return [save?.x, save?.y];
+  }), { timeout: 8000 }).toEqual([304, -48]);
+});
+
 test("CLASSIC-004 usa controles responsivos também em paisagem", async ({ page }) => {
   await page.setViewportSize({ width: 600, height: 390 });
   await page.goto("/jogar/?modo=classico&passos=1");
