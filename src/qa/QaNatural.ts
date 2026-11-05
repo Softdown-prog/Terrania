@@ -123,9 +123,8 @@ export function runNaturalQa(seed = 842136): NaturalReport {
         }
         input = nav.target ? nav.direction(pos, DT) : ZERO;
       }
-      const playerBefore = sim.player;
       step(input, attack);
-      if (sim.player !== playerBefore) { died = true; break; }
+      if (sim.awaitingRespawn) { died = true; break; }
       if (attempts === 15 && !nav.target && d > 110) break;
     }
     const killed = sim.defeated.has(targetMonsterId) &&

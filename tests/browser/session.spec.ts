@@ -1,6 +1,50 @@
 import { test, expect, type WebSocketRoute } from '@playwright/test';
 import { PROTOCOL_VERSION } from '../../src/shared/protocol.ts';
 
+for (const layout of ['normal', 'paisagem'] as const) {
+  test(`derrota solo persiste e retorna à vila com o progresso preservado (${layout})`, async ({ page }, info) => {
+    test.skip(layout === 'paisagem' && info.project.name !== 'android', 'Cobertura da orientação Android');
+    if (layout === 'paisagem') await page.setViewportSize({ width: 600, height: 390 });
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    // The Slime naturally spawns at these coordinates. Start within one hit of defeat.
+    const save = { seed: 842136, x: -560, y: -1008, hp: 1, experience: 50,
+      kills: 5, defeated: ['old-slime'], inventory: { gel: 9, potion: 2, questRewardClaimed: true } };
+    await page.addInitScript(value => {
+      if (!localStorage.getItem('terrania-origins-v1'))
+        localStorage.setItem('terrania-origins-v1', JSON.stringify(value));
+    }, save);
+    await page.goto('/jogar/?modo=solo');
+    const dialog = page.getByRole('dialog', { name: 'Você foi derrotado' });
+    await expect(dialog).toBeVisible();
+    await expect(page.locator('#hpText')).toHaveText('0 / 110');
+    const checkpoint = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
+    expect(checkpoint).toMatchObject({ ...save, hp: 0, awaitingRespawn: true });
+
+    await page.reload();
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    const respawn = dialog.getByRole('button', { name: 'Retornar à vila' });
+    await expect(respawn).toBeFocused();
+    if (info.project.name === 'android') await respawn.tap();
+    else await respawn.press('Enter');
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('#coords')).toHaveText('X 13 · Y 1');
+    await expect(page.locator('#hpText')).toHaveText('110 / 110');
+    await expect(page.locator('#xpText')).toHaveText('XP 20 / 60');
+    await expect(page.locator('#questProgress')).toHaveText('Missão concluída ✓');
+    const revived = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
+    expect(revived).toMatchObject({ ...save, x: 432, y: 48, hp: 110 });
+    expect(revived).not.toHaveProperty('awaitingRespawn');
+
+    await page.keyboard.down('s');
+    await expect(page.locator('#coords')).not.toHaveText('X 13 · Y 1');
+    await page.keyboard.up('s');
+    expect(errors).toEqual([]);
+  });
+}
+
 test('contador para ao sair da tela e consulta novamente ao voltar', async ({ page }) => {
   let requests = 0;
   await page.route('**/presence', async route => {

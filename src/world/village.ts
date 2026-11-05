@@ -9,6 +9,8 @@ export const SIGNS = [
   { id: "entrance", name: "Placa da vila", x: 240, y: 64 },
   { id: "square", name: "Quadro de avisos", x: 448, y: 48 },
 ] as const;
+/** Centro do tile livre ao lado do quadro de avisos. */
+export const VILLAGE_RESPAWN = { x: 432, y: 48 } as const;
 export function villageGround(tx: number, ty: number): "grass" | "path" | null {
   if (tx < 6 || tx > 21 || ty < -7 || ty > 9) return null;
   return Math.abs(ty) <= 1 || (tx >= 13 && tx <= 14 && ty >= -4 && ty <= 6) ? "path" : "grass";

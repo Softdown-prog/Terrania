@@ -25,10 +25,10 @@ Cada microtarefa deve identificar seu módulo no [índice de arquitetura](INDEX.
 
 - [x] **CLASSIC-004 — Movimento em tiles:** passos de 32 px por teclado, joystick e toque no exterior solo e nas salas Node compatíveis. Consulte [GAMEPLAY_CLASSICO.md](GAMEPLAY_CLASSICO.md) para as regras e testes.
 - [x] **Progressão:** abates geram XP, níveis e aumento de vida máxima no solo e na sessão Node. Veja o [contrato de progressão](adr/0005-progressao-por-abates.md).
+- [x] **Derrota e retorno no solo:** a derrota é salva e o jogador escolhe retornar à Vila da Travessia, com a vida cheia e o progresso preservado.
 
 ## Ciclo jogável essencial — etapas futuras, ainda não aprovadas
 
-- [ ] Morte/respawn, cura e retorno ao jogo com regras consistentes.
 - [ ] Loot, inventário e uso de consumíveis sem duplicação de itens.
 - [ ] Equipamentos básicos e atributos que influenciem combate; balancear antes de expandir.
 - [ ] Mana, vocações e magias quando os sistemas anteriores estiverem estáveis.

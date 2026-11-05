@@ -8,4 +8,6 @@
 
 **Verificação:** tests/inventory-storage e tests/simulation.
 
+O campo opcional `awaitingRespawn` só representa uma derrota quando também há vida zero. O save é gravado na derrota e no retorno à vila. Saves antigos sem a marca continuam carregando com pelo menos um ponto de vida.
+
 **Limites:** Save local não substitui banco, backup ou persistência da sessão multiplayer.

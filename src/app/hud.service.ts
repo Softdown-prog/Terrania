@@ -20,6 +20,7 @@ export class HudService implements GameUi {
   readonly battleCreatures = signal<readonly BattleCreature[]>([]);
   readonly battleTargetId = signal<string | null>(null);
   readonly hp = signal(100);
+  readonly awaitingRespawn = signal(false);
   readonly maxHp = signal(100);
   readonly progression = signal<ExperienceProgress | null>(null, {
     equal: (previous, next) => previous === next || (previous !== null && next !== null &&
@@ -49,6 +50,7 @@ export class HudService implements GameUi {
   private newWorldCallback: () => void = () => {};
   private talkCallback: () => void = () => {};
   private potionCallback: () => string = () => '';
+  private respawnCallback: () => void = () => {};
   private stopCombatCallback: () => void = () => {};
   private battleSelectCallback: (id: string) => void = () => {};
 
@@ -76,6 +78,7 @@ export class HudService implements GameUi {
   onNewWorld(callback: () => void): void { this.newWorldCallback = callback; }
   onTalk(callback: () => void): void { this.talkCallback = callback; }
   onPotionUse(callback: () => string): void { this.potionCallback = callback; }
+  onRespawn(callback: () => void): void { this.respawnCallback = callback; }
   onStopCombat(callback: () => void): void { this.stopCombatCallback = callback; }
   onBattleSelect(callback: (id: string) => void): void { this.battleSelectCallback = callback; }
   selectBattleCreature(id: string): void { this.battleSelectCallback(id); }
@@ -93,6 +96,7 @@ export class HudService implements GameUi {
   newWorld(): void { this.newWorldCallback(); }
   talk(): void { this.talkCallback(); }
   usePotion(): void { this.inventoryFeedback.set(this.potionCallback()); }
+  respawn(): void { this.respawnCallback(); }
   updateInventory(gel: number, potions: number, online: boolean): void {
     this.gel.set(gel); this.potions.set(potions); this.online.set(online);
   }
@@ -130,6 +134,7 @@ export class HudService implements GameUi {
   }
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void {
     this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);
+    this.awaitingRespawn.set(hero.awaitingRespawn);
     this.progression.set(hero.progression);
     this.quest.set(quest.completed ? 'Clareira protegida' : 'Proteja a clareira');
     this.questProgress.set(quest.completed ? 'Missão concluída ✓' : `${quest.defeated} / ${quest.goal} slimes`);

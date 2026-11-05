@@ -120,10 +120,12 @@ export function runQaBot(options: QaBotOptions = {}): QaBotReport {
   };
   const advance = (direction: Point): void => {
     const before = position(sim.player);
-    const actor = sim.player;
     sim.update(STEP_SECONDS, direction, false);
-    if (sim.player !== actor) deaths++;
     const travelled = distance(before, sim.player);
+    if (sim.respawn()) {
+      deaths++;
+      navigator.cancel();
+    }
     if (travelled > 0.001) moves++;
     walkedUnits += travelled;
     ticks++;

@@ -120,6 +120,12 @@
       <div class="keyboard-hint" aria-hidden="true">
         <kbd>W A S D</kbd> mover <span>·</span> <kbd>ESPAÇO</kbd> {{ hud.targetCombat() ? 'selecionar alvo' : 'atacar' }} <span>·</span> <kbd>E</kbd> conversar
       </div>
+      <dialog #defeatDialog (cancel)="$event.preventDefault()" (close)="closed()" aria-labelledby="defeatTitle">
+        <span class="dialog-kicker">AVENTURA SOLO</span>
+        <h1 id="defeatTitle">Você foi derrotado</h1>
+        <p>Volte à Vila da Travessia com a vida cheia. Seu XP, sua bolsa e o progresso da missão estão guardados.</p>
+        <button class="primary-button" (click)="hud.respawn()" type="button" autofocus>Retornar à vila</button>
+      </dialog>
       <dialog id="playersDialog" #playersDialog (close)="closed()" aria-labelledby="playersTitle">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar jogadores online">×</button>
         <span class="dialog-kicker">MULTIPLAYER · INFORMAÇÕES DO SERVIDOR</span>
@@ -229,7 +235,7 @@
           </div>
           <div>
             <dt>Vida zerada</dt>
-            <dd>Você retorna à clareira. A contagem da missão é mantida.</dd>
+            <dd>{{ hud.online() ? "Você retorna automaticamente à clareira com a vida cheia." : "Escolha retornar à Vila da Travessia com a vida cheia. O XP, os itens e a missão são preservados." }}</dd>
           </div>
         </dl>
         <p class="dialog-note">

@@ -95,8 +95,10 @@ export class Game {
     }, { signal: this.lifecycle.signal });
     this.hud.onNewWorld(() => this.newWorld());
     this.hud.onTalk(() => this.talkToNpc());
+    this.hud.onRespawn(() => this.respawn());
     this.hud.onPotionUse(() => {
       if (this.multiplayer?.connected) return "A bolsa está disponível apenas no modo solo.";
+      if (this.sim.awaitingRespawn) return "Retorne à vila para continuar.";
       if (!this.sim.inventory.usePotion(this.sim.player))
         return this.sim.player.hp >= this.sim.player.maxHp
           ? "Sua vida já está completa."
@@ -116,6 +118,7 @@ export class Game {
       tileX: Math.floor(player.x / TILE_SIZE),
       tileY: Math.floor(player.y / TILE_SIZE),
       progression: experience === null ? null : experienceProgress(experience),
+      awaitingRespawn: !online && this.sim.awaitingRespawn,
     }, aelaQuestProgress(kills));
     this.hud.updateInventory(inventory.gel, inventory.potion, online);
   }
@@ -131,7 +134,8 @@ export class Game {
     );
   }
   private selectBattleTarget(id: string): void {
-    if (this.interior || this.hud.menuOpen || !this.hudBattleRows().some(row => row.id === id)) return;
+    if (this.interior || this.hud.menuOpen || (!this.multiplayer?.connected && this.sim.awaitingRespawn) ||
+        !this.hudBattleRows().some(row => row.id === id)) return;
     this.selectTarget(id);
   }
   private selectTarget(id: string): void {
@@ -237,7 +241,7 @@ export class Game {
     player.hurtTime = self.hurtTime ?? 0;
   }
   private talkToNpc(): void {
-    if (this.hud.menuOpen) return;
+    if (this.hud.menuOpen || (!this.multiplayer?.connected && this.sim.awaitingRespawn)) return;
     this.navigator.cancel();
     if (this.interior) {
       this.leaveInterior();
@@ -289,6 +293,14 @@ export class Game {
     history.replaceState(null, "", url);
     this.save();
   }
+  private respawn(): void {
+    if (this.multiplayer?.connected || !this.sim.respawn()) return;
+    this.input.clear();
+    this.camera.snap(this.sim.player.x, this.sim.player.y);
+    this.effects.reset();
+    this.save();
+    this.updateHud(false);
+  }
   private save(): void {
     // The temporary online world must never overwrite the player's solo save.
     // Persist its last solo checkpoint even when leaving an active online room.
@@ -304,7 +316,7 @@ export class Game {
     const onlineTiles = this.multiplayer?.tileMovement === true;
     const targetCombat = !online || this.multiplayer?.targetCombat === true;
     if (this.input.consumeTalk() && !this.hud.menuOpen) this.talkToNpc();
-    const paused = this.hud.menuOpen || document.hidden;
+    const paused = this.hud.menuOpen || document.hidden || (!online && this.sim.awaitingRespawn);
     if (paused) this.input.clear();
     const still = { x: 0, y: 0 };
     const manual = paused ? still : this.input.movement();
@@ -406,17 +418,19 @@ export class Game {
           const changed = this.sim.update(1 / 60, stepDirection,
             classicStrike, this.classicCombat.strikeTargetId,
             this.tileWalker);
-          // Interrompe a rota se o herói levar dano ou reaparecer na clareira.
-          if (this.sim.player !== before) {
+          if (changed) this.save();
+          if (this.sim.awaitingRespawn) {
+            this.input.clear();
             this.navigator.cancel();
             this.classicCombat.reset();
             this.classicPursuit.reset();
             this.tileWalker.reset();
-          } else if (this.sim.player.hurtTime > 0) {
-            this.navigator.cancel();
+            this.accumulator = 0;
+            this.pendingAttack = false;
+            break;
           }
+          if (this.sim.player.hurtTime > 0) this.navigator.cancel();
           this.pendingAttack = false;
-          if (changed) this.save();
         }
       }
     } else {
