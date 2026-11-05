@@ -13,7 +13,7 @@ import { CanvasScene } from "../ui/CanvasScene.ts";
 import type { GameUi, Preferences } from "../ui/GameUi.ts";
 import { nearestNpc, npcDialogue } from "../world/npcs.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
-import { QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
+import { POTION_GEL_PRICE, QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
@@ -94,6 +94,7 @@ export class Game {
       this.accumulator = 0;
     }, { signal: this.lifecycle.signal });
     this.hud.onNewWorld(() => this.newWorld());
+    this.hud.onPotionTrade(() => this.tradeGelForPotion());
     this.hud.onTalk(() => this.talkToNpc());
     this.hud.onPotionUse(() => {
       if (this.multiplayer?.connected) return "A bolsa está disponível apenas no modo solo.";
@@ -263,9 +264,27 @@ export class Game {
         this.sim.inventory.claimAelaReward(this.sim.kills);
       if (rewarded) this.save();
       const lines = npcDialogue(npc, this.sim.kills);
+      const potionPrice = npc.id === "lina" && !this.multiplayer?.connected ? POTION_GEL_PRICE : undefined;
       this.hud.showNpcDialogue(npc.name, npc.role, rewarded
         ? [...lines, `Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`]
-        : lines);
+        : lines, potionPrice);
+    }
+  }
+  private tradeGelForPotion(): string {
+    const { player, inventory } = this.sim;
+    if (this.multiplayer?.connected || this.interior || !this.hud.menuOpen ||
+        player.hp <= 0 || nearestNpc(player.x, player.y)?.id !== "lina")
+      return "A troca está disponível com Lina na aventura solo.";
+
+    switch (inventory.tradeGelForPotion()) {
+      case "insufficient-gel":
+        return `Você precisa de ${POTION_GEL_PRICE} unidades de gel para a troca.`;
+      case "potions-full":
+        return "A pilha de poções está cheia.";
+      case "traded":
+        this.save();
+        this.updateHud(false);
+        return "Lina colocou uma poção de cura na sua bolsa.";
     }
   }
   private leaveInterior(): void {

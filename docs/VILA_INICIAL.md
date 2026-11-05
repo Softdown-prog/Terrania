@@ -8,6 +8,8 @@ Escopo congelado: sem novas classes, economia, missões, itens, portais ou conta
 - As interações são locais, sem alterar estado autoritativo online.
 - As fachadas são sólidas e compartilham colisão com o backend; protocolo 3 requer publicação coordenada do cliente e servidor.
 
+No solo, Lina fica do lado de fora da hospedaria e troca três unidades de gel de slime por uma poção de cura a cada confirmação.
+
 **Pendente para concluir a cidade:** revisão real de navegação, acessibilidade e gráficos no desktop/celular; sincronização de instâncias interiores online não está prevista para a Fase 1. O item do roadmap permanece aberto até QA.
 
 Verificar `npm run typecheck && npm test && npm run build` na raiz; repetir scripts equivalentes em `server/`, testar dois navegadores e touch real.

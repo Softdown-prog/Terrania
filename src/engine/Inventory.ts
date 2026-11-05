@@ -4,6 +4,8 @@ import { aelaQuestProgress } from "../world/aelaQuest.ts";
 export const MAX_STACK = 99;
 export const QUEST_REWARD_POTIONS = 2;
 export const POTION_HEAL = 35;
+export const POTION_GEL_PRICE = 3;
+export type PotionTradeResult = "traded" | "insufficient-gel" | "potions-full";
 
 export interface InventoryState {
   gel: number;
@@ -58,6 +60,14 @@ export class Inventory {
     this.potionCount += QUEST_REWARD_POTIONS;
     this.claimed = true;
     return true;
+  }
+
+  tradeGelForPotion(): PotionTradeResult {
+    if (this.gelCount < POTION_GEL_PRICE) return "insufficient-gel";
+    if (this.potionCount >= MAX_STACK) return "potions-full";
+    this.gelCount -= POTION_GEL_PRICE;
+    this.potionCount++;
+    return "traded";
   }
 
   usePotion(hero: { hp: number; maxHp: number }): boolean {

@@ -40,6 +40,8 @@ export class HudService implements GameUi {
   readonly npcSpeech = signal('');
   readonly npcStep = signal('');
   readonly npcLast = signal(false);
+  readonly npcPotionPrice = signal<number | null>(null);
+  readonly npcTradeFeedback = signal('');
   readonly dialogueRequested = signal(0);
   readonly preferences = signal<Preferences>({ zoom: 1.65, effects: true, cameraMotion: true });
   menuOpen = false;
@@ -48,6 +50,7 @@ export class HudService implements GameUi {
   private preferencesCallback: (value: Preferences) => void = () => {};
   private newWorldCallback: () => void = () => {};
   private talkCallback: () => void = () => {};
+  private potionTradeCallback: () => string = () => '';
   private potionCallback: () => string = () => '';
   private stopCombatCallback: () => void = () => {};
   private battleSelectCallback: (id: string) => void = () => {};
@@ -75,6 +78,7 @@ export class HudService implements GameUi {
   onPreferences(callback: (p: Preferences) => void): void { this.preferencesCallback = callback; }
   onNewWorld(callback: () => void): void { this.newWorldCallback = callback; }
   onTalk(callback: () => void): void { this.talkCallback = callback; }
+  onPotionTrade(callback: () => string): void { this.potionTradeCallback = callback; }
   onPotionUse(callback: () => string): void { this.potionCallback = callback; }
   onStopCombat(callback: () => void): void { this.stopCombatCallback = callback; }
   onBattleSelect(callback: (id: string) => void): void { this.battleSelectCallback = callback; }
@@ -92,6 +96,7 @@ export class HudService implements GameUi {
   stopCombat(): void { this.stopCombatCallback(); }
   newWorld(): void { this.newWorldCallback(); }
   talk(): void { this.talkCallback(); }
+  tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
   usePotion(): void { this.inventoryFeedback.set(this.potionCallback()); }
   updateInventory(gel: number, potions: number, online: boolean): void {
     this.gel.set(gel); this.potions.set(potions); this.online.set(online);
@@ -106,9 +111,11 @@ export class HudService implements GameUi {
     this.talkVisible.set(action !== null);
     if (action) this.talkLabel.set(`${ACTION_LABELS[action]} (E)`);
   }
-  showNpcDialogue(name: string, role: string, lines: readonly string[]): void {
+  showNpcDialogue(name: string, role: string, lines: readonly string[], potionPrice?: number): void {
     this.npcLines = lines;
     this.npcPage = 0;
+    this.npcPotionPrice.set(potionPrice ?? null);
+    this.npcTradeFeedback.set('');
     this.npcName.set(name); this.npcRole.set(role); this.updateNpcPage();
     // Pause synchronously; the component opens the native dialog on the next render.
     this.menuOpen = true;
