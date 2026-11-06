@@ -130,3 +130,76 @@ test("cancelamento do gesto antes do frame descarta caminhada e ataque pendentes
     await expect(page.locator("#stick")).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 0)");
   } finally { await touch.detach(); }
 });
+
+test("cancelar o alvo com ATACAR segurado exige um novo acionamento", async ({ page, context }, info) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => localStorage.setItem("terrania-origins-v1", JSON.stringify({
+    seed: 842136, x: -660, y: -1008, hp: 100, kills: 0, defeated: [],
+  })));
+  await freezeGame(page, "/jogar/?modo=solo");
+  const target = page.locator("#classicTarget");
+  const touch = info.project.name === "android" ? await context.newCDPSession(page) : null;
+  try {
+    if (touch) {
+      const attack = (await page.locator("#attack").boundingBox())!;
+      await touch.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [
+        { x: attack.x + attack.width / 2, y: attack.y + attack.height / 2 },
+      ] });
+    } else {
+      await page.keyboard.down("j");
+    }
+    await page.clock.runFor(64);
+    await expect(target).toContainText("Slime");
+
+    await page.keyboard.press("Escape");
+    await page.clock.runFor(240);
+    await expect(target).toHaveCount(0, { timeout: 1000 });
+
+    if (touch) await touch.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    else await page.keyboard.up("j");
+    await page.clock.runFor(64);
+    await expect(target).toHaveCount(0);
+    await page.keyboard.press("j");
+    await page.clock.runFor(64);
+    await expect(target).toContainText("Slime");
+    if (!touch) {
+      await page.locator("#attack").focus();
+      await page.keyboard.down("Enter");
+      await page.clock.runFor(64);
+      await page.keyboard.press("Escape");
+      await page.clock.runFor(64);
+      await page.keyboard.down("Enter"); // Repeat while the attack button has focus.
+      await page.clock.runFor(240);
+      await expect(target).toHaveCount(0);
+      await page.keyboard.up("Enter");
+      await page.keyboard.press("Enter");
+      await page.clock.runFor(64);
+      await expect(target).toContainText("Slime");
+    }
+  } finally {
+    await touch?.detach();
+  }
+});
+
+test("segurar ATACAR envia uma seleção por acionamento à sala Node", async ({ page }) => {
+  const attacks: boolean[] = [];
+  page.on("websocket", socket => socket.on("framesent", ({ payload }) => {
+    const message = JSON.parse(String(payload));
+    if (message.type === "input") attacks.push(message.attack);
+  }));
+  await freezeGame(page, "/jogar/?room=attack-intent");
+  await expect.poll(async () => {
+    await page.clock.runFor(32);
+    return page.locator("#multiplayerStatus").textContent();
+  }).toContain("Online");
+  await expect(page.locator("#classicCombat")).toBeVisible();
+
+  await page.keyboard.down("j");
+  await page.clock.runFor(320);
+  await expect.poll(() => attacks.slice(attacks.indexOf(true)).length).toBeGreaterThanOrEqual(5);
+  expect(attacks.filter(Boolean)).toHaveLength(1);
+  await page.keyboard.up("j");
+  await page.keyboard.press("j");
+  await page.clock.runFor(120);
+  await expect.poll(() => attacks.filter(Boolean).length).toBe(2);
+});

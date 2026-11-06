@@ -341,7 +341,7 @@ export class Game {
     if (paused) this.input.clear();
     const still = { x: 0, y: 0 };
     const manual = paused ? still : this.input.movement();
-    const attack = !paused && this.input.consumeAttack();
+    const attack = !paused && this.input.consumeAttack(!targetCombat);
     const stopTarget = this.input.consumeCancelTarget();
     if (stopTarget) this.cancelTarget();
     if (online && paused) {
