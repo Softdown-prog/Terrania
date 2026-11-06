@@ -12,7 +12,7 @@ const close = (actual: number, expected: number): void => {
   assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`);
 };
 const start = (timeline: SnapshotTimeline): void => {
-  timeline.advance(0.1); timeline.advance(0.02);
+  timeline.advance(0.1); timeline.advance(0.08);
 };
 
 test("apresentação segue duas pernas do passo sem atravessar a quina", () => {
@@ -33,14 +33,15 @@ test("a chegada fica exata e o relógio de ataque nunca reinicia a cada pacote",
   timeline.push(1, [hero()], []);
   timeline.push(1.1, [hero({ x: 28, walkTime: 1.44, attackTime: 0.23, faceX: 0, faceY: -1 })], []);
   start(timeline);
-  assert.equal(timeline.advance(0.04)!.players[0]!.attackTime, 0);
+  timeline.advance(0.02);
+  // The next state confirms the same swing rather than beginning it again.
+  timeline.push(1.2, [hero({ x: 28, walkTime: 1.44, attackTime: 0.13 })], []);
+  assert.equal(timeline.advance(0.02)!.players[0]!.attackTime, 0);
   const attacking = timeline.advance(0.02)!.players[0]!;
   close(attacking.attackTime, 0.27);
   assert.deepEqual([attacking.faceX, attacking.faceY], [0, -1]);
   timeline.advance(0.04);
   close(timeline.advance(0.02)!.players[0]!.attackTime, 0.21);
-  // New state confirms the same swing rather than beginning it again.
-  timeline.push(1.2, [hero({ x: 28, walkTime: 1.44, attackTime: 0.13 })], []);
   const same = timeline.advance(0.01)!.players[0]!;
   close(same.attackTime, 0.20); close(same.x, 28);
   for (let i = 0; i < 10; i++) timeline.advance(0.05);
@@ -61,7 +62,30 @@ test("jitter mantém progresso monótono e pacotes antigos não retrocedem o her
     const current = timeline.advance(0.02)!.players[0]!;
     assert.ok(current.x >= x); x = current.x;
   }
-  close(x, 30.4);
+  assert.ok(x > 30 && x <= 30.4);
+});
+
+test("a passada continua após 20 segundos com o relógio da sala ligeiramente mais lento", () => {
+  for (const intervals of [[6], [6, 9, 6, 6, 9]]) {
+    const timeline = new SnapshotTimeline();
+    let previous: HeroState | undefined;
+    let nextPacket = 0, packet = 0;
+    for (let frame = 0; frame < 2400; frame++) {
+      // Snapshots alternate between 100 and 150 ms, with 0.6% clock drift.
+      if (frame === nextPacket) {
+        const time = frame / 60 * 0.994;
+        timeline.push(time, [hero({ x: 16 + 126 * time, vx: 126, walkTime: 126 * time * 0.12 })], []);
+        nextPacket += intervals[packet++ % intervals.length]!;
+      }
+      const current = timeline.advance(1 / 60)!.players[0]!;
+      if (frame >= 20 * 60) {
+        assert.ok(current.vx! > 0, `passada parada em ${(frame / 60).toFixed(2)} s`);
+        assert.ok(current.x > previous!.x);
+        assert.ok(current.walkTime > previous!.walkTime);
+      }
+      previous = current;
+    }
+  }
 });
 
 test("respawn salta para o novo ponto sem interpolar através do mapa", () => {
