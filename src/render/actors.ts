@@ -1,7 +1,7 @@
 import type { Player } from "../actors/Player.ts";
 import type { Slime } from "../actors/Slime.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
-import { ATTACK_DURATION, ATTACK_WINDUP } from "../engine/combat.ts";
+import { swordSwing } from "./heroPose.ts";
 export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
@@ -22,6 +22,50 @@ function ellipse(
   ctx.ellipse(x, y, rx, ry, 0, 0, TAU);
   ctx.fill();
 }
+/** Draw behind the torso when facing north, in front when facing south. */
+function renderWeapon(ctx: CanvasRenderingContext2D, player: HeroVisual): void {
+  const attacking = player.attackTime > 0;
+  ctx.save();
+  ctx.translate(0, -12);
+  if (attacking) {
+    const pose = swordSwing(player.attackTime);
+    const facing = Math.atan2(player.faceY, player.faceX);
+    const angle = facing + pose.angle;
+    if (pose.trail) {
+      for (let i = 0; i < 3; i++) {
+        ctx.strokeStyle = (["#f9ebbaaa", "#e1c98a66", "#fbf5da33"][i] ?? "#fbf5da33");
+        ctx.lineWidth = 2.4 + i * 1.8;
+        ctx.beginPath();
+        ctx.arc(0, 0, 37 - i * 4, angle - 0.7, angle);
+        ctx.stroke();
+      }
+    }
+    ctx.rotate(angle);
+  } else {
+    const hand = player.faceX < -0.3 ? -1 : 1;
+    ctx.translate(hand * 9, 3);
+    const tilt = player.faceY < -0.35 ? -0.95 : 0.95;
+    ctx.rotate(hand < 0 ? Math.PI - tilt : tilt);
+  }
+  ctx.fillStyle = "#443f34";
+  ctx.fillRect(4, -2, 10, 4);
+  ctx.fillStyle = "#b49c65";
+  ctx.fillRect(12, -6, 3, 12);
+  ctx.fillStyle = "#d4ddd1";
+  ctx.beginPath();
+  ctx.moveTo(15, -3);
+  ctx.lineTo(attacking ? 45 : 33, 0);
+  ctx.lineTo(15, 3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "#f2f0d2";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(15, -2);
+  ctx.lineTo(attacking ? 44 : 32, 0);
+  ctx.stroke();
+  ctx.restore();
+}
 /** Upright silhouette, directional face and independent weapon; no rotating head. */
 export function renderHero(
   ctx: CanvasRenderingContext2D,
@@ -33,11 +77,16 @@ export function renderHero(
   ctx.translate(sx, sy);
   const speed = Math.min(1, Math.hypot(player.vx ?? 70, player.vy ?? 0) / 85);
   const step = Math.sin(player.walkTime) * 3 * speed;
+  const vx = player.vx ?? player.faceX * 70, vy = player.vy ?? player.faceY * 70;
+  const moving = Math.hypot(vx, vy) || 1;
+  // Feet follow displacement even while the torso faces a combat target.
+  const strideX = step * vx / moving, strideY = step * vy / moving;
   const bob = Math.cos(player.walkTime * 2) * speed * 0.65;
   const back = player.faceY < -0.35,
     side = player.faceX > 0.3 ? 1 : player.faceX < -0.3 ? -1 : 0;
   ellipse(ctx, 1, 3, 11, 4, "#102e2a55");
   ctx.translate(0, bob);
+  if (back) renderWeapon(ctx, player);
   // Traveling cloak, leather boots and layered armor.
   ctx.fillStyle = "#203e46";
   ctx.beginPath();
@@ -48,14 +97,14 @@ export function renderHero(
   ctx.closePath();
   ctx.fill();
   ctx.fillStyle = "#182f39";
-  ctx.fillRect(-6, -6 + step, 5, 8);
-  ctx.fillRect(2, -6 - step, 5, 8);
+  ctx.fillRect(-6 + strideX, -6 + strideY, 5, 8);
+  ctx.fillRect(2 - strideX, -6 - strideY, 5, 8);
   ctx.fillStyle = "#584536";
-  ctx.fillRect(-7, -1 + step, 7, 4);
-  ctx.fillRect(2, -1 - step, 7, 4);
+  ctx.fillRect(-7 + strideX, -1 + strideY, 7, 4);
+  ctx.fillRect(2 - strideX, -1 - strideY, 7, 4);
   ctx.fillStyle = "#b48d59";
-  ctx.fillRect(-6, -1 + step, 4, 1);
-  ctx.fillRect(3, -1 - step, 4, 1);
+  ctx.fillRect(-6 + strideX, -1 + strideY, 4, 1);
+  ctx.fillRect(3 - strideX, -1 - strideY, 4, 1);
   ctx.fillStyle = (player.hurtTime ?? 0) > 0.13 ? "#ebd9ba" : "#4e7681";
   ctx.beginPath();
   ctx.moveTo(-8, -24);
@@ -130,53 +179,7 @@ export function renderHero(
     ctx.fillStyle = "#78948a";
     ctx.fillRect(-4, -23, 8, 2);
   }
-  const attacking = player.attackTime > 0;
-  ctx.save();
-  ctx.translate(0, -12);
-  if (attacking) {
-    const elapsed = ATTACK_DURATION - player.attackTime;
-    const progress = Math.min(
-      1,
-      Math.max(
-        0,
-        (elapsed - ATTACK_WINDUP * 0.55) / (ATTACK_DURATION - ATTACK_WINDUP),
-      ),
-    );
-    const sweep = progress * progress * (3 - 2 * progress);
-    const facing = Math.atan2(player.faceY, player.faceX);
-    const angle = facing - 1.25 + sweep * 2.5;
-    if (progress > 0.08 && progress < 0.96) {
-      for (let i = 0; i < 3; i++) {
-        ctx.strokeStyle = (["#f9ebbaaa", "#e1c98a66", "#fbf5da33"][i] ?? "#fbf5da33");
-        ctx.lineWidth = 2.4 + i * 1.8;
-        ctx.beginPath();
-        ctx.arc(0, 0, 37 - i * 4, angle - 0.7, angle);
-        ctx.stroke();
-      }
-    }
-    ctx.rotate(angle);
-  } else {
-    ctx.translate(10, 3);
-    ctx.rotate(0.95);
-  }
-  ctx.fillStyle = "#443f34";
-  ctx.fillRect(4, -2, 10, 4);
-  ctx.fillStyle = "#b49c65";
-  ctx.fillRect(12, -6, 3, 12);
-  ctx.fillStyle = "#d4ddd1";
-  ctx.beginPath();
-  ctx.moveTo(15, -3);
-  ctx.lineTo(attacking ? 45 : 33, 0);
-  ctx.lineTo(15, 3);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "#f2f0d2";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(15, -2);
-  ctx.lineTo(attacking ? 44 : 32, 0);
-  ctx.stroke();
-  ctx.restore();
+  if (!back) renderWeapon(ctx, player);
   ctx.restore();
 }
 export function renderSlime(

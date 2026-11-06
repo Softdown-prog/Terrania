@@ -1,0 +1,127 @@
+import { expect, test, type Page } from "@playwright/test";
+
+async function freezeGame(page: Page, route: string): Promise<void> {
+  const time = new Date("2026-01-01T00:00:00Z");
+  await page.clock.install({ time });
+  await page.clock.pauseAt(new Date(time.getTime() + 1000));
+  await page.goto(route);
+  await expect.poll(async () => {
+    await page.clock.runFor(32);
+    return page.locator("canvas#game").count();
+  }).toBe(1);
+  await page.clock.runFor(64);
+}
+async function savedPosition(page: Page): Promise<number[]> {
+  return page.evaluate(() => {
+    window.dispatchEvent(new Event("pagehide"));
+    const save = JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
+    return [save?.x, save?.y];
+  });
+}
+
+test("Jogar solo preserva teclas curtas entre frames, vira e para no centro", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await freezeGame(page, "/jogar/?modo=solo");
+  // Both real DOM events occur before the next animation/simulation frame.
+  await page.keyboard.press("d");
+  await page.clock.runFor(700);
+  expect(await savedPosition(page)).toEqual([48, 16]);
+  await page.keyboard.press("w");
+  await page.clock.runFor(700);
+  expect(await savedPosition(page)).toEqual([48, -16]);
+  await page.clock.runFor(700);
+  expect(await savedPosition(page)).toEqual([48, -16]);
+  expect(errors).toEqual([]);
+});
+
+test("tecla curta online chega ao servidor mesmo com soltar antes do tick", async ({ page }) => {
+  let id = "", position = [NaN, NaN];
+  page.on("websocket", socket => socket.on("framereceived", ({ payload }) => {
+    const message = JSON.parse(String(payload));
+    if (message.type === "welcome") id = message.id;
+    if (message.type === "state") {
+      const self = message.players.find((hero: { id: string }) => hero.id === id);
+      if (self) position = [self.x, self.y];
+    }
+  }));
+  await freezeGame(page, "/jogar/?room=short-press");
+  await expect.poll(() => id.length).toBeGreaterThan(0);
+  await page.keyboard.press("d");
+  await page.clock.runFor(160);
+  await expect.poll(() => position).toEqual([48, 16]);
+  await page.clock.runFor(160);
+  await expect(page.locator("#coords")).toHaveText("X 1 · Y 0");
+  await expect(page.locator("#multiplayerStatus")).toContainText("Online");
+});
+
+test("dois dedos caminham e atacam no solo normal sem prender o joystick", async ({ page, context }) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    localStorage.setItem("terrania-origins-v1", JSON.stringify({
+      seed: 842136, x: -660, y: -1008, hp: 100, kills: 0, defeated: [],
+    }));
+    localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1.5, effects: true, cameraMotion: false }));
+  });
+  await page.goto("/jogar/?modo=solo");
+  await expect(page.locator("#joystick")).toBeVisible();
+  // Wait for the real world and naturally generated creature, not a test actor.
+  await expect(page.locator("#battleCount")).toHaveText(/[1-9]/);
+  const stick = (await page.locator("#joystick").boundingBox())!;
+  const attack = (await page.locator("#attack").boundingBox())!;
+  const finger = { x: stick.x + stick.width * 0.82, y: stick.y + stick.height / 2, id: 1 };
+  const sword = { x: attack.x + attack.width / 2, y: attack.y + attack.height / 2, id: 2 };
+  const touch = await context.newCDPSession(page);
+  try {
+    await touch.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [finger] });
+    await touch.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [finger, sword] });
+    await expect(page.locator("#classicTarget")).toContainText("Slime");
+    await touch.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [finger] });
+    await expect(page.locator("#coords")).not.toHaveText("X -21 · Y -32");
+    await touch.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await expect(page.locator("#stick")).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 0)");
+    await expect.poll(() => page.evaluate(() => {
+      const save = JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
+      return save?.defeated?.includes("-2,-2,0");
+    }), { timeout: 15000 }).toBe(true);
+    await page.screenshot({ path: test.info().outputPath("character-mobile-combat.png") });
+    expect(errors).toEqual([]);
+  } finally { await touch.detach(); }
+});
+
+test("abrir ajustes descarta comandos pendentes e fechar não inicia passo fantasma", async ({ page }) => {
+  await freezeGame(page, "/jogar/?modo=solo");
+  await page.locator("#gameMenuButton").click();
+  await page.clock.runFor(32); // Angular renders the expanded options.
+  await page.keyboard.press("d");
+  await page.locator("#settingsButton").click();
+  await page.clock.runFor(64);
+  await page.locator("#settingsDialog .dialog-x").click();
+  await page.clock.runFor(700);
+  expect(await savedPosition(page)).toEqual([16, 16]);
+});
+
+
+test("cancelamento do gesto antes do frame descarta caminhada e ataque pendentes", async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => localStorage.setItem("terrania-origins-v1", JSON.stringify({
+    seed: 842136, x: -660, y: -1008, hp: 100, kills: 0, defeated: [],
+  })));
+  await freezeGame(page, "/jogar/?modo=solo");
+  const stick = (await page.locator("#joystick").boundingBox())!;
+  const attack = (await page.locator("#attack").boundingBox())!;
+  const touch = await context.newCDPSession(page);
+  try {
+    await touch.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [
+      { x: stick.x + stick.width * 0.82, y: stick.y + stick.height / 2, id: 1 },
+      { x: attack.x + attack.width / 2, y: attack.y + attack.height / 2, id: 2 },
+    ] });
+    await touch.send("Input.dispatchTouchEvent", { type: "touchCancel", touchPoints: [] });
+    await page.clock.runFor(700);
+    expect(await savedPosition(page)).toEqual([-660, -1008]);
+    await expect(page.locator("#classicTarget")).toHaveCount(0);
+    await expect(page.locator("#stick")).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 0)");
+  } finally { await touch.detach(); }
+});

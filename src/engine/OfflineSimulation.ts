@@ -4,8 +4,8 @@ import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { SeedCollision } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
-import { canStrike } from "./combat.ts";
-import type { ClassicTileWalker } from "./ClassicTileWalker.ts";
+import { canStrike, faceTarget } from "./combat.ts";
+import type { ClassicTileWalker, WalkDirection } from "./ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./Inventory.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
 import { grantExperience, maxHpForExperience, normalizeExperience } from "./Experience.ts";
@@ -91,18 +91,19 @@ export class OfflineSimulation {
   /** Retorna true se o progresso mudou e merece salvar imediatamente. */
   update(
     dt: number,
-    direction: { x: number; y: number },
+    direction: WalkDirection,
     attack: boolean,
     /** Undefined: legacy manual arc. String: target committed for this classic swing.
      * Null: no committed classic target, so the swing cannot deal damage.
      */
     strikeTargetId?: string | null,
-    /** Opt-in, local-only classic tile movement; defaults to legacy movement. */
+    /** The normal outdoor game uses tiles; legacy callers can omit the walker. */
     tileWalker?: ClassicTileWalker,
   ): boolean {
-    if (this.awaitingRespawn) return false;
+    if (this.awaitingRespawn || !Number.isFinite(dt) || dt <= 0) return false;
+    dt = Math.min(dt, 0.1);
     if (tileWalker) tileWalker.advance(dt, direction, this.player, this.collision);
-    else this.player.update(dt, direction, this.collision);
+    else this.player.update(dt, typeof direction === "function" ? direction() : direction, this.collision);
     this.spawnNearby();
     for (const [id, slime] of this.slimes) {
       const distance = Math.hypot(
@@ -122,11 +123,7 @@ export class OfflineSimulation {
     if (attack) this.player.startAttack();
     // Keep the swing facing the creature it was started against while walking.
     const focused = typeof strikeTargetId === "string" ? this.slimes.get(strikeTargetId) : null;
-    if (focused && this.player.attackTime > 0) {
-      const dx = focused.x - this.player.x, dy = focused.y - this.player.y;
-      const d = Math.hypot(dx,dy);
-      if (d > 0.01) { this.player.faceX = dx/d; this.player.faceY = dy/d; }
-    }
+    if (focused && this.player.attackTime > 0) faceTarget(this.player, focused);
     if (this.player.consumeStrike()) {
       for (const [id, slime] of this.slimes) {
         if ((strikeTargetId === undefined || id === strikeTargetId) &&

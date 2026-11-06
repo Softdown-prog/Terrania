@@ -100,6 +100,7 @@ export class ClassicPursuit {
     this.replanSeconds = 0;
   }
 
+  /** dt=0 resamples at a newly reached tile center without advancing the replan clock. */
   direction(
     dt: number,
     player: Player,
@@ -109,7 +110,7 @@ export class ClassicPursuit {
     tileSteps = false,
     committedStep: Point | null = null,
   ): Point {
-    if (!Number.isFinite(dt) || dt <= 0 || !selectedId || player.hp <= 0) {
+    if (!Number.isFinite(dt) || dt < 0 || !selectedId || player.hp <= 0) {
       this.reset();
       return ZERO;
     }

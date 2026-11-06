@@ -5,7 +5,7 @@ import type { CombatFocus, HeroState, MobState, WalkTarget } from "../../src/sha
 import { SeedCollision } from "../../src/world/collision.ts";
 import { seedFromText } from "../../src/world/random.ts";
 import { CHUNK_PIXELS, TILE_SIZE, chunkOf } from "../../src/world/terrain.ts";
-import { canStrike } from "../../src/engine/combat.ts";
+import { canStrike, faceTarget } from "../../src/engine/combat.ts";
 import { ClassicTileWalker } from "../../src/engine/ClassicTileWalker.ts";
 import { TapNavigator } from "../../src/engine/TapNavigator.ts";
 import { ClassicCombat } from "../../src/engine/ClassicCombat.ts";
@@ -34,6 +34,7 @@ export interface Guest {
   name: string;
   actor: Player;
   input: { x: number; y: number };
+  inputPulse: { x: number; y: number } | null;
   attackQueued: boolean;
   lastInputAt: number;
   kills: number;
@@ -51,6 +52,7 @@ export class Room {
   private readonly defeated = new Set<string>();
   private readonly walkRequests = new Map<string, WalkTarget>();
   private spawnClock = 0;
+  private simulationTime = 0;
   private readonly maxMobs = 96;
   readonly id: string;
   constructor(id: string) {
@@ -65,6 +67,7 @@ export class Room {
       actor: new Player(),
       input: { x: 0, y: 0 },
       attackQueued: false,
+      inputPulse: null,
       lastInputAt: Date.now(),
       kills: 0,
       experience: progression ? 0 : null,
@@ -85,6 +88,8 @@ export class Room {
     if (!guest) return;
     guest.input = { x, y };
     guest.lastInputAt = Date.now();
+    if (guest.walking && !guest.walking.walker.destination && Math.hypot(x, y) >= 0.08)
+      guest.inputPulse = { x, y };
     if (guest.walking && (attack || Math.hypot(x, y) >= 0.08)) this.cancelWalk(guest);
     if (!attack) return;
     const { targeting } = guest;
@@ -123,6 +128,7 @@ export class Room {
       return;
     }
     guest.input = STILL;
+    guest.inputPulse = null;
     if (guest.targeting) {
       guest.targeting.follow = false;
       guest.targeting.pursuit.reset();
@@ -154,20 +160,34 @@ export class Room {
     }
   }
   tick(dt: number, now = Date.now()): void {
+    if (!Number.isFinite(dt) || dt <= 0) return;
+    dt = Math.min(dt, 0.1);
+    this.simulationTime += dt;
     this.planNextWalk(now);
     for (const guest of this.guests.values()) {
-      const input =
-        now - guest.lastInputAt < 350 ? guest.input : STILL;
+      const input = now - guest.lastInputAt < 350
+        ? Math.hypot(guest.input.x, guest.input.y) >= 0.08 ? guest.input : guest.inputPulse ?? guest.input
+        : STILL;
+      guest.inputPulse = null;
       const { walking, actor, targeting } = guest;
       if (walking) {
-        let direction = input;
-        if (Math.hypot(input.x, input.y) >= 0.08) targeting?.pursuit.suspend();
-        else if (walking.navigator.target)
-          direction = walking.walker.destination ? STILL : walking.navigator.direction(actor, dt);
-        else if (targeting?.follow)
-          direction = targeting.pursuit.direction(dt, actor, targeting.combat.targetId,
+        const manual = Math.hypot(input.x, input.y) >= 0.08;
+        const route = walking.navigator.target !== null;
+        if (manual) targeting?.pursuit.suspend();
+        else if (!route && targeting?.follow)
+          targeting.pursuit.direction(dt, actor, targeting.combat.targetId,
             this.mobs, this.world, true, walking.walker.destination);
-        walking.walker.advance(dt, direction, actor, this.world);
+        let routeTime = dt;
+        walking.walker.advance(dt, () => {
+          if (manual) return input;
+          if (route) {
+            const dir = walking.navigator.direction(actor, routeTime);
+            routeTime = 0;
+            return dir;
+          }
+          return targeting?.follow ? targeting.pursuit.direction(0, actor,
+            targeting.combat.targetId, this.mobs, this.world, true) : STILL;
+        }, actor, this.world);
       } else actor.update(dt, input, this.world);
     }
     this.spawnClock += dt;
@@ -181,17 +201,11 @@ export class Room {
         guest.actor.startAttack();
         guest.attackQueued = false;
       }
+      const focused = combat?.strikeTargetId ? this.mobs.get(combat.strikeTargetId) : null;
+      if (focused && guest.actor.attackTime > 0) faceTarget(guest.actor, focused);
       if (!guest.actor.consumeStrike()) continue;
       for (const [id, mob] of this.mobs) {
-        if (combat) {
-          if (combat.strikeTargetId !== id) continue;
-          const dx = mob.x - guest.actor.x, dy = mob.y - guest.actor.y;
-          const distance = Math.hypot(dx, dy);
-          if (distance > 0.01) {
-            guest.actor.faceX = dx / distance;
-            guest.actor.faceY = dy / distance;
-          }
-        }
+        if (combat && combat.strikeTargetId !== id) continue;
         if (canStrike(guest.actor, mob, this.world)) {
           mob.takeHit(guest.actor.x, guest.actor.y);
           if (mob.hp <= 0) {
@@ -242,6 +256,8 @@ export class Room {
         }
         guest.actor = new Player(maxHpForExperience(guest.experience ?? 0));
         guest.input = { x: 0, y: 0 };
+        guest.inputPulse = null;
+        guest.attackQueued = false;
         guest.lastInputAt = 0;
       }
     }
@@ -263,7 +279,7 @@ export class Room {
   }
   /** Interesse espacial: não transmitir o mapa todo nem entidades distantes. */
   snapshotFor(id: string): {
-    players: HeroState[]; mobs: MobState[]; walkTarget?: WalkTarget | null; focus?: CombatFocus | null;
+    players: HeroState[]; mobs: MobState[]; time?: number; walkTarget?: WalkTarget | null; focus?: CombatFocus | null;
   } | null {
     const me = this.guests.get(id);
     if (!me) return null;
@@ -288,6 +304,7 @@ export class Room {
         vx: a.vx,
         vy: a.vy,
         hurtTime: a.hurtTime,
+        ...(me.walking && g.walking ? { stepTarget: g.walking.walker.destination } : {}),
       });
     }
     const mobs: MobState[] = [];
@@ -308,7 +325,7 @@ export class Room {
       : null;
     return {
       players, mobs,
-      ...(me.walking ? { walkTarget: me.walking.navigator.target } : {}),
+      ...(me.walking ? { time: this.simulationTime, walkTarget: me.walking.navigator.target } : {}),
       ...(me.targeting ? { focus } : {}),
     };
   }

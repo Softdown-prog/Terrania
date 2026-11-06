@@ -55,3 +55,9 @@ O combate por alvo e a caminhada por tiles fazem parte da entrada normal de Joga
 No modo clássico, os destinos ao redor do alvo são centros reais de tiles de 32 px, validados contra colisão, alcance da espada e linha de visão. A regressão cobre 162 posições de alvo fora da malha e o ciclo de dois ataques sem atingir outra criatura.
 
 Sem uma rota válida até um ponto de ataque, o herói aguarda no último tile caminhável.
+
+### Continuidade de movimento e ataque
+
+O controlador conserva o tempo ao cruzar centros, mantendo a velocidade entre frequências de simulação e sem dar vantagem à diagonal. Rotas podem virar ou parar no centro dentro do mesmo tick. Ao terminar um ataque, a direção de caminhada volta imediatamente, mesmo no meio de um passo. A espada cruza a direção do alvo no instante da preparação de 70 ms, e os pés acompanham o deslocamento enquanto o herói ataca.
+
+O Node publica tempo de simulação e fim do passo para apresentar curvas e animações na mesma linha temporal. Teclas/toques curtos não desaparecem entre frames ou entre recebimento e tick do servidor. Detalhes, compatibilidade e limites no [ADR 0006](adr/0006-movimento-e-apresentacao-do-personagem.md).

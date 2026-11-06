@@ -30,6 +30,12 @@ export class Player {
     timersOnly = false): void {
     if (!Number.isFinite(dt) || dt <= 0) return;
     dt = Math.min(dt, 0.1);
+    if (this.hp <= 0) {
+      this.vx = this.vy = this.knockX = this.knockY = 0;
+      this.strikePending = false;
+      this.advanceTimers(dt);
+      return;
+    }
     if (timersOnly) {
       // A classic tile controller owns displacement; still tick attack,
       // damage immunity and animation timers exactly once per simulation tick.
@@ -46,9 +52,10 @@ export class Player {
       this.faceX = dir.x / length;
       this.faceY = dir.y / length;
     }
+    const terrainSpeed = world.speedAt?.(this.x, this.y) ?? 1;
     const speed =
       126 *
-      (world.speedAt?.(this.x, this.y) ?? 1) *
+      (Number.isFinite(terrainSpeed) ? Math.max(0, terrainSpeed) : 0) *
       (this.attackTime > 0 ? 0.72 : 1);
     const response = moving ? 18 : 25;
     const decay = Math.exp(-response * dt);
@@ -92,7 +99,8 @@ export class Player {
     return this.hp > 0;
   }
   takeDamage(amount: number, sourceX: number, sourceY: number): boolean {
-    if (this.invulnerable > 0 || this.hp <= 0) return false;
+    if (this.invulnerable > 0 || this.hp <= 0 || !Number.isFinite(amount) || amount <= 0 ||
+        !Number.isFinite(sourceX) || !Number.isFinite(sourceY)) return false;
     this.hp = Math.max(0, this.hp - amount);
     this.hurtTime = 0.3;
     this.invulnerable = 0.65;

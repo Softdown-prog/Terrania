@@ -169,6 +169,8 @@ export class Game {
     this.effects.enabled = p.effects;
   }
   private replaceWorld(seed: number, saved?: OfflineSave): void {
+    this.input.clear();
+    this.pendingAttack = false;
     this.navigator.cancel();
     this.classicCombat.reset();
     this.classicPursuit.reset();
@@ -309,7 +311,7 @@ export class Game {
   }
   /** Called exclusively by the Phaser Scene; there is no second animation loop. */
   update(deltaSeconds: number): void {
-    const dt = Math.max(0, Math.min(0.1, deltaSeconds));
+    const dt = Number.isFinite(deltaSeconds) ? Math.max(0, Math.min(0.1, deltaSeconds)) : 0;
     this.clock += dt;
     this.battleClock += dt;
     const online = this.multiplayer?.connected === true;
@@ -335,7 +337,7 @@ export class Game {
         this.navigator.cancel();
       }
     }
-    const manualActive = Math.hypot(manual.x, manual.y) > 0.02;
+    const manualActive = Math.hypot(manual.x, manual.y) >= 0.08;
     if (paused || manualActive || (!targetCombat && attack)) this.navigator.cancel();
     if (onlineTiles && (paused || manualActive || attack)) this.multiplayer?.cancelWalk();
     if (!online && manualActive) this.classicPursuit.suspend();
@@ -374,7 +376,7 @@ export class Game {
       const room = this.interior;
       this.pendingAttack = false; // combate indisponível em locais seguros
       this.accumulator = 0;
-      if (!paused) room.update(dt, movement);
+      if (!paused && dt > 0) { room.update(dt, movement); this.input.acknowledgeMovement(); }
       if (room.reachedExit) this.leaveInterior();
       if (this.interior) {
         if (online && this.multiplayer) {
@@ -407,17 +409,23 @@ export class Game {
         } else {
           const before = this.sim.player;
           const classicStrike = this.classicCombat.tick(1 / 60, before, this.sim.slimes, this.sim.collision);
-          // A rendered frame can advance multiple simulation ticks. Pick the
-          // next tile only when the previous step has reached its center.
-          let stepDirection = movement;
-          if (tileRoute && this.tileWalker.destination === null)
-            stepDirection = this.navigator.direction(before, 1 / 60);
-          else if (!manualActive && !tileRoute && this.classicAutoFollow)
-            stepDirection = this.classicPursuit.direction(1 / 60, before, this.classicCombat.targetId,
-              this.sim.slimes, this.sim.collision, true, this.tileWalker.destination);
+          const follow = !manualActive && !tileRoute && this.classicAutoFollow;
+          if (follow) this.classicPursuit.direction(1 / 60, before, this.classicCombat.targetId,
+            this.sim.slimes, this.sim.collision, true, this.tileWalker.destination);
+          let routeTime = 1 / 60;
+          const stepDirection = () => {
+            if (manualActive) return movement;
+            if (tileRoute) {
+              const dir = this.navigator.direction(before, routeTime);
+              routeTime = 0;
+              return dir;
+            }
+            return follow ? this.classicPursuit.direction(0, before, this.classicCombat.targetId,
+              this.sim.slimes, this.sim.collision, true) : still;
+          };
           const changed = this.sim.update(1 / 60, stepDirection,
-            classicStrike, this.classicCombat.strikeTargetId,
-            this.tileWalker);
+            classicStrike, this.classicCombat.strikeTargetId, this.tileWalker);
+          this.input.acknowledgeMovement();
           if (changed) this.save();
           if (this.sim.awaitingRespawn) {
             this.input.clear();
@@ -442,6 +450,7 @@ export class Game {
       if (this.networkClock >= 0.05) {
         this.networkClock %= 0.05;
         this.multiplayer.sendInput(movement.x, movement.y, this.pendingAttack);
+        this.input.acknowledgeMovement();
         this.pendingAttack = false;
       }
       this.updateOnlineView(dt, this.multiplayer);

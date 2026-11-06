@@ -127,6 +127,7 @@
       ],
       "entrypoints": [
         "src/net/MultiplayerClient.ts",
+        "src/net/SnapshotTimeline.ts",
         "src/shared/protocol.ts"
       ],
       "doc": "src/net/README.md",
