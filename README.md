@@ -22,15 +22,16 @@ No exterior, o solo e as salas Node com suporte usam passos de 32 px na entrada 
 
 ### Multiplayer experimental
 
-**Front-end no Cloudflare Pages; servidor WebSocket Node.js na VPS.** A mesma seed produz o mapa no cliente e orienta colisões no servidor. O servidor controla posições, rotas, vida, monstros, ataques e progresso da missão de cinco slimes. O navegador envia direções, destinos e ataques e desenha os personagens.
+**Front-end no Cloudflare Pages e servidor WebSocket Node.js na VPS.** A mesma seed produz o mapa no cliente e orienta colisões no servidor. O servidor controla posições, rotas, vida, monstros, ataques e progresso da missão de cinco slimes. O navegador envia comandos e apresenta o estado recebido da sala.
 
 - Jogadores anônimos em salas (`?room=origins` ou `?room=amigos`), com outros heróis visíveis pelo nome.
 - Slimes compartilhados e combate calculado no servidor; 20 ticks/s e cerca de 10 snapshots/s para entidades próximas.
+- O golpe final concede gel privado. Aproxime-se para coletar, troque três unidades com Lina perto da hospedaria e use a poção pela bolsa. Os itens sobrevivem à derrota durante a sessão. Veja [Inventário da sala](docs/adr/0007-inventario-da-sala.md).
 - Chunks 16×16 tiles, cache visual até 24 chunks por cliente, câmera que desenha só a área visível.
 - Se o backend não estiver configurado, o jogo funciona **offline**, com save local; ao cair a conexão, retorna ao modo local.
 - Teclado WASD/setas ou joystick mobile; Espaço/J ou botão da espada para atacar.
 
-**O multiplayer é um primeiro protótipo:** salas e personagens são descartados quando todos saem. Ainda não há contas, inventário sincronizado, banco de dados, chat, missões persistentes, sistema antifraude completo ou suporte comprovado a muitos jogadores simultâneos.
+O multiplayer usa convidados temporários. Cada conexão começa com um personagem e uma bolsa vazia. A sala é encerrada quando todos saem.
 
 ## Executar localmente
 
