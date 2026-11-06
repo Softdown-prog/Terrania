@@ -140,7 +140,10 @@ export class Input {
     attack?.addEventListener("contextmenu", (event) => event.preventDefault(), { signal: this.lifetime.signal });
     // Acessibilidade: Enter/Espaço também acionam o botão físico de ataque.
     attack?.addEventListener("click", (event) => {
-      if (event.detail === 0) this.attackQueued = true;
+      // Chromium can report detail=0 for a touch click after a long press.
+      // Pointer attacks are already queued on pointerdown.
+      const fromPointer = event instanceof PointerEvent && event.pointerType !== "";
+      if (event.detail === 0 && !fromPointer) this.attackQueued = true;
     }, { signal: this.lifetime.signal });
   }
   clear(): void {
