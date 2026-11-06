@@ -38,6 +38,37 @@ test('classico preserves the previous offline save and works in landscape',async
   await expect(page.locator('canvas#game')).toBeVisible();
 });
 
+test('ATACAR acerta um Slime sobreposto sem deslocar o herói', async ({ page }, info) => {
+  await page.addInitScript(() => localStorage.setItem('terrania-origins-v1', JSON.stringify({
+    seed: 842136, x: -560, y: -1008, hp: 100, kills: 0, defeated: [],
+  })));
+  const time = new Date('2026-01-01T00:00:00Z');
+  await page.clock.install({ time });
+  await page.clock.pauseAt(new Date(time.getTime() + 1000));
+  await page.goto('/jogar/?modo=solo');
+  await expect.poll(async () => {
+    await page.clock.runFor(32);
+    return page.locator('#hpText').textContent();
+  }).toBe('91 / 100');
+  await page.clock.runFor(240); // Let the Battle List refresh after the spawn.
+
+  if (info.project.name === 'android') {
+    await page.locator('#battleToggle').tap();
+    await page.clock.runFor(32);
+  }
+  const slime = page.locator('.battle-entry[data-creature-id="-2,-2,0"]');
+  await expect(slime).toHaveAttribute('aria-label', 'Selecionar Slime, vida 2 de 2');
+  if (info.project.name === 'android') await page.locator('#attack').tap();
+  else await page.keyboard.press('Space');
+  await page.clock.runFor(240);
+  await expect(slime).toHaveAttribute('aria-label', 'Selecionar Slime, vida 1 de 2');
+  await page.clock.runFor(1700);
+  await expect(slime).toHaveCount(0);
+  await expect(page.locator('#xpText')).toHaveText('XP 10 / 30');
+  const save = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
+  expect(save).toMatchObject({ x: -560, y: -1008, kills: 1 });
+});
+
 test('trocar de criatura durante a preparação descarta o golpe em andamento', async ({page}, info) => {
   const android = info.project.name === 'android';
   await page.setViewportSize(android ? {width:390,height:844} : {width:1200,height:800});

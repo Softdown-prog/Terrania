@@ -2,7 +2,7 @@ import type { Player } from "../actors/Player.ts";
 import type { CreatureView } from "../actors/CreatureCatalog.ts";
 import type { CollisionMap } from "../world/collision.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
-import { ATTACK_REACH, canStrike } from "./combat.ts";
+import { ATTACK_REACH, TARGET_OVERLAP_DISTANCE, canStrike, faceTarget } from "./combat.ts";
 import { TapNavigator } from "./TapNavigator.ts";
 
 /** CLASSIC-002: local-only follow logic for a single manually selected target.
@@ -25,12 +25,10 @@ export function inClassicAttackPosition(
   player: Point, creature: Point, collision: CollisionMap,
 ): boolean {
   if (!finite(player) || !finite(creature)) return false;
-  const dx = creature.x - player.x, dy = creature.y - player.y;
-  const distance = Math.hypot(dx, dy);
-  if (distance < 0.01 || distance >= CLASSIC_FOLLOW_STOP) return false;
-  return canStrike({
-    ...player, faceX: dx / distance, faceY: dy / distance,
-  }, creature, collision);
+  if (Math.hypot(creature.x - player.x, creature.y - player.y) >= CLASSIC_FOLLOW_STOP) return false;
+  const facing = { x: player.x, y: player.y, faceX: 0, faceY: 1 };
+  faceTarget(facing, creature);
+  return canStrike(facing, creature, collision);
 }
 
 /** Tile walking must aim at actual 32px endpoints, not a continuous ring. */
@@ -39,7 +37,9 @@ function approachPoints(creature: Point, tileSteps: boolean): Point[] {
     const cx = Math.floor(creature.x / TILE_SIZE), cy = Math.floor(creature.y / TILE_SIZE);
     const points: Point[] = [];
     for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
-      points.push({ x: (cx + dx + 0.5) * TILE_SIZE, y: (cy + dy + 0.5) * TILE_SIZE });
+      const point = { x: (cx + dx + 0.5) * TILE_SIZE, y: (cy + dy + 0.5) * TILE_SIZE };
+      if (Math.hypot(point.x - creature.x, point.y - creature.y) >= TARGET_OVERLAP_DISTANCE)
+        points.push(point);
     }
     return points;
   }
@@ -59,7 +59,7 @@ export function findClassicApproach(
   if (!finite(player) || !finite(creature) || !collision.canMove(player.x, player.y))
     return null;
   const distance = Math.hypot(player.x - creature.x, player.y - creature.y);
-  if (distance > CLASSIC_FOLLOW_LIMIT || distance < 0.01) return null;
+  if (distance > CLASSIC_FOLLOW_LIMIT || distance < TARGET_OVERLAP_DISTANCE) return null;
 
   // Continuous movement keeps its ring. Tile mode selects reachable grid centers
   // that will still be inside melee range after the committed step finishes.

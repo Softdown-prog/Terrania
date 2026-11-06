@@ -45,6 +45,19 @@ test("selection respects walls, distance and lost targets",()=>{
   assert.equal(c.tick(1/60,h,mobs,OPEN),false);
   assert.equal(c.targetId,null);
 });
+
+test("um Slime sobreposto pode ser atingido sem mudar a direção do herói", () => {
+  const fight = new ClassicCombat(), hero = new Player(), { slime, mobs } = pair(16);
+  hero.faceX = -1;
+  hero.faceY = 0;
+  fight.select(slime.id, mobs);
+
+  assert.equal(fight.tick(1 / 60, hero, mobs, { canMove: () => false }), false);
+  assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), true);
+  assert.deepEqual([hero.faceX, hero.faceY], [-1, 0]);
+  assert.equal(fight.strikeTargetId, slime.id);
+});
+
 test("classic auto-strike damages only its selected slime; old manual strike stays unchanged",()=>{
   const sim=new OfflineSimulation(842136);
   sim.update(0,STILL,false);
