@@ -1,4 +1,52 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type WebSocketRoute } from '@playwright/test';
+import { PROTOCOL_VERSION } from '../../src/shared/protocol.ts';
+
+test('as botas continuam animadas com um relógio de sala mais lento', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 500 });
+  await page.addInitScript(() => {
+    const boots: number[] = [];
+    Object.assign(window, { walkBoots: boots });
+    const fillRect = CanvasRenderingContext2D.prototype.fillRect;
+    CanvasRenderingContext2D.prototype.fillRect = function (x, y, width, height) {
+      // Observe the left boot in the world texture, relative to the hero's body.
+      if (this.fillStyle === '#584536' && width === 7 && height === 4 && x < 0) boots.push(x);
+      fillRect.call(this, x, y, width, height);
+    };
+    localStorage.setItem('terrania-preferences-v1', JSON.stringify({ zoom: 1.65, effects: false, cameraMotion: false }));
+  });
+  let socket: WebSocketRoute | undefined;
+  await page.routeWebSocket('ws://127.0.0.1:18787/ws*', ws => {
+    socket = ws;
+    ws.send(JSON.stringify({ type: 'welcome', version: PROTOCOL_VERSION, id: 'walker',
+      room: 'walk-clock', seed: 842136, movement: 'tiles' }));
+  });
+  const time = new Date('2026-01-01T00:00:00Z');
+  await page.clock.install({ time });
+  await page.clock.pauseAt(new Date(time.getTime() + 1000));
+  await page.goto('/jogar/?room=walk-clock');
+  await expect.poll(async () => {
+    await page.clock.runFor(48);
+    return page.locator('#multiplayerStatus').textContent();
+  }).toContain('Online');
+
+  const playPacket = async (packet: number) => {
+    // Exaggerate the drift so the browser regression can finish in a few seconds.
+    const time = packet * 0.094;
+    const x = 16 + time * 126;
+    socket!.send(JSON.stringify({ type: 'state', time, players: [{ id: 'walker', name: 'Walker',
+      x, y: 16, hp: 100, kills: 0, faceX: 1, faceY: 0, walkTime: (x - 16) * 0.12,
+      attackTime: 0, vx: 126, vy: 0, stepTarget: null }], mobs: [] }));
+    await page.clock.runFor(100);
+  };
+  const readBoots = () => page.evaluate(() =>
+    (window as typeof window & { walkBoots: number[] }).walkBoots.splice(0));
+  for (let packet = 0; packet < 55; packet++) await playPacket(packet);
+  await readBoots();
+  for (let packet = 55; packet < 65; packet++) await playPacket(packet);
+  const boots = await readBoots();
+  expect(boots.length).toBeGreaterThan(40);
+  expect(boots.filter(x => Math.abs(x + 7) > 0.1).length / boots.length).toBeGreaterThan(0.75);
+});
 
 test('toque para caminhar online transmite movimento autoritativo observado pelo segundo jogador', async ({ page, context }, testInfo) => {
   const observed = { id: '', movement: '', remoteX: Number.NaN, remoteY: Number.NaN };

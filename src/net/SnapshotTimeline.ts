@@ -4,7 +4,8 @@ import { CLASSIC_WALK_SPEED } from "../engine/ClassicTileWalker.ts";
 import type { HeroState, MobState, WalkTarget } from "../shared/protocol.ts";
 
 type Frame = { time: number; players: HeroState[]; mobs: MobState[] };
-const DELAY = 0.12;
+const TARGET_BUFFER = 0.18;
+const MAX_RATE_ADJUSTMENT = 0.08;
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 const distance = (a: WalkTarget, b: WalkTarget): number => Math.hypot(b.x - a.x, b.y - a.y);
 
@@ -68,8 +69,9 @@ function heroBetween(a: HeroState, b: HeroState, span: number, offset: number): 
 export class SnapshotTimeline {
   private frames: Frame[] = [];
   private clock = 0;
+  private rate = 1;
   get active(): boolean { return this.frames.length > 0; }
-  reset(): void { this.frames = []; this.clock = 0; }
+  reset(): void { this.frames = []; this.clock = 0; this.rate = 1; }
 
   push(time: number, players: HeroState[], mobs: MobState[]): boolean {
     const latest = this.frames.at(-1);
@@ -77,8 +79,14 @@ export class SnapshotTimeline {
     if (!latest || time - this.clock > 0.4 || this.clock - time > 0.4) {
       // Recover after tab suspension, packet starvation or a slow server clock.
       // Start from the new state; never replay the old backlog on recovery.
-      this.frames = [];
-      this.clock = time - DELAY;
+      this.reset();
+      this.clock = time - TARGET_BUFFER;
+    } else if (this.clock >= this.frames[0]!.time) {
+      // Room time advances in bounded ticks. Even small differences from the
+      // browser clock would eventually drain the buffer and freeze the gait.
+      const error = time - this.clock - TARGET_BUFFER;
+      const adjustment = Math.max(-MAX_RATE_ADJUSTMENT, Math.min(MAX_RATE_ADJUSTMENT, error));
+      this.rate = lerp(this.rate, 1 + adjustment, 0.2);
     }
     this.frames.push({ time, players: players.map(hero => ({ ...hero })), mobs: mobs.map(mob => ({ ...mob })) });
     if (this.frames.length > 32) this.frames.shift();
@@ -87,7 +95,7 @@ export class SnapshotTimeline {
 
   advance(dt: number): { players: HeroState[]; mobs: MobState[] } | null {
     if (!this.active) return null;
-    if (Number.isFinite(dt) && dt > 0) this.clock += Math.min(dt, 0.1);
+    if (Number.isFinite(dt) && dt > 0) this.clock += Math.min(dt, 0.1) * this.rate;
     while (this.frames.length > 1 && this.frames[1]!.time <= this.clock) this.frames.shift();
     const a = this.frames[0]!, b = this.frames[1];
     const offset = Math.max(0, this.clock - a.time);
