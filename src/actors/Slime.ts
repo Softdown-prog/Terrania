@@ -1,4 +1,4 @@
-import { moveBody, type CollisionMap } from "../world/collision.ts";
+import { clearPath, moveBody, type CollisionMap } from "../world/collision.ts";
 import { hash2 } from "../world/random.ts";
 import { CHUNK_TILES, TILE_SIZE } from "../world/terrain.ts";
 import { villageGround } from "../world/village.ts";
@@ -40,7 +40,7 @@ export class Slime implements CreatureView {
       if (this.hurtTime <= 0)
         moveBody(this, (dx / d) * speed * dt, (dy / d) * speed * dt, world);
     }
-    if (d < 24 && this.contactCooldown === 0) {
+    if (d < 24 && this.contactCooldown === 0 && clearPath(this, player, world)) {
       player.takeDamage(DEFINITION.contactDamage, this.x, this.y);
       this.contactCooldown = 1.2;
     }

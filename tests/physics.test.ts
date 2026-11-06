@@ -71,6 +71,21 @@ test("damage grants a short grace period and knockback obeys collision", () => {
   assert.ok(slime.x <= 12);
   assert.equal(slime.hp, 1);
 });
+
+test("a quina bloqueia o dano de contato sem gastar a recarga do Slime", () => {
+  const hero = Object.assign(new Player(), { x: -8, y: -360 });
+  const slime = new Slime("corner", 10, -360);
+  const wall = { canMove: (x: number) => Math.abs(x) > 3 };
+
+  slime.update(0.05, hero, wall);
+  assert.equal(hero.hp, 100);
+  assert.equal(slime.contactCooldown, 0);
+
+  slime.update(0.05, hero, floor);
+  assert.equal(hero.hp, 91);
+  assert.ok(slime.contactCooldown > 0);
+});
+
 test("offline combat applies one hit per swing after windup", () => {
   const sim = new OfflineSimulation(842136);
   sim.update(0, { x: 0, y: 0 }, false);

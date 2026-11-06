@@ -6,6 +6,23 @@ export interface CollisionMap {
   canMove(x: number, y: number): boolean;
   speedAt?(x: number, y: number): number;
 }
+
+/** Verifica um segmento a cada 4 unidades, incluindo as duas pontas. */
+export function clearPath(
+  from: { readonly x: number; readonly y: number },
+  to: { readonly x: number; readonly y: number },
+  collision: CollisionMap,
+): boolean {
+  if (![from.x, from.y, to.x, to.y].every(Number.isFinite)) return false;
+  const dx = to.x - from.x, dy = to.y - from.y;
+  const count = Math.ceil(Math.hypot(dx, dy) / 4);
+  for (let i = 0; i <= count; i++) {
+    const t = count === 0 ? 0 : i / count;
+    if (!collision.canMove(from.x + dx * t, from.y + dy * t)) return false;
+  }
+  return true;
+}
+
 /** Small swept steps prevent crossing obstacles, including during knockback. */
 export function moveBody(
   body: { x: number; y: number },
