@@ -65,6 +65,26 @@ test("jitter mantém progresso monótono e pacotes antigos não retrocedem o her
   assert.ok(x > 30 && x <= 30.4);
 });
 
+test("a pose da forjada começa junto do ataque reconstruído e dura até o fim", () => {
+  const timeline = new SnapshotTimeline();
+  timeline.push(1, [hero()], []);
+  timeline.push(1.1, [hero({ attackTime: 0.23, attackWeapon: "forge" })], []);
+  timeline.push(1.2, [hero({ attackTime: 0.13, attackWeapon: "forge" })], []);
+  start(timeline);
+  const before = timeline.advance(0.04)!.players[0]!;
+  assert.equal(before.attackTime, 0);
+  assert.equal(before.attackWeapon, "starter");
+  const strike = timeline.advance(0.02)!.players[0]!;
+  close(strike.attackTime, 0.27);
+  assert.equal(strike.attackWeapon, "forge");
+  timeline.push(1.3, [hero({ attackTime: 0.03, attackWeapon: "forge" })], []);
+  timeline.push(1.4, [hero()], []);
+  for (let i = 0; i < 5; i++) timeline.advance(0.05);
+  const end = timeline.advance(0.04)!.players[0]!;
+  assert.equal(end.attackTime, 0);
+  assert.equal(end.attackWeapon, "starter");
+});
+
 test("a passada continua após 20 segundos com o relógio da sala ligeiramente mais lento", () => {
   for (const intervals of [[6], [6, 9, 6, 6, 9]]) {
     const timeline = new SnapshotTimeline();

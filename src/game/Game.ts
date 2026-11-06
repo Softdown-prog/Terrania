@@ -273,6 +273,7 @@ export class Game {
     player.faceX = self.faceX; player.faceY = self.faceY;
     player.walkTime = self.walkTime;
     player.attackTime = self.attackTime;
+    player.attackWeapon = self.attackWeapon === "forge" ? "forge" : "starter";
     player.hurtTime = self.hurtTime ?? 0;
   }
   private talkToNpc(): void {

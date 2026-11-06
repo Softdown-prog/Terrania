@@ -163,7 +163,7 @@
           @let weapon = hud.weapons[loadout.equipped];
           <div class="inventory-item">
             <span class="item-icon" aria-hidden="true">⚔</span>
-            <span><strong id="equippedWeapon">{{ weapon.name }}</strong><small>{{ weapon.damage }} de dano · {{ weapon.interval }} s entre golpes</small></span>
+            <span><strong id="equippedWeapon">{{ weapon.name }}</strong><small>{{ weapon.damage }} de dano · {{ weapon.interval }} s entre golpes · {{ weapon.windup * 1000 }} ms até o impacto</small></span>
             <b>Equipada</b>
           </div>
           @if (loadout.forged) {
@@ -270,7 +270,7 @@
             <p class="dialog-note">Gel {{ hud.gel() }} · Poções {{ hud.potions() }}</p>
             <button [disabled]="hud.inventoryPending()" (click)="hud.tradePotion()" class="secondary-button" type="button">Trocar {{ offer.price }} de gel por 1 poção</button>
           } @else {
-            <p class="dialog-note">Gel {{ hud.gel() }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes</p>
+            <p class="dialog-note">Gel {{ hud.gel() }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes · {{ hud.weapons.forge.windup * 1000 }} ms até o impacto</p>
             <button [disabled]="hud.inventoryPending() || hud.loadout()?.forged" (click)="hud.buySword()" class="secondary-button" type="button">{{ hud.loadout()?.forged ? "Espada já adquirida" : "Comprar " + hud.weapons.forge.name + " por " + offer.price + " de gel" }}</button>
           }
           <p id="npcTradeFeedback" role="status">{{ hud.npcTradeFeedback() }}</p>

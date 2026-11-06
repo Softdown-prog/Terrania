@@ -253,9 +253,9 @@ export class Room {
     }
     for (const guest of this.guests.values()) {
       const combat = guest.targeting?.combat;
-      const weapon = guest.inventory?.bag.weapon ?? WEAPONS.starter;
-      if (combat?.tick(dt, guest.actor, this.mobs, this.world, weapon.interval) || guest.attackQueued) {
-        guest.actor.startAttack(weapon.damage);
+      const weapon = guest.inventory?.bag.loadout.equipped ?? "starter";
+      if (combat?.tick(dt, guest.actor, this.mobs, this.world, WEAPONS[weapon].interval) || guest.attackQueued) {
+        guest.actor.startAttack(weapon);
         guest.attackQueued = false;
       }
       const focused = combat?.strikeTargetId ? this.mobs.get(combat.strikeTargetId) : null;
@@ -368,6 +368,7 @@ export class Room {
         faceY: a.faceY,
         walkTime: a.walkTime,
         attackTime: a.attackTime,
+        ...(a.attackTime > 0 && a.attackWeapon === "forge" ? { attackWeapon: a.attackWeapon } : {}),
         vx: a.vx,
         vy: a.vy,
         hurtTime: a.hurtTime,

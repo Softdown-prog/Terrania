@@ -233,7 +233,7 @@ test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar',
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
   await activate(page.getByRole('button', { name: 'Equipar Espada da Travessia' }));
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
-  await expect(page.getByText('2 de dano · 2 s entre golpes', { exact: true })).toBeVisible();
+  await expect(page.getByText('2 de dano · 2 s entre golpes · 180 ms até o impacto', { exact: true })).toBeVisible();
   await page.reload();
   await openBag();
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');

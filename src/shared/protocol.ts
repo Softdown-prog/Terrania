@@ -1,5 +1,5 @@
 import type { PotionTradeResult, SwordEquipResult, SwordPurchaseResult } from "../engine/Inventory.ts";
-import type { WeaponLoadout } from "../engine/Weapons.ts";
+import type { WeaponId, WeaponLoadout } from "../engine/Weapons.ts";
 import type { LootDrop } from "../engine/loot.ts";
 
 /** Version 3 shares village building collision with clients and the server. */
@@ -16,6 +16,8 @@ export interface HeroState {
   faceY: number;
   walkTime: number;
   attackTime: number;
+  /** Weapon committed to the displayed swing. Omission uses the starter pose. */
+  attackWeapon?: WeaponId;
   vx?: number;
   vy?: number;
   hurtTime?: number;
