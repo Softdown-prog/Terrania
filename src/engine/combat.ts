@@ -4,6 +4,7 @@ export const ATTACK_DURATION = 0.28;
 export const ATTACK_COOLDOWN = 0.42;
 export const ATTACK_WINDUP = 0.07;
 export const ATTACK_REACH = 52;
+export const TARGET_OVERLAP_DISTANCE = 0.01;
 
 /** Keep a targeted swing oriented consistently in both simulations. */
 export function faceTarget(
@@ -12,7 +13,7 @@ export function faceTarget(
 ): void {
   const dx = target.x - attacker.x, dy = target.y - attacker.y;
   const distance = Math.hypot(dx, dy);
-  if (Number.isFinite(distance) && distance > 0.01) {
+  if (Number.isFinite(distance) && distance > TARGET_OVERLAP_DISTANCE) {
     attacker.faceX = dx / distance; attacker.faceY = dy / distance;
   }
 }
@@ -35,7 +36,7 @@ export function canStrike(
       -0.1
   )
     return false;
-  const steps = Math.ceil(distance / 6);
+  const steps = Math.max(1, Math.ceil(distance / 6));
   for (let i = 1; i <= steps; i++) {
     if (
       !world.canMove(

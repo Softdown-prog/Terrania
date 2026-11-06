@@ -1,7 +1,7 @@
 import { CREATURE_CATALOG, type CreatureView } from "../actors/CreatureCatalog.ts";
 import type { Player } from "../actors/Player.ts";
 import type { CollisionMap } from "../world/collision.ts";
-import { ATTACK_REACH, canStrike } from "./combat.ts";
+import { canStrike, faceTarget } from "./combat.ts";
 
 /** Terrania's original classic-RPG prototype: target-and-wait, not an action combo.
  * Shared by the solo simulation and the authoritative Node room.
@@ -70,11 +70,9 @@ export class ClassicCombat {
     const mob = mobs.get(this.selected);
     if (!mob || mob.hp <= 0) { this.cancel(); return false; }
     if (player.hp <= 0 || !isPoint(mob) || !isPoint(player)) return false;
-    const dx = mob.x - player.x, dy = mob.y - player.y;
-    const distance = Math.hypot(dx, dy);
-    if (distance < 0.01 || distance >= ATTACK_REACH ||
-        this.remaining > 0 || player.attackCooldown > 0) return false;
-    const facing = {x:player.x,y:player.y,faceX:dx/distance,faceY:dy/distance};
+    if (this.remaining > 0 || player.attackCooldown > 0) return false;
+    const facing = { x: player.x, y: player.y, faceX: player.faceX, faceY: player.faceY };
+    faceTarget(facing, mob);
     if (!canStrike(facing, mob, collision)) return false;
     player.faceX = facing.faceX;
     player.faceY = facing.faceY;

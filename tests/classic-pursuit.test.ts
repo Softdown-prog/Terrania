@@ -53,6 +53,21 @@ test("seleção distante gera movimento automático e para dentro do alcance rea
   assert.equal(chase.destination, null);
 });
 
+test("perseguição para ao sobrepor o alvo e escolhe destinos livres ao se aproximar", () => {
+  const hero = new Player();
+  const mob = new Slime("overlap", hero.x, hero.y);
+  const mobs = new Map([[mob.id, mob]]);
+  for (const tileSteps of [false, true]) {
+    const chase = new ClassicPursuit();
+    assert.equal(inClassicAttackPosition(hero, mob, OPEN), true);
+    assert.deepEqual(chase.direction(DT, hero, mob.id, mobs, OPEN, tileSteps), STILL);
+    assert.equal(chase.destination, null);
+  }
+  const approach = findClassicApproach({ x: 16, y: 15 }, mob, OPEN, true);
+  assert.ok(approach);
+  assert.notDeepEqual(approach, { x: mob.x, y: mob.y });
+});
+
 test("perseguição usa A* para contornar parede sem atacar por dentro dela", () => {
   const hero = new Player();
   hero.x = 16; hero.y = 16;
