@@ -88,19 +88,27 @@ export class Room {
     if (!guest) return;
     guest.input = { x, y };
     guest.lastInputAt = Date.now();
-    if (guest.walking && !guest.walking.walker.destination && Math.hypot(x, y) >= 0.08)
-      guest.inputPulse = { x, y };
-    if (guest.walking && (attack || Math.hypot(x, y) >= 0.08)) this.cancelWalk(guest);
+    if (guest.walking && Math.hypot(x, y) >= 0.08) {
+      if (!guest.walking.walker.destination) guest.inputPulse = { x, y };
+      this.cancelWalk(guest);
+    }
     if (!attack) return;
     const { targeting } = guest;
     if (!targeting) {
       guest.attackQueued = true;
-    } else if (targeting.combat.targetId) {
+      if (guest.walking) this.cancelWalk(guest);
+      return;
+    }
+    const current = targeting.combat.targetId;
+    if (current && this.mobs.has(current)) {
       targeting.follow = true;
     } else if (guest.lastInputAt >= targeting.nextSelectionAt) {
       targeting.nextSelectionAt = guest.lastInputAt + TARGET_CHANGE_MS;
       targeting.follow = targeting.combat.selectNearest(guest.actor, this.mobs.values());
+    } else {
+      return;
     }
+    if (targeting.follow) this.cancelWalk(guest);
   }
   receiveTarget(id: string, targetId: string | null): void {
     const guest = this.guests.get(id);
