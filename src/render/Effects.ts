@@ -31,6 +31,16 @@ export class Effects {
     this.previous.clear();
     this.hp = 100;
   }
+  showGelPickup(player: Pick<Player, "x" | "y">, amount: number): void {
+    if (!this.enabled) return;
+    this.labels.push({
+      x: player.x,
+      y: player.y - 56,
+      text: `+${amount} Gel de slime`,
+      color: "#b9f8c9",
+      life: 1.2,
+    });
+  }
   private burst(x: number, y: number, color: string, count: number): void {
     for (let i = 0; i < count && this.particles.length < 140; i++) {
       const a = i * 2.399 + x,

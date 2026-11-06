@@ -415,6 +415,7 @@ export class Game {
         return;
       }
     }
+    const gelBefore = this.sim.inventory.gel;
     if (!paused || online) {
       this.accumulator += dt;
       while (this.accumulator >= 1 / 60) {
@@ -465,6 +466,8 @@ export class Game {
       this.accumulator = 0;
       this.pendingAttack = false;
     }
+    const collectedGel = this.sim.inventory.gel - gelBefore;
+    if (collectedGel > 0) this.effects.showGelPickup(this.sim.player, collectedGel);
     if (online && this.multiplayer) {
       this.networkClock += dt;
       if (this.networkClock >= 0.05) {

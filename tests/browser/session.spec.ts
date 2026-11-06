@@ -121,6 +121,59 @@ test('entrada online e saída da rota preservam o progresso solo recente', async
   expect(healed).toMatchObject({ hp: 110, experience: 50, inventory: { gel: 9, potion: 1, questRewardClaimed: true } });
 });
 
+test('a coleta de gel confirma a quantidade na tela e persiste na bolsa', async ({ page }, info) => {
+  await page.addInitScript(() => {
+    const key = 'terrania-origins-v1';
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({
+      seed: 842136, x: 16, y: 16, hp: 100, kills: 2, defeated: ['gel-a', 'gel-b'],
+      inventory: { gel: 5, potion: 0, questRewardClaimed: false },
+      drops: ['gel-a', 'gel-b'].map(id => ({ id, item: 'gel', x: 64, y: 16 })),
+    }));
+    localStorage.setItem('terrania-preferences-v1', JSON.stringify({ zoom: 1, effects: true, cameraMotion: false }));
+    const labels: string[] = [];
+    Object.assign(window, { pickupLabels: labels });
+    const fillText = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
+      if (text.endsWith(' Gel de slime')) labels.push(text);
+      if (maxWidth === undefined) fillText.call(this, text, x, y);
+      else fillText.call(this, text, x, y, maxWidth);
+    };
+  });
+  const time = new Date('2026-01-01T00:00:00Z');
+  await page.clock.install({ time });
+  await page.clock.pauseAt(new Date(time.getTime() + 1000));
+  await page.goto('/jogar/?modo=solo');
+  const canvas = page.locator('canvas#game');
+  const waitForGame = () => expect.poll(async () => {
+    await page.clock.runFor(32);
+    return canvas.count();
+  }).toBe(1);
+  const readLabels = () => page.evaluate(() =>
+    (window as typeof window & { pickupLabels: string[] }).pickupLabels.splice(0));
+  const readSave = () => page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
+  await waitForGame();
+  await page.clock.runFor(80);
+  expect(await readLabels()).toEqual([]);
+
+  const bounds = (await canvas.boundingBox())!;
+  const position = { x: bounds.width / 2 + 32, y: bounds.height / 2 };
+  if (info.project.name === 'android') await canvas.tap({ position });
+  else await canvas.click({ position });
+  await page.clock.runFor(400);
+  expect(new Set(await readLabels())).toEqual(new Set(['+2 Gel de slime']));
+  expect(await readSave()).toMatchObject({ inventory: { gel: 7 }, drops: [] });
+
+  await page.clock.runFor(1300);
+  await readLabels();
+  await page.clock.runFor(64);
+  expect(await readLabels()).toEqual([]);
+  await page.reload();
+  await waitForGame();
+  await page.clock.runFor(160);
+  expect(await readLabels()).toEqual([]);
+  expect(await readSave()).toMatchObject({ inventory: { gel: 7 }, drops: [] });
+});
+
 test('Lina troca gel no solo e a poção permanece utilizável depois de recarregar', async ({ page }, info) => {
   const save = { seed: 842136, x: 448, y: 240, hp: 75, kills: 3, experience: 30,
     defeated: [], inventory: { gel: 5, potion: 0, questRewardClaimed: false } };
