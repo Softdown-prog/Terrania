@@ -120,7 +120,7 @@ export class OfflineSimulation {
       }
     }
     let changed = false;
-    if (attack) this.player.startAttack();
+    if (attack) this.player.startAttack(this.inventory.weapon.damage);
     // Keep the swing facing the creature it was started against while walking.
     const focused = typeof strikeTargetId === "string" ? this.slimes.get(strikeTargetId) : null;
     if (focused && this.player.attackTime > 0) faceTarget(this.player, focused);
@@ -128,7 +128,7 @@ export class OfflineSimulation {
       for (const [id, slime] of this.slimes) {
         if ((strikeTargetId === undefined || id === strikeTargetId) &&
             canStrike(this.player, slime, this.collision)) {
-          slime.takeHit(this.player.x, this.player.y);
+          slime.takeHit(this.player.x, this.player.y, this.player.strikeDamage);
           if (slime.hp <= 0) {
             this.slimes.delete(id);
             this.defeated.add(id);

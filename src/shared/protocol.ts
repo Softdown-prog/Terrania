@@ -1,4 +1,5 @@
-import type { PotionTradeResult } from "../engine/Inventory.ts";
+import type { PotionTradeResult, SwordEquipResult, SwordPurchaseResult } from "../engine/Inventory.ts";
+import type { WeaponLoadout } from "../engine/Weapons.ts";
 import type { LootDrop } from "../engine/loot.ts";
 
 /** Version 3 shares village building collision with clients and the server. */
@@ -39,15 +40,17 @@ export type WalkTarget = { readonly x: number; readonly y: number };
 export type WalkMessage = { type: "walk"; target: WalkTarget | null };
 export type TargetMessage = { type: "target"; id: string | null };
 export type CombatFocus = { readonly id: string; readonly following: boolean };
-export type InventoryAction = "use-potion" | "trade-potion";
+export type InventoryAction = "use-potion" | "trade-potion" | "buy-sword" | "equip-starter" | "equip-forge";
 export type InventoryMessage = { type: "inventory"; action: InventoryAction; requestId: number };
-export type InventoryOutcome = PotionTradeResult | "healed" | "full-health" | "no-potion" | "unavailable" | "too-far";
+export type InventoryOutcome = PotionTradeResult | SwordPurchaseResult | SwordEquipResult |
+  "healed" | "full-health" | "no-potion" | "too-far";
 export type InventoryReceipt = Pick<InventoryMessage, "requestId" | "action"> & { outcome: InventoryOutcome };
 export interface RoomInventoryState {
   gel: number;
   potion: number;
   drops: LootDrop[];
   receipt: InventoryReceipt | null;
+  loadout?: WeaponLoadout;
 }
 export type RoomState = {
   players: HeroState[];
@@ -95,7 +98,8 @@ export function isValidTarget(value: unknown): value is TargetMessage {
 export function isValidInventoryMessage(value: unknown): value is InventoryMessage {
   if (!value || typeof value !== "object") return false;
   const m = value as Partial<InventoryMessage>;
-  return m.type === "inventory" && (m.action === "use-potion" || m.action === "trade-potion") &&
+  return m.type === "inventory" && (m.action === "use-potion" || m.action === "trade-potion" ||
+    m.action === "buy-sword" || m.action === "equip-starter" || m.action === "equip-forge") &&
     typeof m.requestId === "number" && Number.isSafeInteger(m.requestId) && m.requestId > 0;
 }
 export function validRoom(room: string): boolean {

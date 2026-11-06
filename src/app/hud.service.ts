@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import type { GameUi, HeroHudState, NearbyAction, Preferences } from '../ui/GameUi.ts';
+import type { GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
+import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/Experience.ts';
@@ -36,6 +37,9 @@ export class HudService implements GameUi {
   readonly inventoryAvailable = signal(true);
   readonly inventoryPending = signal(false);
   readonly inventoryFeedback = signal('');
+  readonly weapons = WEAPONS;
+  readonly loadout = signal<WeaponLoadout | null>(null, { equal: (a, b) =>
+    a?.forged === b?.forged && a?.equipped === b?.equipped });
   readonly talkVisible = signal(false);
   readonly talkLabel = signal('Conversar (E)');
   readonly npcName = signal('');
@@ -43,7 +47,7 @@ export class HudService implements GameUi {
   readonly npcSpeech = signal('');
   readonly npcStep = signal('');
   readonly npcLast = signal(false);
-  readonly npcPotionPrice = signal<number | null>(null);
+  readonly npcOffer = signal<NpcOffer | null>(null);
   readonly npcTradeFeedback = signal('');
   readonly dialogueRequested = signal(0);
   readonly preferences = signal<Preferences>({ zoom: 1.65, effects: true, cameraMotion: true });
@@ -55,6 +59,8 @@ export class HudService implements GameUi {
   private talkCallback: () => void = () => {};
   private potionTradeCallback: () => string = () => '';
   private potionCallback: () => string = () => '';
+  private swordPurchaseCallback: () => string = () => '';
+  private weaponEquipCallback: (weapon: WeaponId) => string = () => '';
   private respawnCallback: () => void = () => {};
   private stopCombatCallback: () => void = () => {};
   private battleSelectCallback: (id: string) => void = () => {};
@@ -84,6 +90,8 @@ export class HudService implements GameUi {
   onTalk(callback: () => void): void { this.talkCallback = callback; }
   onPotionTrade(callback: () => string): void { this.potionTradeCallback = callback; }
   onPotionUse(callback: () => string): void { this.potionCallback = callback; }
+  onSwordPurchase(callback: () => string): void { this.swordPurchaseCallback = callback; }
+  onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
   onRespawn(callback: () => void): void { this.respawnCallback = callback; }
   onStopCombat(callback: () => void): void { this.stopCombatCallback = callback; }
   onBattleSelect(callback: (id: string) => void): void { this.battleSelectCallback = callback; }
@@ -103,13 +111,16 @@ export class HudService implements GameUi {
   talk(): void { this.talkCallback(); }
   tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
   usePotion(): void { this.inventoryFeedback.set(this.potionCallback()); }
+  buySword(): void { this.npcTradeFeedback.set(this.swordPurchaseCallback()); }
+  equipWeapon(weapon: WeaponId): void { this.inventoryFeedback.set(this.weaponEquipCallback(weapon)); }
   respawn(): void { this.respawnCallback(); }
   updateInventory(gel: number, potions: number, available: boolean, pending: boolean): void {
     this.gel.set(gel); this.potions.set(potions); this.inventoryAvailable.set(available);
     this.inventoryPending.set(pending);
   }
-  setPotionFeedback(action: 'use' | 'trade', message: string): void {
-    (action === 'use' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
+  updateLoadout(loadout: WeaponLoadout | null): void { this.loadout.set(loadout); }
+  setInventoryFeedback(section: 'bag' | 'npc', message: string): void {
+    (section === 'bag' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
   }
   setStatus(status: string): void { this.status.set(status); }
   setTargetCombat(enabled: boolean): void { this.targetCombat.set(enabled); }
@@ -118,7 +129,7 @@ export class HudService implements GameUi {
     this.online.set(online);
     this.inventoryFeedback.set('');
     this.npcTradeFeedback.set('');
-    this.npcPotionPrice.set(null);
+    this.npcOffer.set(null);
   }
   setSeed(seed: number): void { this.seed.set(seed); }
   setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }
@@ -126,10 +137,10 @@ export class HudService implements GameUi {
     this.talkVisible.set(action !== null);
     if (action) this.talkLabel.set(`${ACTION_LABELS[action]} (E)`);
   }
-  showNpcDialogue(name: string, role: string, lines: readonly string[], potionPrice?: number): void {
+  showNpcDialogue(name: string, role: string, lines: readonly string[], offer?: NpcOffer): void {
     this.npcLines = lines;
     this.npcPage = 0;
-    this.npcPotionPrice.set(potionPrice ?? null);
+    this.npcOffer.set(offer ?? null);
     this.npcTradeFeedback.set('');
     this.npcName.set(name); this.npcRole.set(role); this.updateNpcPage();
     // Pause synchronously; the component opens the native dialog on the next render.

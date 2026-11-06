@@ -145,7 +145,7 @@
       </dialog>
       <dialog id="inventoryDialog" #inventoryDialog (close)="closed()" aria-labelledby="inventoryTitle">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar bolsa">×</button>
-        <span class="dialog-kicker">SEUS ITENS · AVENTURA SOLO</span>
+        <span class="dialog-kicker">{{ hud.online() ? "SEUS ITENS · SALA ONLINE" : "SEUS ITENS · AVENTURA SOLO" }}</span>
         <h1 id="inventoryTitle">Bolsa do aventureiro</h1>
         <p class="dialog-note">Os slimes derrotados deixam gel no chão. Aproxime-se para recolher. {{ hud.online() ? "Na sala online, o gel fica com quem deu o golpe final." : "Aela entrega poções após você proteger a clareira." }}</p>
         <div class="inventory-item">
@@ -159,6 +159,20 @@
           <b id="potionCount">{{ hud.potions() + " / 99" }}</b>
         </div>
         <button id="usePotion" [disabled]="!hud.inventoryAvailable() || hud.inventoryPending() || hud.potions() === 0" (click)="hud.usePotion()" class="primary-button" type="button">Usar poção</button>
+        @if (hud.loadout(); as loadout) {
+          @let weapon = hud.weapons[loadout.equipped];
+          <div class="inventory-item">
+            <span class="item-icon" aria-hidden="true">⚔</span>
+            <span><strong id="equippedWeapon">{{ weapon.name }}</strong><small>{{ weapon.damage }} de dano · {{ weapon.interval }} s entre golpes</small></span>
+            <b>Equipada</b>
+          </div>
+          @if (loadout.forged) {
+            @let other = loadout.equipped === 'forge' ? 'starter' : 'forge';
+            <button [disabled]="hud.inventoryPending()" (click)="hud.equipWeapon(other)" class="secondary-button" type="button">Equipar {{ hud.weapons[other].name }}</button>
+          } @else {
+            <p class="dialog-note">Toren, na vila, oferece uma espada forjada em troca de gel.</p>
+          }
+        }
         <p id="inventoryFeedback" class="dialog-note" role="status" aria-live="polite">{{ hud.inventoryFeedback() }}</p>
         <button (click)="close($event)" class="secondary-button" type="button">Voltar à aventura</button>
       </dialog>
@@ -251,9 +265,14 @@
         <span class="dialog-kicker" id="npcRole">{{ hud.npcRole() }}</span>
         <h1 id="npcName">{{ hud.npcName() }}</h1>
         <p id="npcSpeech" aria-live="polite">{{ hud.npcSpeech() }}</p>
-        @if (hud.inventoryAvailable() && hud.npcPotionPrice(); as price) {
-          <p class="dialog-note">Gel {{ hud.gel() }} · Poções {{ hud.potions() }}</p>
-          <button [disabled]="hud.inventoryPending()" (click)="hud.tradePotion()" class="secondary-button" type="button">Trocar {{ price }} de gel por 1 poção</button>
+        @if (hud.inventoryAvailable() && hud.npcOffer(); as offer) {
+          @if (offer.item === 'potion') {
+            <p class="dialog-note">Gel {{ hud.gel() }} · Poções {{ hud.potions() }}</p>
+            <button [disabled]="hud.inventoryPending()" (click)="hud.tradePotion()" class="secondary-button" type="button">Trocar {{ offer.price }} de gel por 1 poção</button>
+          } @else {
+            <p class="dialog-note">Gel {{ hud.gel() }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes</p>
+            <button [disabled]="hud.inventoryPending() || hud.loadout()?.forged" (click)="hud.buySword()" class="secondary-button" type="button">{{ hud.loadout()?.forged ? "Espada já adquirida" : "Comprar " + hud.weapons.forge.name + " por " + offer.price + " de gel" }}</button>
+          }
           <p id="npcTradeFeedback" role="status">{{ hud.npcTradeFeedback() }}</p>
         }
         <small class="dialog-note" id="npcStep">{{ hud.npcStep() }}</small>

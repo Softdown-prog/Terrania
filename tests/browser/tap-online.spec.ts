@@ -159,6 +159,7 @@ test('Battle List da sala Node persegue e derrota um Slime do servidor', async (
   await expect(page.locator('#classicTarget')).toHaveCount(0);
   await page.locator('#gameMenuButton').click();
   await page.locator('#inventoryButton').click();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
   await expect.poll(async () => (await page.locator('#gelCount').textContent()) === `${inventory?.gel} / 99`).toBe(true);
 });
 
@@ -223,4 +224,47 @@ test('a bolsa online aguarda o recibo da sala para trocar e curar', async ({ pag
   expect(requests).toHaveLength(2);
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
   expect(save).toMatchObject({ hp: 80, inventory: soloInventory });
+});
+
+test('a forja online usa a posse e a espada equipada confirmadas pela sala', async ({ page }) => {
+  const commands: InventoryMessage[] = [];
+  let socket: WebSocketRoute | undefined;
+  await page.routeWebSocket('ws://127.0.0.1:18787/ws*', ws => {
+    socket = ws;
+    expect(new URL(ws.url()).searchParams.get('equipment')).toBe('forge');
+    ws.onMessage(raw => {
+      const message = JSON.parse(String(raw));
+      if (message.type === 'inventory') commands.push(message);
+    });
+    ws.send(JSON.stringify({ type: 'welcome', version: PROTOCOL_VERSION, id: 'a',
+      room: 'forge-test', seed: 842136, inventory: 'loot' }));
+  });
+  await page.goto('/jogar/?room=forge-test');
+  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
+  const state = (inventory: RoomInventoryState) => socket!.send(JSON.stringify({
+    type: 'state', inventory, mobs: [],
+    players: [{ id: 'a', name: 'Hero', x: 528, y: 48, hp: 100, kills: 5, faceX: 1, faceY: 0, walkTime: 0, attackTime: 0 }],
+  }));
+  state({ gel: 5, potion: 0, drops: [], loadout: { forged: false, equipped: 'starter' }, receipt: null });
+  await page.locator('#talkButton').click();
+  const toren = page.getByRole('dialog', { name: 'Toren' });
+  const buy = toren.getByRole('button', { name: 'Comprar Espada da Travessia por 5 de gel' });
+  await buy.click();
+  await expect(buy).toBeDisabled();
+  await expect.poll(() => commands.at(0)).toEqual({ type: 'inventory', action: 'buy-sword', requestId: 1 });
+  const purchased: RoomInventoryState = { gel: 0, potion: 0, drops: [], loadout: { forged: true, equipped: 'starter' },
+    receipt: { requestId: 1, action: 'buy-sword', outcome: 'purchased' } };
+  state(purchased);
+  await expect(toren.getByRole('status')).toContainText('Toren colocou');
+  await toren.getByRole('button', { name: 'Fechar conversa' }).click();
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  await page.getByRole('button', { name: 'Equipar Espada da Travessia' }).click();
+  await expect.poll(() => commands.at(1)).toEqual({ type: 'inventory', action: 'equip-forge', requestId: 2 });
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
+  state({ ...purchased, loadout: { forged: true, equipped: 'forge' },
+    receipt: { requestId: 2, action: 'equip-forge', outcome: 'equipped' } });
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
+  await expect(page.locator('#inventoryFeedback')).toHaveText('Espada equipada.');
+  expect(commands).toHaveLength(2);
 });

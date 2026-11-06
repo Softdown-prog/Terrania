@@ -66,6 +66,7 @@ export class MultiplayerClient {
       url.searchParams.set("combat", "target");
       url.searchParams.set("progression", "xp");
       url.searchParams.set("inventory", "loot");
+      url.searchParams.set("equipment", "forge");
       this.onStatus("Conectando à VPS…");
       const socket = new WebSocket(url);
       this.socket = socket;
@@ -202,6 +203,7 @@ export class MultiplayerClient {
   }
   requestInventory(action: InventoryAction): boolean {
     if (!this.roomInventory || !this.inventory || this.pendingInventoryRequest) return false;
+    if (action !== "use-potion" && action !== "trade-potion" && !this.inventory.loadout) return false;
     const request: InventoryMessage = { type: "inventory", action, requestId: ++this.inventoryRequestId };
     if (!this.send(request)) return false;
     this.pendingInventoryRequest = request;

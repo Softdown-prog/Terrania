@@ -9,7 +9,7 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Site e HUD Angular](indexes/angular-site.md) | active | 22 | Páginas do site, navegação, HUD e ações de interface. Não calcula regras autoritativas. |
 | [Orquestração Phaser](indexes/phaser-game.md) | active | 3 | Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir regras do motor para este adaptador. |
 | [Renderização e adaptadores Canvas](indexes/renderer.md) | active | 12 | Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo. |
-| [Regras e simulação offline](indexes/simulation.md) | active | 12 | Combate, progressão, inventário, loot e navegação; sem DOM, Phaser ou Angular. |
+| [Regras e simulação offline](indexes/simulation.md) | active | 13 | Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular. |
 | [Entidades jogáveis](indexes/actors.md) | active | 4 | Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias. |
 | [Terreno, colisões e NPCs](indexes/world.md) | active | 8 | Mundo procedural determinístico, tiles, colisão, vila e marcos. |
 | [Entrada e controles](indexes/input.md) | active | 4 | Normalização de teclado, joystick e toque; regras de gameplay pertencem à simulação. |
@@ -23,6 +23,6 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Módulo Rust espacial e entidades](indexes/rust-spatial.md) | experimental | 10 | Kernel Rust e FFI opt-in; não é servidor de rede. |
 | [Scripts, automação e CI](indexes/tooling.md) | active | 24 | Build, verificação, testes automatizados, deploys e índice; operações de produção são fluxos distintos. |
 
-**Outros arquivos:** [documentos, configurações e arquivos de entrada](indexes/_outros.md) (66).
+**Outros arquivos:** [documentos, configurações e arquivos de entrada](indexes/_outros.md) (67).
 
 Para regras de alteração, veja [AGENTS.md](../AGENTS.md), [manutenção](MANUTENCAO.md) e [ADR 0001](adr/0001-catalogo-e-fronteiras.md).

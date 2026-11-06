@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { Room } from '../src/Room.ts';
 import { isValidInput, isValidInventoryMessage, isValidTarget, isValidWalk, validRoom } from '../../src/shared/protocol.ts';
 import { MAX_STACK } from '../../src/engine/Inventory.ts';
+import { FORGE_SWORD_PRICE, WEAPONS } from '../../src/engine/Weapons.ts';
 import { canMoveOnSeed, clearPath } from '../../src/world/collision.ts';
 
 test('protocolo rejeita coordenadas falsas ou movimento fora da velocidade', () => {
@@ -233,6 +234,54 @@ test('a coleta online exige caminho livre até o gel', () => {
   Object.assign(guest.actor, { x: -16, y: -336 });
   room.tick(0.05, guest.lastInputAt + 50);
   assert.equal(guest.inventory.bag.gel, 1);
+});
+
+test('a sala valida a forja e aplica o dano da espada equipada no início do ataque', () => {
+  const room = new Room('origins');
+  const owner = room.add('a', 'Aventureiro', true, true, true, true, true);
+  const legacy = room.add('b', 'Legado', true, true, true, true);
+  assert.ok(owner.inventory && legacy.inventory);
+  const state = () => room.snapshotFor('a')?.inventory;
+  const send = (requestId: number, action: 'buy-sword' | 'equip-starter' | 'equip-forge') =>
+    room.receiveInventory('a', { type: 'inventory', action, requestId });
+  for (let i = 0; i < FORGE_SWORD_PRICE * 2; i++) {
+    owner.inventory.bag.addGel();
+    legacy.inventory.bag.addGel();
+  }
+  Object.assign(legacy.actor, { x: 538, y: 32 });
+  room.receiveInventory('b', { type: 'inventory', action: 'buy-sword', requestId: 1 });
+  assert.equal(legacy.inventory.bag.gel, FORGE_SWORD_PRICE * 2);
+  assert.equal(room.snapshotFor('b')?.inventory?.loadout, undefined);
+  send(1, 'equip-forge');
+  assert.equal(state()?.receipt?.outcome, 'not-owned');
+  send(2, 'buy-sword');
+  assert.equal(state()?.receipt?.outcome, 'too-far-from-forge');
+  Object.assign(owner.actor, { x: 538, y: 32 });
+  send(3, 'buy-sword');
+  send(3, 'equip-forge');
+  assert.deepEqual(state()?.loadout, { forged: true, equipped: 'starter' });
+  send(4, 'buy-sword');
+  assert.equal(state()?.receipt?.outcome, 'already-owned');
+  assert.equal(state()?.gel, FORGE_SWORD_PRICE);
+  send(5, 'equip-forge');
+  assert.equal(state()?.loadout?.equipped, 'forge');
+
+  Object.assign(owner.actor, { x: -560, y: -1008 });
+  let now = owner.lastInputAt;
+  for (let i = 0; i < 31; i++) room.tick(0.05, now += 50);
+  room.receiveTarget('a', '-2,-2,0');
+  room.tick(0.05, now += 50);
+  assert.equal(owner.targeting?.combat.cooldown, WEAPONS.forge.interval);
+  send(6, 'equip-starter');
+  room.tick(0.05, now += 50);
+  room.tick(0.05, now += 50);
+  assert.equal(owner.kills, 1);
+  assert.equal(owner.experience, 10);
+  assert.equal(state()?.gel, FORGE_SWORD_PRICE + 1);
+  owner.actor.hp = 0;
+  room.tick(0.05, now += 50);
+  assert.deepEqual(state()?.loadout, { forged: true, equipped: 'starter' });
+  assert.ok(room.snapshotFor('b')?.players.every(hero => !('loadout' in hero)));
 });
 
 test('troca e cura usam posição e HP da sala e ignoram pedidos repetidos', () => {

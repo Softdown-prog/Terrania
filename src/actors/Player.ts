@@ -23,6 +23,7 @@ export class Player {
   private knockX = 0;
   private knockY = 0;
   private strikePending = false;
+  private swingDamage = 1;
   constructor(maxHp = BASE_MAX_HP) {
     this.hp = maxHp;
     this.maxHp = maxHp;
@@ -85,10 +86,12 @@ export class Player {
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
   }
-  startAttack(): boolean {
+  get strikeDamage(): number { return this.swingDamage; }
+  startAttack(damage = 1): boolean {
     if (this.attackCooldown > 0 || this.hp <= 0) return false;
     this.attackTime = ATTACK_DURATION;
     this.attackCooldown = ATTACK_COOLDOWN;
+    this.swingDamage = damage;
     this.strikePending = true;
     return true;
   }

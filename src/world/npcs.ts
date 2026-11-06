@@ -38,11 +38,13 @@ export function nearestNpc(x: number, y: number): Npc | null {
 }
 
 /** Falas de orientação; sem conceder itens nem mutar a missão. */
-export function npcDialogue(npc: Npc, kills: number): readonly string[] {
+export function npcDialogue(npc: Npc, kills: number, forgeAvailable = false): readonly string[] {
   const { defeated, goal, completed } = aelaQuestProgress(kills);
   if (npc.id === "mira") return completed
     ? ["Aela me contou sobre sua vitória!", "Há ruínas e cavernas além da floresta. Por enquanto, conheça a vila."]
     : ["Sou Mira, cartógrafa da Vila da Travessia.", "Siga para leste, leia as placas e conheça os moradores.", "Aela ainda precisa de ajuda com os slimes."];
+  if (npc.id === "toren" && forgeAvailable)
+    return ["Sou Toren, ferreiro da Vila da Travessia.", "Trouxe gel de Slime? Posso trocar por uma espada forjada aqui na vila."];
   if (npc.id === "toren") return completed
     ? ["Parabéns por proteger a clareira!", "Minha oficina está aberta para visitas. Equipamentos serão adicionados depois."]
     : ["Sou Toren, ferreiro.", "Chegue perto da porta e pressione E para visitar a oficina.", "Ainda não ofereço comércio."];

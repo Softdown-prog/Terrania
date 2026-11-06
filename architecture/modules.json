@@ -63,10 +63,11 @@
         "src/engine/OfflineSimulation.ts",
         "src/engine/ClassicCombat.ts",
         "src/engine/ClassicTileWalker.ts",
-        "src/engine/Experience.ts"
+        "src/engine/Experience.ts",
+        "src/engine/Weapons.ts"
       ],
       "doc": "src/engine/README.md",
-      "description": "Combate, progressão, inventário, loot e navegação; sem DOM, Phaser ou Angular."
+      "description": "Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular."
     },
     {
       "id": "actors",

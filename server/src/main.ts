@@ -74,7 +74,8 @@ server.on('upgrade', (req, socket, head) => {
     const tiles = path.searchParams.get('movement') === 'tiles';
     const targeting = tiles && path.searchParams.get('combat') === 'target';
     const loot = path.searchParams.get('inventory') === 'loot';
-    selectedRoom.add(id, name, tiles, targeting, path.searchParams.get('progression') === 'xp', loot);
+    const equipment = path.searchParams.get('equipment') === 'forge';
+    selectedRoom.add(id, name, tiles, targeting, path.searchParams.get('progression') === 'xp', loot, equipment);
     clients.set(ws, { id, room: selectedRoom, alive: true, count: 0, windowStart: Date.now() });
     const welcome = { type: 'welcome', version: PROTOCOL_VERSION, id, room: roomId, seed: selectedRoom.seed } as const;
     send(ws, { ...welcome,

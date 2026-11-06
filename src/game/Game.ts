@@ -10,10 +10,11 @@ import {
 } from "../engine/OfflineSimulation.ts";
 import { loadLocalSave, saveLocal } from "../storage/localSave.ts";
 import { CanvasScene } from "../ui/CanvasScene.ts";
-import type { GameUi, Preferences } from "../ui/GameUi.ts";
+import type { GameUi, NpcOffer, Preferences } from "../ui/GameUi.ts";
 import { nearestNpc, npcDialogue } from "../world/npcs.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { POTION_GEL_PRICE, POTION_HEAL, QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
+import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../engine/Weapons.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
@@ -26,7 +27,7 @@ import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress, maxHpForExperience, normalizeExperience } from "../engine/Experience.ts";
 
 const NPC_ACTIONS = { character: "talk", sign: "read", door: "enter" } as const;
-const POTION_FEEDBACK: Record<InventoryOutcome, string> = {
+const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "healed": `Poção utilizada! Vida restaurada em até ${POTION_HEAL} pontos.`,
   "full-health": "Sua vida já está completa.",
   "no-potion": "Você não possui poções de cura.",
@@ -35,6 +36,13 @@ const POTION_FEEDBACK: Record<InventoryOutcome, string> = {
   "insufficient-gel": `Você precisa de ${POTION_GEL_PRICE} unidades de gel para a troca.`,
   "potions-full": "A pilha de poções está cheia.",
   "traded": "Lina colocou uma poção de cura na sua bolsa.",
+  "purchased": `Toren colocou a ${WEAPONS.forge.name} na sua bolsa.`,
+  "already-owned": "Você já possui essa espada.",
+  "insufficient-sword-gel": `Você precisa de ${FORGE_SWORD_PRICE} unidades de gel para comprar a espada.`,
+  "too-far-from-forge": "Aproxime-se de Toren para comprar a espada.",
+  "equipped": "Espada equipada.",
+  "already-equipped": "Essa espada já está equipada.",
+  "not-owned": "Você ainda não possui essa espada.",
 };
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
@@ -91,7 +99,8 @@ export class Game {
         (status) => this.updateConnectionStatus(status),
         ({ action, outcome }) => {
           this.updateHud(true);
-          this.hud.setPotionFeedback(action === "use-potion" ? "use" : "trade", POTION_FEEDBACK[outcome]);
+          this.hud.setInventoryFeedback(action === "trade-potion" || action === "buy-sword" ? "npc" : "bag",
+            INVENTORY_FEEDBACK[outcome]);
         },
       );
     } else this.hud.setStatus("Offline · aventura local");
@@ -109,6 +118,8 @@ export class Game {
     }, { signal: this.lifecycle.signal });
     this.hud.onNewWorld(() => this.newWorld());
     this.hud.onPotionTrade(() => this.tradeGelForPotion());
+    this.hud.onSwordPurchase(() => this.buySword());
+    this.hud.onWeaponEquip(weapon => this.equipWeapon(weapon));
     this.hud.onTalk(() => this.talkToNpc());
     this.hud.onRespawn(() => this.respawn());
     this.hud.onPotionUse(() => {
@@ -116,13 +127,13 @@ export class Game {
         if (!this.multiplayer.roomInventory) return "A bolsa está disponível apenas no modo solo.";
         return this.requestRoomInventory("use-potion");
       }
-      if (this.sim.awaitingRespawn) return POTION_FEEDBACK.unavailable;
+      if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
       if (!this.sim.inventory.usePotion(this.sim.player))
         return this.sim.player.hp >= this.sim.player.maxHp
-          ? POTION_FEEDBACK["full-health"] : POTION_FEEDBACK["no-potion"];
+          ? INVENTORY_FEEDBACK["full-health"] : INVENTORY_FEEDBACK["no-potion"];
       this.save();
       this.updateHud(false);
-      return POTION_FEEDBACK.healed;
+      return INVENTORY_FEEDBACK.healed;
     });
     this.updateHud(false);
   }
@@ -140,6 +151,7 @@ export class Game {
     }, aelaQuestProgress(kills));
     this.hud.updateInventory(inventory?.gel ?? 0, inventory?.potion ?? 0, !!inventory,
       online && this.multiplayer?.inventoryPending === true);
+    this.hud.updateLoadout(inventory?.loadout ?? null);
   }
   /** Battle entries are derived from the same camera/viewport as the canvas. */
   private battleCreatures() {
@@ -289,29 +301,53 @@ export class Game {
       const rewarded = npc.id === "aela" && !this.multiplayer?.connected &&
         this.sim.inventory.claimAelaReward(this.sim.kills);
       if (rewarded) this.save();
-      const lines = npcDialogue(npc, this.sim.kills);
-      const potionPrice = npc.id === "lina" && (!this.multiplayer?.connected || this.multiplayer.roomInventory)
-        ? POTION_GEL_PRICE : undefined;
+      const online = this.multiplayer?.connected === true;
+      const canForge = !online || !!this.multiplayer?.inventory?.loadout;
+      let offer: NpcOffer | undefined;
+      if (npc.id === "lina" && (!online || this.multiplayer?.roomInventory))
+        offer = { item: "potion", price: POTION_GEL_PRICE };
+      else if (npc.id === "toren" && canForge) offer = { item: "sword", price: FORGE_SWORD_PRICE };
+      const lines = npcDialogue(npc, this.sim.kills, offer?.item === "sword");
       this.hud.showNpcDialogue(npc.name, npc.role, rewarded
         ? [...lines, `Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`]
-        : lines, potionPrice);
+        : lines, offer);
     }
   }
   private tradeGelForPotion(): string {
     const { player, inventory } = this.sim;
-    if (this.interior || !this.hud.menuOpen) return POTION_FEEDBACK["too-far"];
+    if (this.interior || !this.hud.menuOpen) return INVENTORY_FEEDBACK["too-far"];
     if (this.multiplayer?.connected) {
       if (!this.multiplayer.roomInventory) return "A troca está disponível com Lina na aventura solo.";
       return this.requestRoomInventory("trade-potion");
     }
-    if (player.hp <= 0) return POTION_FEEDBACK.unavailable;
-    if (nearestNpc(player.x, player.y)?.id !== "lina") return POTION_FEEDBACK["too-far"];
+    if (player.hp <= 0) return INVENTORY_FEEDBACK.unavailable;
+    if (nearestNpc(player.x, player.y)?.id !== "lina") return INVENTORY_FEEDBACK["too-far"];
     const result = inventory.tradeGelForPotion();
     if (result === "traded") {
       this.save();
       this.updateHud(false);
     }
-    return POTION_FEEDBACK[result];
+    return INVENTORY_FEEDBACK[result];
+  }
+  private buySword(): string {
+    if (this.interior || !this.hud.menuOpen) return INVENTORY_FEEDBACK["too-far-from-forge"];
+    if (this.multiplayer?.connected) return this.requestRoomInventory("buy-sword");
+    const result = this.sim.inventory.buyForgeSword(this.sim.player);
+    if (result === "purchased") {
+      this.save();
+      this.updateHud(false);
+    }
+    return INVENTORY_FEEDBACK[result];
+  }
+  private equipWeapon(weapon: WeaponId): string {
+    if (this.multiplayer?.connected) return this.requestRoomInventory(weapon === "forge" ? "equip-forge" : "equip-starter");
+    if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
+    const result = this.sim.inventory.equipWeapon(weapon);
+    if (result === "equipped") {
+      this.save();
+      this.updateHud(false);
+    }
+    return INVENTORY_FEEDBACK[result];
   }
   private requestRoomInventory(action: InventoryAction): string {
     if (!this.multiplayer?.requestInventory(action)) return "A bolsa da sala está indisponível no momento.";
@@ -454,7 +490,8 @@ export class Game {
         } else {
           const before = this.sim.player;
           const damageCount = before.damageCount;
-          const classicStrike = this.classicCombat.tick(1 / 60, before, this.sim.slimes, this.sim.collision);
+          const classicStrike = this.classicCombat.tick(1 / 60, before, this.sim.slimes, this.sim.collision,
+            this.sim.inventory.weapon.interval);
           const follow = !manualActive && !tileRoute && this.classicAutoFollow;
           if (follow) this.classicPursuit.direction(1 / 60, before, this.classicCombat.targetId,
             this.sim.slimes, this.sim.collision, true, this.tileWalker.destination);

@@ -30,7 +30,8 @@ Cada microtarefa deve identificar seu módulo no [índice de arquitetura](INDEX.
 ## Ciclo jogável essencial — etapas futuras, ainda não aprovadas
 
 - [x] Loot privado, inventário de sessão e consumíveis autoritativos na sala Node. Veja [ADR 0007](adr/0007-inventario-da-sala.md).
-- [ ] Equipamentos básicos e atributos que influenciem combate; balancear antes de expandir.
+- [x] Primeiro equipamento que altera dano e recarga. Veja [ADR 0008](adr/0008-espadas-e-recarga.md).
+- [ ] Avaliar o balanceamento das espadas antes de expandir o equipamento e os atributos.
 - [ ] Mana, vocações e magias quando os sistemas anteriores estiverem estáveis.
 - [ ] Exploração com NPCs, cidade inicial e pequenas missões; expandir mapas só depois do ciclo funcionar.
 - [ ] Adaptar as mecânicas consolidadas ao multiplayer, com regras autoritativas e testes de sincronização; planejar infraestrutura e escalabilidade depois de medir necessidades reais.
