@@ -137,3 +137,36 @@ for (const layout of ["normal", "landscape"] as const) {
     expect(errors).toEqual([]);
   });
 }
+
+test("um novo toque permite fugir logo após tomar dano", async ({ page }, info) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    // This tile contains a natural Slime spawn on the default seed.
+    localStorage.setItem("terrania-origins-v1", JSON.stringify({
+      seed: 842136, x: -560, y: -1008, hp: 100, kills: 0, defeated: [],
+    }));
+    localStorage.setItem("terrania-preferences-v1", JSON.stringify({
+      zoom: 1, effects: false, cameraMotion: false,
+    }));
+  });
+  const start = new Date("2026-01-01T00:00:00Z");
+  await page.clock.install({ time: start });
+  await page.clock.pauseAt(new Date(start.getTime() + 1000));
+  await page.goto("/jogar/?modo=solo");
+  await expect.poll(async () => {
+    await page.clock.runFor(32);
+    return page.locator("#hpText").textContent();
+  }).toBe("91 / 100");
+
+  const canvas = page.locator("canvas#game");
+  const size = (await canvas.boundingBox())!;
+  const position = { x: size.width / 2 + 96, y: size.height / 2 };
+  if (info.project.name === "android") await canvas.tap({ position });
+  else await canvas.click({ position });
+  await page.clock.runFor(1200);
+  expect(await page.evaluate(() => {
+    window.dispatchEvent(new Event("pagehide"));
+    const save = JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
+    return [save?.x, save?.y];
+  })).toEqual([-464, -1008]);
+});

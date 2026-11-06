@@ -142,7 +142,7 @@ export class Room {
       if (now < walking.nextPlanAt) continue;
       this.walkRequests.delete(id);
       walking.nextPlanAt = now + TAP_REPLAN_MS;
-      if (actor.hp > 0 && actor.hurtTime === 0) {
+      if (actor.hp > 0) {
         const center = {
           x: (Math.floor(target.x / TILE_SIZE) + 0.5) * TILE_SIZE,
           y: (Math.floor(target.y / TILE_SIZE) + 0.5) * TILE_SIZE,
@@ -237,7 +237,12 @@ export class Room {
           nearest = guest;
         }
       }
-      if (nearest) mob.update(dt, nearest.actor, this.world);
+      if (nearest) {
+        const damageCount = nearest.actor.damageCount;
+        mob.update(dt, nearest.actor, this.world);
+        if (nearest.walking && nearest.actor.damageCount !== damageCount)
+          this.cancelWalk(nearest);
+      }
       if (
         ![...this.guests.values()].some(
           (g) =>
@@ -248,8 +253,8 @@ export class Room {
         this.mobs.delete(id);
     }
     for (const guest of this.guests.values()) {
-      if (guest.walking && guest.actor.hurtTime > 0) this.cancelWalk(guest);
       if (guest.actor.hp <= 0) {
+        this.cancelWalk(guest);
         guest.walking?.walker.reset();
         if (guest.targeting) {
           guest.targeting.combat.reset();

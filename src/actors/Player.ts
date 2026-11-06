@@ -18,6 +18,7 @@ export class Player {
   attackTime = 0;
   attackCooldown = 0;
   hurtTime = 0;
+  private receivedHits = 0;
   private invulnerable = 0;
   private knockX = 0;
   private knockY = 0;
@@ -26,6 +27,8 @@ export class Player {
     this.hp = maxHp;
     this.maxHp = maxHp;
   }
+  /** Counts applied hits so movement can react to damage once per impact. */
+  get damageCount(): number { return this.receivedHits; }
   update(dt: number, dir: { x: number; y: number }, world: CollisionMap,
     timersOnly = false): void {
     if (!Number.isFinite(dt) || dt <= 0) return;
@@ -102,6 +105,7 @@ export class Player {
     if (this.invulnerable > 0 || this.hp <= 0 || !Number.isFinite(amount) || amount <= 0 ||
         !Number.isFinite(sourceX) || !Number.isFinite(sourceY)) return false;
     this.hp = Math.max(0, this.hp - amount);
+    this.receivedHits++;
     this.hurtTime = 0.3;
     this.invulnerable = 0.65;
     const dx = this.x - sourceX,

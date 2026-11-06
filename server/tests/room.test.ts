@@ -205,3 +205,40 @@ test('um destino bloqueado recebido durante a caminhada preserva a rota autorita
   assert.deepEqual([guest.actor.x, guest.actor.y], [destination.x, destination.y]);
   assert.equal(room.snapshotFor('a')?.walkTarget, null);
 });
+
+test('dano cancela a rota em curso e aceita a próxima ordem de caminhada', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Hero', true);
+  Object.assign(guest.actor, { x: -592, y: -1008 });
+  let now = guest.lastInputAt;
+  for (let frame = 0; frame < 31; frame++) room.tick(0.05, now += 50);
+
+  room.receiveWalk('a', { x: -464, y: -1008 });
+  room.tick(0.05, now += 50);
+  assert.equal(guest.actor.hp, 91);
+  assert.deepEqual(guest.walking?.walker.destination, { x: -560, y: -1008 });
+  assert.equal(room.snapshotFor('a')?.walkTarget, null);
+
+  // The new order arrives during the flash and before the next planning slot.
+  const escape = { x: -560, y: -912 };
+  room.receiveWalk('a', escape);
+  for (let frame = 0; frame < 25; frame++) room.tick(0.05, now += 50);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [escape.x, escape.y]);
+  assert.equal(room.snapshotFor('a')?.walkTarget, null);
+});
+
+test('sala com planejamento disponível inicia a fuga durante o efeito de dano', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Hero', true);
+  Object.assign(guest.actor, { x: -560, y: -1008 });
+  let now = guest.lastInputAt;
+  for (let frame = 0; frame < 30; frame++) room.tick(0.05, now += 50);
+  assert.equal(guest.actor.hp, 91);
+
+  const escape = { x: -464, y: -1008 };
+  room.receiveWalk('a', escape);
+  room.tick(0.05, now += 50);
+  assert.ok(guest.actor.hurtTime > 0);
+  assert.ok(guest.actor.x > -560);
+  assert.deepEqual(room.snapshotFor('a')?.walkTarget, escape);
+});
