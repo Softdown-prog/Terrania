@@ -10,4 +10,6 @@
 
 **Limites:** Não decidir dano, velocidade efetiva ou estado autoritativo na entrada.
 
+**Ataque:** no combate por alvo, `consumeAttack(false)` consome uma intenção por acionamento. O modo direcional permite repetir por tecla de jogo ou ponteiro mantido com `consumeAttack(true)`. Cliques de acessibilidade no botão continuam acionando o ataque.
+
 **Comandos curtos:** uma intenção de teclado/joystick sobrevive à liberação até `acknowledgeMovement()` após um tick solo/interior ou envio online. `movement()` não consome a intenção: um frame sem tick não pode perder uma tecla curta. `pointercancel` e perda inesperada de captura descartam o gesto pendente; `pointerup` preserva um toque curto concluído. `clear()` descarta a intenção, solta capturas e limpa ações em blur, ocultação, resize, menus e troca de mundo.

@@ -57,7 +57,11 @@ export class Input {
         ["Space", "Enter"].includes(event.code) &&
         event.target instanceof Element &&
         event.target.closest("button,a")
-      ) return;
+      ) {
+        // A focused attack button can otherwise emit a click on every Enter repeat.
+        if (event.repeat && event.target.closest("#attack")) event.preventDefault();
+        return;
+      }
       if (
         ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(event.code)
       ) event.preventDefault();
@@ -136,7 +140,10 @@ export class Input {
     attack?.addEventListener("contextmenu", (event) => event.preventDefault(), { signal: this.lifetime.signal });
     // Acessibilidade: Enter/Espaço também acionam o botão físico de ataque.
     attack?.addEventListener("click", (event) => {
-      if (event.detail === 0) this.attackQueued = true;
+      // Chromium can report detail=0 for a touch click after a long press.
+      // Pointer attacks are already queued on pointerdown.
+      const fromPointer = event instanceof PointerEvent && event.pointerType !== "";
+      if (event.detail === 0 && !fromPointer) this.attackQueued = true;
     }, { signal: this.lifetime.signal });
   }
   clear(): void {
@@ -204,12 +211,9 @@ export class Input {
     this.talkQueued = false;
     return talk;
   }
-  consumeAttack(): boolean {
-    const attack =
-      this.attackQueued ||
-      this.attackHeld ||
-      this.keys.has("Space") ||
-      this.keys.has("KeyJ");
+  consumeAttack(repeatHeld: boolean): boolean {
+    const attack = this.attackQueued || (repeatHeld &&
+      (this.attackHeld || this.keys.has("Space") || this.keys.has("KeyJ")));
     this.attackQueued = false;
     return attack;
   }
