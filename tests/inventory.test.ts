@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { Inventory, normalizeInventory, MAX_STACK, POTION_HEAL } from "../src/engine/Inventory.ts";
+import { Inventory, normalizeInventory, MAX_STACK, POTION_GEL_PRICE, POTION_HEAL } from "../src/engine/Inventory.ts";
 import { normalizeDrops, MAX_WORLD_DROPS } from "../src/engine/loot.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { Slime } from "../src/actors/Slime.ts";
@@ -30,6 +30,21 @@ test("Aela entrega duas poções apenas depois de cinco slimes e uma única vez"
   const reopened = new Inventory(inventory.snapshot());
   assert.equal(reopened.claimAelaReward(5), false);
   assert.equal(reopened.potion, 2);
+});
+test("troca por poção debita o gel apenas quando há saldo e espaço", () => {
+  const bag = new Inventory({ gel: POTION_GEL_PRICE * 2, potion: MAX_STACK - 1, questRewardClaimed: true });
+  assert.equal(bag.tradeGelForPotion(), "traded");
+  const checkpoint = bag.snapshot();
+  assert.deepEqual(checkpoint, { gel: POTION_GEL_PRICE, potion: MAX_STACK, questRewardClaimed: true });
+  const reopened = new Inventory(checkpoint);
+  assert.equal(reopened.tradeGelForPotion(), "potions-full");
+  assert.deepEqual(reopened.snapshot(), checkpoint);
+
+  const hero = { hp: 65, maxHp: 110 };
+  assert.equal(reopened.usePotion(hero), true);
+  assert.equal(reopened.tradeGelForPotion(), "traded");
+  assert.equal(reopened.tradeGelForPotion(), "insufficient-gel");
+  assert.deepEqual(reopened.snapshot(), { gel: 0, potion: MAX_STACK, questRewardClaimed: true });
 });
 test("poção restaura vida com teto e não pode ser usada com vida cheia ou morte", () => {
   const bag = new Inventory({ gel: 0, potion: 2, questRewardClaimed: false });
@@ -88,6 +103,14 @@ test("bolsa cheia mantém gel no chão para coleta posterior", () => {
   sim.update(1 / 60, still, false);
   assert.equal(sim.inventory.gel, MAX_STACK);
   assert.equal(sim.drops.size, 1);
+  assert.equal(sim.inventory.tradeGelForPotion(), "traded");
+  assert.equal(sim.update(1 / 60, still, false), true);
+  assert.equal(sim.inventory.gel, MAX_STACK - POTION_GEL_PRICE + 1);
+  assert.equal(sim.inventory.potion, 1);
+  const restored = new OfflineSimulation(seed, sim.snapshot());
+  assert.equal(restored.update(1 / 60, still, false), false);
+  assert.deepEqual(restored.inventory.snapshot(), sim.inventory.snapshot());
+  assert.equal(restored.drops.size, 0);
 });
 test("save legado sem inventário permanece compatível e nova partida fica vazia", () => {
   const legacy = { seed, x: 16, y: 16, hp: 70, kills: 5, defeated: ["one"] };

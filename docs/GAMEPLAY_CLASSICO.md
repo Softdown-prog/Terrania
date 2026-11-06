@@ -31,6 +31,7 @@ O combate por alvo e a caminhada por tiles fazem parte da entrada normal de Joga
 - Exibe nome e vida máxima vindos do catálogo (Slime: 2 HP), vida atual com barra de proporção, distância em tiles de 32 px e destaque do alvo selecionado. Ordena por distância e ID, limitado a 24 criaturas por atualização.
 - Clicar/tocar numa linha valida novamente que aquele monstro está visível e vivo antes de chamar a mesma seleção de alvo do cenário. A perseguição A* já existente continua responsável por aproximar o herói, respeitando alcance, paredes e tempo de ataque.
 - Painel lateral expansível ou recolhível por botão BATTLE; aberto por padrão no desktop com mouse, fechado por padrão em telas pequenas/touch para não cobrir o mapa. Um painel recolhido continua atualizando a contagem.
+- Em telas pequenas ou com toque, a lista tem até 144 px de largura e mostra cerca de duas linhas em retrato. Deslize dentro do painel para ver as outras criaturas. Cada linha continua com pelo menos 44 px para seleção por toque.
 - Atualização aproximadamente a cada 0,2 s; Angular só recebe novos sinais quando a lista muda. Ao entrar em interior, trocar mundo ou sair, a lista limpa. Estado não é persistido no save.
 - A lista mostra criaturas do motor solo ou dos snapshots online. Jogadores têm apresentação separada.
 - Regressões: tests/classic-battle-list.test.ts e tests/browser/classic-battle-list.spec.ts, além da CI do frontend Angular/Phaser, Node, Playwright Android e desktop, e Docker.

@@ -860,7 +860,7 @@ noscript a {
   .classic-status { bottom: 60px; }
 }
 
-/* CLASSIC-003 — Collapsible Battle List. Isolated to ?modo=classico. */
+/* CLASSIC-003 — Collapsible Battle List. */
 .classic-battle {
   position: absolute;
   z-index: 7;
@@ -871,6 +871,7 @@ noscript a {
   flex-direction: column;
   gap: 5px;
   color: #f1e5c4;
+  pointer-events: none;
 }
 .battle-toggle {
   align-self: flex-end;
@@ -889,6 +890,7 @@ noscript a {
   font-weight: 750;
   letter-spacing: .08em;
   box-shadow: 0 4px 16px #071b1cb8;
+  pointer-events: auto;
 }
 .battle-count {
   background: #3d604c;
@@ -906,6 +908,7 @@ noscript a {
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
+  pointer-events: auto;
 }
 .battle-panel[hidden] { display: none !important; }
 #battleEmpty {
@@ -986,24 +989,32 @@ noscript a {
 @media (min-width: 651px) and (max-width: 1060px) {
   .classic-battle { top: max(150px, calc(env(safe-area-inset-top) + 145px)); }
 }
-@media (max-width: 650px) {
+@media (pointer: coarse), (max-width: 650px) {
   .classic-battle {
     top: max(70px, calc(env(safe-area-inset-top) + 64px));
     right: max(12px, env(safe-area-inset-right));
-    width: min(224px, calc(100vw - 134px));
+    width: min(144px, 40vw);
+    gap: 4px;
   }
-  .battle-panel { max-height: min(33dvh, 260px); }
-}
-@media (max-width: 370px) {
-  .classic-battle { width: min(170px, calc(100vw - 148px)); }
-  .battle-entry { grid-template-columns: 24px minmax(0, 1fr); }
-  .battle-entry small { grid-column: 2; }
-  .battle-icon { width: 24px; height: 24px; }
+  .battle-toggle {
+    width: auto;
+    gap: 6px;
+    padding: 6px 8px;
+  }
+  .battle-panel { max-height: min(102px, 24dvh); }
+  #battleEmpty { padding: 8px 5px; }
+  .battle-rows { padding: 3px; }
+  .battle-rows li + li { margin-top: 2px; }
+  .battle-entry {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 44px;
+    gap: 4px;
+    padding: 4px 6px;
+  }
+  .battle-icon { display: none; }
+  .battle-hp { margin-top: 3px; }
 }
 @media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
-  .classic-battle {
-    top: max(54px, calc(env(safe-area-inset-top) + 48px));
-    width: min(218px, calc(100vw - 40px));
-  }
-  .battle-panel { max-height: min(20dvh, 75px); }
+  .classic-battle { top: max(58px, calc(env(safe-area-inset-top) + 54px)); }
+  .battle-panel { max-height: min(76px, 21dvh); }
 }
