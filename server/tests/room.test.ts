@@ -183,3 +183,25 @@ test('espada da sala acompanha o alvo durante o preparo antes de aplicar dano', 
   assert.equal(room.snapshotFor('a')!.mobs.find(m => m.id === mob.id)!.hp, 2);
   assert.ok((guest.actor.faceX * dx + guest.actor.faceY * dy) / distance > 0.95);
 });
+
+test('um destino bloqueado recebido durante a caminhada preserva a rota autoritativa', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro', true);
+  Object.assign(guest.actor, { x: 240, y: -144 });
+  const destination = { x: 304, y: -48 };
+  const wall = { x: 336, y: -112 };
+  assert.equal(room.world.canMove(wall.x, wall.y), false);
+
+  let now = guest.lastInputAt;
+  room.receiveWalk('a', destination);
+  room.tick(0.05, now += 50);
+  assert.ok(guest.walking?.walker.destination);
+  room.receiveWalk('a', wall);
+  for (let frame = 0; frame < 8; frame++) {
+    room.tick(0.05, now += 50);
+    assert.deepEqual(room.snapshotFor('a')?.walkTarget, destination);
+  }
+  for (let frame = 0; frame < 40; frame++) room.tick(0.05, now += 50);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [destination.x, destination.y]);
+  assert.equal(room.snapshotFor('a')?.walkTarget, null);
+});

@@ -197,8 +197,8 @@ export class TapNavigator {
   }
 
   private setRoute(from: Point, waypoints: Point[] | null, tileSteps: boolean): boolean {
-    this.cancel();
     if (!waypoints) return false;
+    this.cancel();
     if (!waypoints.length) return true;
     this.tileSteps = tileSteps;
     this.waypoints = waypoints;

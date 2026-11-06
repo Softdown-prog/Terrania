@@ -357,14 +357,13 @@ export class Game {
       } else if (destination && onlineTiles && !this.interior) {
         this.multiplayer?.walkTo(destination);
       } else if (destination) {
-        // An explicit walk command overrides automatic chasing until the
-        // next creature selection; the attack target itself is preserved.
-        if (walkByTiles) {
+        const accepted = this.navigator.go(committedStep ?? player,
+          walkByTiles ? this.tileCenter(destination) : destination, collision, walkByTiles);
+        // A valid walk overrides chasing until the next creature selection.
+        if (accepted && walkByTiles) {
           this.classicAutoFollow = false;
           this.classicPursuit.reset();
         }
-        this.navigator.go(committedStep ?? player,
-          walkByTiles ? this.tileCenter(destination) : destination, collision, walkByTiles);
       }
     }
     const controlled = this.interior?.player ?? this.sim.player;

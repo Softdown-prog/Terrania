@@ -122,16 +122,9 @@ export class Room {
   receiveWalk(id: string, target: WalkTarget | null): void {
     const guest = this.guests.get(id);
     if (!guest?.walking) return;
-    guest.walking.navigator.cancel();
     if (target === null) {
-      this.walkRequests.delete(id);
+      this.cancelWalk(guest);
       return;
-    }
-    guest.input = STILL;
-    guest.inputPulse = null;
-    if (guest.targeting) {
-      guest.targeting.follow = false;
-      guest.targeting.pursuit.reset();
     }
     // Replace the queued target in place so one guest cannot monopolize the queue.
     this.walkRequests.set(id, target);
@@ -154,7 +147,16 @@ export class Room {
           x: (Math.floor(target.x / TILE_SIZE) + 0.5) * TILE_SIZE,
           y: (Math.floor(target.y / TILE_SIZE) + 0.5) * TILE_SIZE,
         };
-        walking.navigator.go(walking.walker.destination ?? actor, center, this.world, true, MAX_TAP_DISTANCE);
+        const accepted = walking.navigator.go(
+          walking.walker.destination ?? actor, center, this.world, true, MAX_TAP_DISTANCE);
+        if (accepted) {
+          guest.input = STILL;
+          guest.inputPulse = null;
+          if (guest.targeting) {
+            guest.targeting.follow = false;
+            guest.targeting.pursuit.reset();
+          }
+        }
       }
       break;
     }

@@ -137,3 +137,17 @@ test("toque clássico ignora o tile atual e rejeita destinos bloqueados ou desco
   assert.equal(navigator.go(hero, { x: 80, y: 16 }, split, true), false);
   assert.equal(navigator.target, null);
 });
+
+test("uma tentativa inválida preserva a rota atual até o destino", () => {
+  const hero = new Player(), navigator = new TapNavigator(), walker = new ClassicTileWalker();
+  const world: CollisionMap = { canMove: (_x, y) => y >= 0 };
+  const destination = { x: 112, y: 16 };
+  assert.equal(navigator.go(hero, destination, world, true), true);
+  walker.advance(1 / 60, navigator.direction(hero, 1 / 60), hero, world);
+  const committed = walker.destination;
+  assert.ok(committed);
+  assert.equal(navigator.go(committed, { x: 80, y: -16 }, world, true), false);
+  assert.deepEqual(navigator.target, destination);
+  walkTileRoute(hero, navigator, walker, world);
+  assert.deepEqual({ x: hero.x, y: hero.y }, destination);
+});

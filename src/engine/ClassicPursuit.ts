@@ -140,7 +140,8 @@ export class ClassicPursuit {
         this.tileReplanSeconds = REPATH_SECONDS;
         const candidates = approachPoints(mob, true)
           .filter(point => inClassicAttackPosition(point, mob, collision));
-        this.navigator.goToTiles(from, candidates, collision, CLASSIC_FOLLOW_LIMIT);
+        if (!this.navigator.goToTiles(from, candidates, collision, CLASSIC_FOLLOW_LIMIT))
+          this.navigator.cancel();
       }
       return committedStep ? ZERO : this.navigator.direction(player, dt);
     }
