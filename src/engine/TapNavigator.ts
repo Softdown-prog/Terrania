@@ -1,5 +1,7 @@
-import type { CollisionMap } from "../world/collision.ts";
+import { clearPath, type CollisionMap } from "../world/collision.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
+
+export { clearPath };
 
 export interface Point { readonly x: number; readonly y: number }
 const STEP = 16;
@@ -14,18 +16,6 @@ const cellPoint = (gx: number, gy: number, size = STEP): Point =>
 const cellKey = (gx: number, gy: number): string => gx + "," + gy;
 const samePoint = (a: Point, b: Point): boolean => a.x === b.x && a.y === b.y;
 const tile = (position: number): number => Math.floor(position / TILE_SIZE);
-
-/** Segmento verificado a cada 4 unidades: evita cortar quinas, árvores e móveis. */
-export function clearPath(from: Point, to: Point, collision: CollisionMap): boolean {
-  if (![from.x, from.y, to.x, to.y].every(Number.isFinite)) return false;
-  const count = Math.ceil(dist(from, to) / 4);
-  for (let i = 0; i <= count; i++) {
-    const t = count === 0 ? 0 : i / count;
-    if (!collision.canMove(from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t))
-      return false;
-  }
-  return true;
-}
 
 /**
  * Busca A* local, limitada a 650 unidades e 2200 nós.

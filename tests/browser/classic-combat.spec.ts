@@ -38,6 +38,33 @@ test('classico preserves the previous offline save and works in landscape',async
   await expect(page.locator('canvas#game')).toBeVisible();
 });
 
+test('a quina protege o herói até ele contornar o obstáculo', async ({ page }, info) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({
+      seed: 842136, x: -8, y: -360, hp: 100, kills: 0, defeated: [],
+    }));
+    localStorage.setItem('terrania-preferences-v1', JSON.stringify({ zoom: 1, effects: false, cameraMotion: false }));
+  });
+  const time = new Date('2026-01-01T00:00:00Z');
+  await page.clock.install({ time });
+  await page.clock.pauseAt(new Date(time.getTime() + 1000));
+  await page.goto('/jogar/?modo=solo');
+  const canvas = page.locator('canvas#game');
+  await expect.poll(async () => {
+    await page.clock.runFor(32);
+    return canvas.count();
+  }).toBe(1);
+
+  await page.clock.runFor(3200);
+  await expect(page.locator('#hpText')).toHaveText('100 / 100');
+  const bounds = (await canvas.boundingBox())!;
+  const position = { x: bounds.width / 2 - 8, y: bounds.height / 2 + 56 };
+  if (info.project.name === 'android') await canvas.tap({ position });
+  else await canvas.click({ position });
+  await page.clock.runFor(600);
+  await expect(page.locator('#hpText')).toHaveText('91 / 100');
+});
+
 test('ATACAR acerta um Slime sobreposto sem deslocar o herói', async ({ page }, info) => {
   await page.addInitScript(() => localStorage.setItem('terrania-origins-v1', JSON.stringify({
     seed: 842136, x: -560, y: -1008, hp: 100, kills: 0, defeated: [],

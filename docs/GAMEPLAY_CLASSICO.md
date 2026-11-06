@@ -43,6 +43,8 @@ O combate por alvo e a caminhada por tiles fazem parte da entrada normal de Joga
 
 `src/actors/CreatureCatalog.ts` define o nome, a vida máxima e o dano de contato do Slime (2 HP e 9 de dano). Cada instância mantém seus próprios ID, posição e HP atual. A Battle List e o rótulo do alvo leem a definição pelo tipo; a perseguição usa somente a visão da criatura. Esta etapa conserva a IA, colisão, loot e spawn existentes, sem acrescentar espécies nem campos ao protocolo ou ao save.
 
+No solo e nas salas Node, o dano de contato do Slime exige menos de 24 px de distância e um caminho direto livre até o herói. Quinas e outros obstáculos bloqueiam esse dano. O Slime pode atacar assim que tiver passagem e sua recarga permitir.
+
 ## CLASSIC-004 — Caminhada por tiles no jogo
 
 - A entrada normal de `/jogar/` usa passos por tiles no exterior solo e nas salas Node que anunciam a capacidade. `?modo=solo` força a aventura local. `?modo=classico` ativa o combate por alvo. Links com `passos=1` continuam abrindo o jogo.

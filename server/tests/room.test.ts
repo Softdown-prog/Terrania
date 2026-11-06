@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Room } from '../src/Room.ts';
 import { isValidInput, isValidTarget, isValidWalk, validRoom } from '../../src/shared/protocol.ts';
-import { canMoveOnSeed } from '../../src/world/collision.ts';
+import { canMoveOnSeed, clearPath } from '../../src/world/collision.ts';
 
 test('protocolo rejeita coordenadas falsas ou movimento fora da velocidade', () => {
   assert.equal(isValidInput({ type: 'input', x: 1, y: 0, attack: false }), true);
@@ -23,6 +23,24 @@ test('sala usa seed estável e não recebe posição nem HP do cliente', () => {
   assert.ok(room.snapshotFor('a')?.players.some(p => p.id === 'a'));
   assert.equal(room.snapshotFor('outro'), null);
 });
+
+test('a quina protege o jogador do contato com um Slime da sala', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro 1', true, true);
+  Object.assign(guest.actor, { x: -8, y: -360 });
+  let now = guest.lastInputAt;
+  for (let frame = 0; frame < 100; frame++) room.tick(0.05, now += 50);
+  const slime = room.snapshotFor('a')?.mobs.find(mob => mob.id === '0,-1,0');
+  assert.ok(slime);
+  assert.ok(Math.hypot(slime.x - guest.actor.x, slime.y - guest.actor.y) < 24);
+  assert.equal(clearPath(slime, guest.actor, room.world), false);
+  assert.equal(guest.actor.hp, 100);
+
+  Object.assign(guest.actor, { x: -16, y: -336 });
+  room.tick(0.05, now += 50);
+  assert.equal(guest.actor.hp, 91);
+});
+
 test('o servidor limita destinos de caminhada e preserva a autoridade de posição', () => {
   assert.equal(isValidWalk({ type: 'walk', target: null }), true);
   assert.equal(isValidWalk({ type: 'walk', target: { x: 304, y: -48 } }), true);
