@@ -120,7 +120,7 @@ export class OfflineSimulation {
       }
     }
     let changed = false;
-    if (attack) this.player.startAttack(this.inventory.weapon.damage);
+    if (attack) this.player.startAttack(this.inventory.loadout.equipped);
     // Keep the swing facing the creature it was started against while walking.
     const focused = typeof strikeTargetId === "string" ? this.slimes.get(strikeTargetId) : null;
     if (focused && this.player.attackTime > 0) faceTarget(this.player, focused);

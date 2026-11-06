@@ -6,7 +6,7 @@ export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
-  Partial<Pick<Player, "vx" | "vy" | "hurtTime">>;
+  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">>;
 export type SlimeVisual = Pick<Slime, "hp" | "bounce"> & { hurtTime?: number };
 const TAU = Math.PI * 2;
 function ellipse(
@@ -28,7 +28,7 @@ function renderWeapon(ctx: CanvasRenderingContext2D, player: HeroVisual): void {
   ctx.save();
   ctx.translate(0, -12);
   if (attacking) {
-    const pose = swordSwing(player.attackTime);
+    const pose = swordSwing(player.attackTime, player.attackWeapon);
     const facing = Math.atan2(player.faceY, player.faceX);
     const angle = facing + pose.angle;
     if (pose.trail) {

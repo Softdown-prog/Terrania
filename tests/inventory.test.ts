@@ -4,8 +4,9 @@ import { Inventory, normalizeInventory, MAX_STACK, POTION_GEL_PRICE, POTION_HEAL
 import { normalizeDrops, MAX_WORLD_DROPS } from "../src/engine/loot.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { Slime } from "../src/actors/Slime.ts";
-import { FORGE_SWORD_PRICE, WEAPONS } from "../src/engine/Weapons.ts";
+import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../src/engine/Weapons.ts";
 import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
+import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
 
 const seed = 842136;
 const still = { x: 0, y: 0 };
@@ -109,11 +110,38 @@ test("trocar espada durante um golpe conserva o dano e o relógio já comprometi
   assert.equal(combat.cooldown, WEAPONS.forge.interval);
   assert.equal(sim.inventory.equipWeapon("starter"), "equipped");
   tick(); tick();
+  assert.equal(slime.hp, 2);
+  tick(); tick();
   assert.equal(sim.kills, 1);
   assert.ok(combat.cooldown > WEAPONS.starter.interval);
   sim.player.hp = 0;
   assert.equal(sim.respawn(), true);
   assert.deepEqual(sim.inventory.loadout, { forged: true, equipped: "starter" });
+});
+test("a espada leve finaliza antes um alvo ferido e a forjada vence contra vida cheia", () => {
+  function timeToKill(weapon: WeaponId, hp: number): number {
+    const sim = new OfflineSimulation(seed, { seed, x: -560, y: -1008, hp: 100, kills: 0,
+      defeated: [], inventory: { gel: 0, potion: 0, questRewardClaimed: false,
+        loadout: { forged: true, equipped: weapon } } });
+    const combat = new ClassicCombat();
+    const walker = new ClassicTileWalker();
+    const dt = 1 / 60;
+    sim.update(dt, still, false, undefined, walker);
+    const slime = sim.slimes.get("-2,-2,0");
+    assert.ok(slime);
+    slime.hp = hp;
+    assert.equal(combat.select(slime.id, sim.slimes), true);
+    for (let frame = 0; frame < 180; frame++) {
+      sim.update(dt, still, combat.tick(dt, sim.player, sim.slimes, sim.collision, sim.inventory.weapon.interval),
+        combat.strikeTargetId, walker);
+      if (sim.kills === 1) return frame * dt;
+    }
+    assert.fail("o alvo sobreposto deve ser derrotado");
+  }
+  const wounded = { starter: timeToKill("starter", 1), forge: timeToKill("forge", 1) };
+  const healthy = { starter: timeToKill("starter", 2), forge: timeToKill("forge", 2) };
+  assert.ok(wounded.starter < 0.1 && wounded.forge >= 0.18);
+  assert.ok(healthy.starter >= 1.6 && healthy.forge < 0.2);
 });
 test("slime derrotado deixa gel no mundo, coleta de perto e save persistente", () => {
   const sim = new OfflineSimulation(seed);

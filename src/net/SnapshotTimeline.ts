@@ -52,13 +52,16 @@ function heroBetween(a: HeroState, b: HeroState, span: number, offset: number): 
   const nx = length > 1e-6 ? (to.x - from.x) / length : 0;
   const ny = length > 1e-6 ? (to.y - from.y) / length : 0;
   const attackTime = timer(a.attackTime, b.attackTime, span, offset, ATTACK_DURATION);
-  const attackStarted = b.attackTime > Math.max(0, a.attackTime - span) + 1e-6;
-  const face = attackTime > 0 ? (attackStarted ? b : a) : length > 1e-6
+  const attackStarted = b.attackTime > Math.max(0, a.attackTime - span) + 1e-6 &&
+    offset >= span - (ATTACK_DURATION - b.attackTime);
+  const swing = attackStarted ? b : a;
+  const face = attackTime > 0 ? swing : length > 1e-6
     ? { faceX: nx, faceY: ny } : a;
   return {
     ...a, x, y, faceX: face.faceX, faceY: face.faceY,
     vx: nx * pathLength / span, vy: ny * pathLength / span,
     walkTime: lerp(a.walkTime, b.walkTime, t), attackTime,
+    attackWeapon: attackTime > 0 && swing.attackWeapon === "forge" ? "forge" : "starter",
     hurtTime: timer(a.hurtTime ?? 0, b.hurtTime ?? 0, span, offset, 0.3),
   };
 }

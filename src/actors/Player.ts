@@ -2,9 +2,9 @@ import { moveBody, type CollisionMap } from "../world/collision.ts";
 import {
   ATTACK_COOLDOWN,
   ATTACK_DURATION,
-  ATTACK_WINDUP,
 } from "../engine/combat.ts";
 import { BASE_MAX_HP } from "../engine/Experience.ts";
+import { WEAPONS, type WeaponId } from "../engine/Weapons.ts";
 export class Player {
   x = 16;
   y = 16;
@@ -16,6 +16,7 @@ export class Player {
   faceY = 1;
   walkTime = 0;
   attackTime = 0;
+  attackWeapon: WeaponId = "starter";
   attackCooldown = 0;
   hurtTime = 0;
   private receivedHits = 0;
@@ -23,7 +24,6 @@ export class Player {
   private knockX = 0;
   private knockY = 0;
   private strikePending = false;
-  private swingDamage = 1;
   constructor(maxHp = BASE_MAX_HP) {
     this.hp = maxHp;
     this.maxHp = maxHp;
@@ -86,19 +86,19 @@ export class Player {
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
   }
-  get strikeDamage(): number { return this.swingDamage; }
-  startAttack(damage = 1): boolean {
+  get strikeDamage(): number { return WEAPONS[this.attackWeapon].damage; }
+  startAttack(weapon: WeaponId = "starter"): boolean {
     if (this.attackCooldown > 0 || this.hp <= 0) return false;
     this.attackTime = ATTACK_DURATION;
     this.attackCooldown = ATTACK_COOLDOWN;
-    this.swingDamage = damage;
+    this.attackWeapon = weapon;
     this.strikePending = true;
     return true;
   }
   consumeStrike(): boolean {
     if (
       !this.strikePending ||
-      this.attackTime > ATTACK_DURATION - ATTACK_WINDUP
+      this.attackTime > ATTACK_DURATION - WEAPONS[this.attackWeapon].windup + 1e-9
     )
       return false;
     this.strikePending = false;

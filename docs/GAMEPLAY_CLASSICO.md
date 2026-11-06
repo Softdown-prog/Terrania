@@ -12,7 +12,7 @@ O combate por alvo e a caminhada por tiles fazem parte da entrada normal de Joga
 - Cada acionamento de Space/J ou ATACAR solicita seleção ou retomada da perseguição uma vez. Segurar o comando permite cancelar o alvo e sair da perseguição sem que o mesmo acionamento os reative. O combate segue automaticamente enquanto houver um alvo selecionado.
 - Ao apertar ATACAR durante uma caminhada por toque, o herói só troca a rota pela perseguição se selecionar uma criatura ou retomar um alvo vivo. Sem alvo, continua até o destino escolhido. Nas salas Node, o servidor decide a troca.
 - Personagem executa ataques automáticos periódicos contra **o único alvo selecionado**, apenas quando alcance, linha de visão, estado do herói e intervalo permitem. O motor decide impacto, abate, loot e inventário. Selecionar outro alvo, cancelar o alvo, perdê-lo ou trocar de espada preserva a recarga em curso. O relógio continua avançando nos ticks de simulação. Trocar de mundo ou morrer reinicia o estado de combate.
-- Se o jogador trocar ou cancelar o alvo durante os 70 ms de preparação da espada, a animação termina sem causar dano. O alvo recém-selecionado fica disponível para o próximo ataque após a recarga.
+- Se o jogador trocar ou cancelar o alvo durante a preparação (70 ms na espada inicial e 180 ms na forjada), a animação termina sem causar dano. O alvo recém-selecionado fica disponível para o próximo ataque após a recarga.
 - Se o herói e a criatura estiverem sobrepostos em terreno caminhável, o ataque pode começar no lugar com a última direção do herói. A perseguição considera o alvo já ao alcance e, ao planejar uma aproximação, procura um ponto separado da posição da criatura.
 - Nas salas Node, o servidor valida a criatura, calcula o seguimento e aplica o dano. O [contrato de combate](adr/0004-combate-por-alvo.md) descreve a compatibilidade entre versões.
 - A apresentação Angular mostra o alvo sem painel de jogadores sobre o mapa; input funciona com teclado e touch.
@@ -65,6 +65,6 @@ Sem uma rota válida até um ponto de ataque, o herói aguarda no último tile c
 
 ### Continuidade de movimento e ataque
 
-O controlador conserva o tempo ao cruzar centros, mantendo a velocidade entre frequências de simulação e sem dar vantagem à diagonal. Rotas podem virar ou parar no centro dentro do mesmo tick. Ao terminar um ataque, a direção de caminhada volta imediatamente, mesmo no meio de um passo. A espada cruza a direção do alvo no instante da preparação de 70 ms, e os pés acompanham o deslocamento enquanto o herói ataca.
+O controlador conserva o tempo ao cruzar centros, mantendo a velocidade entre frequências de simulação e sem dar vantagem à diagonal. Rotas podem virar ou parar no centro dentro do mesmo tick. Ao terminar um ataque, a direção de caminhada volta imediatamente, mesmo no meio de um passo. A espada cruza a direção do alvo ao terminar o preparo da arma, e os pés acompanham o deslocamento enquanto o herói ataca.
 
 O Node publica tempo de simulação e fim do passo para apresentar curvas e animações na mesma linha temporal. Teclas/toques curtos não desaparecem entre frames ou entre recebimento e tick do servidor. Detalhes, compatibilidade e limites no [ADR 0006](adr/0006-movimento-e-apresentacao-do-personagem.md).
