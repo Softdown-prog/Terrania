@@ -50,8 +50,13 @@ test("tecla curta online chega ao servidor mesmo com soltar antes do tick", asyn
   await page.keyboard.press("d");
   await page.clock.runFor(160);
   await expect.poll(() => position).toEqual([48, 16]);
-  await page.clock.runFor(160);
-  await expect(page.locator("#coords")).toHaveText("X 1 · Y 0");
+  // The real server keeps ticking while the browser clock is paused. Advance
+  // presentation frames until its latest snapshot is visible, without assuming
+  // that a single fixed advance already contained the asynchronous packet.
+  await expect.poll(async () => {
+    await page.clock.runFor(64);
+    return page.locator("#coords").textContent();
+  }).toBe("X 1 · Y 0");
   await expect(page.locator("#multiplayerStatus")).toContainText("Online");
 });
 
