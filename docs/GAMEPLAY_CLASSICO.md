@@ -47,6 +47,7 @@ O combate por alvo e a caminhada por tiles fazem parte da entrada normal de Joga
 - Valida a rota inteira contra `CollisionMap` a cada início de passo, e cada submovimento passa por `moveBody`; recusa passos atravessando paredes, quinas e terreno bloqueado. Saves antigos fora do centro não são teletransportados: o primeiro passo termina no centro da célula adjacente.
 - Mesmo se soltar o controle no meio do passo, ele termina. A próxima direção é interpretada no centro do tile. Os interiores usam a navegação local contínua.
 - O temporizador de ataque/recarga, dano e invulnerabilidade continua avançando uma vez por tick através de `Player.update(..., timersOnly=true)`. Deslocamento e colisão permanecem isolados em `ClassicTileWalker`.
+- Um golpe recebido interrompe a rota por toque e permite concluir o passo já iniciado. Um novo toque após o impacto pode solicitar outra rota durante o efeito visual de dano.
 - Clique ou toque no terreno usa o A* na malha de 32 px. Cada trecho é um passo adjacente validado contra a colisão. O herói termina no centro do tile tocado. Ao trocar o destino durante um passo, o novo caminho começa no fim desse passo. Se o tile estiver bloqueado ou não houver rota, o herói mantém a caminhada ou perseguição atual.
 - A perseguição usa a mesma malha de 32 px e procura um tile de ataque alcançável.
 - Nas salas Node, o servidor calcula a rota, aplica colisões e envia snapshots a todos os jogadores. O navegador interpola a posição recebida. Consulte o [contrato multiplayer](adr/0003-caminhada-por-tiles.md).

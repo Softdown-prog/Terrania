@@ -9,3 +9,5 @@ Na sessão com tiles, `input` continua transportando direção e ataque. `walk` 
 O planejador online aceita destinos a até 480 unidades do ponto de partida, processa no máximo uma solicitação por tick de sala e uma por convidado a cada 350 ms. A fila conserva somente o destino mais recente de cada convidado. Cancelamento, direção manual, ataque, dano e saída da sala descartam a rota pendente. Soltar a direção ou cancelar a rota permite concluir o passo já iniciado.
 
 No solo e no Node, um novo toque só substitui a rota ou suspende a perseguição quando o planejador encontra um caminho válido. Enquanto o Node aguarda o orçamento para calcular a nova rota, o herói pode continuar pela anterior. Um destino bloqueado, desconectado ou fora do alcance preserva o comando atual. Tocar o centro do tile de chegada do passo atual é aceito como rota vazia e encerra a caminhada nesse centro.
+
+O cancelamento por dano ocorre no impacto, quando o contador de golpes aplicados do herói muda. Uma ordem recebida depois desse impacto pode ser planejada durante o efeito visual de dano, respeitando o orçamento de planejamento da sala.

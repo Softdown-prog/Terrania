@@ -426,6 +426,7 @@ export class Game {
           }
         } else {
           const before = this.sim.player;
+          const damageCount = before.damageCount;
           const classicStrike = this.classicCombat.tick(1 / 60, before, this.sim.slimes, this.sim.collision);
           const follow = !manualActive && !tileRoute && this.classicAutoFollow;
           if (follow) this.classicPursuit.direction(1 / 60, before, this.classicCombat.targetId,
@@ -455,7 +456,7 @@ export class Game {
             this.pendingAttack = false;
             break;
           }
-          if (this.sim.player.hurtTime > 0) this.navigator.cancel();
+          if (before.damageCount !== damageCount) this.navigator.cancel();
           this.pendingAttack = false;
         }
       }
