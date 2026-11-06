@@ -132,3 +132,76 @@ test('snapshot conserva o formato v3 e a vida do Slime com catálogo local', () 
   assert.equal(slime.hp, 2);
   assert.deepEqual(Object.keys(slime).sort(), ['bounce', 'hp', 'hurtTime', 'id', 'x', 'y']);
 });
+
+
+test('sala preserva um toque curto entre ticks e publica o passo com relógio', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Hero', true);
+  room.receiveInput('a', 1, 0, false);
+  room.receiveInput('a', 0, 0, false);
+  room.tick(0.05);
+  const snapshot = room.snapshotFor('a')!;
+  assert.equal(snapshot.time, 0.05);
+  assert.deepEqual(snapshot.players[0]?.stepTarget, { x: 48, y: 16 });
+  assert.ok(guest.actor.x > 16 && guest.actor.x < 48);
+  for (let i = 0; i < 10; i++) room.tick(0.05);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [48, 16]);
+  assert.equal(room.snapshotFor('a')?.players[0]?.stepTarget, null);
+  room.add('legacy', 'Legacy');
+  assert.equal(room.snapshotFor('legacy')?.time, undefined);
+  assert.equal(room.snapshotFor('legacy')?.players[0]?.stepTarget, undefined);
+});
+
+test('sala caminha à velocidade nominal sem perder tempo nas fronteiras dos tiles', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Hero', true);
+  for (let i = 0; i < 20; i++) {
+    room.receiveInput('a', 1, 0, false);
+    room.tick(0.05);
+  }
+  assert.ok(Math.abs(guest.actor.x - 142) < 1e-7);
+  room.receiveInput('a', 0, 0, false);
+  for (let i = 0; i < 10; i++) room.tick(0.05);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [144, 16]);
+});
+
+
+test('espada da sala acompanha o alvo durante o preparo antes de aplicar dano', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Hero', true, true);
+  Object.assign(guest.actor, { x: -3984, y: -4016 });
+  let now = guest.lastInputAt;
+  for (let i = 0; i < 32; i++) room.tick(0.05, now += 50);
+  room.receiveTarget('a', '-8,-8,0');
+  room.tick(0.05, now += 50);
+  assert.ok(guest.actor.attackTime > 0);
+  const mob = room.snapshotFor('a')!.mobs.find(m => m.id === '-8,-8,0')!;
+  const dx = mob.x - guest.actor.x, dy = mob.y - guest.actor.y;
+  const distance = Math.hypot(dx, dy);
+  guest.actor.faceX = -dx / distance; guest.actor.faceY = -dy / distance;
+  room.tick(0.05, now += 50);
+  assert.equal(room.snapshotFor('a')!.mobs.find(m => m.id === mob.id)!.hp, 2);
+  assert.ok((guest.actor.faceX * dx + guest.actor.faceY * dy) / distance > 0.95);
+});
+
+test('um destino bloqueado recebido durante a caminhada preserva a rota autoritativa', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro', true);
+  Object.assign(guest.actor, { x: 240, y: -144 });
+  const destination = { x: 304, y: -48 };
+  const wall = { x: 336, y: -112 };
+  assert.equal(room.world.canMove(wall.x, wall.y), false);
+
+  let now = guest.lastInputAt;
+  room.receiveWalk('a', destination);
+  room.tick(0.05, now += 50);
+  assert.ok(guest.walking?.walker.destination);
+  room.receiveWalk('a', wall);
+  for (let frame = 0; frame < 8; frame++) {
+    room.tick(0.05, now += 50);
+    assert.deepEqual(room.snapshotFor('a')?.walkTarget, destination);
+  }
+  for (let frame = 0; frame < 40; frame++) room.tick(0.05, now += 50);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [destination.x, destination.y]);
+  assert.equal(room.snapshotFor('a')?.walkTarget, null);
+});

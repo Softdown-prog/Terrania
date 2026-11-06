@@ -47,7 +47,7 @@ O combate por alvo e a caminhada por tiles fazem parte da entrada normal de Joga
 - Valida a rota inteira contra `CollisionMap` a cada início de passo, e cada submovimento passa por `moveBody`; recusa passos atravessando paredes, quinas e terreno bloqueado. Saves antigos fora do centro não são teletransportados: o primeiro passo termina no centro da célula adjacente.
 - Mesmo se soltar o controle no meio do passo, ele termina. A próxima direção é interpretada no centro do tile. Os interiores usam a navegação local contínua.
 - O temporizador de ataque/recarga, dano e invulnerabilidade continua avançando uma vez por tick através de `Player.update(..., timersOnly=true)`. Deslocamento e colisão permanecem isolados em `ClassicTileWalker`.
-- Clique ou toque no terreno usa o A* na malha de 32 px. Cada trecho é um passo adjacente validado contra a colisão. O herói termina no centro do tile tocado. Ao trocar o destino durante um passo, o novo caminho começa no fim desse passo. Um tile bloqueado ou sem rota não inicia caminhada.
+- Clique ou toque no terreno usa o A* na malha de 32 px. Cada trecho é um passo adjacente validado contra a colisão. O herói termina no centro do tile tocado. Ao trocar o destino durante um passo, o novo caminho começa no fim desse passo. Se o tile estiver bloqueado ou não houver rota, o herói mantém a caminhada ou perseguição atual.
 - A perseguição usa a mesma malha de 32 px e procura um tile de ataque alcançável.
 - Nas salas Node, o servidor calcula a rota, aplica colisões e envia snapshots a todos os jogadores. O navegador interpola a posição recebida. Consulte o [contrato multiplayer](adr/0003-caminhada-por-tiles.md).
 
@@ -56,3 +56,9 @@ O combate por alvo e a caminhada por tiles fazem parte da entrada normal de Joga
 No modo clássico, os destinos ao redor do alvo são centros reais de tiles de 32 px, validados contra colisão, alcance da espada e linha de visão. A regressão cobre 162 posições de alvo fora da malha e o ciclo de dois ataques sem atingir outra criatura.
 
 Sem uma rota válida até um ponto de ataque, o herói aguarda no último tile caminhável.
+
+### Continuidade de movimento e ataque
+
+O controlador conserva o tempo ao cruzar centros, mantendo a velocidade entre frequências de simulação e sem dar vantagem à diagonal. Rotas podem virar ou parar no centro dentro do mesmo tick. Ao terminar um ataque, a direção de caminhada volta imediatamente, mesmo no meio de um passo. A espada cruza a direção do alvo no instante da preparação de 70 ms, e os pés acompanham o deslocamento enquanto o herói ataca.
+
+O Node publica tempo de simulação e fim do passo para apresentar curvas e animações na mesma linha temporal. Teclas/toques curtos não desaparecem entre frames ou entre recebimento e tick do servidor. Detalhes, compatibilidade e limites no [ADR 0006](adr/0006-movimento-e-apresentacao-do-personagem.md).

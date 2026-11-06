@@ -15,6 +15,8 @@ export interface HeroState {
   vx?: number;
   vy?: number;
   hurtTime?: number;
+  /** Current committed endpoint; visual interpolation only. */
+  stepTarget?: WalkTarget | null;
 }
 export interface MobState {
   id: string;
@@ -37,7 +39,7 @@ export type CombatFocus = { readonly id: string; readonly following: boolean };
 export type ClientMessage = InputMessage | WalkMessage | TargetMessage;
 export type ServerMessage =
   | { type: "welcome"; version: number; id: string; room: string; seed: number; movement?: "tiles"; combat?: "target" }
-  | { type: "state"; players: HeroState[]; mobs: MobState[]; walkTarget?: WalkTarget | null; focus?: CombatFocus | null }
+  | { type: "state"; players: HeroState[]; mobs: MobState[]; time?: number; walkTarget?: WalkTarget | null; focus?: CombatFocus | null }
   | { type: "error"; message: string };
 export function isValidInput(value: unknown): value is InputMessage {
   if (!value || typeof value !== "object") return false;

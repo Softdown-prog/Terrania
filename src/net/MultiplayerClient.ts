@@ -1,3 +1,4 @@
+import { SnapshotTimeline } from "./SnapshotTimeline.ts";
 import type {
   ClientMessage,
   CombatFocus,
@@ -26,6 +27,7 @@ export class MultiplayerClient {
   private targetPlayers: HeroState[] = [];
   private targetMobs: MobState[] = [];
   private incompatible = false;
+  private readonly timeline = new SnapshotTimeline();
   get self(): HeroState | undefined { return this.players.find(hero => hero.id === this.id); }
   constructor(
     private readonly endpoint: string,
@@ -94,6 +96,8 @@ export class MultiplayerClient {
           Array.isArray(msg.mobs)
         ) {
           // Estados recebidos são apenas dados visuais; o servidor mantém a autoridade.
+          if (this.tileMovement && typeof msg.time === "number" &&
+              !this.timeline.push(msg.time, msg.players, msg.mobs)) return;
           const heroes = this.players,
             mobs = this.mobs;
           this.targetPlayers = msg.players;
@@ -102,18 +106,20 @@ export class MultiplayerClient {
           this.combatFocus = this.targetCombat && this.targetingRequested &&
             typeof msg.focus?.id === "string" && typeof msg.focus.following === "boolean"
             ? msg.focus : null;
-          this.players = msg.players.map((p) => {
-            const old = heroes.find((h) => h.id === p.id);
-            return old
-              ? { ...p, x: old.x, y: old.y, walkTime: old.walkTime }
-              : { ...p };
-          });
-          this.mobs = msg.mobs.map((p) => {
-            const old = mobs.find((m) => m.id === p.id);
-            return old
-              ? { ...p, x: old.x, y: old.y, bounce: old.bounce }
-              : { ...p };
-          });
+          if (!this.timeline.active) {
+            this.players = msg.players.map((p) => {
+              const old = heroes.find((h) => h.id === p.id);
+              return old
+                ? { ...p, x: old.x, y: old.y, walkTime: old.walkTime }
+                : { ...p };
+            });
+            this.mobs = msg.mobs.map((p) => {
+              const old = mobs.find((m) => m.id === p.id);
+              return old
+                ? { ...p, x: old.x, y: old.y, bounce: old.bounce }
+                : { ...p };
+            });
+          }
           const self = msg.players.find((p) => p.id === this.id);
           if (self && Number.isFinite(self.x) && Number.isFinite(self.y))
             this.onSnapshot(self);
@@ -132,6 +138,7 @@ export class MultiplayerClient {
         this.id = null;
         this.players = [];
         this.mobs = [];
+        this.timeline.reset();
         this.targetPlayers = [];
         this.targetMobs = [];
         this.onStatus(
@@ -166,6 +173,7 @@ export class MultiplayerClient {
     this.walkRequested = false;
     this.id = null;
     this.players = []; this.mobs = [];
+    this.timeline.reset();
     this.targetPlayers = []; this.targetMobs = [];
     if (socket) {
       socket.onmessage = socket.onclose = socket.onopen = socket.onerror = null;
@@ -202,6 +210,13 @@ export class MultiplayerClient {
   }
   /** Smooth visual positions between 10 Hz snapshots; never feeds simulation. */
   interpolate(dt: number): void {
+    const frame = this.timeline.advance(dt);
+    if (frame) {
+      this.players = frame.players;
+      this.mobs = frame.mobs;
+      return;
+    }
+    if (!Number.isFinite(dt) || dt < 0) return;
     const factor = 1 - Math.exp(-16 * dt);
     const blend = (
       a: { x: number; y: number },

@@ -102,3 +102,23 @@ test("camera damping is time based, bounds zoom and snaps after teleport", () =>
   assert.equal(a.renderX, 1000);
   assert.equal(a.renderY, 1000);
 });
+
+
+test("derrota impede deslocamento e impacto em ambos os controladores", () => {
+  const player = new Player();
+  player.startAttack(); player.hp = 0; player.vx = 126;
+  player.update(0.1, { x: 1, y: 0 }, floor);
+  assert.deepEqual([player.x, player.y, player.vx, player.vy], [16, 16, 0, 0]);
+  assert.equal(player.consumeStrike(), false);
+  assert.equal(player.startAttack(), false);
+});
+
+test("dano e direção inválidos não corrompem o herói nem autorizam impacto", () => {
+  const player = new Player();
+  assert.equal(player.takeDamage(NaN, 0, 0), false);
+  assert.equal(player.takeDamage(-10, 0, 0), false);
+  assert.equal(player.takeDamage(10, Infinity, 0), false);
+  assert.equal(player.hp, player.maxHp);
+  assert.equal(canStrike({ ...player, faceX: NaN }, { x: 20, y: 16 }, floor), false);
+  assert.equal(canStrike(player, { x: NaN, y: 16 }, floor), false);
+});

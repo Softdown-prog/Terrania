@@ -9,3 +9,5 @@
 **Verificação:** npm test --prefix server; build/typecheck; Docker /health.
 
 **Limites:** Não misturar protótipo Go shadow com rota de produção sem migração aprovada.
+
+**Movimento e snapshots por tiles:** a sala compartilha o controlador de passos sem perda de tempo nos centros; uma direção curta recebida enquanto parado sobrevive até o tick seguinte. `time` e `stepTarget` são dados opcionais de apresentação para sessões com tiles. O servidor segue responsável por posição, colisões, alvo e impacto. O contrato v3 e o fallback dos clientes anteriores estão descritos no [ADR 0006](../docs/adr/0006-movimento-e-apresentacao-do-personagem.md).

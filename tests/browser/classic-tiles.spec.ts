@@ -45,7 +45,7 @@ test("o combate por alvo aparece no solo e na sala Node", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("toque no solo normal contorna a Casa do Conselho e chega ao centro do tile", async ({ page }, info) => {
+test("toque na parede da Casa do Conselho preserva a rota no solo normal", async ({ page }, info) => {
   await page.addInitScript(() => {
     localStorage.setItem("terrania-origins-v1", JSON.stringify({
       seed: 842136, x: 240, y: -144, hp: 100, kills: 0, defeated: [],
@@ -54,19 +54,34 @@ test("toque no solo normal contorna a Casa do Conselho e chega ao centro do tile
       zoom: 1, effects: false, cameraMotion: false,
     }));
   });
+  const start = new Date("2026-01-01T00:00:00Z");
+  await page.clock.install({ time: start });
+  await page.clock.pauseAt(new Date(start.getTime() + 1000));
   await page.goto("/jogar/?modo=solo");
   const canvas = page.locator("canvas#game");
+  await expect.poll(async () => {
+    await page.clock.runFor(32);
+    return canvas.count();
+  }).toBe(1);
+  await page.clock.runFor(64);
   await expect(page.locator("#coords")).toHaveText("X 7 · Y -5");
   const size = await canvas.boundingBox();
   expect(size).not.toBeNull();
-  const position = { x: size!.width / 2 + 64, y: size!.height / 2 + 96 };
-  if (info.project.name === "android") await canvas.tap({ position });
-  else await canvas.click({ position });
-  await expect.poll(() => page.evaluate(() => {
+  const tap = (x: number, y: number) => {
+    const position = { x: size!.width / 2 + x, y: size!.height / 2 + y };
+    return info.project.name === "android" ? canvas.tap({ position }) : canvas.click({ position });
+  };
+  await tap(64, 96);
+  await page.clock.runFor(64);
+  // The camera has moved less than half a tile. This still lands inside
+  // the blocked council tile centered at (336, -112).
+  await tap(96, 32);
+  await page.clock.runFor(2000);
+  expect(await page.evaluate(() => {
     window.dispatchEvent(new Event("pagehide"));
     const save = JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
     return [save?.x, save?.y];
-  }), { timeout: 8000 }).toEqual([304, -48]);
+  })).toEqual([304, -48]);
 });
 
 test("CLASSIC-004 usa controles responsivos também em paisagem", async ({ page }) => {

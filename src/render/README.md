@@ -11,3 +11,5 @@
 **Verificação:** Playwright desktop/Android, smoke render e build.
 
 **Limites:** Não tratar renderização como fonte autoritativa de estado de jogo.
+
+**Pose do herói:** `heroPose.swordSwing` usa os mesmos tempos do combate para alinhar a espada ao alvo no instante autorizado de impacto. Não decide dano. Os pés seguem a velocidade real enquanto o torso acompanha o alvo; a arma muda a ordem de desenho ao olhar para o norte. A apresentação online usa o relógio do buffer de snapshots.

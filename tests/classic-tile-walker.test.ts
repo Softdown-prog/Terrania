@@ -6,6 +6,7 @@ import { ClassicPursuit, inClassicAttackPosition } from "../src/engine/ClassicPu
 import { ClassicCombat, CLASSIC_ATTACK_INTERVAL } from "../src/engine/ClassicCombat.ts";
 import { canStrike } from "../src/engine/combat.ts";
 import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
+import { TapNavigator } from "../src/engine/TapNavigator.ts";
 import type { CollisionMap } from "../src/world/collision.ts";
 
 const OPEN: CollisionMap = { canMove: () => true };
@@ -39,7 +40,8 @@ test("CLASSIC-004: direção fixa produz um passo de 32px, com animação e para
 test("diagonal 32x32 percorre uma distância maior sem atravessar cantos", () => {
   const hero = new Player();
   const walker = new ClassicTileWalker();
-  frames(walker, hero, DIAGONAL, OPEN, 22);
+  frames(walker, hero, DIAGONAL, OPEN, 21);
+  frames(walker, hero, STILL, OPEN, 1);
   // Primeiro passo diagonal tem 32*sqrt(2) de distância e leva ~0,36s.
   assert.equal(hero.x, 48);
   assert.equal(hero.y, 48);
@@ -170,4 +172,79 @@ test("perseguir em passos preserva ataque único, intervalo e cancelamento do al
   assert.ok((hits[1]! - hits[0]!) * DT >= CLASSIC_ATTACK_INTERVAL - DT);
   assert.deepEqual(follow.direction(DT, hero, fight.targetId, mobs, OPEN, true), STILL);
   assert.equal(fight.label(mobs), null);
+});
+
+
+test("passos mantêm 126 px/s a 20, 30, 60 e 144 Hz sem pausa em cada centro", () => {
+  for (const hz of [20, 30, 60, 144]) for (const dir of [EAST, DIAGONAL, { x: -1, y: -1 }]) {
+    const hero = new Player(), walker = new ClassicTileWalker();
+    for (let tick = 0; tick < hz * 2; tick++) {
+      walker.advance(1 / hz, dir, hero, OPEN);
+      assert.ok(Math.hypot(hero.vx, hero.vy) > 125.99, `pausa a ${hz} Hz`);
+    }
+    assert.ok(Math.abs(Math.hypot(hero.x - 16, hero.y - 16) - 252) < 1e-7);
+    assert.ok(Math.abs(hero.walkTime - 252 * 0.12) < 1e-7);
+  }
+});
+
+test("lentidão do golpe e terreno conservam a distância entre frequências", () => {
+  for (const hz of [20, 30, 60, 144]) {
+    const hero = new Player(), walker = new ClassicTileWalker();
+    hero.startAttack();
+    for (let tick = 0; tick < hz; tick++)
+      walker.advance(1 / hz, EAST, hero, { ...OPEN, speedAt: () => 0.82 });
+    const expected = 126 * 0.82 * (0.28 * 0.72 + 0.72);
+    assert.ok(Math.abs(hero.x - 16 - expected) < 1e-7, `distância incorreta a ${hz} Hz`);
+  }
+});
+
+test("um tick cruza o centro, vira pela rota e para exatamente no destino", () => {
+  const hero = new Player(), walker = new ClassicTileWalker(), nav = new TapNavigator();
+  // Two cardinal legs; the inside corner blocks a diagonal shortcut.
+  const corridor: CollisionMap = { canMove: (x, y) => Math.abs(y - 16) < 0.01 || Math.abs(x - 48) < 0.01 };
+  assert.equal(nav.go(hero, { x: 48, y: 48 }, corridor, true), true);
+  for (let i = 0; i < 15; i++) {
+    walker.advance(0.05, () => nav.direction(hero, 0), hero, corridor);
+    assert.ok(corridor.canMove(hero.x, hero.y));
+  }
+  assert.deepEqual([hero.x, hero.y, hero.vx, hero.vy], [48, 48, 0, 0]);
+  assert.equal(nav.target, null);
+  walker.advance(0.05, EAST, hero, OPEN);
+  assert.ok(Math.abs(hero.x - 54.3) < 1e-7, "tempo parado não fica acumulado");
+});
+
+test("soltar e inverter preservam o passo atual; a próxima direção vale no centro", () => {
+  const hero = new Player(), walker = new ClassicTileWalker();
+  walker.advance(0.1, EAST, hero, OPEN);
+  const end = walker.destination;
+  walker.advance(0.1, { x: -1, y: 0 }, hero, OPEN);
+  assert.deepEqual(walker.destination, end);
+  walker.advance(0.1, { x: -1, y: 0 }, hero, OPEN);
+  assert.ok(hero.x < 48 && hero.x > 40);
+  assert.equal(hero.faceX, -1);
+  frames(walker, hero, STILL, OPEN, 30);
+  assert.equal(hero.x, 16);
+});
+
+test("a direção de caminhada volta ao terminar o ataque no meio do passo", () => {
+  const hero = new Player(), walker = new ClassicTileWalker();
+  walker.advance(0.05, EAST, hero, OPEN);
+  hero.startAttack(); hero.attackTime = 0.03;
+  hero.faceX = 0; hero.faceY = -1;
+  walker.advance(0.05, STILL, hero, OPEN);
+  assert.notEqual(walker.destination, null);
+  assert.deepEqual([hero.faceX, hero.faceY], [1, 0]);
+});
+
+test("dt inválido preserva o passo e parede alterada interrompe a trajetória", () => {
+  const hero = new Player(), walker = new ClassicTileWalker();
+  walker.advance(0.05, EAST, hero, OPEN);
+  const before = [hero.x, hero.y], end = walker.destination;
+  for (const dt of [NaN, Infinity, 0, -1]) walker.advance(dt, EAST, hero, OPEN);
+  assert.deepEqual([hero.x, hero.y], before);
+  assert.deepEqual(walker.destination, end);
+  walker.advance(0.1, EAST, hero, { canMove: x => x < 26 });
+  assert.ok(hero.x < 26);
+  assert.equal(walker.destination, null);
+  assert.deepEqual([hero.vx, hero.vy], [0, 0]);
 });

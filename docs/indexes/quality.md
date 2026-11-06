@@ -11,7 +11,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
 
-## Todos os arquivos deste módulo (39)
+## Todos os arquivos deste módulo (42)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -20,6 +20,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/README.md`](../../tests/README.md)
 - [`tests/architecture-index.test.ts`](../../tests/architecture-index.test.ts)
 - [`tests/browser/app.spec.ts`](../../tests/browser/app.spec.ts)
+- [`tests/browser/character-controls.spec.ts`](../../tests/browser/character-controls.spec.ts)
 - [`tests/browser/classic-battle-list.spec.ts`](../../tests/browser/classic-battle-list.spec.ts)
 - [`tests/browser/classic-combat.spec.ts`](../../tests/browser/classic-combat.spec.ts)
 - [`tests/browser/classic-tiles.spec.ts`](../../tests/browser/classic-tiles.spec.ts)
@@ -32,6 +33,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/cloudflare-deploy.test.ts`](../../tests/cloudflare-deploy.test.ts)
 - [`tests/creature-catalog.test.ts`](../../tests/creature-catalog.test.ts)
 - [`tests/experience.test.ts`](../../tests/experience.test.ts)
+- [`tests/hero-pose.test.ts`](../../tests/hero-pose.test.ts)
 - [`tests/interior.test.ts`](../../tests/interior.test.ts)
 - [`tests/inventory-storage.test.ts`](../../tests/inventory-storage.test.ts)
 - [`tests/inventory.test.ts`](../../tests/inventory.test.ts)
@@ -49,6 +51,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/qa-natural.test.ts`](../../tests/qa-natural.test.ts)
 - [`tests/simulation.test.ts`](../../tests/simulation.test.ts)
 - [`tests/site-theme.test.ts`](../../tests/site-theme.test.ts)
+- [`tests/snapshot-timeline.test.ts`](../../tests/snapshot-timeline.test.ts)
 - [`tests/tap-navigation.test.ts`](../../tests/tap-navigation.test.ts)
 - [`tests/village.test.ts`](../../tests/village.test.ts)
 - [`tests/world.test.ts`](../../tests/world.test.ts)

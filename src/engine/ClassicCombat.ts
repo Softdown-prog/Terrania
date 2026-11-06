@@ -1,7 +1,7 @@
 import { CREATURE_CATALOG, type CreatureView } from "../actors/CreatureCatalog.ts";
 import type { Player } from "../actors/Player.ts";
 import type { CollisionMap } from "../world/collision.ts";
-import { canStrike } from "./combat.ts";
+import { ATTACK_REACH, canStrike } from "./combat.ts";
 
 /** Terrania's original classic-RPG prototype: target-and-wait, not an action combo.
  * Shared by the solo simulation and the authoritative Node room.
@@ -59,8 +59,8 @@ export class ClassicCombat {
     return this.selectAt(hero, mobs, CLASSIC_NEAREST_RADIUS);
   }
 
-  /** Call exactly once per fixed simulation tick, BEFORE sim.update.
-   * The simulation still decides when the wind-up lands and grants loot/kills.
+  /** Call once per simulation tick before requesting startAttack. The simulation
+   * still validates the impact after wind-up and grants loot/kills.
    */
   tick(dt: number, player: Player, mobs: ReadonlyMap<string, CreatureView>,
       collision: CollisionMap): boolean {
@@ -72,7 +72,7 @@ export class ClassicCombat {
     if (player.hp <= 0 || !isPoint(mob) || !isPoint(player)) return false;
     const dx = mob.x - player.x, dy = mob.y - player.y;
     const distance = Math.hypot(dx, dy);
-    if (distance < 0.01 || distance >= 52 ||
+    if (distance < 0.01 || distance >= ATTACK_REACH ||
         this.remaining > 0 || player.attackCooldown > 0) return false;
     const facing = {x:player.x,y:player.y,faceX:dx/distance,faceY:dy/distance};
     if (!canStrike(facing, mob, collision)) return false;

@@ -8,6 +8,7 @@ export class Input {
   private keys = new Set<string>();
   private joyX = 0;
   private joyY = 0;
+  private movementPulse: Point | null = null;
   private attackQueued = false;
   private talkQueued = false;
   private cancelTargetQueued = false;
@@ -61,6 +62,8 @@ export class Input {
         ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(event.code)
       ) event.preventDefault();
       this.keys.add(event.code);
+      if (!event.repeat && /^(Key[WASD]|Arrow(Up|Down|Left|Right))$/.test(event.code))
+        this.rememberMovement();
       if (!event.repeat && event.code === "KeyE") this.talkQueued = true;
       if (!event.repeat && event.code === "Escape") this.cancelTargetQueued = true;
       if (!event.repeat && (event.code === "Space" || event.code === "KeyJ"))
@@ -68,6 +71,7 @@ export class Input {
     }, { signal: this.lifetime.signal });
     window.addEventListener("keyup", (event) => this.keys.delete(event.code), { signal: this.lifetime.signal });
     window.addEventListener("blur", () => this.clear(), { signal: this.lifetime.signal });
+    window.addEventListener("resize", () => this.clear(), { signal: this.lifetime.signal });
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) this.clear();
     }, { signal: this.lifetime.signal });
@@ -84,6 +88,7 @@ export class Input {
         );
         this.joyX = vector.x;
         this.joyY = vector.y;
+        this.rememberMovement();
         thumb.style.transform = `translate(${vector.thumbX}px, ${vector.thumbY}px)`;
       };
       stick.addEventListener("pointerdown", (event) => {
@@ -101,6 +106,7 @@ export class Input {
       const release = (event: PointerEvent) => {
         if (event.pointerId !== this.stickPointer) return;
         this.stickPointer = null;
+        if (event.type !== "pointerup") this.movementPulse = null;
         this.joyX = this.joyY = 0;
         thumb.style.transform = "translate(0, 0)";
         if (stick.hasPointerCapture(event.pointerId)) stick.releasePointerCapture(event.pointerId);
@@ -121,6 +127,7 @@ export class Input {
     const releaseAttack = (event: PointerEvent) => {
       if (event.pointerId !== this.attackPointer) return;
       this.attackPointer = null;
+      if (event.type !== "pointerup") this.attackQueued = false;
       this.attackHeld = false;
       if (attack?.hasPointerCapture(event.pointerId)) attack.releasePointerCapture(event.pointerId);
     };
@@ -135,6 +142,7 @@ export class Input {
   clear(): void {
     this.keys.clear();
     this.joyX = this.joyY = 0;
+    this.movementPulse = null;
     this.attackHeld = this.attackQueued = false;
     this.talkQueued = false;
     this.cancelTargetQueued = false;
@@ -164,7 +172,17 @@ export class Input {
     this.queuedTap = null;
     return point;
   }
-  movement(): { x: number; y: number } {
+  /** A press released between frames survives until simulation/network consumes it. */
+  movement(): Point {
+    const current = this.heldMovement();
+    return Math.hypot(current.x, current.y) >= 0.08 ? current : this.movementPulse ?? current;
+  }
+  acknowledgeMovement(): void { this.movementPulse = null; }
+  private rememberMovement(): void {
+    const current = this.heldMovement();
+    this.movementPulse = Math.hypot(current.x, current.y) >= 0.08 ? current : null;
+  }
+  private heldMovement(): Point {
     const x =
       Number(this.keys.has("KeyD") || this.keys.has("ArrowRight")) -
       Number(this.keys.has("KeyA") || this.keys.has("ArrowLeft")) +
