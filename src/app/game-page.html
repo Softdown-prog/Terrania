@@ -150,7 +150,7 @@
         <p class="dialog-note">Os slimes derrotados deixam gel no chão. Aproxime-se para recolher. Aela entrega poções após você proteger a clareira.</p>
         <div class="inventory-item">
           <span class="item-icon item-gel" aria-hidden="true">◆</span>
-          <span><strong>Gel de slime</strong><small>Material coletável · guardado na bolsa</small></span>
+          <span><strong>Gel de slime</strong><small>Lina troca gel por poções perto da hospedaria</small></span>
           <b id="gelCount">{{ hud.gel() + " / 99" }}</b>
         </div>
         <div class="inventory-item">
@@ -231,7 +231,7 @@
           </div>
           <div>
             <dt>Bolsa e itens (modo solo)</dt>
-            <dd>Slimes deixam gel ao serem derrotados. Aproxime-se para recolher; converse com Aela depois de vencer cinco slimes para ganhar poções de cura.</dd>
+            <dd>Slimes deixam gel ao serem derrotados. Aproxime-se para recolher e leve o gel à Lina, perto da hospedaria, para trocar por poções. Aela também recompensa quem derrota cinco slimes.</dd>
           </div>
           <div>
             <dt>Vida zerada</dt>
@@ -251,6 +251,11 @@
         <span class="dialog-kicker" id="npcRole">{{ hud.npcRole() }}</span>
         <h1 id="npcName">{{ hud.npcName() }}</h1>
         <p id="npcSpeech" aria-live="polite">{{ hud.npcSpeech() }}</p>
+        @if (!hud.online() && hud.npcPotionPrice(); as price) {
+          <p class="dialog-note">Gel {{ hud.gel() }} · Poções {{ hud.potions() }}</p>
+          <button (click)="hud.tradePotion()" class="secondary-button" type="button">Trocar {{ price }} de gel por 1 poção</button>
+          <p id="npcTradeFeedback" role="status">{{ hud.npcTradeFeedback() }}</p>
+        }
         <small class="dialog-note" id="npcStep">{{ hud.npcStep() }}</small>
         <button id="npcNext" (click)="nextNpc(npcDialog)" class="primary-button" type="button">{{ hud.npcLast() ? "Encerrar conversa" : "Continuar" }}</button>
       </dialog>

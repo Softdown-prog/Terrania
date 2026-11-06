@@ -121,6 +121,39 @@ test('entrada online e saída da rota preservam o progresso solo recente', async
   expect(healed).toMatchObject({ hp: 110, experience: 50, inventory: { gel: 9, potion: 1, questRewardClaimed: true } });
 });
 
+test('Lina troca gel no solo e a poção permanece utilizável depois de recarregar', async ({ page }, info) => {
+  const save = { seed: 842136, x: 448, y: 240, hp: 75, kills: 3, experience: 30,
+    defeated: [], inventory: { gel: 5, potion: 0, questRewardClaimed: false } };
+  await page.addInitScript(value => {
+    if (!localStorage.getItem('terrania-origins-v1'))
+      localStorage.setItem('terrania-origins-v1', JSON.stringify(value));
+  }, save);
+  const activate = async (locator: ReturnType<typeof page.locator>) => {
+    if (info.project.name === 'android') await locator.tap();
+    else await locator.click();
+  };
+  await page.goto('/jogar/?modo=solo');
+  await activate(page.getByRole('button', { name: 'Conversar (E)' }));
+  const dialogue = page.getByRole('dialog', { name: 'Lina' });
+  const trade = dialogue.getByRole('button', { name: 'Trocar 3 de gel por 1 poção' });
+  await activate(trade);
+  await expect(dialogue.getByRole('status')).toContainText('colocou uma poção');
+  await expect(dialogue.getByText('Gel 2 · Poções 1')).toBeVisible();
+  await activate(trade);
+  await expect(dialogue.getByRole('status')).toContainText('precisa de 3 unidades de gel');
+
+  await page.reload();
+  await activate(page.locator('#gameMenuButton'));
+  await activate(page.locator('#inventoryButton'));
+  await expect(page.locator('#gelCount')).toHaveText('2 / 99');
+  await expect(page.locator('#potionCount')).toHaveText('1 / 99');
+  await activate(page.locator('#usePotion'));
+  await expect(page.locator('#hpText')).toHaveText('110 / 110');
+  await expect(page.locator('#potionCount')).toHaveText('0 / 99');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!)))
+    .toMatchObject({ hp: 110, inventory: { gel: 2, potion: 0, questRewardClaimed: false } });
+});
+
 test('voltar ao painel não fica preso numa consulta cancelada da tela anterior', async ({ page }) => {
   let requests = 0;
   let release: () => void = () => {};

@@ -26,6 +26,7 @@ export interface GameUi {
   onPreferences(callback: (preferences: Preferences) => void): void;
   onNewWorld(callback: () => void): void;
   onTalk(callback: () => void): void;
+  onPotionTrade(callback: () => string): void;
   onPotionUse(callback: () => string): void;
   onRespawn(callback: () => void): void;
   updateInventory(gel: number, potions: number, online: boolean): void;
@@ -40,6 +41,6 @@ export interface GameUi {
   setSeed(seed: number): void;
   setPlayerCount(count: number, online: boolean): void;
   setNearbyAction(action: NearbyAction | null): void;
-  showNpcDialogue(name: string, role: string, lines: readonly string[]): void;
+  showNpcDialogue(name: string, role: string, lines: readonly string[], potionPrice?: number): void;
   setInterior(name: string): void;
 }

@@ -19,3 +19,5 @@
 **Perseguição em passos:** solo e Node procuram, em uma busca A*, um centro de tile caminhável dentro do alcance e da linha de visão da espada. O orçamento de recálculo continua valendo ao trocar ou cancelar alvos.
 
 **Toque em passos:** o `TapNavigator` usa a malha de 32 px para cliques e toques no terreno do solo e nas sessões Node com passos. A rota conserva os centros adjacentes que o `ClassicTileWalker` consegue executar. Alterar o destino durante um passo preserva o movimento até seu centro final e inicia a nova rota a partir dali.
+
+**Bolsa solo:** Aela entrega duas poções uma vez ao concluir a missão. A troca com Lina consome três unidades de gel e entrega uma poção em uma única operação do inventário. O orquestrador verifica a proximidade e grava a bolsa após uma troca concluída.
