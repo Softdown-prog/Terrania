@@ -60,6 +60,60 @@ test("tecla curta online chega ao servidor mesmo com soltar antes do tick", asyn
   await expect(page.locator("#multiplayerStatus")).toContainText("Online");
 });
 
+for (const mode of ["solo", "Node"] as const) {
+  test(`ATACAR sem alvo mantém o destino escolhido no mapa (${mode})`, async ({ page }, info) => {
+    let activeWalk = false;
+    let attackedDuringWalk = false;
+    let cancelledWalk = false;
+    page.on("websocket", socket => {
+      socket.on("framesent", ({ payload }) => {
+        const message = JSON.parse(String(payload));
+        if (message.type === "input" && message.attack) attackedDuringWalk = activeWalk;
+        if (message.type === "walk" && message.target === null) cancelledWalk = true;
+      });
+      socket.on("framereceived", ({ payload }) => {
+        const message = JSON.parse(String(payload));
+        if (message.type === "state") activeWalk = message.walkTarget != null;
+      });
+    });
+    await page.addInitScript(() => localStorage.setItem("terrania-preferences-v1", JSON.stringify({
+      zoom: 1, effects: false, cameraMotion: false,
+    })));
+    await freezeGame(page, mode === "solo" ? "/jogar/?modo=solo" : "/jogar/?room=origins");
+    if (mode === "Node") await expect(page.locator("#multiplayerStatus")).toContainText("Online");
+    const canvas = page.locator("canvas#game");
+    const size = (await canvas.boundingBox())!;
+    const position = { x: size.width / 2 + 128, y: size.height / 2 };
+    const attack = page.locator("#attack");
+    const tap = info.project.name === "android";
+    if (tap) await canvas.tap({ position }); else await canvas.click({ position });
+    if (mode === "Node") {
+      await page.clock.runFor(80);
+      // The server ticks independently of the browser clock. Wait for its route
+      // acknowledgement instead of polling for a single tile in the HUD.
+      await expect.poll(() => activeWalk, { intervals: [40] }).toBe(true);
+    } else {
+      await page.clock.runFor(160);
+      await expect(page.locator("#coords")).toHaveText("X 1 · Y 0");
+    }
+    if (tap) await attack.tap(); else await page.keyboard.press("Space");
+    await page.clock.runFor(80);
+    if (mode === "Node") {
+      await expect.poll(() => attackedDuringWalk).toBe(true);
+      expect(cancelledWalk).toBe(false);
+    }
+    await expect.poll(async () => {
+      await page.clock.runFor(80);
+      return page.locator("#coords").textContent();
+    }, { intervals: [80], timeout: 5000 }).toBe("X 4 · Y 0");
+    await expect(page.locator("#classicTarget")).toHaveCount(0);
+    if (mode === "solo") {
+      await page.clock.runFor(300);
+      expect(await savedPosition(page)).toEqual([144, 16]);
+    }
+  });
+}
+
 test("dois dedos caminham e atacam no solo normal sem prender o joystick", async ({ page, context }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));

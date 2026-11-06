@@ -74,6 +74,48 @@ test('movimento em terreno sólido é determinado pela seed do servidor', () => 
   assert.equal(canMoveOnSeed(1e12, 0, 842136), false);
 });
 
+test('ATACAR sem alvo preserva a rota por toque na fila e em andamento', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Hero', true, true);
+  const destination = { x: 144, y: 16 };
+  room.receiveWalk('a', destination);
+  room.receiveInput('a', 0, 0, true);
+  let now = guest.lastInputAt;
+  room.tick(0.05, now += 50);
+  assert.deepEqual(room.snapshotFor('a')?.walkTarget, destination);
+
+  room.receiveInput('a', 0, 0, true);
+  room.tick(0.05, now += 50);
+  assert.deepEqual(room.snapshotFor('a')?.walkTarget, destination);
+  assert.equal(room.snapshotFor('a')?.focus, null);
+  for (let frame = 0; frame < 25; frame++) room.tick(0.05, now += 50);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [destination.x, destination.y]);
+});
+
+test('ATACAR com uma criatura próxima assume a caminhada e retoma a perseguição', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Hero', true, true);
+  Object.assign(guest.actor, { x: 48, y: -208 });
+  let now = guest.lastInputAt;
+  for (let frame = 0; frame < 31; frame++) room.tick(0.05, now += 50);
+
+  const walkAway = { x: 48, y: -112 };
+  room.receiveWalk('a', walkAway);
+  room.tick(0.05, now += 50);
+  assert.deepEqual(room.snapshotFor('a')?.walkTarget, walkAway);
+  room.receiveInput('a', 0, 0, true);
+  assert.equal(room.snapshotFor('a')?.walkTarget, null);
+  assert.equal(room.snapshotFor('a')?.focus?.id, '0,-1,0');
+
+  now += 350;
+  room.receiveWalk('a', walkAway);
+  room.tick(0.05, now += 50);
+  assert.deepEqual(room.snapshotFor('a')?.walkTarget, walkAway);
+  room.receiveInput('a', 0, 0, true);
+  assert.equal(room.snapshotFor('a')?.walkTarget, null);
+  assert.equal(room.snapshotFor('a')?.focus?.id, '0,-1,0');
+});
+
 test('troca de alvo durante o preparo invalida o golpe na sala autoritativa', () => {
   assert.equal(isValidTarget({ type: 'target', id: '-8,-8,0' }), true);
   assert.equal(isValidTarget({ type: 'target', id: null }), true);

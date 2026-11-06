@@ -358,7 +358,8 @@ export class Game {
     }
     const manualActive = Math.hypot(manual.x, manual.y) >= 0.08;
     if (paused || manualActive || (!targetCombat && attack)) this.navigator.cancel();
-    if (onlineTiles && (paused || manualActive || attack)) this.multiplayer?.cancelWalk();
+    if (onlineTiles && (paused || manualActive || (!targetCombat && attack)))
+      this.multiplayer?.cancelWalk();
     if (!online && manualActive) this.classicPursuit.suspend();
     const tap = this.input.consumeTap();
     const walkByTiles = !online && !this.interior;
