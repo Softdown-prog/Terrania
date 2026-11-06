@@ -65,7 +65,7 @@ test(
       const streams: ServerMessage[][] = [[], []];
       for (let i = 0; i < 2; i++) {
         const ws = new WebSocket(
-          "ws://127.0.0.1:" + port + "/ws?room=origins" + (i === 0 ? "&movement=tiles&combat=target&progression=xp&inventory=loot" : ""),
+          "ws://127.0.0.1:" + port + "/ws?room=origins" + (i === 0 ? "&movement=tiles&combat=target&progression=xp&inventory=loot&equipment=forge" : ""),
           { origin: "http://localhost:5173" },
         );
         sockets.push(ws);
@@ -99,11 +99,15 @@ test(
       assert.equal(legacy.combat, undefined);
       assert.equal(legacy.inventory, undefined);
       assert.ok(streams[0].some(m => m.type === "state" &&
-        m.players.some(p => p.id === welcome.id && p.experience === 0)));
+        m.players.some(p => p.id === welcome.id && p.experience === 0) &&
+        m.inventory?.loadout?.equipped === "starter" && m.inventory.loadout.forged === false));
       sockets[0].send(JSON.stringify({ type: "inventory", action: "trade-potion", requestId: 1,
         x: 448, y: 250, gel: 99 }));
       await until(() => streams[0].some(m => m.type === "state" && m.inventory?.gel === 0 &&
         m.inventory.receipt?.requestId === 1 && m.inventory.receipt.outcome === "too-far"));
+      sockets[0].send(JSON.stringify({ type: "inventory", action: "buy-sword", requestId: 2, x: 538, y: 32, gel: 99 }));
+      await until(() => streams[0].some(m => m.type === "state" && m.inventory?.gel === 0 &&
+        m.inventory.receipt?.requestId === 2 && m.inventory.receipt.outcome === "too-far-from-forge"));
       sockets[0].send(JSON.stringify({ type: "input", x: 0, y: 0, attack: false, experience: 3000 }));
       sockets[0].send(JSON.stringify({ type: "walk", target: { x: 78, y: 18 } }));
       sockets[1].send(JSON.stringify({ type: "input", x: 1, y: 0, attack: false }));

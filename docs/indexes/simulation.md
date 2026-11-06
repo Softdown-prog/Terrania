@@ -2,7 +2,7 @@
 
 > Gerado automaticamente a partir de `architecture/modules.json`. Estado: **active** · Camada: **domain**
 
-Combate, progressão, inventário, loot e navegação; sem DOM, Phaser ou Angular.
+Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular.
 
 **Documentação de manutenção:** [`src/engine/README.md`](../../src/engine/README.md)
 
@@ -12,8 +12,9 @@ Combate, progressão, inventário, loot e navegação; sem DOM, Phaser ou Angula
 - [`src/engine/ClassicCombat.ts`](../../src/engine/ClassicCombat.ts)
 - [`src/engine/ClassicTileWalker.ts`](../../src/engine/ClassicTileWalker.ts)
 - [`src/engine/Experience.ts`](../../src/engine/Experience.ts)
+- [`src/engine/Weapons.ts`](../../src/engine/Weapons.ts)
 
-## Todos os arquivos deste módulo (12)
+## Todos os arquivos deste módulo (13)
 
 - [`src/engine/ClassicBattleList.ts`](../../src/engine/ClassicBattleList.ts)
 - [`src/engine/ClassicCombat.ts`](../../src/engine/ClassicCombat.ts)
@@ -25,5 +26,6 @@ Combate, progressão, inventário, loot e navegação; sem DOM, Phaser ou Angula
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
 - [`src/engine/README.md`](../../src/engine/README.md)
 - [`src/engine/TapNavigator.ts`](../../src/engine/TapNavigator.ts)
+- [`src/engine/Weapons.ts`](../../src/engine/Weapons.ts)
 - [`src/engine/combat.ts`](../../src/engine/combat.ts)
 - [`src/engine/loot.ts`](../../src/engine/loot.ts)

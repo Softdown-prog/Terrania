@@ -15,6 +15,7 @@ import { ClassicCombat } from "../../src/engine/ClassicCombat.ts";
 import { CLASSIC_FOLLOW_LIMIT, ClassicPursuit } from "../../src/engine/ClassicPursuit.ts";
 import { grantExperience, maxHpForExperience } from "../../src/engine/Experience.ts";
 import { Inventory } from "../../src/engine/Inventory.ts";
+import { WEAPONS } from "../../src/engine/Weapons.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, type LootDrop } from "../../src/engine/loot.ts";
 
 const STILL = { x: 0, y: 0 };
@@ -37,6 +38,7 @@ interface GuestInventory {
   readonly bag: Inventory;
   readonly drops: Map<string, LootDrop>;
   receipt: InventoryReceipt | null;
+  readonly equipment: boolean;
 }
 
 export interface Guest {
@@ -72,7 +74,8 @@ export class Room {
     this.seed = id === "origins" ? 842136 : seedFromText(id);
     this.world = new SeedCollision(this.seed);
   }
-  add(id: string, name: string, tiles = false, targetCombat = false, progression = false, loot = false): Guest {
+  add(id: string, name: string, tiles = false, targetCombat = false, progression = false, loot = false,
+      equipment = false): Guest {
     const guest: Guest = {
       id,
       name,
@@ -87,7 +90,8 @@ export class Room {
       targeting: tiles && targetCombat
         ? { combat: new ClassicCombat(), pursuit: new ClassicPursuit(), follow: false, nextSelectionAt: 0 }
         : null,
-      inventory: loot ? { bag: new Inventory(), drops: new Map(), receipt: null } : null,
+      inventory: loot ? { bag: new Inventory(), drops: new Map(), receipt: null,
+        equipment: tiles && targetCombat && equipment } : null,
     };
     this.guests.set(id, guest);
     return guest;
@@ -154,16 +158,21 @@ export class Room {
     const guest = this.guests.get(id);
     const inventory = guest?.inventory;
     if (!guest || !inventory || requestId <= (inventory.receipt?.requestId ?? 0)) return;
-    inventory.receipt = { requestId, action, outcome: this.applyInventoryAction(guest.actor, inventory.bag, action) };
+    inventory.receipt = { requestId, action, outcome: this.applyInventoryAction(guest.actor, inventory, action) };
   }
-  private applyInventoryAction(actor: Player, bag: Inventory, action: InventoryAction): InventoryOutcome {
+  private applyInventoryAction(actor: Player, { bag, equipment }: GuestInventory, action: InventoryAction): InventoryOutcome {
     if (actor.hp <= 0) return "unavailable";
     if (action === "trade-potion") {
       if (nearestNpc(actor.x, actor.y)?.id !== "lina") return "too-far";
       return bag.tradeGelForPotion();
     }
-    if (actor.hp >= actor.maxHp) return "full-health";
-    return bag.usePotion(actor) ? "healed" : "no-potion";
+    if (action === "use-potion") {
+      if (actor.hp >= actor.maxHp) return "full-health";
+      return bag.usePotion(actor) ? "healed" : "no-potion";
+    }
+    if (!equipment) return "unavailable";
+    if (action === "buy-sword") return bag.buyForgeSword(actor);
+    return bag.equipWeapon(action === "equip-forge" ? "forge" : "starter");
   }
   private collectLoot(guest: Guest): void {
     const { actor, inventory } = guest;
@@ -244,8 +253,9 @@ export class Room {
     }
     for (const guest of this.guests.values()) {
       const combat = guest.targeting?.combat;
-      if (combat?.tick(dt, guest.actor, this.mobs, this.world) || guest.attackQueued) {
-        guest.actor.startAttack();
+      const weapon = guest.inventory?.bag.weapon ?? WEAPONS.starter;
+      if (combat?.tick(dt, guest.actor, this.mobs, this.world, weapon.interval) || guest.attackQueued) {
+        guest.actor.startAttack(weapon.damage);
         guest.attackQueued = false;
       }
       const focused = combat?.strikeTargetId ? this.mobs.get(combat.strikeTargetId) : null;
@@ -254,7 +264,7 @@ export class Room {
       for (const [id, mob] of this.mobs) {
         if (combat && combat.strikeTargetId !== id) continue;
         if (canStrike(guest.actor, mob, this.world)) {
-          mob.takeHit(guest.actor.x, guest.actor.y);
+          mob.takeHit(guest.actor.x, guest.actor.y, guest.actor.strikeDamage);
           if (mob.hp <= 0) {
             this.mobs.delete(id);
             this.defeated.add(id);
@@ -390,6 +400,7 @@ export class Room {
         potion: inventory.bag.potion,
         drops: [...inventory.drops.values()].filter(drop => near(drop.x, drop.y)),
         receipt: inventory.receipt,
+        ...(inventory.equipment ? { loadout: inventory.bag.loadout } : {}),
       } } : {}),
     };
   }

@@ -2,11 +2,12 @@ import { CREATURE_CATALOG, type CreatureView } from "../actors/CreatureCatalog.t
 import type { Player } from "../actors/Player.ts";
 import type { CollisionMap } from "../world/collision.ts";
 import { canStrike, faceTarget } from "./combat.ts";
+import { WEAPONS } from "./Weapons.ts";
 
 /** Terrania's original classic-RPG prototype: target-and-wait, not an action combo.
  * Shared by the solo simulation and the authoritative Node room.
  */
-export const CLASSIC_ATTACK_INTERVAL = 1.6;
+export const CLASSIC_ATTACK_INTERVAL = WEAPONS.starter.interval;
 export const CLASSIC_SELECT_RADIUS = 24;
 export const CLASSIC_NEAREST_RADIUS = 145;
 
@@ -63,7 +64,7 @@ export class ClassicCombat {
    * still validates the impact after wind-up and grants loot/kills.
    */
   tick(dt: number, player: Player, mobs: ReadonlyMap<string, CreatureView>,
-      collision: CollisionMap): boolean {
+      collision: CollisionMap, interval: number = CLASSIC_ATTACK_INTERVAL): boolean {
     if (!Number.isFinite(dt) || dt <= 0) return false;
     this.remaining = Math.max(0, this.remaining - Math.min(dt, 0.1));
     if (!this.selected) return false;
@@ -77,7 +78,7 @@ export class ClassicCombat {
     player.faceX = facing.faceX;
     player.faceY = facing.faceY;
     this.swingTarget = mob.id;
-    this.remaining = CLASSIC_ATTACK_INTERVAL;
+    this.remaining = interval;
     return true;
   }
 

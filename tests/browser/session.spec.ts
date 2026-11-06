@@ -207,6 +207,41 @@ test('Lina troca gel no solo e a poção permanece utilizável depois de recarre
     .toMatchObject({ hp: 110, inventory: { gel: 2, potion: 0, questRewardClaimed: false } });
 });
 
+test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar', async ({ page }, info) => {
+  const android = info.project.name === 'android';
+  if (android) await page.setViewportSize({ width: 600, height: 390 });
+  await page.addInitScript(() => {
+    const key = 'terrania-origins-v1';
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ seed: 842136,
+      x: 528, y: 48, hp: 100, kills: 5, defeated: [], inventory: { gel: 7, potion: 0 } }));
+  });
+  const activate = (button: ReturnType<typeof page.locator>) => android ? button.tap() : button.click();
+  const openBag = async () => {
+    await activate(page.locator('#gameMenuButton'));
+    await activate(page.locator('#inventoryButton'));
+  };
+  await page.goto('/jogar/?modo=solo');
+  await activate(page.getByRole('button', { name: 'Conversar (E)' }));
+  const toren = page.getByRole('dialog', { name: 'Toren' });
+  await activate(toren.getByRole('button', { name: 'Comprar Espada da Travessia por 5 de gel' }));
+  await expect(toren.getByRole('status')).toContainText('Toren colocou');
+  await expect(toren.getByRole('button', { name: 'Espada já adquirida' })).toBeDisabled();
+  await activate(toren.getByRole('button', { name: 'Fechar conversa' }));
+
+  await openBag();
+  await expect(page.locator('#gelCount')).toHaveText('2 / 99');
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
+  await activate(page.getByRole('button', { name: 'Equipar Espada da Travessia' }));
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
+  await expect(page.getByText('2 de dano · 2 s entre golpes', { exact: true })).toBeVisible();
+  await page.reload();
+  await openBag();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
+  await activate(page.getByRole('button', { name: 'Equipar Espada de viagem' }));
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
+  await expect(page.getByRole('button', { name: 'Equipar Espada da Travessia' })).toBeVisible();
+});
+
 test('voltar ao painel não fica preso numa consulta cancelada da tela anterior', async ({ page }) => {
   let requests = 0;
   let release: () => void = () => {};

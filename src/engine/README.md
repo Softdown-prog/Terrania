@@ -23,3 +23,5 @@
 **Continuidade de passos:** `ClassicTileWalker` consome o restante do tick após cada centro, sem guardar tempo ocioso. Pode receber uma função de direção, consultada no centro para virar/parar corretamente. `ClassicPursuit.direction(0, ...)` só reavalia o caminho; a chamada positiva avança seu orçamento uma vez por tick. Velocidade diagonal e efeitos de ataque seguem tempo/distância, com regressão a 20, 30, 60 e 144 Hz. Ver [ADR 0006](../../docs/adr/0006-movimento-e-apresentacao-do-personagem.md).
 
 **Bolsa solo:** Aela entrega duas poções uma vez ao concluir a missão. A troca com Lina consome três unidades de gel e entrega uma poção em uma única operação do inventário. O orquestrador verifica a proximidade e grava a bolsa após uma troca concluída.
+
+**Espadas:** Toren vende a primeira arma de equipamento. A bolsa valida e grava a compra e o equipamento. A simulação fixa dano e recarga no início do ataque. Veja [ADR 0008](../../docs/adr/0008-espadas-e-recarga.md).

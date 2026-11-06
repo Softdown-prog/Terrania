@@ -1,6 +1,7 @@
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { ExperienceProgress } from '../engine/Experience.ts';
+import type { WeaponId, WeaponLoadout } from '../engine/Weapons.ts';
 
 export interface Preferences {
   zoom: number;
@@ -18,6 +19,7 @@ export interface HeroHudState {
 }
 
 export type NearbyAction = 'talk' | 'read' | 'enter';
+export type NpcOffer = { item: 'potion' | 'sword'; price: number };
 
 /** Data and commands exchanged between the game coordinator and the HUD. */
 export interface GameUi {
@@ -28,9 +30,12 @@ export interface GameUi {
   onTalk(callback: () => void): void;
   onPotionTrade(callback: () => string): void;
   onPotionUse(callback: () => string): void;
+  onSwordPurchase(callback: () => string): void;
+  onWeaponEquip(callback: (weapon: WeaponId) => string): void;
   onRespawn(callback: () => void): void;
   updateInventory(gel: number, potions: number, available: boolean, pending: boolean): void;
-  setPotionFeedback(action: 'use' | 'trade', message: string): void;
+  updateLoadout(loadout: WeaponLoadout | null): void;
+  setInventoryFeedback(section: 'bag' | 'npc', message: string): void;
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void;
   setOnline(online: boolean): void;
   setStatus(status: string): void;
@@ -42,6 +47,6 @@ export interface GameUi {
   setSeed(seed: number): void;
   setPlayerCount(count: number, online: boolean): void;
   setNearbyAction(action: NearbyAction | null): void;
-  showNpcDialogue(name: string, role: string, lines: readonly string[], potionPrice?: number): void;
+  showNpcDialogue(name: string, role: string, lines: readonly string[], offer?: NpcOffer): void;
   setInterior(name: string): void;
 }

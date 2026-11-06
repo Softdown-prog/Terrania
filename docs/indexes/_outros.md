@@ -48,6 +48,7 @@
 - [`docs/adr/0005-progressao-por-abates.md`](../../docs/adr/0005-progressao-por-abates.md)
 - [`docs/adr/0006-movimento-e-apresentacao-do-personagem.md`](../../docs/adr/0006-movimento-e-apresentacao-do-personagem.md)
 - [`docs/adr/0007-inventario-da-sala.md`](../../docs/adr/0007-inventario-da-sala.md)
+- [`docs/adr/0008-espadas-e-recarga.md`](../../docs/adr/0008-espadas-e-recarga.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)
