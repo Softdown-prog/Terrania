@@ -10,6 +10,15 @@ type Step = { readonly from: Point; readonly to: Point; readonly distance: numbe
 const STILL = { x: 0, y: 0 } as const;
 export const CLASSIC_WALK_SPEED = 126;
 
+export function tileDirection({ x, y }: Point): Point {
+  if (!Number.isFinite(x) || !Number.isFinite(y) || Math.hypot(x, y) < 0.08) return STILL;
+  const threshold = Math.max(Math.abs(x), Math.abs(y)) * 0.4;
+  return {
+    x: Math.abs(x) >= threshold ? Math.sign(x) : 0,
+    y: Math.abs(y) >= threshold ? Math.sign(y) : 0,
+  };
+}
+
 /** Shared solo/server movement. A committed step finishes even after release;
  * unused tick time can start the next step, but is never saved for later input.
  * Player owns timers; this controller owns displacement and walking direction.
@@ -32,15 +41,11 @@ export class ClassicTileWalker {
     // also protects callers with a malformed/custom terrain speed multiplier.
     for (let segment = 0; elapsed < time - 1e-9 && segment < 16; segment++) {
       if (!this.step) {
-        const dir = typeof direction === "function" ? direction() : direction;
-        if (!Number.isFinite(dir.x) || !Number.isFinite(dir.y) ||
-            Math.hypot(dir.x, dir.y) < 0.08) {
+        const { x: dx, y: dy } = tileDirection(typeof direction === "function" ? direction() : direction);
+        if (dx === 0 && dy === 0) {
           player.vx = 0; player.vy = 0;
           return;
         }
-        const max = Math.max(Math.abs(dir.x), Math.abs(dir.y));
-        const dx = Math.abs(dir.x) >= max * 0.4 ? Math.sign(dir.x) : 0;
-        const dy = Math.abs(dir.y) >= max * 0.4 ? Math.sign(dir.y) : 0;
         const length = Math.hypot(dx, dy);
         if (player.attackTime <= 0 && length > 0) {
           player.faceX = dx / length; player.faceY = dy / length;

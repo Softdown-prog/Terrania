@@ -1,5 +1,6 @@
 import { stickVector } from "./joystick.ts";
 import { isShortTap } from "./tap.ts";
+import { tileDirection } from "../engine/ClassicTileWalker.ts";
 import type { Point } from "../engine/TapNavigator.ts";
 
 /** Teclado e controles Android usam o mesmo vetor de movimento da simulação. */
@@ -90,9 +91,14 @@ export class Input {
           event.clientY - (rect.top + rect.height / 2),
           radius,
         );
+        const previous = tileDirection(this.heldMovement());
         this.joyX = vector.x;
         this.joyY = vector.y;
-        this.rememberMovement();
+        const current = this.heldMovement();
+        const next = tileDirection(current);
+        // Thumb drift during a hold must not queue another step on release.
+        if (this.movementPulse || event.type === "pointerdown" || next.x !== previous.x || next.y !== previous.y)
+          this.rememberMovement(current);
         thumb.style.transform = `translate(${vector.thumbX}px, ${vector.thumbY}px)`;
       };
       stick.addEventListener("pointerdown", (event) => {
@@ -185,8 +191,7 @@ export class Input {
     return Math.hypot(current.x, current.y) >= 0.08 ? current : this.movementPulse ?? current;
   }
   acknowledgeMovement(): void { this.movementPulse = null; }
-  private rememberMovement(): void {
-    const current = this.heldMovement();
+  private rememberMovement(current = this.heldMovement()): void {
     this.movementPulse = Math.hypot(current.x, current.y) >= 0.08 ? current : null;
   }
   private heldMovement(): Point {
