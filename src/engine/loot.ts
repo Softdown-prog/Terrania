@@ -1,4 +1,4 @@
-/** Itens no chão da aventura solo, com ID estável para persistência. */
+/** Item no chão, identificado dentro da aventura solo ou da sala online. */
 export interface LootDrop {
   readonly id: string;
   readonly item: "gel";

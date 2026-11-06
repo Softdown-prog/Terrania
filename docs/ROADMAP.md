@@ -29,7 +29,7 @@ Cada microtarefa deve identificar seu módulo no [índice de arquitetura](INDEX.
 
 ## Ciclo jogável essencial — etapas futuras, ainda não aprovadas
 
-- [ ] Loot, inventário e uso de consumíveis sem duplicação de itens.
+- [x] Loot privado, inventário de sessão e consumíveis autoritativos na sala Node. Veja [ADR 0007](adr/0007-inventario-da-sala.md).
 - [ ] Equipamentos básicos e atributos que influenciem combate; balancear antes de expandir.
 - [ ] Mana, vocações e magias quando os sistemas anteriores estiverem estáveis.
 - [ ] Exploração com NPCs, cidade inicial e pequenas missões; expandir mapas só depois do ciclo funcionar.

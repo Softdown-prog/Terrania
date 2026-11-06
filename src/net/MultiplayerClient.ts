@@ -3,7 +3,11 @@ import type {
   ClientMessage,
   CombatFocus,
   HeroState,
+  InventoryAction,
+  InventoryMessage,
+  InventoryReceipt,
   MobState,
+  RoomInventoryState,
   ServerMessage,
   WalkTarget,
 } from "../shared/protocol.ts";
@@ -18,6 +22,10 @@ export class MultiplayerClient {
   connected = false;
   tileMovement = false;
   targetCombat = false;
+  roomInventory = false;
+  inventory: RoomInventoryState | null = null;
+  private inventoryRequestId = 0;
+  private pendingInventoryRequest: InventoryMessage | null = null;
   combatFocus: CombatFocus | null = null;
   private targetingRequested = false;
   walkTarget: WalkTarget | null = null;
@@ -29,12 +37,14 @@ export class MultiplayerClient {
   private incompatible = false;
   private readonly timeline = new SnapshotTimeline();
   get self(): HeroState | undefined { return this.players.find(hero => hero.id === this.id); }
+  get inventoryPending(): boolean { return this.pendingInventoryRequest !== null; }
   constructor(
     private readonly endpoint: string,
     public readonly room: string,
     private readonly onWelcome: (seed: number) => void,
     private readonly onSnapshot: (self: HeroState) => void,
     private readonly onStatus: (label: string) => void,
+    private readonly onInventoryReceipt: (receipt: InventoryReceipt) => void,
   ) {
     this.connect();
   }
@@ -55,6 +65,7 @@ export class MultiplayerClient {
       url.searchParams.set("movement", "tiles");
       url.searchParams.set("combat", "target");
       url.searchParams.set("progression", "xp");
+      url.searchParams.set("inventory", "loot");
       this.onStatus("Conectando à VPS…");
       const socket = new WebSocket(url);
       this.socket = socket;
@@ -85,6 +96,7 @@ export class MultiplayerClient {
           this.connected = true;
           this.tileMovement = msg.movement === "tiles";
           this.targetCombat = this.tileMovement && msg.combat === "target";
+          this.roomInventory = msg.inventory === "loot";
           this.incompatible = false;
           this.onWelcome(msg.seed);
           this.onStatus("Online · sala " + msg.room);
@@ -121,8 +133,10 @@ export class MultiplayerClient {
             });
           }
           const self = msg.players.find((p) => p.id === this.id);
-          if (self && Number.isFinite(self.x) && Number.isFinite(self.y))
+          if (self && Number.isFinite(self.x) && Number.isFinite(self.y)) {
             this.onSnapshot(self);
+            if (this.roomInventory && msg.inventory) this.applyInventory(msg.inventory);
+          }
         }
         if (msg.type === "error") this.onStatus("Erro na sala multiplayer");
       };
@@ -131,6 +145,7 @@ export class MultiplayerClient {
         this.connected = false;
         this.tileMovement = false;
         this.targetCombat = false;
+        this.resetInventory();
         this.combatFocus = null;
         this.targetingRequested = false;
         this.walkTarget = null;
@@ -167,6 +182,7 @@ export class MultiplayerClient {
     this.connected = false;
     this.tileMovement = false;
     this.targetCombat = false;
+    this.resetInventory();
     this.combatFocus = null;
     this.targetingRequested = false;
     this.walkTarget = null;
@@ -183,6 +199,28 @@ export class MultiplayerClient {
   sendInput(x: number, y: number, attack: boolean): void {
     if (this.send({ type: "input", x, y, attack }) && attack && this.targetCombat)
       this.targetingRequested = true;
+  }
+  requestInventory(action: InventoryAction): boolean {
+    if (!this.roomInventory || !this.inventory || this.pendingInventoryRequest) return false;
+    const request: InventoryMessage = { type: "inventory", action, requestId: ++this.inventoryRequestId };
+    if (!this.send(request)) return false;
+    this.pendingInventoryRequest = request;
+    return true;
+  }
+  private applyInventory(inventory: RoomInventoryState): void {
+    this.inventory = inventory;
+    const { receipt } = inventory;
+    if (receipt && this.pendingInventoryRequest?.requestId === receipt.requestId &&
+        this.pendingInventoryRequest.action === receipt.action) {
+      this.pendingInventoryRequest = null;
+      this.onInventoryReceipt(receipt);
+    }
+  }
+  private resetInventory(): void {
+    this.roomInventory = false;
+    this.inventory = null;
+    this.inventoryRequestId = 0;
+    this.pendingInventoryRequest = null;
   }
   selectTarget(id: string): void {
     if (this.targetCombat && this.send({ type: "target", id })) this.targetingRequested = true;

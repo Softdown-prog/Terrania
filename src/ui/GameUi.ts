@@ -29,7 +29,8 @@ export interface GameUi {
   onPotionTrade(callback: () => string): void;
   onPotionUse(callback: () => string): void;
   onRespawn(callback: () => void): void;
-  updateInventory(gel: number, potions: number, online: boolean): void;
+  updateInventory(gel: number, potions: number, available: boolean, pending: boolean): void;
+  setPotionFeedback(action: 'use' | 'trade', message: string): void;
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void;
   setOnline(online: boolean): void;
   setStatus(status: string): void;

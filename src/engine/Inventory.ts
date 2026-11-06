@@ -1,6 +1,6 @@
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 
-/** Inventário da aventura solo. Não faz parte do protocolo autoritativo online. */
+/** Regras da bolsa compartilhadas pela simulação solo e pela sala Node. */
 export const MAX_STACK = 99;
 export const QUEST_REWARD_POTIONS = 2;
 export const POTION_HEAL = 35;

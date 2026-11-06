@@ -1,5 +1,5 @@
 import { expect, test, type WebSocketRoute } from '@playwright/test';
-import { PROTOCOL_VERSION } from '../../src/shared/protocol.ts';
+import { PROTOCOL_VERSION, type InventoryMessage, type RoomInventoryState } from '../../src/shared/protocol.ts';
 
 test('as botas continuam animadas com um relógio de sala mais lento', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 500 });
@@ -133,10 +133,14 @@ test('Battle List da sala Node persegue e derrota um Slime do servidor', async (
   })));
   let selfId = '';
   let kills = 0;
+  let inventory: RoomInventoryState | undefined;
   page.on('websocket', socket => socket.on('framereceived', ({ payload }) => {
     const message = JSON.parse(String(payload));
     if (message.type === 'welcome') selfId = message.id;
-    if (message.type === 'state') kills = message.players.find((hero: {id: string}) => hero.id === selfId)?.kills ?? 0;
+    if (message.type === 'state') {
+      kills = message.players.find((hero: {id: string}) => hero.id === selfId)?.kills ?? 0;
+      inventory = message.inventory;
+    }
   }));
   await page.goto('/jogar/?room=origins');
   await expect(page.locator('#multiplayerStatus')).toContainText('Online');
@@ -149,7 +153,74 @@ test('Battle List da sala Node persegue e derrota um Slime do servidor', async (
   else await row.click();
   await expect(page.locator('#classicTarget')).toContainText('Slime');
   await expect.poll(() => kills, { timeout: 15000 }).toBe(1);
+  await expect.poll(() => inventory && inventory.gel + inventory.drops.length).toBe(1);
   await expect(page.locator('#xpText')).toHaveText('XP 10 / 30');
   await expect(row).toHaveCount(0);
   await expect(page.locator('#classicTarget')).toHaveCount(0);
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  await expect.poll(async () => (await page.locator('#gelCount').textContent()) === `${inventory?.gel} / 99`).toBe(true);
+});
+
+test('a bolsa online aguarda o recibo da sala para trocar e curar', async ({ page }, info) => {
+  let socket: WebSocketRoute | undefined;
+  const requests: InventoryMessage[] = [];
+  const soloInventory = { gel: 9, potion: 2, questRewardClaimed: true };
+  await page.addInitScript(inventory => {
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({ seed: 842136, x: 16, y: 16,
+      hp: 80, kills: 5, defeated: [], inventory }));
+  }, soloInventory);
+  await page.routeWebSocket('ws://127.0.0.1:18787/ws*', ws => {
+    socket = ws;
+    ws.onMessage(raw => {
+      const message = JSON.parse(String(raw));
+      if (message.type === 'inventory') requests.push(message);
+    });
+    ws.send(JSON.stringify({ type: 'welcome', version: PROTOCOL_VERSION, id: 'a',
+      room: 'potion-test', seed: 842136, inventory: 'loot' }));
+  });
+  await page.goto('/jogar/?room=potion-test');
+  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
+  const snapshot = (hp: number, inventory: RoomInventoryState) => socket!.send(JSON.stringify({
+    type: 'state', inventory, mobs: [],
+    players: [{ id: 'a', name: 'Hero', x: 448, y: 250, hp, kills: 3, faceX: 1, faceY: 0, walkTime: 0, attackTime: 0 }],
+  }));
+  snapshot(40, { gel: 3, potion: 0, drops: [], receipt: null });
+  const talk = page.locator('#talkButton');
+  await expect(talk).toBeVisible();
+  if (info.project.name === 'android') await talk.tap();
+  else await talk.click();
+  const dialogue = page.getByRole('dialog', { name: 'Lina' });
+  const trade = dialogue.getByRole('button', { name: 'Trocar 3 de gel por 1 poção' });
+  await trade.click();
+  await expect(trade).toBeDisabled();
+  await expect.poll(() => requests).toEqual([{ type: 'inventory', action: 'trade-potion', requestId: 1 }]);
+  await expect(dialogue.getByText('Gel 3 · Poções 0')).toBeVisible();
+  const traded = { gel: 0, potion: 1, drops: [], receipt: {
+    requestId: 1, action: 'trade-potion', outcome: 'traded',
+  } } satisfies RoomInventoryState;
+  snapshot(40, traded);
+  await expect(dialogue.getByText('Gel 0 · Poções 1')).toBeVisible();
+  await expect(dialogue.getByRole('status')).toContainText('Lina colocou uma poção');
+  await dialogue.getByRole('button', { name: 'Fechar conversa' }).click();
+
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  const use = page.locator('#usePotion');
+  await use.click();
+  await expect(use).toBeDisabled();
+  await expect.poll(() => requests.at(-1)).toEqual({ type: 'inventory', action: 'use-potion', requestId: 2 });
+  snapshot(40, traded);
+  await expect(page.locator('#inventoryFeedback')).toContainText('Aguardando');
+  await expect(page.locator('#hpText')).toHaveText('40 / 100');
+  await expect(page.locator('#potionCount')).toHaveText('1 / 99');
+  snapshot(75, { gel: 0, potion: 0, drops: [], receipt: {
+    requestId: 2, action: 'use-potion', outcome: 'healed',
+  } });
+  await expect(page.locator('#inventoryFeedback')).toContainText('Poção utilizada');
+  await expect(page.locator('#hpText')).toHaveText('75 / 100');
+  await expect(page.locator('#potionCount')).toHaveText('0 / 99');
+  expect(requests).toHaveLength(2);
+  const save = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
+  expect(save).toMatchObject({ hp: 80, inventory: soloInventory });
 });
