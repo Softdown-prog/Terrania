@@ -5,6 +5,7 @@ A aventura solo tem uma **bolsa local**, **gel de slime recolhido no chão** e *
 ## Aceite funcional
 - [ ] Abrir `/jogar/?modo=solo`, escolher um mundo e abrir **Bolsa** com mouse, teclado e toque Android.
 - [ ] Slime derrotado cria um pequeno cristal verde visível no chão; aproximar o herói recolhe exatamente **1 gel**.
+- [ ] Com os efeitos visuais ativos, a coleta mostra a quantidade sobre o herói por um instante. Itens recolhidos no mesmo quadro aparecem juntos. Carregar um save ou chegar perto de um cristal com a bolsa cheia não exibe o aviso de coleta.
 - [ ] Recarregar antes de recolher: o gel continua no chão e o slime derrotado não reaparece.
 - [ ] Recarregar depois de recolher: o gel permanece na bolsa, sem duplicar.
 - [ ] Gel com bolsa cheia (99) continua no chão; novas derrotas não geram quantidades ilimitadas.
