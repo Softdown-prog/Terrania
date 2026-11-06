@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Room } from '../src/Room.ts';
-import { isValidInput, isValidTarget, isValidWalk, validRoom } from '../../src/shared/protocol.ts';
+import { isValidInput, isValidInventoryMessage, isValidTarget, isValidWalk, validRoom } from '../../src/shared/protocol.ts';
+import { MAX_STACK } from '../../src/engine/Inventory.ts';
 import { canMoveOnSeed, clearPath } from '../../src/world/collision.ts';
 
 test('protocolo rejeita coordenadas falsas ou movimento fora da velocidade', () => {
@@ -179,6 +180,106 @@ test('a sala atinge o Slime sobreposto sem sair do tile', () => {
   assert.equal(slime(), undefined);
   assert.equal(guest.kills, 1);
   assert.equal(guest.experience, 10);
+});
+
+test('o gel do golpe final fica privado e só entra uma vez na bolsa do dono', () => {
+  const room = new Room('origins');
+  const owner = room.add('a', 'Aventureiro', true, true, true, true);
+  const other = room.add('b', 'Outro', true, true, true, true);
+  assert.ok(owner.inventory);
+  for (let i = 0; i < MAX_STACK; i++) owner.inventory.bag.addGel();
+  Object.assign(owner.actor, { x: -560, y: -1008 });
+  let now = owner.lastInputAt;
+  for (let i = 0; i < 31; i++) room.tick(0.05, now += 50);
+  Object.assign(other.actor, { x: -560, y: -1008 });
+  room.receiveTarget('a', '-2,-2,0');
+  for (let i = 0; i < 45 && owner.kills === 0; i++) room.tick(0.05, now += 50);
+  assert.equal(owner.kills, 1);
+  const snapshot = () => room.snapshotFor('a')?.inventory;
+  const drop = snapshot()?.drops[0];
+  assert.ok(drop);
+  assert.equal(snapshot()?.gel, MAX_STACK);
+  assert.deepEqual(room.snapshotFor('b')?.inventory, { gel: 0, potion: 0, drops: [], receipt: null });
+  assert.ok(room.snapshotFor('b')?.players.some(hero => hero.id === 'a' && !('inventory' in hero)));
+
+  Object.assign(owner.actor, { x: 448, y: 250 });
+  room.receiveInventory('a', { type: 'inventory', action: 'trade-potion', requestId: 1 });
+  assert.equal(snapshot()?.gel, MAX_STACK - 3);
+  room.tick(0.05, now += 50);
+  assert.equal(room.snapshotFor('b')?.inventory?.gel, 0);
+  Object.assign(owner.actor, { x: drop.x, y: drop.y });
+  for (let i = 0; i < 3; i++) room.tick(0.05, now += 50);
+  assert.equal(snapshot()?.gel, MAX_STACK - 2);
+  assert.deepEqual(snapshot()?.drops, []);
+  owner.actor.hp = 0;
+  room.tick(0.05, now += 50);
+  assert.equal(snapshot()?.potion, 1);
+  room.remove('a');
+  room.add('new', 'Aventureiro', true, true, true, true);
+  assert.deepEqual(room.snapshotFor('new')?.inventory, { gel: 0, potion: 0, drops: [], receipt: null });
+});
+
+test('a coleta online exige caminho livre até o gel', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro', true, true, true, true);
+  Object.assign(guest.actor, { x: -8, y: -360 });
+  assert.ok(guest.inventory);
+  const drop = { id: 'gel', item: 'gel' as const, x: -6, y: -345 };
+  assert.ok(Math.hypot(drop.x - guest.actor.x, drop.y - guest.actor.y) < 24);
+  assert.equal(clearPath(guest.actor, drop, room.world), false);
+  guest.inventory.drops.set(drop.id, drop);
+  room.tick(0.05, guest.lastInputAt);
+  assert.equal(guest.inventory.bag.gel, 0);
+  Object.assign(guest.actor, { x: -16, y: -336 });
+  room.tick(0.05, guest.lastInputAt + 50);
+  assert.equal(guest.inventory.bag.gel, 1);
+});
+
+test('troca e cura usam posição e HP da sala e ignoram pedidos repetidos', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Aventureiro', true, true, true, true);
+  assert.ok(guest.inventory);
+  for (let i = 0; i < 6; i++) guest.inventory.bag.addGel();
+  const command = (requestId: number, action: 'trade-potion' | 'use-potion' = 'trade-potion') => ({
+    type: 'inventory' as const, action, requestId,
+  });
+  for (const requestId of [0, -1, 0.5, Infinity, Number.MAX_SAFE_INTEGER + 1, '1'])
+    assert.equal(isValidInventoryMessage({ ...command(1), requestId }), false);
+  assert.equal(isValidInventoryMessage({ ...command(1), action: 'add-gel' }), false);
+  assert.equal(isValidInventoryMessage(command(1)), true);
+  const state = () => room.snapshotFor('a')?.inventory;
+  room.receiveInventory('a', command(1));
+  assert.equal(state()?.receipt?.outcome, 'too-far');
+  Object.assign(guest.actor, { x: 448, y: 250 });
+  room.receiveInventory('a', command(1));
+  assert.equal(state()?.gel, 6);
+  room.receiveInventory('a', command(2));
+  room.receiveInventory('a', command(2));
+  room.receiveInventory('a', command(1));
+  assert.deepEqual(state()?.receipt, { requestId: 2, action: 'trade-potion', outcome: 'traded' });
+  assert.equal(state()?.gel, 3);
+  assert.equal(state()?.potion, 1);
+  room.receiveInventory('a', command(3));
+  assert.equal(state()?.potion, 2);
+  room.receiveInventory('a', command(4, 'use-potion'));
+  assert.equal(state()?.receipt?.outcome, 'full-health');
+  assert.equal(state()?.potion, 2);
+  guest.actor.hp = 15;
+  room.receiveInventory('a', command(5, 'use-potion'));
+  room.receiveInventory('a', command(5, 'use-potion'));
+  assert.equal(state()?.receipt?.outcome, 'healed');
+  assert.equal(guest.actor.hp, 50);
+  assert.equal(state()?.potion, 1);
+  guest.actor.hp = 0;
+  room.receiveInventory('a', command(6, 'use-potion'));
+  assert.equal(state()?.receipt?.outcome, 'unavailable');
+  assert.equal(state()?.potion, 1);
+  guest.actor.hp = 90;
+  room.receiveInventory('a', command(7, 'use-potion'));
+  assert.equal(guest.actor.hp, 100);
+  assert.equal(state()?.potion, 0);
+  room.receiveInventory('a', command(8));
+  assert.equal(state()?.receipt?.outcome, 'insufficient-gel');
 });
 
 test('abate online dá XP apenas ao autor e o respawn conserva o nível', () => {

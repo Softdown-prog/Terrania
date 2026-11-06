@@ -24,6 +24,8 @@ O Phaser é o dono do loop: uma Scene chama `Game.update(delta)` e apresenta uma
 
 Os tiles continuam 32×32, chunks 16×16 e cache visual limitado a 24 chunks. A simulação local mantém passo fixo de 1/60 s e o protocolo online continua na versão 3. Ao sair da rota, são liberados Phaser, WebSocket, temporizadores de reconexão, controles e observadores.
 
+A sala Node mantém o inventário online e valida coleta, troca e cura. O navegador apresenta a bolsa e os itens recebidos em estado privado. O [ADR 0007](adr/0007-inventario-da-sala.md) descreve a negociação e o ciclo dos itens.
+
 O site usa renderização Angular no cliente. O pós-build emite dez entradas HTML com títulos e descrições próprios, base `/` e a mesma aplicação; não é SSR nem prerender do conteúdo das páginas. Pré-visualizações de mundo são estáticas e liberam seus recursos ao trocar de rota.
 
 A contagem online usa conexões WebSocket, pois ainda não existem contas para deduplicar pessoas em várias abas. Solo e visitantes do site não entram na contagem. No Go, reservas do lobby não são usadas como jogadores confirmados; se um worker falhar, o total é declarado indisponível.

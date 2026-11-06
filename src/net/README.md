@@ -11,3 +11,5 @@
 **Limites:** Não confiar em HP ou posição enviados pelo navegador; manter versão do protocolo explícita.
 
 **Apresentação por tempo:** estados Node por tiles incluem `time` e o `stepTarget` dos heróis. `SnapshotTimeline` mantém uma reserva-alvo de 180 ms e ajusta suavemente o ritmo de reprodução conforme chegam os estados. Assim, diferenças entre o relógio do navegador e o da sala não esgotam a reserva durante caminhadas longas. A posição para no último estado se faltarem pacotes. Sem timestamp, o cliente usa o interpolador anterior. O buffer é limpo na desconexão e só alimenta a apresentação. Ver [ADR 0006](../../docs/adr/0006-movimento-e-apresentacao-do-personagem.md).
+
+**Inventário online:** após negociar `inventory=loot`, o cliente consome o estado privado da bolsa e só libera outro pedido quando chega o recibo do pedido pendente. Ver [ADR 0007](../../docs/adr/0007-inventario-da-sala.md).

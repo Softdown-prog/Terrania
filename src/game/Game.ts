@@ -1,6 +1,6 @@
 import { Input } from "../input/Input.ts";
 import { MultiplayerClient } from "../net/MultiplayerClient.ts";
-import type { HeroState } from "../shared/protocol.ts";
+import type { HeroState, InventoryAction, InventoryOutcome } from "../shared/protocol.ts";
 import { WorldRenderer } from "../render/WorldRenderer.ts";
 import { Camera } from "../render/Camera.ts";
 import { Effects } from "../render/Effects.ts";
@@ -13,7 +13,7 @@ import { CanvasScene } from "../ui/CanvasScene.ts";
 import type { GameUi, Preferences } from "../ui/GameUi.ts";
 import { nearestNpc, npcDialogue } from "../world/npcs.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
-import { POTION_GEL_PRICE, QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
+import { POTION_GEL_PRICE, POTION_HEAL, QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
@@ -26,6 +26,16 @@ import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress, maxHpForExperience, normalizeExperience } from "../engine/Experience.ts";
 
 const NPC_ACTIONS = { character: "talk", sign: "read", door: "enter" } as const;
+const POTION_FEEDBACK: Record<InventoryOutcome, string> = {
+  "healed": `Poção utilizada! Vida restaurada em até ${POTION_HEAL} pontos.`,
+  "full-health": "Sua vida já está completa.",
+  "no-potion": "Você não possui poções de cura.",
+  "unavailable": "Retorne à vila para continuar.",
+  "too-far": "Aproxime-se de Lina perto da hospedaria para trocar.",
+  "insufficient-gel": `Você precisa de ${POTION_GEL_PRICE} unidades de gel para a troca.`,
+  "potions-full": "A pilha de poções está cheia.",
+  "traded": "Lina colocou uma poção de cura na sua bolsa.",
+};
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
@@ -79,6 +89,10 @@ export class Game {
         (serverSeed) => this.setOnlineWorld(serverSeed),
         (self) => this.applySnapshot(self),
         (status) => this.updateConnectionStatus(status),
+        ({ action, outcome }) => {
+          this.updateHud(true);
+          this.hud.setPotionFeedback(action === "use-potion" ? "use" : "trade", POTION_FEEDBACK[outcome]);
+        },
       );
     } else this.hud.setStatus("Offline · aventura local");
     window.addEventListener("pagehide", () => this.save(), { signal: this.lifecycle.signal });
@@ -98,20 +112,23 @@ export class Game {
     this.hud.onTalk(() => this.talkToNpc());
     this.hud.onRespawn(() => this.respawn());
     this.hud.onPotionUse(() => {
-      if (this.multiplayer?.connected) return "A bolsa está disponível apenas no modo solo.";
-      if (this.sim.awaitingRespawn) return "Retorne à vila para continuar.";
+      if (this.multiplayer?.connected) {
+        if (!this.multiplayer.roomInventory) return "A bolsa está disponível apenas no modo solo.";
+        return this.requestRoomInventory("use-potion");
+      }
+      if (this.sim.awaitingRespawn) return POTION_FEEDBACK.unavailable;
       if (!this.sim.inventory.usePotion(this.sim.player))
         return this.sim.player.hp >= this.sim.player.maxHp
-          ? "Sua vida já está completa."
-          : "Você não possui poções de cura.";
+          ? POTION_FEEDBACK["full-health"] : POTION_FEEDBACK["no-potion"];
       this.save();
       this.updateHud(false);
-      return "Poção utilizada! Vida restaurada em até 35 pontos.";
+      return POTION_FEEDBACK.healed;
     });
     this.updateHud(false);
   }
   private updateHud(online: boolean): void {
-    const { player, inventory, kills } = this.sim;
+    const { player, kills } = this.sim;
+    const inventory = online ? this.multiplayer?.inventory : this.sim.inventory;
     const experience = online ? this.onlineExperience : this.sim.experience;
     this.hud.updateHero({
       hp: player.hp,
@@ -121,7 +138,8 @@ export class Game {
       progression: experience === null ? null : experienceProgress(experience),
       awaitingRespawn: !online && this.sim.awaitingRespawn,
     }, aelaQuestProgress(kills));
-    this.hud.updateInventory(inventory.gel, inventory.potion, online);
+    this.hud.updateInventory(inventory?.gel ?? 0, inventory?.potion ?? 0, !!inventory,
+      online && this.multiplayer?.inventoryPending === true);
   }
   /** Battle entries are derived from the same camera/viewport as the canvas. */
   private battleCreatures() {
@@ -197,6 +215,7 @@ export class Game {
       this.offlineSnapshot = null;
       this.hud.setOnline(false);
       this.hud.setTargetCombat(true);
+      this.updateHud(false);
     }
   }
   private setOnlineWorld(seed: number): void {
@@ -207,6 +226,7 @@ export class Game {
     this.replaceWorld(seed);
     this.hud.setOnline(true);
     this.hud.setTargetCombat(this.multiplayer?.targetCombat === true);
+    this.updateHud(true);
   }
   private applySnapshot(self: HeroState): void {
     const player = this.sim.player;
@@ -270,7 +290,8 @@ export class Game {
         this.sim.inventory.claimAelaReward(this.sim.kills);
       if (rewarded) this.save();
       const lines = npcDialogue(npc, this.sim.kills);
-      const potionPrice = npc.id === "lina" && !this.multiplayer?.connected ? POTION_GEL_PRICE : undefined;
+      const potionPrice = npc.id === "lina" && (!this.multiplayer?.connected || this.multiplayer.roomInventory)
+        ? POTION_GEL_PRICE : undefined;
       this.hud.showNpcDialogue(npc.name, npc.role, rewarded
         ? [...lines, `Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`]
         : lines, potionPrice);
@@ -278,20 +299,24 @@ export class Game {
   }
   private tradeGelForPotion(): string {
     const { player, inventory } = this.sim;
-    if (this.multiplayer?.connected || this.interior || !this.hud.menuOpen ||
-        player.hp <= 0 || nearestNpc(player.x, player.y)?.id !== "lina")
-      return "A troca está disponível com Lina na aventura solo.";
-
-    switch (inventory.tradeGelForPotion()) {
-      case "insufficient-gel":
-        return `Você precisa de ${POTION_GEL_PRICE} unidades de gel para a troca.`;
-      case "potions-full":
-        return "A pilha de poções está cheia.";
-      case "traded":
-        this.save();
-        this.updateHud(false);
-        return "Lina colocou uma poção de cura na sua bolsa.";
+    if (this.interior || !this.hud.menuOpen) return POTION_FEEDBACK["too-far"];
+    if (this.multiplayer?.connected) {
+      if (!this.multiplayer.roomInventory) return "A troca está disponível com Lina na aventura solo.";
+      return this.requestRoomInventory("trade-potion");
     }
+    if (player.hp <= 0) return POTION_FEEDBACK.unavailable;
+    if (nearestNpc(player.x, player.y)?.id !== "lina") return POTION_FEEDBACK["too-far"];
+    const result = inventory.tradeGelForPotion();
+    if (result === "traded") {
+      this.save();
+      this.updateHud(false);
+    }
+    return POTION_FEEDBACK[result];
+  }
+  private requestRoomInventory(action: InventoryAction): string {
+    if (!this.multiplayer?.requestInventory(action)) return "A bolsa da sala está indisponível no momento.";
+    this.updateHud(true);
+    return "Aguardando confirmação da sala…";
   }
   private leaveInterior(): void {
     this.tileWalker.reset();
@@ -528,7 +553,7 @@ export class Game {
       this.clock,
       this.effects,
       onlineTiles ? this.multiplayer?.walkTarget ?? null : this.navigator.target,
-      online ? [] : [...this.sim.drops.values()],
+      online ? this.multiplayer?.inventory?.drops ?? [] : [...this.sim.drops.values()],
       targetId,
     );
   }

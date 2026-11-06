@@ -1,3 +1,6 @@
+import type { PotionTradeResult } from "../engine/Inventory.ts";
+import type { LootDrop } from "../engine/loot.ts";
+
 /** Version 3 shares village building collision with clients and the server. */
 export const PROTOCOL_VERSION = 3;
 export interface HeroState {
@@ -36,10 +39,28 @@ export type WalkTarget = { readonly x: number; readonly y: number };
 export type WalkMessage = { type: "walk"; target: WalkTarget | null };
 export type TargetMessage = { type: "target"; id: string | null };
 export type CombatFocus = { readonly id: string; readonly following: boolean };
-export type ClientMessage = InputMessage | WalkMessage | TargetMessage;
+export type InventoryAction = "use-potion" | "trade-potion";
+export type InventoryMessage = { type: "inventory"; action: InventoryAction; requestId: number };
+export type InventoryOutcome = PotionTradeResult | "healed" | "full-health" | "no-potion" | "unavailable" | "too-far";
+export type InventoryReceipt = Pick<InventoryMessage, "requestId" | "action"> & { outcome: InventoryOutcome };
+export interface RoomInventoryState {
+  gel: number;
+  potion: number;
+  drops: LootDrop[];
+  receipt: InventoryReceipt | null;
+}
+export type RoomState = {
+  players: HeroState[];
+  mobs: MobState[];
+  time?: number;
+  walkTarget?: WalkTarget | null;
+  focus?: CombatFocus | null;
+  inventory?: RoomInventoryState;
+};
+export type ClientMessage = InputMessage | WalkMessage | TargetMessage | InventoryMessage;
 export type ServerMessage =
-  | { type: "welcome"; version: number; id: string; room: string; seed: number; movement?: "tiles"; combat?: "target" }
-  | { type: "state"; players: HeroState[]; mobs: MobState[]; time?: number; walkTarget?: WalkTarget | null; focus?: CombatFocus | null }
+  | { type: "welcome"; version: number; id: string; room: string; seed: number; movement?: "tiles"; combat?: "target"; inventory?: "loot" }
+  | ({ type: "state" } & RoomState)
   | { type: "error"; message: string };
 export function isValidInput(value: unknown): value is InputMessage {
   if (!value || typeof value !== "object") return false;
@@ -70,6 +91,12 @@ export function isValidTarget(value: unknown): value is TargetMessage {
   const m = value as Partial<TargetMessage>;
   return m.type === "target" && (m.id === null ||
     (typeof m.id === "string" && /^[\w,-]{1,64}$/.test(m.id)));
+}
+export function isValidInventoryMessage(value: unknown): value is InventoryMessage {
+  if (!value || typeof value !== "object") return false;
+  const m = value as Partial<InventoryMessage>;
+  return m.type === "inventory" && (m.action === "use-potion" || m.action === "trade-potion") &&
+    typeof m.requestId === "number" && Number.isSafeInteger(m.requestId) && m.requestId > 0;
 }
 export function validRoom(room: string): boolean {
   return /^[a-z0-9-]{1,24}$/.test(room);

@@ -1,8 +1,11 @@
 import { Player } from "../../src/actors/Player.ts";
 import { Slime, slimeSpawns } from "../../src/actors/Slime.ts";
 import { CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
-import type { CombatFocus, HeroState, MobState, WalkTarget } from "../../src/shared/protocol.ts";
-import { SeedCollision } from "../../src/world/collision.ts";
+import type {
+  InventoryAction, InventoryMessage, InventoryOutcome, InventoryReceipt, RoomState, WalkTarget,
+} from "../../src/shared/protocol.ts";
+import { clearPath, SeedCollision } from "../../src/world/collision.ts";
+import { nearestNpc } from "../../src/world/npcs.ts";
 import { seedFromText } from "../../src/world/random.ts";
 import { CHUNK_PIXELS, TILE_SIZE, chunkOf } from "../../src/world/terrain.ts";
 import { canStrike, faceTarget } from "../../src/engine/combat.ts";
@@ -11,6 +14,8 @@ import { TapNavigator } from "../../src/engine/TapNavigator.ts";
 import { ClassicCombat } from "../../src/engine/ClassicCombat.ts";
 import { CLASSIC_FOLLOW_LIMIT, ClassicPursuit } from "../../src/engine/ClassicPursuit.ts";
 import { grantExperience, maxHpForExperience } from "../../src/engine/Experience.ts";
+import { Inventory } from "../../src/engine/Inventory.ts";
+import { MAX_WORLD_DROPS, PICKUP_DISTANCE, type LootDrop } from "../../src/engine/loot.ts";
 
 const STILL = { x: 0, y: 0 };
 const MAX_TAP_DISTANCE = 480;
@@ -28,6 +33,11 @@ interface TargetCombat {
   follow: boolean;
   nextSelectionAt: number;
 }
+interface GuestInventory {
+  readonly bag: Inventory;
+  readonly drops: Map<string, LootDrop>;
+  receipt: InventoryReceipt | null;
+}
 
 export interface Guest {
   id: string;
@@ -41,6 +51,7 @@ export interface Guest {
   experience: number | null;
   readonly walking: TileMovement | null;
   readonly targeting: TargetCombat | null;
+  readonly inventory: GuestInventory | null;
 }
 
 /** Uma única instância de simulação por sala. Sem estado permanente nesta primeira versão. */
@@ -53,6 +64,7 @@ export class Room {
   private readonly walkRequests = new Map<string, WalkTarget>();
   private spawnClock = 0;
   private simulationTime = 0;
+  private nextDropId = 0;
   private readonly maxMobs = 96;
   readonly id: string;
   constructor(id: string) {
@@ -60,7 +72,7 @@ export class Room {
     this.seed = id === "origins" ? 842136 : seedFromText(id);
     this.world = new SeedCollision(this.seed);
   }
-  add(id: string, name: string, tiles = false, targetCombat = false, progression = false): Guest {
+  add(id: string, name: string, tiles = false, targetCombat = false, progression = false, loot = false): Guest {
     const guest: Guest = {
       id,
       name,
@@ -75,6 +87,7 @@ export class Room {
       targeting: tiles && targetCombat
         ? { combat: new ClassicCombat(), pursuit: new ClassicPursuit(), follow: false, nextSelectionAt: 0 }
         : null,
+      inventory: loot ? { bag: new Inventory(), drops: new Map(), receipt: null } : null,
     };
     this.guests.set(id, guest);
     return guest;
@@ -136,6 +149,30 @@ export class Room {
     }
     // Replace the queued target in place so one guest cannot monopolize the queue.
     this.walkRequests.set(id, target);
+  }
+  receiveInventory(id: string, { action, requestId }: InventoryMessage): void {
+    const guest = this.guests.get(id);
+    const inventory = guest?.inventory;
+    if (!guest || !inventory || requestId <= (inventory.receipt?.requestId ?? 0)) return;
+    inventory.receipt = { requestId, action, outcome: this.applyInventoryAction(guest.actor, inventory.bag, action) };
+  }
+  private applyInventoryAction(actor: Player, bag: Inventory, action: InventoryAction): InventoryOutcome {
+    if (actor.hp <= 0) return "unavailable";
+    if (action === "trade-potion") {
+      if (nearestNpc(actor.x, actor.y)?.id !== "lina") return "too-far";
+      return bag.tradeGelForPotion();
+    }
+    if (actor.hp >= actor.maxHp) return "full-health";
+    return bag.usePotion(actor) ? "healed" : "no-potion";
+  }
+  private collectLoot(guest: Guest): void {
+    const { actor, inventory } = guest;
+    if (!inventory) return;
+    for (const [id, drop] of inventory.drops) {
+      if (!inventory.bag.hasRoomForGel) break;
+      if (Math.hypot(actor.x - drop.x, actor.y - drop.y) <= PICKUP_DISTANCE &&
+          clearPath(actor, drop, this.world) && inventory.bag.addGel()) inventory.drops.delete(id);
+    }
   }
   private cancelWalk(guest: Guest): void {
     guest.walking?.navigator.cancel();
@@ -228,6 +265,11 @@ export class Room {
             guest.kills++;
             if (guest.experience !== null)
               guest.experience = grantExperience(guest.experience, CREATURE_CATALOG[mob.kind].experience, guest.actor);
+            const drops = guest.inventory?.drops;
+            if (drops && drops.size < MAX_WORLD_DROPS) {
+              const dropId = String(++this.nextDropId);
+              drops.set(dropId, { id: dropId, item: "gel", x: mob.x, y: mob.y });
+            }
           }
         }
       }
@@ -261,7 +303,9 @@ export class Room {
         this.mobs.delete(id);
     }
     for (const guest of this.guests.values()) {
-      if (guest.actor.hp <= 0) {
+      if (guest.actor.hp > 0) {
+        this.collectLoot(guest);
+      } else {
         this.cancelWalk(guest);
         guest.walking?.walker.reset();
         if (guest.targeting) {
@@ -293,14 +337,12 @@ export class Room {
     }
   }
   /** Interesse espacial: não transmitir o mapa todo nem entidades distantes. */
-  snapshotFor(id: string): {
-    players: HeroState[]; mobs: MobState[]; time?: number; walkTarget?: WalkTarget | null; focus?: CombatFocus | null;
-  } | null {
+  snapshotFor(id: string): RoomState | null {
     const me = this.guests.get(id);
     if (!me) return null;
     const near = (x: number, y: number): boolean =>
       Math.abs(x - me.actor.x) < 920 && Math.abs(y - me.actor.y) < 920;
-    const players: HeroState[] = [];
+    const players: RoomState["players"] = [];
     for (const g of this.guests.values()) {
       if (!near(g.actor.x, g.actor.y)) continue;
       const a = g.actor;
@@ -322,7 +364,7 @@ export class Room {
         ...(me.walking && g.walking ? { stepTarget: g.walking.walker.destination } : {}),
       });
     }
-    const mobs: MobState[] = [];
+    const mobs: RoomState["mobs"] = [];
     for (const mob of this.mobs.values())
       if (near(mob.x, mob.y)) {
         mobs.push({
@@ -338,10 +380,17 @@ export class Room {
     const focus = targetId && me.targeting && this.mobs.has(targetId)
       ? { id: targetId, following: me.targeting.pursuit.destination !== null }
       : null;
+    const inventory = me.inventory;
     return {
       players, mobs,
       ...(me.walking ? { time: this.simulationTime, walkTarget: me.walking.navigator.target } : {}),
       ...(me.targeting ? { focus } : {}),
+      ...(inventory ? { inventory: {
+        gel: inventory.bag.gel,
+        potion: inventory.bag.potion,
+        drops: [...inventory.drops.values()].filter(drop => near(drop.x, drop.y)),
+        receipt: inventory.receipt,
+      } } : {}),
     };
   }
 }

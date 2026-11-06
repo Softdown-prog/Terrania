@@ -1,6 +1,6 @@
 import { BUILDINGS, SIGNS } from "./village.ts";
 import { aelaQuestProgress } from "./aelaQuest.ts";
-/** NPCs e diálogos locais. Não modificam o estado autoritativo do multiplayer. */
+/** Posições e diálogos dos NPCs compartilhados pelo cliente e pela sala Node. */
 export interface Npc {
   readonly id: string;
   readonly kind?: "character" | "sign" | "door";

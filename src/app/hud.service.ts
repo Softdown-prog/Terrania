@@ -33,6 +33,8 @@ export class HudService implements GameUi {
   readonly seed = signal(842136);
   readonly gel = signal(0);
   readonly potions = signal(0);
+  readonly inventoryAvailable = signal(true);
+  readonly inventoryPending = signal(false);
   readonly inventoryFeedback = signal('');
   readonly talkVisible = signal(false);
   readonly talkLabel = signal('Conversar (E)');
@@ -102,13 +104,22 @@ export class HudService implements GameUi {
   tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
   usePotion(): void { this.inventoryFeedback.set(this.potionCallback()); }
   respawn(): void { this.respawnCallback(); }
-  updateInventory(gel: number, potions: number, online: boolean): void {
-    this.gel.set(gel); this.potions.set(potions); this.online.set(online);
+  updateInventory(gel: number, potions: number, available: boolean, pending: boolean): void {
+    this.gel.set(gel); this.potions.set(potions); this.inventoryAvailable.set(available);
+    this.inventoryPending.set(pending);
+  }
+  setPotionFeedback(action: 'use' | 'trade', message: string): void {
+    (action === 'use' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
   }
   setStatus(status: string): void { this.status.set(status); }
   setTargetCombat(enabled: boolean): void { this.targetCombat.set(enabled); }
   setCombatTarget(label: string | null): void { this.combatTarget.set(label); }
-  setOnline(online: boolean): void { this.online.set(online); }
+  setOnline(online: boolean): void {
+    this.online.set(online);
+    this.inventoryFeedback.set('');
+    this.npcTradeFeedback.set('');
+    this.npcPotionPrice.set(null);
+  }
   setSeed(seed: number): void { this.seed.set(seed); }
   setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }
   setNearbyAction(action: NearbyAction | null): void {
