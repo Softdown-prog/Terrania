@@ -434,7 +434,11 @@ export class Game {
             this.sim.slimes, this.sim.collision, true, this.tileWalker.destination);
           let routeTime = 1 / 60;
           const stepDirection = () => {
-            if (manualActive) return movement;
+            if (manualActive) {
+              const direction = this.input.movement();
+              this.input.acknowledgeMovement();
+              return direction;
+            }
             if (tileRoute) {
               const dir = this.navigator.direction(before, routeTime);
               routeTime = 0;
@@ -445,7 +449,6 @@ export class Game {
           };
           const changed = this.sim.update(1 / 60, stepDirection,
             classicStrike, this.classicCombat.strikeTargetId, this.tileWalker);
-          this.input.acknowledgeMovement();
           if (changed) this.save();
           if (this.sim.awaitingRespawn) {
             this.input.clear();

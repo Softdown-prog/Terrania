@@ -35,6 +35,45 @@ test("Jogar solo preserva teclas curtas entre frames, vira e para no centro", as
   expect(errors).toEqual([]);
 });
 
+test("uma virada curta durante o passo é executada uma vez no próximo tile", async ({ page, context }, info) => {
+  await freezeGame(page, "/jogar/?modo=solo");
+  const android = info.project.name === "android";
+  const joystick = page.locator("#joystick");
+  const stick = android ? (await joystick.boundingBox())! : null;
+  if (stick) await joystick.tap({ position: { x: stick.width * 0.82, y: stick.height / 2 } });
+  else await page.keyboard.press("d");
+  await page.clock.runFor(80);
+  const [x, y] = await savedPosition(page);
+  expect(x).toBeGreaterThan(16);
+  expect(x).toBeLessThan(48);
+  expect(y).toBe(16);
+
+  if (stick) await joystick.tap({ position: { x: stick.width / 2, y: stick.height * 0.18 } });
+  else await page.keyboard.press("w");
+  await page.clock.runFor(80);
+  expect((await savedPosition(page))[1]).toBe(16);
+  await page.clock.runFor(700);
+  expect(await savedPosition(page)).toEqual([48, -16]);
+
+  if (stick) {
+    const touch = await context.newCDPSession(page);
+    const left = { x: stick.x + stick.width * 0.18, y: stick.y + stick.height / 2 };
+    try {
+      await touch.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [left] });
+      await page.clock.runFor(80);
+      // A small drag in the same direction is still the same hold.
+      await touch.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ ...left, y: left.y + 7 }] });
+      await touch.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    } finally { await touch.detach(); }
+  } else {
+    await page.keyboard.down("a");
+    await page.clock.runFor(80);
+    await page.keyboard.up("a");
+  }
+  await page.clock.runFor(700);
+  expect(await savedPosition(page)).toEqual([16, -16]);
+});
+
 test("tecla curta online chega ao servidor mesmo com soltar antes do tick", async ({ page }) => {
   let id = "", position = [NaN, NaN];
   page.on("websocket", socket => socket.on("framereceived", ({ payload }) => {
