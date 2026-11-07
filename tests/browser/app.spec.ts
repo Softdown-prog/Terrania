@@ -186,3 +186,98 @@ test('menu Angular mantém contador fora do cenário e só consulta presença na
   await expect(page.locator('app-online-players')).toHaveCount(0);
   await expect(page.locator('#gameMenuButton')).toBeVisible();
 });
+
+
+test('SAC visual: Canvas real do Phaser desenha mundo no desktop e Android, inclusive após resize', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const android = info.project.name === 'android';
+  await page.setViewportSize(android ? { width: 390, height: 844 } : { width: 960, height: 640 });
+  await page.addInitScript(() => {
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({
+      seed: 842136, x: 16, y: 16, hp: 100, kills: 0, defeated: [],
+    }));
+    localStorage.setItem('terrania-preferences-v1', JSON.stringify({
+      zoom: 1, effects: false, cameraMotion: false,
+    }));
+  });
+  await page.goto('/jogar/?modo=solo');
+  const canvas = page.locator('canvas#game');
+  await expect(canvas).toBeVisible();
+
+  // Analyze actual screenshot pixels from the browser's final Phaser canvas
+  // (WebGL or Canvas), not only the intermediate procedural CanvasTexture.
+  const measure = async (base64: string) => page.evaluate(async encoded => {
+    const image = new Image();
+    image.src = 'data:image/png;base64,' + encoded;
+    await image.decode();
+    const sample = document.createElement('canvas');
+    sample.width = 32;
+    sample.height = 20;
+    const context = sample.getContext('2d', { willReadFrequently: true });
+    if (!context) throw new Error('canvas-2d-decoder-unavailable');
+    context.drawImage(image, 0, 0, sample.width, sample.height);
+    const rgba = context.getImageData(0, 0, sample.width, sample.height).data;
+    const colors = new Set<number>();
+    let visibleWorld = 0;
+    let opaque = 0;
+    for (let i = 0; i < rgba.length; i += 4) {
+      const r = rgba[i]!, g = rgba[i + 1]!, b = rgba[i + 2]!, a = rgba[i + 3]!;
+      colors.add(((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4));
+      if (Math.abs(r - 11) + Math.abs(g - 8) + Math.abs(b - 18) > 28) visibleWorld++;
+      if (a === 255) opaque++;
+    }
+    return { width: image.naturalWidth, height: image.naturalHeight,
+      colors: colors.size, visibleWorld, opaque, sampled: sample.width * sample.height };
+  }, base64);
+  const capture = async () => measure((await canvas.screenshot()).toString('base64'));
+  const screenshotHasWorld = (data: Awaited<ReturnType<typeof capture>>) =>
+    data.colors >= 12 && data.visibleWorld >= 100 && data.opaque === data.sampled;
+
+  // A deliberately empty canvas must be rejected by the same pixel evaluator.
+  const blank = await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    c.width = 32;
+    c.height = 20;
+    const ctx = c.getContext('2d')!;
+    ctx.fillStyle = '#0b0812';
+    ctx.fillRect(0, 0, c.width, c.height);
+    return c.toDataURL('image/png').split(',')[1]!;
+  });
+  expect(screenshotHasWorld(await measure(blank))).toBe(false);
+
+  await expect.poll(async () => screenshotHasWorld(await capture()), { timeout: 15000 }).toBe(true);
+  const portrait = await capture();
+  const css = await canvas.boundingBox();
+  const dpr = await page.evaluate(() => devicePixelRatio);
+  expect(css).not.toBeNull();
+  expect(Math.abs(portrait.width - Math.round(css!.width * dpr))).toBeLessThanOrEqual(3);
+
+  const coords = await page.locator('#coords').textContent();
+  await canvas.focus();
+  await page.keyboard.down('d');
+  try {
+    await expect(page.locator('#coords')).not.toHaveText(coords!);
+  } finally {
+    await page.keyboard.up('d');
+  }
+  await expect.poll(async () => screenshotHasWorld(await capture())).toBe(true);
+
+  await page.setViewportSize({ width: 600, height: 390 });
+  await expect.poll(async () => Math.round((await canvas.boundingBox())?.width ?? 0)).toBe(600);
+  await expect.poll(async () => screenshotHasWorld(await capture())).toBe(true);
+  const landscape = await capture();
+  const resized = await canvas.boundingBox();
+  expect(resized).not.toBeNull();
+  expect(Math.abs(landscape.width - Math.round(resized!.width * dpr))).toBeLessThanOrEqual(3);
+
+  await test.info().attach('sac-canvas-observation.json', {
+    body: Buffer.from(JSON.stringify({
+      platform: info.project.name, devicePixelRatio: dpr, portrait, landscape,
+      synthetic_blank_rejected: true, final_game_canvas_sampled: true,
+      exact_visual_determinism_verified: false, deployment_authorized: false,
+    })),
+    contentType: 'application/json',
+  });
+  expect(errors).toEqual([]);
+});

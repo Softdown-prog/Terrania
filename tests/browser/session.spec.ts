@@ -296,3 +296,33 @@ test('o inventário solo mostra dez espaços e salva equipar e tirar o elmo', as
   await expect(helm).toContainText('Vazio');
   await expect(page.locator('#equipmentDefense')).toHaveText('Defesa 0');
 });
+
+
+test('cura rápida no HUD consome poções, respeita vida máxima e persiste no solo', async ({ page }, info) => {
+  const save = { seed: 842136, x: 16, y: 16, hp: 45, kills: 0, defeated: [],
+    inventory: { gel: 0, potion: 2, questRewardClaimed: false } };
+  await page.addInitScript(value => {
+    if (!localStorage.getItem('terrania-origins-v1'))
+      localStorage.setItem('terrania-origins-v1', JSON.stringify(value));
+  }, save);
+  await page.goto('/jogar/?modo=solo');
+
+  const potion = page.locator('#quickPotion');
+  const activate = () => info.project.name === 'android' ? potion.tap() : potion.click();
+  await expect(potion).toBeVisible();
+  await expect(potion).toBeEnabled();
+  await expect(potion).toContainText('Poção (2)');
+  await activate();
+  await expect(page.locator('#hpText')).toHaveText('80 / 100');
+  await expect(potion).toContainText('Poção (1)');
+  await expect(page.locator('#quickPotionFeedback')).toContainText('Poção utilizada');
+
+  await page.reload();
+  await expect(page.locator('#hpText')).toHaveText('80 / 100');
+  await expect(potion).toContainText('Poção (1)');
+  await activate();
+  await expect(page.locator('#hpText')).toHaveText('100 / 100');
+  await expect(potion).toBeDisabled();
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
+  expect(stored).toMatchObject({ hp: 100, inventory: { potion: 0 } });
+});

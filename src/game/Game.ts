@@ -106,6 +106,7 @@ export class Game {
           this.updateHud(true);
           this.hud.setInventoryFeedback(action === "trade-potion" || action === "buy-sword" ? "npc" : "bag",
             INVENTORY_FEEDBACK[outcome]);
+          if (action === "use-potion") this.hud.setQuickPotionFeedback(INVENTORY_FEEDBACK[outcome]);
         },
       );
     } else this.hud.setStatus("Offline · aventura local");

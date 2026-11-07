@@ -22,6 +22,14 @@
               <span id="xpText">{{ xp.needed ? "XP " + xp.earned + " / " + xp.needed : "Nível máximo" }}</span>
             </div>
           }
+          <div class="quick-potion-actions">
+            <button id="quickPotion" type="button" (click)="hud.usePotion()"
+              [disabled]="!hud.inventoryAvailable() || hud.inventoryPending() || hud.potions() === 0 || hud.hp() <= 0 || hud.hp() >= hud.maxHp()"
+              [attr.aria-label]="'Usar poção de cura; disponíveis: ' + hud.potions()">
+              <span aria-hidden="true">✚</span> Poção ({{ hud.potions() }})
+            </button>
+            <span id="quickPotionFeedback" role="status" [attr.title]="hud.quickPotionFeedback()">{{ hud.quickPotionFeedback() }}</span>
+          </div>
         </div>
         <div class="quest">
           <span class="stat-heading">MISSÃO DA CLAREIRA</span
