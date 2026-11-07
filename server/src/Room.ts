@@ -2,7 +2,7 @@ import { Player } from "../../src/actors/Player.ts";
 import { Slime, slimeSpawns } from "../../src/actors/Slime.ts";
 import { CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
 import type {
-  InventoryAction, InventoryMessage, InventoryOutcome, InventoryReceipt, RoomState, WalkTarget,
+  InventoryMessage, InventoryOutcome, InventoryReceipt, RoomState, WalkTarget,
 } from "../../src/shared/protocol.ts";
 import { clearPath, SeedCollision } from "../../src/world/collision.ts";
 import { nearestNpc } from "../../src/world/npcs.ts";
@@ -39,6 +39,7 @@ interface GuestInventory {
   readonly drops: Map<string, LootDrop>;
   receipt: InventoryReceipt | null;
   readonly equipment: boolean;
+  readonly gearSlots: boolean;
 }
 
 export interface Guest {
@@ -75,7 +76,7 @@ export class Room {
     this.world = new SeedCollision(this.seed);
   }
   add(id: string, name: string, tiles = false, targetCombat = false, progression = false, loot = false,
-      equipment = false): Guest {
+      equipment = false, gearSlots = false): Guest {
     const guest: Guest = {
       id,
       name,
@@ -91,7 +92,8 @@ export class Room {
         ? { combat: new ClassicCombat(), pursuit: new ClassicPursuit(), follow: false, nextSelectionAt: 0 }
         : null,
       inventory: loot ? { bag: new Inventory(), drops: new Map(), receipt: null,
-        equipment: tiles && targetCombat && equipment } : null,
+        equipment: tiles && targetCombat && equipment,
+        gearSlots: tiles && targetCombat && equipment && gearSlots } : null,
     };
     this.guests.set(id, guest);
     return guest;
@@ -154,13 +156,15 @@ export class Room {
     // Replace the queued target in place so one guest cannot monopolize the queue.
     this.walkRequests.set(id, target);
   }
-  receiveInventory(id: string, { action, requestId }: InventoryMessage): void {
+  receiveInventory(id: string, message: InventoryMessage): void {
+    const { action, requestId } = message;
     const guest = this.guests.get(id);
     const inventory = guest?.inventory;
     if (!guest || !inventory || requestId <= (inventory.receipt?.requestId ?? 0)) return;
-    inventory.receipt = { requestId, action, outcome: this.applyInventoryAction(guest.actor, inventory, action) };
+    inventory.receipt = { requestId, action, outcome: this.applyInventoryAction(guest.actor, inventory, message) };
   }
-  private applyInventoryAction(actor: Player, { bag, equipment }: GuestInventory, action: InventoryAction): InventoryOutcome {
+  private applyInventoryAction(actor: Player, { bag, equipment, gearSlots }: GuestInventory, message: InventoryMessage): InventoryOutcome {
+    const { action } = message;
     if (actor.hp <= 0) return "unavailable";
     if (action === "trade-potion") {
       if (nearestNpc(actor.x, actor.y)?.id !== "lina") return "too-far";
@@ -171,6 +175,7 @@ export class Room {
       return bag.usePotion(actor) ? "healed" : "no-potion";
     }
     if (!equipment) return "unavailable";
+    if (action === "set-gear") return gearSlots ? bag.equipGear(message.slot, message.item) : "unavailable";
     if (action === "buy-sword") return bag.buyForgeSword(actor);
     return bag.equipWeapon(action === "equip-forge" ? "forge" : "starter");
   }
@@ -299,7 +304,7 @@ export class Room {
       }
       if (nearest) {
         const damageCount = nearest.actor.damageCount;
-        mob.update(dt, nearest.actor, this.world);
+        mob.update(dt, nearest.actor, this.world, nearest.inventory?.bag.defense);
         if (nearest.walking && nearest.actor.damageCount !== damageCount)
           this.cancelWalk(nearest);
       }
@@ -402,6 +407,7 @@ export class Room {
         drops: [...inventory.drops.values()].filter(drop => near(drop.x, drop.y)),
         receipt: inventory.receipt,
         ...(inventory.equipment ? { loadout: inventory.bag.loadout } : {}),
+        ...(inventory.gearSlots ? { gear: inventory.bag.gear } : {}),
       } } : {}),
     };
   }

@@ -2,6 +2,7 @@ import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { ExperienceProgress } from '../engine/Experience.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/Weapons.ts';
+import type { GearId, GearSlot, GearState } from '../engine/Equipment.ts';
 
 export interface Preferences {
   zoom: number;
@@ -32,9 +33,11 @@ export interface GameUi {
   onPotionUse(callback: () => string): void;
   onSwordPurchase(callback: () => string): void;
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
+  onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void;
   onRespawn(callback: () => void): void;
   updateInventory(gel: number, potions: number, available: boolean, pending: boolean): void;
   updateLoadout(loadout: WeaponLoadout | null): void;
+  updateGear(gear: GearState | null): void;
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void;
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void;
   setOnline(online: boolean): void;

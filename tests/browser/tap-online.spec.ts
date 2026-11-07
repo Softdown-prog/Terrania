@@ -268,3 +268,18 @@ test('a forja online usa a posse e a espada equipada confirmadas pela sala', asy
   await expect(page.locator('#inventoryFeedback')).toHaveText('Espada equipada.');
   expect(commands).toHaveLength(2);
 });
+test('a sala Node confirma equipar e tirar o escudo', async ({ page }) => {
+  await page.goto('/jogar/?room=equipamento-qa');
+  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  const slot = page.locator('[data-equipment-slot="shield"]');
+  await slot.click();
+  await page.getByRole('button', { name: 'Equipar Escudo de salgueiro' }).click();
+  await expect(slot).toContainText('Escudo de salgueiro');
+  await expect(page.locator('#equipmentDefense')).toHaveText('Defesa 2');
+  await expect(page.locator('#inventoryFeedback')).toHaveText('Item equipado.');
+  await page.getByRole('button', { name: 'Tirar Escudo de salgueiro' }).click();
+  await expect(slot).toContainText('Vazio');
+  await expect(page.locator('#equipmentDefense')).toHaveText('Defesa 0');
+});

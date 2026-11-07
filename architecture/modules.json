@@ -64,7 +64,8 @@
         "src/engine/ClassicCombat.ts",
         "src/engine/ClassicTileWalker.ts",
         "src/engine/Experience.ts",
-        "src/engine/Weapons.ts"
+        "src/engine/Weapons.ts",
+        "src/engine/Equipment.ts"
       ],
       "doc": "src/engine/README.md",
       "description": "Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular."

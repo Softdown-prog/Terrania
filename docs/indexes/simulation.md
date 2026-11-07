@@ -13,13 +13,15 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/ClassicTileWalker.ts`](../../src/engine/ClassicTileWalker.ts)
 - [`src/engine/Experience.ts`](../../src/engine/Experience.ts)
 - [`src/engine/Weapons.ts`](../../src/engine/Weapons.ts)
+- [`src/engine/Equipment.ts`](../../src/engine/Equipment.ts)
 
-## Todos os arquivos deste módulo (13)
+## Todos os arquivos deste módulo (14)
 
 - [`src/engine/ClassicBattleList.ts`](../../src/engine/ClassicBattleList.ts)
 - [`src/engine/ClassicCombat.ts`](../../src/engine/ClassicCombat.ts)
 - [`src/engine/ClassicPursuit.ts`](../../src/engine/ClassicPursuit.ts)
 - [`src/engine/ClassicTileWalker.ts`](../../src/engine/ClassicTileWalker.ts)
+- [`src/engine/Equipment.ts`](../../src/engine/Equipment.ts)
 - [`src/engine/Experience.ts`](../../src/engine/Experience.ts)
 - [`src/engine/InteriorRoom.ts`](../../src/engine/InteriorRoom.ts)
 - [`src/engine/Inventory.ts`](../../src/engine/Inventory.ts)

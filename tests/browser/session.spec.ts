@@ -271,3 +271,28 @@ test('voltar ao painel não fica preso numa consulta cancelada da tela anterior'
     await expect(page.getByTestId('online-count')).toHaveText('2');
   } finally { release(); }
 });
+
+test('o inventário solo mostra dez espaços e salva equipar e tirar o elmo', async ({ page }, info) => {
+  const activate = (button: ReturnType<typeof page.locator>) => info.project.name === 'android' ? button.tap() : button.click();
+  const openBag = async () => {
+    await activate(page.locator('#gameMenuButton'));
+    await activate(page.locator('#inventoryButton'));
+  };
+  await page.goto('/jogar/?modo=solo');
+  await openBag();
+  const slots = page.getByRole('group', { name: 'Espaços de equipamento' });
+  await expect(slots.getByRole('button')).toHaveCount(10);
+  const helm = slots.locator('[data-equipment-slot="head"]');
+  await expect(helm).toContainText('Vazio');
+  await activate(helm);
+  await activate(page.getByRole('button', { name: 'Equipar Elmo de trilha' }));
+  await expect(helm).toContainText('Elmo de trilha');
+  await expect(page.locator('#equipmentDefense')).toHaveText('Defesa 1');
+  await page.reload();
+  await openBag();
+  await expect(helm).toContainText('Elmo de trilha');
+  await activate(helm);
+  await activate(page.getByRole('button', { name: 'Tirar Elmo de trilha' }));
+  await expect(helm).toContainText('Vazio');
+  await expect(page.locator('#equipmentDefense')).toHaveText('Defesa 0');
+});

@@ -1,6 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import type { GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
 import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
+import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/Experience.ts';
@@ -10,6 +11,7 @@ const ACTION_LABELS: Record<NearbyAction, string> = {
   read: 'Ler',
   enter: 'Entrar',
 };
+const KIT_IDS = Object.keys(GEAR) as GearId[];
 
 @Injectable()
 export class HudService implements GameUi {
@@ -38,6 +40,13 @@ export class HudService implements GameUi {
   readonly inventoryPending = signal(false);
   readonly inventoryFeedback = signal('');
   readonly weapons = WEAPONS;
+  readonly equipmentSlots = EQUIPMENT_SLOTS;
+  readonly gearCatalog = GEAR;
+  readonly gear = signal<GearState | null>(null, { equal: (a, b) => a === b ||
+    (a !== null && b !== null && EQUIPMENT_SLOTS.every(({ id }) => id === 'weapon' || a[id] === b[id])) });
+  readonly selectedSlot = signal<EquipmentSlot>('weapon');
+  readonly selectedGearOptions = computed(() => KIT_IDS.filter(id => GEAR[id].slot === this.selectedSlot()));
+  readonly defense = computed(() => gearDefense(this.gear() ?? {}));
   readonly loadout = signal<WeaponLoadout | null>(null, { equal: (a, b) =>
     a?.forged === b?.forged && a?.equipped === b?.equipped });
   readonly talkVisible = signal(false);
@@ -61,6 +70,7 @@ export class HudService implements GameUi {
   private potionCallback: () => string = () => '';
   private swordPurchaseCallback: () => string = () => '';
   private weaponEquipCallback: (weapon: WeaponId) => string = () => '';
+  private gearEquipCallback: (slot: GearSlot, item: GearId | null) => string = () => '';
   private respawnCallback: () => void = () => {};
   private stopCombatCallback: () => void = () => {};
   private battleSelectCallback: (id: string) => void = () => {};
@@ -92,6 +102,7 @@ export class HudService implements GameUi {
   onPotionUse(callback: () => string): void { this.potionCallback = callback; }
   onSwordPurchase(callback: () => string): void { this.swordPurchaseCallback = callback; }
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
+  onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void { this.gearEquipCallback = callback; }
   onRespawn(callback: () => void): void { this.respawnCallback = callback; }
   onStopCombat(callback: () => void): void { this.stopCombatCallback = callback; }
   onBattleSelect(callback: (id: string) => void): void { this.battleSelectCallback = callback; }
@@ -113,12 +124,25 @@ export class HudService implements GameUi {
   usePotion(): void { this.inventoryFeedback.set(this.potionCallback()); }
   buySword(): void { this.npcTradeFeedback.set(this.swordPurchaseCallback()); }
   equipWeapon(weapon: WeaponId): void { this.inventoryFeedback.set(this.weaponEquipCallback(weapon)); }
+  equipGear(id: GearId): void {
+    const { slot } = GEAR[id];
+    this.inventoryFeedback.set(this.gearEquipCallback(slot, this.gear()?.[slot] === id ? null : id));
+  }
+  equippedName(slot: EquipmentSlot): string {
+    if (slot === 'weapon') {
+      const loadout = this.loadout();
+      return loadout ? WEAPONS[loadout.equipped].name : '';
+    }
+    const id = this.gear()?.[slot];
+    return id ? GEAR[id].name : '';
+  }
   respawn(): void { this.respawnCallback(); }
   updateInventory(gel: number, potions: number, available: boolean, pending: boolean): void {
     this.gel.set(gel); this.potions.set(potions); this.inventoryAvailable.set(available);
     this.inventoryPending.set(pending);
   }
   updateLoadout(loadout: WeaponLoadout | null): void { this.loadout.set(loadout); }
+  updateGear(gear: GearState | null): void { this.gear.set(gear); }
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void {
     (section === 'bag' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
   }
@@ -130,6 +154,7 @@ export class HudService implements GameUi {
     this.inventoryFeedback.set('');
     this.npcTradeFeedback.set('');
     this.npcOffer.set(null);
+    this.selectedSlot.set('weapon');
   }
   setSeed(seed: number): void { this.seed.set(seed); }
   setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }

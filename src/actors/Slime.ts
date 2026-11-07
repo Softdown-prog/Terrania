@@ -23,7 +23,7 @@ export class Slime implements CreatureView {
     this.x = x;
     this.y = y;
   }
-  update(dt: number, player: Player, world: CollisionMap): void {
+  update(dt: number, player: Player, world: CollisionMap, defense = 0): void {
     this.pulse += dt * 5;
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     moveBody(this, this.knockX * dt, this.knockY * dt, world);
@@ -41,7 +41,7 @@ export class Slime implements CreatureView {
         moveBody(this, (dx / d) * speed * dt, (dy / d) * speed * dt, world);
     }
     if (d < 24 && this.contactCooldown === 0 && clearPath(this, player, world)) {
-      player.takeDamage(DEFINITION.contactDamage, this.x, this.y);
+      player.takeDamage(Math.max(1, DEFINITION.contactDamage - defense), this.x, this.y);
       this.contactCooldown = 1.2;
     }
   }

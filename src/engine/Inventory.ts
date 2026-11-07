@@ -1,6 +1,7 @@
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { nearestNpc } from "../world/npcs.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
+import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 
 /** Regras da bolsa compartilhadas pela simulação solo e pela sala Node. */
 export const MAX_STACK = 99;
@@ -16,6 +17,7 @@ export interface InventoryState {
   potion: number;
   questRewardClaimed: boolean;
   loadout?: WeaponLoadout;
+  gear?: GearState;
 }
 
 const count = (value: unknown): number =>
@@ -31,11 +33,13 @@ export function normalizeInventory(value: unknown): InventoryState {
   const loadout: WeaponLoadout | undefined = state.loadout?.forged === true
     ? { forged: true, equipped: state.loadout.equipped === "forge" ? "forge" : "starter" }
     : undefined;
+  const gear = normalizeGear(state.gear);
   return {
     gel: count(state.gel),
     potion: count(state.potion),
     questRewardClaimed: state.questRewardClaimed === true,
     ...(loadout ? { loadout } : {}),
+    ...(Object.keys(gear).length ? { gear } : {}),
   };
 }
 
@@ -44,6 +48,7 @@ export class Inventory {
   private potionCount = 0;
   private claimed = false;
   private weapons: WeaponLoadout;
+  private equippedGear: GearState;
 
   constructor(value?: unknown) {
     const state = normalizeInventory(value);
@@ -51,6 +56,7 @@ export class Inventory {
     this.potionCount = state.potion;
     this.claimed = state.questRewardClaimed;
     this.weapons = state.loadout ?? { forged: false, equipped: "starter" };
+    this.equippedGear = state.gear ?? {};
   }
 
   get gel(): number { return this.gelCount; }
@@ -59,6 +65,18 @@ export class Inventory {
   get hasRoomForGel(): boolean { return this.gelCount < MAX_STACK; }
   get loadout(): WeaponLoadout { return this.weapons; }
   get weapon() { return WEAPONS[this.weapons.equipped]; }
+  get gear(): GearState { return this.equippedGear; }
+  get defense(): number { return gearDefense(this.equippedGear); }
+
+  equipGear(slot: GearSlot, item: GearId | null): GearResult {
+    if (!isGearSlot(slot) || (item !== null && (!isGearId(item) || GEAR[item].slot !== slot))) return "wrong-slot";
+    if ((this.equippedGear[slot] ?? null) === item) return "gear-unchanged";
+    const next = { ...this.equippedGear };
+    if (item === null) delete next[slot];
+    else next[slot] = item;
+    this.equippedGear = next;
+    return item === null ? "gear-removed" : "gear-equipped";
+  }
 
   addGel(): boolean {
     if (!this.hasRoomForGel) return false;
@@ -114,6 +132,7 @@ export class Inventory {
       potion: this.potionCount,
       questRewardClaimed: this.claimed,
       ...(this.weapons.forged ? { loadout: this.weapons } : {}),
+      ...(Object.keys(this.equippedGear).length ? { gear: this.equippedGear } : {}),
     };
   }
 }

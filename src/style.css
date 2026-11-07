@@ -759,6 +759,37 @@ noscript a {
 }
 .item-gel { color: #91ecbd; background: #195544; }
 .item-potion { color: #ffc6ce; background: #65364f; }
+.inventory-columns { display: grid; gap: 16px; }
+.inventory-columns h2 { margin: 0 0 10px; color: #f1e5cd; font-size: 16px; }
+.equipment-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+#equipmentDefense { color: #cde9dd; font-size: 12px; }
+.equipment-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px; }
+.equipment-grid button {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  min-height: 66px;
+  padding: 5px 3px;
+  border: 1px solid #7da99d80;
+  border-radius: 7px;
+  background: #102724;
+  color: #e3efdf;
+  text-align: center;
+}
+.equipment-grid button:last-child { grid-column: 2; }
+.equipment-grid button.equipped { background: #20453e; }
+.equipment-grid button[aria-pressed="true"] { border-color: #f0d49c; box-shadow: inset 0 0 0 1px #f0d49c; }
+.equipment-grid strong { font-size: 11px; }
+.equipment-grid small { color: #c9d8c5; font-size: 9px; overflow-wrap: anywhere; }
+.equipment-symbol { color: #e9c88f; font-size: 17px; line-height: 1; }
+.gear-detail { display: grid; gap: 5px; border-top: 1px solid var(--line); padding-top: 10px; }
+.gear-detail small { color: #cde9dd; }
+@media (min-width: 680px) {
+  #inventoryDialog.has-equipment { width: min(710px, calc(100% - 32px)); }
+  .has-equipment .inventory-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 24px; }
+}
+#inventoryDialog.has-equipment #inventoryFeedback { margin: 7px 0; }
 #inventoryDialog .primary-button,
 #inventoryDialog .secondary-button { min-height: 48px; }
 #inventoryFeedback:not(:empty) { min-height: 2em; color: #e8d6ab; }
