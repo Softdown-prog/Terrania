@@ -1,0 +1,120 @@
+name: QA Terrania against pinned new SAC (no deploy)
+on:
+  push:
+    branches: ['qa/sac-pr72-20261106']
+    paths:
+      - '.github/workflows/qa-terrania-sac.yml'
+      - '.github/sac/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sac-static:
+    name: New SAC PRE001 PRE002 PRE003 and procedural Canvas source scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Data_libray
+          ref: 98ca6986b79fa81f6a1595fb8a6d4950c757fe86
+          path: .sac-tool
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Terrania
+          ref: 65eab09b37a58e71023aa68c106d7ee78d2569f8
+          path: .sac-target/terrania
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned parser and SAC semver (no lifecycle scripts)
+        run: |
+          npm ci --prefix .sac-tool/packages/angular-postcompiler/smoke --ignore-scripts --no-audit --no-fund
+          npm ci --prefix .sac-tool/packages/angular-precompiler --ignore-scripts --no-audit --no-fund
+      - name: Install exact Terrania dependencies for read-only preflight
+        run: npm ci --prefix .sac-target/terrania --ignore-scripts --no-audit --no-fund
+      - name: Run SAC source scanner and Angular audits on pinned game commit
+        shell: bash
+        run: |
+          set -o pipefail
+          node .github/sac/terrania-report.mjs | tee sac-terrania-static.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terrania-new-sac-static-evidence
+          path: sac-terrania-static.json
+          if-no-files-found: warn
+          retention-days: 14
+  sac-real-terrain:
+    name: SAC procedural grid properties on real Terrania generator
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Data_libray
+          ref: 98ca6986b79fa81f6a1595fb8a6d4950c757fe86
+          path: .sac-tool
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Terrania
+          ref: 65eab09b37a58e71023aa68c106d7ee78d2569f8
+          path: .sac-target/terrania
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sample deterministic tile grids and verify a negative control
+        shell: bash
+        run: |
+          set -o pipefail
+          node --experimental-strip-types .github/sac/terrania-grid.mjs | tee sac-terrania-grid.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terrania-real-terrain-seed-evidence
+          path: sac-terrania-grid.json
+          if-no-files-found: warn
+          retention-days: 14
+  game-native:
+    name: Official Angular and Node game checks, independent of SAC
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      VITE_MULTIPLAYER_URL: ''
+      VITE_PRESENCE_URL: ''
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Softdown-prog/Terrania
+          ref: 65eab09b37a58e71023aa68c106d7ee78d2569f8
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install locked game and Node server dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --prefix server --ignore-scripts --no-audit --no-fund
+      - name: Confirm architecture and Angular typings
+        run: |
+          npm run architecture:check
+          npm run typecheck
+      - name: Run real game and multiplayer unit tests
+        run: |
+          npm test
+          npm test --prefix server
+      - name: Compile game and Node server without publishing
+        run: |
+          npm run build
+          npm run build --prefix server
