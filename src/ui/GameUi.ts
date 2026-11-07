@@ -39,6 +39,7 @@ export interface GameUi {
   updateLoadout(loadout: WeaponLoadout | null): void;
   updateGear(gear: GearState | null): void;
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void;
+  setQuickPotionFeedback(message: string): void;
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void;
   setOnline(online: boolean): void;
   setStatus(status: string): void;
