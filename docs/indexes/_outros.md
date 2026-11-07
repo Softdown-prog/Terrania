@@ -8,7 +8,6 @@
 - [`.node-version`](../../.node-version)
 - [`AGENTS.md`](../../AGENTS.md)
 - [`README.md`](../../README.md)
-- [`V`](../../V)
 - [`angular.json`](../../angular.json)
 - [`architecture/modules.json`](../../architecture/modules.json)
 - [`docs/ARQUITETURA.md`](../../docs/ARQUITETURA.md)
