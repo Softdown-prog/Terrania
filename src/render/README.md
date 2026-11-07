@@ -13,3 +13,5 @@
 **Limites:** Não tratar renderização como fonte autoritativa de estado de jogo.
 
 **Pose do herói:** `heroPose.swordSwing` usa os mesmos tempos do combate para alinhar a espada ao alvo no instante autorizado de impacto. Não decide dano. Os pés seguem a velocidade real enquanto o torso acompanha o alvo; a arma muda a ordem de desenho ao olhar para o norte. A apresentação online usa o relógio do buffer de snapshots.
+
+**SAC visual integrado:** `tests/browser/app.spec.ts` confere em Chromium real (desktop e perfil Android) se a saída final do `canvas#game` contém pixels variados/opacos do mundo, rejeita um Canvas sintético vazio com o mesmo avaliador e repete a observação após movimento e resize para paisagem. Também registra dimensões da captura contra a largura CSS e o `devicePixelRatio`. Esta prova observa frames efetivamente mostrados pelo Phaser, mas **não** compara igualdade de pixels entre sementes, nem certifica arte, FPS, colisões ou todos os dispositivos físicos.
