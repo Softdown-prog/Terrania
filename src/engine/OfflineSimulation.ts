@@ -105,6 +105,7 @@ export class OfflineSimulation {
     if (tileWalker) tileWalker.advance(dt, direction, this.player, this.collision);
     else this.player.update(dt, typeof direction === "function" ? direction() : direction, this.collision);
     this.spawnNearby();
+    const defense = this.inventory.defense;
     for (const [id, slime] of this.slimes) {
       const distance = Math.hypot(
         slime.x - this.player.x,
@@ -115,7 +116,7 @@ export class OfflineSimulation {
         continue;
       }
       if (distance < CHUNK_PIXELS * 2) {
-        slime.update(dt, this.player, this.collision);
+        slime.update(dt, this.player, this.collision, defense);
         if (this.awaitingRespawn) return true;
       }
     }

@@ -15,6 +15,7 @@ import { nearestNpc, npcDialogue } from "../world/npcs.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { POTION_GEL_PRICE, POTION_HEAL, QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../engine/Weapons.ts";
+import type { GearId, GearSlot } from "../engine/Equipment.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
@@ -43,6 +44,10 @@ const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "equipped": "Espada equipada.",
   "already-equipped": "Essa espada já está equipada.",
   "not-owned": "Você ainda não possui essa espada.",
+  "gear-equipped": "Item equipado.",
+  "gear-removed": "Item guardado na bolsa.",
+  "gear-unchanged": "O espaço já está assim.",
+  "wrong-slot": "Este item pertence a outro espaço.",
 };
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
@@ -120,6 +125,7 @@ export class Game {
     this.hud.onPotionTrade(() => this.tradeGelForPotion());
     this.hud.onSwordPurchase(() => this.buySword());
     this.hud.onWeaponEquip(weapon => this.equipWeapon(weapon));
+    this.hud.onGearEquip((slot, item) => this.equipGear(slot, item));
     this.hud.onTalk(() => this.talkToNpc());
     this.hud.onRespawn(() => this.respawn());
     this.hud.onPotionUse(() => {
@@ -152,6 +158,7 @@ export class Game {
     this.hud.updateInventory(inventory?.gel ?? 0, inventory?.potion ?? 0, !!inventory,
       online && this.multiplayer?.inventoryPending === true);
     this.hud.updateLoadout(inventory?.loadout ?? null);
+    this.hud.updateGear(inventory?.gear ?? null);
   }
   /** Battle entries are derived from the same camera/viewport as the canvas. */
   private battleCreatures() {
@@ -354,6 +361,20 @@ export class Game {
     if (!this.multiplayer?.requestInventory(action)) return "A bolsa da sala está indisponível no momento.";
     this.updateHud(true);
     return "Aguardando confirmação da sala…";
+  }
+  private equipGear(slot: GearSlot, item: GearId | null): string {
+    if (this.multiplayer?.connected) {
+      if (!this.multiplayer.requestGear(slot, item)) return "O equipamento da sala está indisponível no momento.";
+      this.updateHud(true);
+      return "Aguardando confirmação da sala…";
+    }
+    if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
+    const result = this.sim.inventory.equipGear(slot, item);
+    if (result === "gear-equipped" || result === "gear-removed") {
+      this.save();
+      this.updateHud(false);
+    }
+    return INVENTORY_FEEDBACK[result];
   }
   private leaveInterior(): void {
     this.tileWalker.reset();

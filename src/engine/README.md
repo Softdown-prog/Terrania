@@ -25,3 +25,5 @@
 **Bolsa solo:** Aela entrega duas poções uma vez ao concluir a missão. A troca com Lina consome três unidades de gel e entrega uma poção em uma única operação do inventário. O orquestrador verifica a proximidade e grava a bolsa após uma troca concluída.
 
 **Espadas:** Toren vende a primeira arma de equipamento. A bolsa valida e grava a compra e o equipamento. A simulação fixa dano e recarga no início do ataque. Veja [ADR 0008](../../docs/adr/0008-espadas-e-recarga.md).
+
+**Equipamento:** `Equipment.ts` descreve espaços e itens do conjunto inicial. A bolsa valida e guarda a combinação de espaço e item. Os Slimes recebem a defesa calculada pela bolsa no solo e na sala Node. Veja [ADR 0009](../../docs/adr/0009-espacos-de-equipamento.md).

@@ -15,3 +15,5 @@
 **Economia da sessão:** a sala cria gel privado no abate, coleta pela posição autoritativa e executa a troca e a cura na bolsa do convidado. A negociação, o recibo contra repetição e a duração da bolsa estão no [ADR 0007](../docs/adr/0007-inventario-da-sala.md).
 
 **Espadas:** a sala calcula a compra com Toren, o equipamento e o dano e a recarga do golpe. A negociação e os atributos das armas estão no [ADR 0008](../docs/adr/0008-espadas-e-recarga.md).
+
+**Espaços de equipamento:** sessões que pedem `gear=slots` podem equipar o conjunto inicial. A sala valida a posição do item no equipamento e aplica a defesa no contato. Veja [ADR 0009](../docs/adr/0009-espacos-de-equipamento.md).

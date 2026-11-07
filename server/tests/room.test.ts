@@ -236,6 +236,35 @@ test('a coleta online exige caminho livre até o gel', () => {
   assert.equal(guest.inventory.bag.gel, 1);
 });
 
+test('a sala negocia espaços, valida o item e aplica a defesa confirmada', () => {
+  const room = new Room('origins');
+  const guest = room.add('a', 'Equipado', true, true, true, true, true, true);
+  room.add('b', 'Legado', true, true, true, true, true);
+  const send = (requestId: number, item: 'willow-shield' | 'trail-helm' | null) =>
+    room.receiveInventory('a', { type: 'inventory', action: 'set-gear', requestId, slot: 'shield', item });
+  const inventory = () => room.snapshotFor('a')?.inventory;
+  assert.deepEqual(inventory()?.gear, {});
+  assert.equal(room.snapshotFor('b')?.inventory?.gear, undefined);
+  send(1, 'trail-helm');
+  assert.equal(inventory()?.receipt?.outcome, 'wrong-slot');
+  send(2, 'willow-shield');
+  send(2, null);
+  assert.equal(inventory()?.gear?.shield, 'willow-shield');
+  assert.equal(inventory()?.receipt?.outcome, 'gear-equipped');
+  room.receiveInventory('b', { type: 'inventory', action: 'set-gear', requestId: 1, slot: 'shield', item: 'willow-shield' });
+  assert.equal(room.snapshotFor('b')?.inventory?.receipt?.outcome, 'unavailable');
+
+  Object.assign(guest.actor, { x: -560, y: -1008 });
+  let now = guest.lastInputAt;
+  for (let i = 0; i < 31; i++) room.tick(0.05, now += 50);
+  assert.equal(guest.actor.hp, 93);
+  guest.actor.hp = 0;
+  room.tick(0.05, now += 50);
+  assert.equal(inventory()?.gear?.shield, 'willow-shield');
+  send(3, null);
+  assert.deepEqual(inventory()?.gear, {});
+});
+
 test('a sala valida a forja e aplica o dano da espada equipada no início do ataque', () => {
   const room = new Room('origins');
   const owner = room.add('a', 'Aventureiro', true, true, true, true, true);

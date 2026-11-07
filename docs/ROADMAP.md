@@ -31,6 +31,7 @@ Cada microtarefa deve identificar seu módulo no [índice de arquitetura](INDEX.
 
 - [x] Loot privado, inventário de sessão e consumíveis autoritativos na sala Node. Veja [ADR 0007](adr/0007-inventario-da-sala.md).
 - [x] Primeiro equipamento que altera dano e recarga. Veja [ADR 0008](adr/0008-espadas-e-recarga.md).
+- [x] Painel com dez espaços, conjunto inicial e defesa de contato no solo e nas salas Node. Veja [ADR 0009](adr/0009-espacos-de-equipamento.md).
 - [x] Diferenciar o tempo até o impacto das duas espadas e medir o efeito contra Slimes feridos e com vida cheia.
 - [ ] Avaliar o ritmo de combate jogando antes de expandir equipamentos e atributos.
 - [ ] Mana, vocações e magias quando os sistemas anteriores estiverem estáveis.

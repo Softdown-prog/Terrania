@@ -5,12 +5,14 @@ import type {
   HeroState,
   InventoryAction,
   InventoryMessage,
+  InventoryOrder,
   InventoryReceipt,
   MobState,
   RoomInventoryState,
   ServerMessage,
   WalkTarget,
 } from "../shared/protocol.ts";
+import { normalizeGear, type GearId, type GearSlot } from "../engine/Equipment.ts";
 import { isWalkTarget, PROTOCOL_VERSION, validRoom } from "../shared/protocol.ts";
 
 export class MultiplayerClient {
@@ -67,6 +69,7 @@ export class MultiplayerClient {
       url.searchParams.set("progression", "xp");
       url.searchParams.set("inventory", "loot");
       url.searchParams.set("equipment", "forge");
+      url.searchParams.set("gear", "slots");
       this.onStatus("Conectando à VPS…");
       const socket = new WebSocket(url);
       this.socket = socket;
@@ -202,15 +205,23 @@ export class MultiplayerClient {
       this.targetingRequested = true;
   }
   requestInventory(action: InventoryAction): boolean {
+    return this.submitInventory({ action });
+  }
+  requestGear(slot: GearSlot, item: GearId | null): boolean {
+    if (!this.inventory?.gear) return false;
+    return this.submitInventory({ action: "set-gear", slot, item });
+  }
+  private submitInventory(order: InventoryOrder): boolean {
     if (!this.roomInventory || !this.inventory || this.pendingInventoryRequest) return false;
+    const { action } = order;
     if (action !== "use-potion" && action !== "trade-potion" && !this.inventory.loadout) return false;
-    const request: InventoryMessage = { type: "inventory", action, requestId: ++this.inventoryRequestId };
+    const request: InventoryMessage = { ...order, type: "inventory", requestId: ++this.inventoryRequestId };
     if (!this.send(request)) return false;
     this.pendingInventoryRequest = request;
     return true;
   }
   private applyInventory(inventory: RoomInventoryState): void {
-    this.inventory = inventory;
+    this.inventory = inventory.gear ? { ...inventory, gear: normalizeGear(inventory.gear) } : inventory;
     const { receipt } = inventory;
     if (receipt && this.pendingInventoryRequest?.requestId === receipt.requestId &&
         this.pendingInventoryRequest.action === receipt.action) {
