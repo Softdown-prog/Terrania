@@ -302,7 +302,8 @@ test('cura rápida no HUD consome poções, respeita vida máxima e persiste no 
   const save = { seed: 842136, x: 16, y: 16, hp: 45, kills: 0, defeated: [],
     inventory: { gel: 0, potion: 2, questRewardClaimed: false } };
   await page.addInitScript(value => {
-    localStorage.setItem('terrania-origins-v1', JSON.stringify(value));
+    if (!localStorage.getItem('terrania-origins-v1'))
+      localStorage.setItem('terrania-origins-v1', JSON.stringify(value));
   }, save);
   await page.goto('/jogar/?modo=solo');
 
