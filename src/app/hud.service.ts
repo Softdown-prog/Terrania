@@ -39,6 +39,7 @@ export class HudService implements GameUi {
   readonly inventoryAvailable = signal(true);
   readonly inventoryPending = signal(false);
   readonly inventoryFeedback = signal('');
+  readonly quickPotionFeedback = signal('');
   readonly weapons = WEAPONS;
   readonly equipmentSlots = EQUIPMENT_SLOTS;
   readonly gearCatalog = GEAR;
@@ -121,7 +122,11 @@ export class HudService implements GameUi {
   newWorld(): void { this.newWorldCallback(); }
   talk(): void { this.talkCallback(); }
   tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
-  usePotion(): void { this.inventoryFeedback.set(this.potionCallback()); }
+  usePotion(): void {
+    const message = this.potionCallback();
+    this.inventoryFeedback.set(message);
+    this.quickPotionFeedback.set(message);
+  }
   buySword(): void { this.npcTradeFeedback.set(this.swordPurchaseCallback()); }
   equipWeapon(weapon: WeaponId): void { this.inventoryFeedback.set(this.weaponEquipCallback(weapon)); }
   equipGear(id: GearId): void {
@@ -146,12 +151,14 @@ export class HudService implements GameUi {
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void {
     (section === 'bag' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
   }
+  setQuickPotionFeedback(message: string): void { this.quickPotionFeedback.set(message); }
   setStatus(status: string): void { this.status.set(status); }
   setTargetCombat(enabled: boolean): void { this.targetCombat.set(enabled); }
   setCombatTarget(label: string | null): void { this.combatTarget.set(label); }
   setOnline(online: boolean): void {
     this.online.set(online);
     this.inventoryFeedback.set('');
+    this.quickPotionFeedback.set('');
     this.npcTradeFeedback.set('');
     this.npcOffer.set(null);
     this.selectedSlot.set('weapon');
