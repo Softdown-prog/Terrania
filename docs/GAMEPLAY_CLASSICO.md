@@ -25,6 +25,10 @@ O combate por alvo e a caminhada por tiles fazem parte da entrada normal de Joga
 - WASD/joystick têm prioridade enquanto acionados. Toque no terreno permite caminhar manualmente sem perseguição até escolher o alvo novamente ou apertar ATACAR; o alvo permanece selecionado para ataque se estiver ao alcance.
 - Regressões: tests/classic-pursuit.test.ts, tests/classic-combat.test.ts, tests/tap-navigation.test.ts e tests/browser/classic-combat.spec.ts. Confirmar testes unitários, build Angular, Playwright Android e desktop e smoke Docker no workflow de validação antes de aceitar o recorte.
 
+## Cura rápida no HUD
+
+A poção pode ser usada diretamente abaixo da barra de vida, sem abrir a bolsa. O botão mostra a quantidade disponível e fica desabilitado com vida cheia, sem poções, durante uma solicitação online pendente ou quando o inventário da sala não está disponível. Reutiliza a mesma ação da bolsa e o recibo autoritativo do servidor; não altera cura, custo, protocolo ou inventário. O feedback breve também fica disponível ao leitor de tela. Teste de regressão: `tests/browser/session.spec.ts` (desktop e Android).
+
 ## Testes
 `npm test`, `npm run typecheck`, `npm run build`, suíte Playwright desktop/Android, QA-BOT e workflows completos. Nenhuma aprovação automática por compilar.
 
