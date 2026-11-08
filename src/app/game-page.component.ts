@@ -131,6 +131,9 @@ export class GamePageComponent implements AfterViewInit {
     if (!this.playersDialog().nativeElement.open) this.playersDialogOpen.set(false);
     if (!this.inventoryDialog().nativeElement.open) {
       this.inventoryOpen.set(false);
+      // Remove the atlas Canvas from the DOM when the dialog closes, not just
+      // from the hit-testing tree. Reopening starts on the normal bag page.
+      this.hud.inventoryTab.set('bag');
       cancelAnimationFrame(this.previewFrame);
       this.previewFrame = 0;
     }
