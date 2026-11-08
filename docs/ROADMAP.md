@@ -86,4 +86,5 @@ A implementação dos itens marcados não certifica o lançamento, apenas indica
 
 - [x] Minimapa local de 31×31 tiles, derivado de `getTile` e centrado nas coordenadas atuais, incluindo sessão online; colapsável no Android
 - [ ] Avaliar legibilidade do mapa no Android físico e adicionar pontos de jogadores próximos quando a sincronização visual for validada
-- [ ] Patrulha do QA-BOT-001 contra movimentação, colisões e snapshots da sala Node em diferentes regiões, com relatório reproduzível e sem acessar VPS em produção
+- [x] Patrulha do QA-BOT-001 contra movimentação, colisões e snapshots da sala Node em diferentes regiões, com relatório reproduzível e sem acessar VPS em produção
+- [ ] Ampliar a patrulha para WebSocket real com dois clientes e medir reconexões, latência e divergência sob pacotes atrasados
