@@ -1,4 +1,4 @@
-# Bestiário regional procedural — vinte monstros
+# Bestiário regional procedural — trinta monstros
 
 Os dois lotes nascem de folhas autorais 5×2 fornecidas pelo criador. O código não importa imagens como texturas: cada criatura é reconstruída por Canvas 2D com sombra, silhueta, volume, detalhes, contorno e brilho.
 
@@ -110,3 +110,51 @@ controlador de tiles, combate, caverna, inventário e HUD Angular.
 Regressões automatizadas em tests/bestiary-audit.test.ts.
 Validação: architecture:check, typecheck, testes unitários, build e
 Playwright desktop/Android, antes de liberar merge.
+
+
+## Terceiro lote — criaturas comuns do Sul (21–30)
+
+Desenhos originais em Canvas 2D em src/render/regionalWave3.ts; a imagem
+autoral do criador é referência de silhueta, não textura de execução.
+
+| Nº | Nome | HP | Ataque | Habitat na superfície | Gruta |
+|---|---|---:|---:|---|---|
+| 21 | Rato das Dunas | 35 | 6 | Dunas, oásis, ruínas | Deserto |
+| 22 | Goblin Saqueador da Areia | 65 | 11 | Dunas e ruínas | Deserto |
+| 23 | Orc Nômade do Deserto | 110 | 17 | Planícies e ruínas | Deserto |
+| 24 | Troll de Barro Seco | 145 | 15 | Ruínas, oásis e transição de brejo | Deserto/Brejo |
+| 25 | Pequenino Batedor das Dunas | 75 | 12 | Oásis, dunas e rotas | Deserto |
+| 26 | Elfo Patrulheiro do Oásis | 90 | 16 | Oásis e ruínas | Deserto |
+| 27 | Diabrete de Miragem | 55 | 14 | Dunas e ruínas | Deserto |
+| 28 | Víbora-de-Chifre Comum | 45 | 10 | Dunas, oásis, ruínas | Deserto |
+| 29 | Abutre Carniceiro do Sul | 50 | 9 | Dunas e ruínas | Deserto |
+| 30 | Brotinho de Cacto Animado | 60 | 8 | Dunas e oásis | Deserto |
+
+### Frequência, combate e drops
+
+O Sul agora gera até três encontros regionais por chunk (em vez de um ou dois),
+com probabilidade de elegibilidade de 86% versus 42% nas outras regiões.
+O catálogo define pesos por criatura comum: 4 a 13. Criaturas raras antigas
+continuam com peso 1. A seleção usa a seed, bioma e tile real: o mapa não
+precisa materializar todos os chunks, e a vila continua protegida.
+
+- Rato: mordida e 10% de infecção leve por acerto efetivo, 1 HP/s por 3 s.
+- Goblin: foge quando tem menos de 35% HP e só então arremessa areia.
+- Orc: clava com deslocamento de meio tile no terceiro acerto efetivo.
+- Troll: arremessa barro a curta distância; fora de combate por 5 s,
+  regenera 1 HP/s até seu máximo.
+- Pequenino: combate corpo a corpo e funda a curta distância.
+- Elfo: estocada de lança com bônus +2 de fogo solar no contato.
+- Diabrete: faiscas e mira obscurecida temporariamente (1,8 s).
+- Víbora: veneno de 2 HP/s por 4 s, com intensidade explícita.
+- Abutre: acelera 50% e encurta recarga quando o herói tem menos da metade do HP.
+- Cacto: devolve 2 HP quando atingido pela espada inicial, também na caverna.
+
+Todos os drops com percentuais exatos ficam declarados no catálogo TypeScript
+canônico. Pó Cintilante do Diabrete possui **45%** de chance; os 55%
+restantes não geram outro drop implícito.
+
+Esta é uma expansão do jogo solo. Não são implementadas texturas carregadas,
+salas multiplayer, novos itens equipáveis, comerciantes nem regras de
+reaparecimento adicional. Os efeitos visuais de habilidades continuam
+sujeitos a uma futura animação com trajetórias específicas.
