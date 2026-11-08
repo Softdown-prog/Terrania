@@ -15,6 +15,17 @@ const colors: Record<Ground, string> = {
   sand: "#b7ae84",
   water: "#326a70",
 };
+/** Cardinal shoreline bits: north 1, east 2, south 4, west 8.
+ * Samples global tile coordinates so a river edge continues across chunks.
+ * Visual-only: no changes to walkability or water collision.
+ */
+export function waterShoreMask(tx: number, ty: number, seed: number): number {
+  if (getTile(tx, ty, seed).ground !== "water") return 0;
+  return (getTile(tx, ty - 1, seed).ground !== "water" ? 1 : 0)
+    | (getTile(tx + 1, ty, seed).ground !== "water" ? 2 : 0)
+    | (getTile(tx, ty + 1, seed).ground !== "water" ? 4 : 0)
+    | (getTile(tx - 1, ty, seed).ground !== "water" ? 8 : 0);
+}
 function drawGround(
   ctx: CanvasRenderingContext2D,
   tile: Tile,
@@ -32,22 +43,42 @@ function drawGround(
   ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
   // The padded ground pass is softened before crisp plants and stones are added.
   if (tile.ground === "water") {
-    for (const [dx, dy] of [
-      [-1, 0],
-      [1, 0],
-      [0, -1],
-      [0, 1],
-    ] as const) {
-      if (getTile(tx + dx, ty + dy, seed).ground === "water") continue;
-      ctx.fillStyle = "#9aaf89";
-      ctx.globalAlpha = 0.35;
-      ctx.fillRect(
-        x + (dx > 0 ? 29 : 0),
-        y + (dy > 0 ? 29 : 0),
-        dx ? 3 : 32,
-        dy ? 3 : 32,
-      );
-      ctx.globalAlpha = 1;
+    const shore = waterShoreMask(tx, ty, seed);
+    if (shore) {
+      // Two translucent depths and an irregular foam trace stay inside the
+      // water tile. The padded blur blends land and water beneath this pass.
+      ctx.fillStyle = "#8bbba64a";
+      if (shore & 1) ctx.fillRect(x, y, TILE_SIZE, 6);
+      if (shore & 2) ctx.fillRect(x + TILE_SIZE - 6, y, 6, TILE_SIZE);
+      if (shore & 4) ctx.fillRect(x, y + TILE_SIZE - 6, TILE_SIZE, 6);
+      if (shore & 8) ctx.fillRect(x, y, 6, TILE_SIZE);
+      ctx.fillStyle = "#d6e9b35c";
+      if (shore & 1) ctx.fillRect(x, y, TILE_SIZE, 2);
+      if (shore & 2) ctx.fillRect(x + TILE_SIZE - 2, y, 2, TILE_SIZE);
+      if (shore & 4) ctx.fillRect(x, y + TILE_SIZE - 2, TILE_SIZE, 2);
+      if (shore & 8) ctx.fillRect(x, y, 2, TILE_SIZE);
+
+      const bend = (hash2(tx, ty, seed + 873) - 0.5) * 3;
+      ctx.strokeStyle = "#e6ebc875";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (shore & 1) {
+        ctx.moveTo(x + 2, y + 3);
+        ctx.quadraticCurveTo(x + 16, y + 3 + bend, x + 30, y + 3);
+      }
+      if (shore & 2) {
+        ctx.moveTo(x + 29, y + 2);
+        ctx.quadraticCurveTo(x + 29 - bend, y + 16, x + 29, y + 30);
+      }
+      if (shore & 4) {
+        ctx.moveTo(x + 2, y + 29);
+        ctx.quadraticCurveTo(x + 16, y + 29 - bend, x + 30, y + 29);
+      }
+      if (shore & 8) {
+        ctx.moveTo(x + 3, y + 2);
+        ctx.quadraticCurveTo(x + 3 + bend, y + 16, x + 3, y + 30);
+      }
+      ctx.stroke();
     }
   }
 }
@@ -107,6 +138,21 @@ function drawDetails(
         );
         ctx.fill();
       }
+    }
+  }
+  if (tile.ground === "path" || tile.ground === "sand") {
+    // Sparse, deterministic gravel adds scale to open ground without
+    // introducing sprites or any per-frame noise calculation.
+    const path = tile.ground === "path";
+    for (let i = 0; i < (path ? 4 : 2); i++) {
+      const px = x + 3 + hash2(tx * 7 + i, ty, seed + 415) * 26;
+      const py = y + 3 + hash2(tx, ty * 11 + i, seed + 416) * 26;
+      ctx.fillStyle = i % 2
+        ? (path ? "#e1d4ac7d" : "#ddd4ad72")
+        : (path ? "#6f68524f" : "#817f6149");
+      ctx.beginPath();
+      ctx.ellipse(px, py, 1.4 + (i % 2), 0.8 + (i % 3) * 0.25, -0.3, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
   if (tile.tree || tile.rock) {
