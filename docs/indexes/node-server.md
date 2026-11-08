@@ -13,7 +13,7 @@ Backend Node, presença e catálogo PostgreSQL isolado; salas legadas preservada
 - [`server/src/db/database.ts`](../../server/src/db/database.ts)
 - [`server/src/db/migrate.ts`](../../server/src/db/migrate.ts)
 
-## Todos os arquivos deste módulo (21)
+## Todos os arquivos deste módulo (23)
 
 - [`server/.env.example`](../../server/.env.example)
 - [`server/Dockerfile`](../../server/Dockerfile)
@@ -21,6 +21,8 @@ Backend Node, presença e catálogo PostgreSQL isolado; salas legadas preservada
 - [`server/compose.yml`](../../server/compose.yml)
 - [`server/db/README.md`](../../server/db/README.md)
 - [`server/db/migrations/001_market.sql`](../../server/db/migrations/001_market.sql)
+- [`server/ops/postgres-backup.sh`](../../server/ops/postgres-backup.sh)
+- [`server/ops/pull-backup.py`](../../server/ops/pull-backup.py)
 - [`server/package-lock.json`](../../server/package-lock.json)
 - [`server/package.json`](../../server/package.json)
 - [`server/scripts/online-smoke.mjs`](../../server/scripts/online-smoke.mjs)

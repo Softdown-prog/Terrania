@@ -26,6 +26,10 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci --prefix server --no-audit --no-fund
+      - name: Check backup tools without access to the VPS
+        run: |
+          bash -n server/ops/postgres-backup.sh
+          python3 -c "import ast,pathlib; ast.parse(pathlib.Path('server/ops/pull-backup.py').read_text())"
       - name: Real PostgreSQL migration and concurrency tests (disposable CI database)
         env:
           TERRANIA_TEST_ADMIN_URL: postgres://postgres:ci-local-only-password@127.0.0.1:5432/postgres

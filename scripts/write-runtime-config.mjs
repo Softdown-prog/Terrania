@@ -6,4 +6,5 @@ mkdirSync('src/app', { recursive: true });
 writeFileSync('src/app/runtime-config.ts', 'export const runtimeConfig = ' + JSON.stringify({
   multiplayerUrl: process.env.VITE_MULTIPLAYER_URL ?? '',
   presenceUrl: process.env.VITE_PRESENCE_URL ?? '',
+  marketApiUrl: process.env.VITE_MARKET_API_URL ?? '',
 }) + ' as const;\n');
