@@ -21,7 +21,7 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Executáveis e presença Go](indexes/go-runtime.md) | experimental | 28 | Worker, gateway, laboratório de capacidade, presença e scripts de paridade. |
 | [Cluster e recuperação experimental Go](indexes/go-cluster.md) | lab | 62 | Handoff, epochs, autoscale e laboratórios de quorum. Não pressupor produção, failover ou capacidade comprovada. |
 | [Módulo Rust espacial e entidades](indexes/rust-spatial.md) | experimental | 10 | Kernel Rust e FFI opt-in; não é servidor de rede. |
-| [Scripts, automação e CI](indexes/tooling.md) | active | 26 | Build, verificação, testes automatizados, deploys e índice; operações de produção são fluxos distintos. |
+| [Scripts, automação e CI](indexes/tooling.md) | active | 27 | Build, verificação, testes automatizados, deploys e índice; operações de produção são fluxos distintos. |
 
 **Outros arquivos:** [documentos, configurações e arquivos de entrada](indexes/_outros.md) (75).
 
