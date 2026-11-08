@@ -27,7 +27,7 @@ test("Estábulo: construir, treinar e iniciar quest na UI Android/desktop", asyn
   await page.locator("#trainRiding").click();
   await expect(page.locator("#stableProgress")).toContainText("Cavalaria 1/3");
   await page.locator("#startWarhorseQuest").click();
-  await expect(page.locator("#mountQuestHint")).toContainText("Maçã Silvestre");
+  await expect(page.locator("#mountQuestHint")).toContainText("0/5");
   await expect(page.locator(".mount-roster-entry")).toHaveCount(10);
   await expect(page.locator("#npcTradeFeedback")).toContainText("Garrano Fugitivo");
   expect(errors).toEqual([]);

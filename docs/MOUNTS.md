@@ -35,7 +35,8 @@ precisam de artefatos/interações, novos pontos de interesse e lógica de habil
 
 1. Alcance nível 15; converse com **Eron**, Mestre de Estábulos da Vila.
 2. Construa o cercado por 12 unidades de gel e treine **Cavalaria I**.
-3. Inicie a quest **O Garrano Fugitivo da Vila**. Afaste cinco slimes.
+3. Inicie a quest **O Garrano Fugitivo da Vila**. Afaste cinco slimes
+   **a partir desse momento** (abates antigos não completam a etapa).
 4. Colha a **Maçã Silvestre** a sudoeste da vila e prepare um **cabresto**
    no estábulo por 3 gel (recursos só são consumidos em operações válidas).
 5. Encontre o cavalo fugitivo e use E ou o botão de ação para acalmá-lo.

@@ -264,7 +264,7 @@ export class Game {
     switch(action){
       case "build": case "upgrade":result=mounts.upgrade(lvl,gel,spend,player.x,player.y);break;
       case "train":result=mounts.train(lvl,player.x,player.y);break;
-      case "start-warhorse":result=mounts.beginWarhorse(lvl,player.x,player.y);break;
+      case "start-warhorse":result=mounts.beginWarhorse(lvl,player.x,player.y,kills);break;
       case "make-halter":result=mounts.craftHalter(gel,spend,player.x,player.y);break;
       case "forage":result=mounts.forage(player.x,player.y);break;
       case "tame":

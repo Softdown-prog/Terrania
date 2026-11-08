@@ -19,6 +19,8 @@ export interface MountQuestSave {
   readonly id: MountId;
   readonly apple?: true;
   readonly halter?: true;
+  /** Slimes mortos antes da quest não contam para resgatar o animal. */
+  readonly slimesBefore?: number;
 }
 export interface MountSave {
   readonly stableTier?: Tier;
@@ -57,7 +59,9 @@ export function normalizeMountSave(value: unknown): MountSave {
   const stamina = active ? Math.min(MOUNTS[active].stamina, Math.max(0, rawStamina ?? MOUNTS[active].stamina)) : 0;
   const quest = s.quest?.id === "warhorse" && !owned.includes("warhorse") && stableTier >= 1
     ? { id:"warhorse" as const, ...(s.quest.apple === true ? {apple:true as const}:{}),
-        ...(s.quest.halter === true ? {halter:true as const}:{}) } : undefined;
+        ...(s.quest.halter === true ? {halter:true as const}:{}),
+        ...(typeof s.quest.slimesBefore==="number" && Number.isSafeInteger(s.quest.slimesBefore) &&
+          s.quest.slimesBefore>=0 ? {slimesBefore:Math.min(9999999,s.quest.slimesBefore)}:{}) } : undefined;
   return {
     ...(stableTier ? {stableTier}:{}),
     ...(ridingTier ? {ridingTier}:{}),
@@ -117,13 +121,13 @@ export class MountStable {
     this.skill = next;
     return "trained";
   }
-  beginWarhorse(level:number,x:number,y:number): MountActionResult {
+  beginWarhorse(level:number,x:number,y:number,kills=0): MountActionResult {
     if(!near(x,y,STABLE_MASTER))return "too-far";
     if(this.has("warhorse"))return "already-owned";
     if(this.stable < 1)return "no-stable";
     if(this.skill < 1 || level < MOUNTS.warhorse.level)return "no-training";
     if(this.questState)return "quest-active";
-    this.questState={id:"warhorse"};
+    this.questState={id:"warhorse",slimesBefore:Number.isSafeInteger(kills)&&kills>0?kills:0};
     return "quest-started";
   }
   craftHalter(gel:number,spend:(amount:number)=>boolean,x:number,y:number): MountActionResult {
@@ -146,7 +150,7 @@ export class MountStable {
     if(this.has("warhorse"))return "already-owned";
     if(this.stable<1||this.skill<1||level<15)return "no-training";
     if(!this.questState)return "missing-quest";
-    if(kills<5)return "slimes-needed";
+    if(kills<(this.questState.slimesBefore??0)+5)return "slimes-needed";
     if(!this.questState.apple)return "no-apple";
     if(!this.questState.halter)return "no-halter";
     this.ownedSet.add("warhorse");
@@ -202,7 +206,8 @@ export class MountStable {
   view(kills:number):MountView {
     const quest=this.questState;
     const questHint=quest
-      ? kills<5?"Afaste cinco slimes: "+Math.max(0,kills)+"/5":!quest.apple
+      ? kills<(quest.slimesBefore??0)+5
+        ?"Afaste cinco slimes: "+Math.min(5,Math.max(0,kills-(quest.slimesBefore??0)))+"/5":!quest.apple
         ?"Colete a Maçã Silvestre no campo a sudoeste da vila."
         : !quest.halter?"Volte ao Mestre de Estábulos e fabrique um cabresto (3 gel)."
           :"Acalme o cavalo fugitivo a sudoeste da vila usando E."
