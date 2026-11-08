@@ -1,3 +1,7 @@
+import { RegionalMonster, caveMonsterKinds } from "../actors/RegionalMonster.ts";
+import { canStrike, faceTarget } from "./combat.ts";
+import type { WeaponId } from "./Weapons.ts";
+import type { RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
 import { Player } from "../actors/Player.ts";
 import type { CollisionMap } from "../world/collision.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
@@ -75,17 +79,70 @@ export class CaveFloor {
 }
 export class CaveRoom {
   readonly floor: CaveFloor;
-  readonly player = new Player();
+  readonly player: Player;
+  readonly monsters = new Map<string, RegionalMonster>();
   readonly collision: CollisionMap;
-  constructor(entrance:CaveEntrance) {
+  private readonly victories: Array<{ kind: RegionalCreatureKind; id: string }> = [];
+  constructor(entrance:CaveEntrance, hp = 100, maxHp = 100) {
     this.floor=new CaveFloor(entrance);
     this.collision=this.floor.collision;
+    this.player=new Player(maxHp);
+    this.player.hp=Math.max(1, Math.min(maxHp,hp));
     this.player.x=(CAVE_EXIT.x+.5)*TILE_SIZE;
     this.player.y=(CAVE_EXIT.y-3+.5)*TILE_SIZE;
     this.player.faceY=-1;
+    this.populate(entrance);
   }
-  update(dt:number,movement:{x:number;y:number}):void {
+  private populate(entrance: CaveEntrance): void {
+    const kinds=caveMonsterKinds(entrance.theme);
+    if (!kinds.length) return;
+    const salt=entrance.seed ^ Math.imul(entrance.tileX,1033) ^ Math.imul(entrance.tileY,2053);
+    // Dois a quatro encontros por andar, fora da escada e somente em solo transitável.
+    for(let i=0;i<8;i++) {
+      const tx=4+Math.floor(hash2(i,7,salt+71)*(CAVE_WIDTH-8));
+      const ty=4+Math.floor(hash2(i,11,salt+83)*(CAVE_HEIGHT-12));
+      const x=(tx+.5)*TILE_SIZE,y=(ty+.5)*TILE_SIZE;
+      if (!this.collision.canMove(x,y) ||
+          Math.hypot(x-this.player.x,y-this.player.y)<170) continue;
+      if (this.monsters.size>=4) break;
+      const kind=kinds[Math.floor(hash2(i,19,salt+91)*kinds.length)]!;
+      const id=this.floor.id+":mob:"+i;
+      this.monsters.set(id,new RegionalMonster(id,kind,x,y));
+    }
+    // Garantia de encontro nas câmaras, caso o hash caia só em paredes.
+    if(!this.monsters.size){
+      for(let y=5;y<22 && !this.monsters.size;y++) for(let x=5;x<38 && !this.monsters.size;x++){
+        if(!this.collision.canMove((x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE))continue;
+        const kind=kinds[Math.floor(hash2(x,y,salt+99)*kinds.length)]!;
+        const id=this.floor.id+":mob:0";
+        this.monsters.set(id,new RegionalMonster(id,kind,(x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE));
+      }
+    }
+  }
+  drainVictories(): Array<{kind:RegionalCreatureKind;id:string}> {
+    return this.victories.splice(0);
+  }
+  update(dt:number,movement:{x:number;y:number},attack=false,weapon:WeaponId="starter",defense=0):void {
+    if(!Number.isFinite(dt)||dt<=0||this.player.hp<=0)return;
+    dt=Math.min(dt,.1);
     this.player.update(dt,movement,this.collision);
+    if(attack)this.player.startAttack(weapon);
+    for(const monster of this.monsters.values()) monster.update(dt,this.player,this.collision,defense);
+    if(this.player.consumeStrike()){
+      const targets=[...this.monsters.values()]
+        .filter(monster=>canStrike({...this.player,faceX:this.player.faceX,faceY:this.player.faceY},monster,this.collision))
+        .sort((a,b)=>Math.hypot(a.x-this.player.x,a.y-this.player.y)-Math.hypot(b.x-this.player.x,b.y-this.player.y));
+      const monster=targets[0];
+      if(monster){
+        faceTarget(this.player,monster);
+        monster.takeHit(this.player.x,this.player.y,this.player.strikeDamage);
+        if(monster.hp<=0){
+          monster.deathBurst(this.player,this.collision,defense);
+          this.monsters.delete(monster.id);
+          this.victories.push({kind:monster.kind as RegionalCreatureKind,id:monster.id});
+        }
+      }
+    }
   }
   get nearExit():boolean {
     return Math.hypot(this.player.x-(CAVE_EXIT.x+.5)*TILE_SIZE,
