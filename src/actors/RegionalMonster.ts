@@ -1,7 +1,7 @@
 import { Slime } from "./Slime.ts";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS,
   type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
-import { moveBody, clearPath, type CollisionMap } from "../world/collision.ts";
+import { moveBody, clearPath, canMoveOnSeed, type CollisionMap } from "../world/collision.ts";
 import { getWorldRegion } from "../world/regions.ts";
 import { getBiomeAt } from "../world/biomes.ts";
 import { type CaveTheme } from "../world/caves.ts";
@@ -94,7 +94,7 @@ export function regionalSurfaceSpawns(cx: number, cy: number, seed: number): Reg
   for (let n = 0; n < (hash2(cx, cy, seed + 453) > .81 ? 2 : 1); n++) {
     const sx = cx * CHUNK_TILES + Math.floor(hash2(cx + n * 13, cy, seed + 469) * CHUNK_TILES);
     const sy = cy * CHUNK_TILES + Math.floor(hash2(cx, cy + n * 17, seed + 479) * CHUNK_TILES);
-    if (villageGround(sx, sy)) continue;
+    if (villageGround(sx, sy) || !canMoveOnSeed((sx + .5) * TILE_SIZE, (sy + .5) * TILE_SIZE, seed)) continue;
     // A colisão é verificada na fábrica, não depois de apresentar uma criatura presa.
     const x = (sx + .5) * TILE_SIZE, y = (sy + .5) * TILE_SIZE;
     monsters.push(new RegionalMonster("regional:" + seed + ":" + cx + ":" + cy + ":" + n,
