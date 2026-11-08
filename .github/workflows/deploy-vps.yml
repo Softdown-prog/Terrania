@@ -10,6 +10,8 @@ concurrency:
   group: vps-project-terrania
   cancel-in-progress: false
 jobs:
+  database:
+    uses: ./.github/workflows/postgres-market.yml
   verify:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -31,7 +33,7 @@ jobs:
           done
           exit 1
   deploy:
-    needs: verify
+    needs: [verify, database]
     if: github.repository == 'Softdown-prog/Terrania' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 25

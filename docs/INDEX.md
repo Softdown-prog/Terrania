@@ -16,13 +16,13 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Rede cliente e protocolo](indexes/client-network.md) | active | 5 | Conexão WebSocket e contrato de mensagens; servidor é autoridade online. |
 | [Persistência local](indexes/local-save.md) | active | 2 | Save no navegador, versão e compatibilidade; não é persistência autoritativa online. |
 | [QA e testes](indexes/quality.md) | active | 46 | Testes unitários e navegador desktop/Android; cenários de regressão e robôs de QA. |
-| [Servidor Node atual](indexes/node-server.md) | active | 13 | Backend WebSocket ainda utilizado como referência funcional/produção segundo a documentação; não confundir com Go shadow. |
+| [Servidor Node atual](indexes/node-server.md) | active | 21 | Backend Node, presença e catálogo PostgreSQL isolado; salas legadas preservadas. Escrita do mercado depende de identidade autenticada, não do save local. |
 | [Motor Go autoritativo em validação](indexes/go-engine.md) | experimental | 23 | Implementação Go de regras e paridade; substituição do backend ativo requer decisão e validação separadas. |
 | [Executáveis e presença Go](indexes/go-runtime.md) | experimental | 28 | Worker, gateway, laboratório de capacidade, presença e scripts de paridade. |
 | [Cluster e recuperação experimental Go](indexes/go-cluster.md) | lab | 62 | Handoff, epochs, autoscale e laboratórios de quorum. Não pressupor produção, failover ou capacidade comprovada. |
 | [Módulo Rust espacial e entidades](indexes/rust-spatial.md) | experimental | 10 | Kernel Rust e FFI opt-in; não é servidor de rede. |
-| [Scripts, automação e CI](indexes/tooling.md) | active | 24 | Build, verificação, testes automatizados, deploys e índice; operações de produção são fluxos distintos. |
+| [Scripts, automação e CI](indexes/tooling.md) | active | 25 | Build, verificação, testes automatizados, deploys e índice; operações de produção são fluxos distintos. |
 
-**Outros arquivos:** [documentos, configurações e arquivos de entrada](indexes/_outros.md) (70).
+**Outros arquivos:** [documentos, configurações e arquivos de entrada](indexes/_outros.md) (71).
 
 Para regras de alteração, veja [AGENTS.md](../AGENTS.md), [manutenção](MANUTENCAO.md) e [ADR 0001](adr/0001-catalogo-e-fronteiras.md).

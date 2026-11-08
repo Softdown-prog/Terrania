@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { WebSocket, WebSocketServer } from 'ws';
 import { Room } from './Room.ts';
+import { databasePool,databaseStatus } from './db/database.ts';
+import { marketHttp } from './db/http.ts';
 import { isValidInput, isValidInventoryMessage, isValidTarget, isValidWalk, PROTOCOL_VERSION, validRoom, type ServerMessage } from '../../src/shared/protocol.ts';
 
 const port = Number(process.env.PORT ?? 8787);
@@ -25,10 +27,13 @@ const send = (socket: WebSocket, msg: ServerMessage): void => {
   if (socket.readyState !== WebSocket.OPEN || socket.bufferedAmount > 64_000) return;
   socket.send(JSON.stringify(msg));
 };
-const server = createServer((req, res) => {
+const database=databasePool();
+const market=marketHttp(database,originList);
+const server = createServer(async(req, res) => {
   const requestUrl = parseRequestUrl(req.url);
   if (!requestUrl) { res.writeHead(400); res.end(); return; }
   const pathname = requestUrl.pathname;
+  if(await market(req,res,pathname))return;
   if (pathname === '/presence') {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Vary', 'Origin');
@@ -46,8 +51,11 @@ const server = createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ online, rooms: activeRooms.size, updatedAt: new Date().toISOString(), scope: 'server' }));
   } else if (pathname === '/health' && req.method === 'GET') {
-    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-    res.end(JSON.stringify({ status: 'ok', revision: /^[0-9a-f]{40}$/.test(process.env.GIT_SHA ?? '') ? process.env.GIT_SHA : null }));
+    const state=await databaseStatus(database);
+    const healthy=!state.enabled||state.ready;
+    res.writeHead(healthy?200:503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+    res.end(JSON.stringify({ status: healthy?'ok':'unavailable', database:state,
+      revision: /^[0-9a-f]{40}$/.test(process.env.GIT_SHA ?? '') ? process.env.GIT_SHA : null }));
   } else { res.writeHead(404); res.end(); }
 });
 const wss = new WebSocketServer({ noServer: true, maxPayload: 512, perMessageDeflate: false });
@@ -165,6 +173,7 @@ const heartbeat = setInterval(() => {
   }
 }, 30_000);
 function shutdown(): void {
+  void database?.end().catch(()=>{});
   clearInterval(gameLoop); clearInterval(heartbeat);
   for (const ws of clients.keys()) ws.close(1001, 'Servidor reiniciando');
   wss.close(); server.close();

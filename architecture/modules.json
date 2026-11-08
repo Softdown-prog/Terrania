@@ -178,10 +178,12 @@
       ],
       "entrypoints": [
         "server/src/main.ts",
-        "server/src/Room.ts"
+        "server/src/Room.ts",
+        "server/src/db/database.ts",
+        "server/src/db/migrate.ts"
       ],
       "doc": "server/README.md",
-      "description": "Backend WebSocket ainda utilizado como referência funcional/produção segundo a documentação; não confundir com Go shadow."
+      "description": "Backend Node, presença e catálogo PostgreSQL isolado; salas legadas preservadas. Escrita do mercado depende de identidade autenticada, não do save local."
     },
     {
       "id": "go-engine",

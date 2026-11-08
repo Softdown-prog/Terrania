@@ -1,0 +1,32 @@
+name: PostgreSQL market integrity
+on:
+  workflow_call:
+  pull_request:
+  push:
+    branches: [main]
+    paths: ['server/**', '.github/workflows/postgres-market.yml']
+permissions:
+  contents: read
+jobs:
+  database:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: ci-local-only-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --prefix server --no-audit --no-fund
+      - name: Real PostgreSQL migration and concurrency tests (disposable CI database)
+        env:
+          TERRANIA_TEST_ADMIN_URL: postgres://postgres:ci-local-only-password@127.0.0.1:5432/postgres
+        run: npm test --prefix server
