@@ -128,9 +128,16 @@ test('toque para caminhar online transmite movimento autoritativo observado pelo
     await expect(page.locator('#coords')).toHaveText('X 2 · Y 0');
     expect(sentWalks).toHaveLength(1);
     await expect(page.locator('#multiplayerStatus')).toContainText('Online');
-    // Own tile X=2; visitor tile X=0: lilac inner dot at canvas pixel (53,61).
-    const remotePixel = () => page.locator('#worldMiniMapCanvas').evaluate(canvas => {
-      const rgba = (canvas as HTMLCanvasElement).getContext('2d')!.getImageData(53, 61, 1, 1).data;
+    // The only authoritative map lives inside the inventory, not over gameplay.
+    // Nearby view: 256px / 128 tiles = 2px per tile. Player at tile (2,0),
+    // visitor at (0,0); the visitor's 4px lilac marker covers pixel (122,128), clear of the hero halo.
+    await page.locator('#inventoryButton').click();
+    await page.locator('#inventoryTabMap').click();
+    await page.locator('#mapScaleNearby').click();
+    const atlas = page.locator('#worldAtlasCanvas');
+    await expect(atlas).toBeVisible();
+    const remotePixel = () => atlas.evaluate(canvas => {
+      const rgba = (canvas as HTMLCanvasElement).getContext('2d')!.getImageData(122, 128, 1, 1).data;
       return [rgba[0], rgba[1], rgba[2]].join(',');
     });
     await expect.poll(remotePixel).toBe('234,197,255');

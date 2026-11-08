@@ -142,7 +142,7 @@ func (w World) CanMove(x,y float64) bool {
 	if math.IsNaN(x)||math.IsInf(x,0)||math.IsNaN(y)||math.IsInf(y,0)||
 		math.Abs(x)>1_000_000||math.Abs(y)>1_000_000 { return false }
 	const radius=7.
-	if landmarkBlocks(x,y,radius)||villageBlocks(x,y,radius) { return false }
+	if landmarkBlocks(x,y,radius)||w.regionalLandmarkBlocks(x,y,radius)||villageBlocks(x,y,radius) { return false }
 	for _,ox:=range []float64{-radius,radius} {
 		for _,oy:=range []float64{-radius,radius} {
 			if !w.Walkable(int(math.Floor((x+ox)/TileSize)),int(math.Floor((y+oy)/TileSize))) { return false }
