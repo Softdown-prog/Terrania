@@ -136,20 +136,22 @@ test('HUD oferece ler placa, entrar e sair conforme a interação do mundo', asy
   await expect(page.locator('#questProgress')).toHaveText('0 / 5 slimes');
 });
 
-test('abrir o jogo registra a aba no contador real e o painel nunca inventa zero nas falhas', async ({ page }) => {
-  // Servidor real (porta 18787): o sinal anônimo é o único contato do jogo solo com ele.
+test('abrir o jogo envia o sinal anônimo ao servidor real e o painel nunca inventa zero nas falhas', async ({ page }) => {
+  // Servidor real (porta 18787), compartilhado com os demais testes e com ids que valem ~45 s:
+  // por isso não se afirma uma contagem exata aqui (isso é coberto em server/tests/presence.test.ts).
   const presence = async () => (await (await page.request.get('http://127.0.0.1:18787/presence')).json()).online as number;
-  const before = await presence();
-  const heartbeat = page.waitForRequest(request => request.url().endsWith('/presence/heartbeat') && request.method() === 'POST');
+  const heartbeat = page.waitForResponse(response => response.url().endsWith('/presence/heartbeat') && response.request().method() === 'POST');
   await page.goto('/jogar/?modo=solo');
   await expect(page.locator('canvas#game')).toBeVisible();
-  const body = JSON.parse((await heartbeat).postData() ?? '{}');
+  const response = await heartbeat;
+  expect(response.status()).toBe(200);
+  const body = JSON.parse(response.request().postData() ?? '{}');
   expect(body.id).toMatch(/^[0-9a-f]{32}$/);
   expect(Object.keys(body)).toEqual(['id']);
-  await expect.poll(presence).toBe(before + 1);
+  await expect.poll(presence).toBeGreaterThanOrEqual(1);
   await page.locator('#gameMenuButton').click();
   await page.locator('#playersButton').click();
-  await expect(page.getByTestId('online-count')).toHaveText(String(before + 1));
+  await expect(page.getByTestId('online-count')).toHaveText(/^[1-9]\d*$/);
   await page.route('**/presence', route => route.fulfill({ status: 503, body: 'unavailable' }));
   await expect(page.getByTestId('online-count')).toHaveText('—', { timeout: 12_000 });
   await expect(page.getByText('Contagem indisponível')).toBeVisible();
