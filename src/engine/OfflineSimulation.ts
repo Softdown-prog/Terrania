@@ -9,7 +9,7 @@ import { canStrike, faceTarget } from "./combat.ts";
 import type { ClassicTileWalker, WalkDirection } from "./ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./Inventory.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
-import { grantExperience, maxHpForExperience, normalizeExperience } from "./Experience.ts";
+import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./Experience.ts";
 import { hasNutrition, type NutritionState } from "./Food.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
@@ -44,7 +44,8 @@ export class OfflineSimulation {
   constructor(seed: number, saved?: OfflineSave) {
     this.seed = seed;
     this.collision = new SeedCollision(seed);
-    this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined);
+    this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined,
+      levelForExperience(saved?.seed === seed ? normalizeExperience(saved?.experience) : 0));
     if (saved && saved.seed === seed) {
       // A previous save may now overlap a newly introduced solid landmark.
       if (this.collision.canMove(saved.x, saved.y)) {
