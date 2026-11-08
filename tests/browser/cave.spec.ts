@@ -22,6 +22,7 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
   else await action.click();
   await expect(page.locator("#coords")).toContainText("Subsolo");
   await expect(page.locator("#quest")).toHaveText(entrance.name);
+  await page.locator("canvas#game").screenshot({path:test.info().outputPath("cave-scene.png")});
   await page.locator("#gameMenuButton").click();
   await page.locator("#inventoryButton").click();
   await expect(page.locator("#inventoryDialog")).toBeVisible();
@@ -47,6 +48,7 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
   expect(sampled.opaque).toBeGreaterThan(50000);
   expect(sampled.light).toBeGreaterThan(5);
   expect(sampled.colors).toBeGreaterThan(3);
+  await atlas.screenshot({path:test.info().outputPath("cave-map.png")});
   await page.locator("#inventoryDialog .dialog-x").click();
   await expect(page.locator("#inventoryDialog")).not.toBeVisible();
   await page.locator("canvas#game").focus();

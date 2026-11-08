@@ -177,6 +177,18 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Playwright browser suites (no VPS)
         run: npm run test:browser
+      - name: Procedural art preview for visual review
+        if: always()
+        run: npm run art:preview
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terrania-pre-main-cave-and-art-previews
+          path: |
+            test-results/art-preview/pecas.png
+            test-results/**/cave-*.png
+          if-no-files-found: warn
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
