@@ -207,7 +207,7 @@
                     @for (id of hud.availableWeapons(); track id) {
                       @if (id !== loadout.equipped) {
                         <button type="button" class="secondary-button"
-                          [attr.id]="'equip-weapon-' + id"
+                          [attr.id]="'equip-slot-weapon-' + id"
                           (click)="hud.equipWeapon(id)">Equipar {{ hud.weapons[id].name }}
                           ({{ hud.weapons[id].damage }} dano · nível {{ hud.weapons[id].level }})</button>
                       }
