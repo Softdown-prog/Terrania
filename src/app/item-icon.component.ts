@@ -76,24 +76,27 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
         }
         @case ('sword-starter') {
           <g transform="rotate(45 16 16)">
-            <path d="M16 2L18.2 5.2V18H13.8V5.2Z" fill="#cfd6dc"/>
-            <path d="M16 5.5V17" stroke="#8f9aa3" stroke-width="1" fill="none"/>
-            <rect x="10" y="18" width="12" height="2.8" rx="1.2" fill="#8a6a3c"/>
-            <rect x="14.6" y="20.8" width="2.8" height="6" fill="#5b3a1e"/>
-            <circle cx="16" cy="28.2" r="2" fill="#8a6a3c"/>
+            <path d="M16 2L18 5V18H14V5Z" fill="#9f7852"/>
+            <path d="M16 4.5V17" stroke="#60472f" stroke-width="1.2" fill="none"/>
+            <path d="M15 5L16 2L17 5" fill="none" stroke="#d7b18b" stroke-width=".9"/>
+            <rect x="10" y="18" width="12" height="2.8" rx="1.2" fill="#785d40"/>
+            <rect x="14.6" y="20.8" width="2.8" height="6" fill="#8c6e50"/>
+            <path d="M14.5 21.5L17.4 24M14.5 24L17.4 26" fill="none" stroke="#d3c3a5" stroke-width=".9"/>
+            <circle cx="16" cy="28.2" r="2" fill="#6e513a"/>
           </g>
         }
         @case ('sword-forge') {
           <g transform="rotate(45 16 16)">
-            <path d="M16 1L19.2 4.8V18H12.8V4.8Z" fill="#a9cdf0"/>
-            <path d="M16 4.5V17" stroke="#5f8fc2" stroke-width="1.5" fill="none"/>
-            <path d="M18 6.5V17" stroke="#eaf5ff" stroke-width=".9" fill="none"/>
-            <path d="M7.5 17.4H12.6L13 20.6H19L19.4 17.4H24.5L22.4 22.2H9.6Z" fill="#e3b647"/>
-            <rect x="14.6" y="22.2" width="2.8" height="5" fill="#3d2a1c"/>
-            <circle cx="16" cy="28.6" r="2.1" fill="#d8433a"/>
+            <path d="M16 1L19.2 4.8V18H12.8V4.8Z" fill="#aebcc1"/>
+            <path d="M16 4.5V17" stroke="#667880" stroke-width="1.5" fill="none"/>
+            <path d="M18 6.5V17" stroke="#eef4f5" stroke-width=".9" fill="none"/>
+            <rect x="8.5" y="18" width="15" height="2.9" rx="1" fill="#8f999d"/>
+            <path d="M9.5 18.7H22.5" stroke="#edf2ec" stroke-width=".8"/>
+            <rect x="14.6" y="20.9" width="2.8" height="6" fill="#5b3b28"/>
+            <path d="M14.5 22L17.4 24M14.5 24.5L17.4 26.4" fill="none" stroke="#ae8054" stroke-width=".9"/>
+            <circle cx="16" cy="28.5" r="2.2" fill="#899598"/>
           </g>
         }
-
         @case ('sword-bronze') {
           <g transform="rotate(45 16 16)">
             <path d="M16 2L19 5V17H13V5Z" fill="#c69a69"/>
