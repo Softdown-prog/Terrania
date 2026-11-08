@@ -66,7 +66,11 @@ test("Battle List acompanha a câmera, seleciona alvo real e inicia perseguiçã
   await expect(page.locator(".battle-entry[aria-pressed=true]")).toHaveCount(1);
   await expect.poll(() => page.locator("#coords").textContent(), { timeout: 8000 })
     .not.toBe(initialCoords);
-  await expect(row).toHaveAttribute("aria-label", "Selecionar Slime, vida 1 de 2");
+  await expect.poll(() => page.evaluate(id => {
+    const saved=JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
+    return saved?.defeated?.includes(id) === true;
+  }, encounter.mob.id), {timeout:15000}).toBe(true);
+  await expect(row).toHaveCount(0); // 8 damage now defeats a 2-HP slime in one swing.
   await toggle.click();
   await expect(panel).toBeHidden();
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
