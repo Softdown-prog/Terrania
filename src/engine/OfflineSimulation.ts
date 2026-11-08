@@ -1,3 +1,4 @@
+import { applySwordImpact, swordHitDamage } from "./SwordCombat.ts";
 import { RegionalMonster, regionalSurfaceSpawns, southCommonSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
 import { Player } from "../actors/Player.ts";
 import { Slime, slimeSpawns } from "../actors/Slime.ts";
@@ -94,6 +95,22 @@ export class OfflineSimulation {
         }
       }
   }
+  /** Shared death accounting for direct, elemental and lightning kills. */
+  private registerDefeat(id:string,slime:Slime,defense:number):void {
+    if(this.defeated.has(id))return;
+    this.slimes.delete(id);
+    this.defeated.add(id);
+    if(slime.kind==="slime")this.kills++;
+    if(slime instanceof RegionalMonster){
+      slime.deathBurst(this.player,this.collision,defense);
+      for(const item of rollCreatureLoot(slime.kind,slime.id))this.inventory.addMaterial(item);
+    }
+    this.experience=grantExperience(this.experience,
+      CREATURE_CATALOG[slime.kind].experience,this.player);
+    if(slime.kind==="slime" && this.drops.size<MAX_WORLD_DROPS)
+      this.drops.set(id,{id,item:"gel",x:slime.x,y:slime.y});
+  }
+
   /** Retorna true se o progresso mudou e merece salvar imediatamente. */
   update(
     dt: number,
@@ -112,6 +129,7 @@ export class OfflineSimulation {
     else this.player.update(dt, typeof direction === "function" ? direction() : direction, this.collision);
     this.spawnNearby();
     const defense = this.inventory.defense;
+    let changed = false;
     for (const [id, slime] of this.slimes) {
       const distance = Math.hypot(
         slime.x - this.player.x,
@@ -123,42 +141,39 @@ export class OfflineSimulation {
       }
       if (distance < CHUNK_PIXELS * 2) {
         slime.update(dt, this.player, this.collision, defense);
+        if (slime.hp <= 0) {
+          this.registerDefeat(id,slime,defense);
+          changed=true;
+        }
         if (this.awaitingRespawn) return true;
       }
     }
-    let changed = false;
     if (attack) this.player.startAttack(this.inventory.loadout.equipped);
     // Keep the swing facing the creature it was started against while walking.
     const focused = typeof strikeTargetId === "string" ? this.slimes.get(strikeTargetId) : null;
     if (focused && this.player.attackTime > 0) faceTarget(this.player, focused);
     if (this.player.consumeStrike()) {
-      for (const [id, slime] of this.slimes) {
-        if ((strikeTargetId === undefined || id === strikeTargetId) &&
-            canStrike(this.player, slime, this.collision)) {
-          slime.takeHit(this.player.x, this.player.y, this.player.strikeDamage);
-          if(slime instanceof RegionalMonster)
-            slime.onSwordHit(this.player,this.inventory.loadout.equipped);
-          if (slime.hp <= 0) {
-            this.slimes.delete(id);
-            this.defeated.add(id);
-            if (slime.kind === "slime") this.kills++;
-            if (slime instanceof RegionalMonster) {
-              slime.deathBurst(this.player, this.collision, defense);
-              for (const item of rollCreatureLoot(slime.kind as Exclude<typeof slime.kind, "slime">, slime.id))
-                this.inventory.addMaterial(item);
-            }
-            this.experience = grantExperience(this.experience, CREATURE_CATALOG[slime.kind].experience, this.player);
-            if (slime.kind === "slime" && this.drops.size < MAX_WORLD_DROPS) {
-              this.drops.set(slime.id, {
-                id: slime.id,
-                item: "gel",
-                x: slime.x,
-                y: slime.y,
-              });
-            }
-            changed = true;
-          }
+      const weapon=this.player.attackWeapon;
+      const reach=weapon==="astral"?72:52;
+      const cone=weapon==="astral"?-.5:-.1;
+      const targets=[...this.slimes].filter(([id,mob])=>
+        (strikeTargetId===undefined || id===strikeTargetId) &&
+        canStrike(this.player,mob,this.collision,reach,cone))
+        .sort((a,b)=>Math.hypot(a[1].x-this.player.x,a[1].y-this.player.y)-
+          Math.hypot(b[1].x-this.player.x,b[1].y-this.player.y));
+      // The astral arc can contact three; every other blade hits one primary.
+      const primary=targets.slice(0,weapon==="astral"?3:1);
+      for(const [id,mob] of primary){
+        if(mob.hp<=0)continue;
+        mob.takeHit(this.player.x,this.player.y,swordHitDamage(weapon,mob));
+        if(mob instanceof RegionalMonster)mob.onSwordHit(this.player,weapon);
+        const secondary=applySwordImpact(weapon,this.player,mob,
+          this.slimes.values(),this.collision).extra;
+        for(const struck of secondary)if(struck.hp<=0){
+          this.registerDefeat(struck.id,struck,defense);
+          changed=true;
         }
+        if(mob.hp<=0){this.registerDefeat(id,mob,defense);changed=true;}
       }
     }
     // O jogador recolhe automaticamente o gel ao se aproximar. Se a bolsa
