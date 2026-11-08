@@ -83,7 +83,8 @@ export class CaveRoom {
   readonly monsters = new Map<string, RegionalMonster>();
   readonly collision: CollisionMap;
   private readonly victories: Array<{ kind: RegionalCreatureKind; id: string }> = [];
-  constructor(entrance:CaveEntrance, hp = 100, maxHp = 100) {
+  constructor(entrance:CaveEntrance, hp = 100, maxHp = 100,
+    private readonly defeated: ReadonlySet<string> = new Set()) {
     this.floor=new CaveFloor(entrance);
     this.collision=this.floor.collision;
     this.player=new Player(maxHp);
@@ -107,7 +108,7 @@ export class CaveRoom {
       if (this.monsters.size>=4) break;
       const kind=kinds[Math.floor(hash2(i,19,salt+91)*kinds.length)]!;
       const id=this.floor.id+":mob:"+i;
-      this.monsters.set(id,new RegionalMonster(id,kind,x,y));
+      if (!this.defeated.has(id)) this.monsters.set(id,new RegionalMonster(id,kind,x,y));
     }
     // Garantia de encontro nas câmaras, caso o hash caia só em paredes.
     if(!this.monsters.size){
@@ -115,14 +116,15 @@ export class CaveRoom {
         if(!this.collision.canMove((x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE))continue;
         const kind=kinds[Math.floor(hash2(x,y,salt+99)*kinds.length)]!;
         const id=this.floor.id+":mob:0";
-        this.monsters.set(id,new RegionalMonster(id,kind,(x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE));
+        if (!this.defeated.has(id)) this.monsters.set(id,new RegionalMonster(id,kind,(x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE));
       }
     }
   }
   drainVictories(): Array<{kind:RegionalCreatureKind;id:string}> {
     return this.victories.splice(0);
   }
-  update(dt:number,movement:{x:number;y:number},attack=false,weapon:WeaponId="starter",defense=0):void {
+  update(dt:number,movement:{x:number;y:number},attack=false,weapon:WeaponId="starter",defense=0,
+    targetId?: string | null):void {
     if(!Number.isFinite(dt)||dt<=0||this.player.hp<=0)return;
     dt=Math.min(dt,.1);
     this.player.update(dt,movement,this.collision);
@@ -130,7 +132,8 @@ export class CaveRoom {
     for(const monster of this.monsters.values()) monster.update(dt,this.player,this.collision,defense);
     if(this.player.consumeStrike()){
       const targets=[...this.monsters.values()]
-        .filter(monster=>canStrike({...this.player,faceX:this.player.faceX,faceY:this.player.faceY},monster,this.collision))
+        .filter(monster=>(targetId === undefined || monster.id === targetId) &&
+          canStrike(this.player,monster,this.collision))
         .sort((a,b)=>Math.hypot(a.x-this.player.x,a.y-this.player.y)-Math.hypot(b.x-this.player.x,b.y-this.player.y));
       const monster=targets[0];
       if(monster){
