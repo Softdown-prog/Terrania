@@ -390,6 +390,11 @@ test('equipar elmo muda o desenho real do cavaleiro e retirar remove a chapa', a
   await page.getByRole('button', { name: 'Equipar Elmo de trilha' }).click();
   await expect(page.locator('[data-equipment-slot="head"]')).toContainText('Elmo de trilha');
   await expect.poll(helmPixels).toBeGreaterThan(8);
+  // A mesma peça continua visível nas quatro orientações do personagem procedural.
+  for (let facing = 0; facing < 4; facing++) {
+    await page.locator('#rotateInventoryHero').click();
+    await expect.poll(helmPixels).toBeGreaterThan(8);
+  }
   await page.getByRole('button', { name: 'Retirar Elmo de trilha' }).click();
   await expect(page.locator('[data-equipment-slot="head"]')).toContainText('Vazio');
   await expect.poll(helmPixels).toBe(0);
