@@ -299,7 +299,7 @@ test('Cavaleiro come alimento da bolsa e recupera HP de verdade no Canvas do jog
   await page.locator('#eat-apple').click();
   await expect(page.locator('#inventoryFeedback')).toContainText('recuperada gradualmente');
   await expect(page.locator('#foodCount-apple')).toHaveText('0 / 99');
-  await expect(page.locator('#nutritionStatus')).toContainText('8 HP para recuperar');
+  await expect(page.locator('#nutritionStatus')).toContainText('Comida: 8 HP');
   await page.locator('#inventoryDialog .dialog-x').click();
   await expect.poll(async () => Number((await page.locator('#hpText').innerText()).split(' / ')[0]),
     { timeout: 10000 }).toBeGreaterThan(70);
