@@ -4,13 +4,11 @@ import { CHUNK_TILES, TILE_SIZE } from "../world/terrain.ts";
 import { villageGround } from "../world/village.ts";
 import { getRegionDifficulty } from "../world/regionDifficulty.ts";
 import type { Player } from "./Player.ts";
-import { CREATURE_CATALOG, type CreatureView } from "./CreatureCatalog.ts";
-
-const DEFINITION = CREATURE_CATALOG.slime;
+import { CREATURE_CATALOG, type CreatureKind, type CreatureView } from "./CreatureCatalog.ts";
 
 export class Slime implements CreatureView {
-  readonly kind = "slime";
-  hp: number = DEFINITION.maxHp;
+  readonly kind: CreatureKind;
+  hp: number;
   x: number;
   y: number;
   private pulse = 0;
@@ -19,7 +17,9 @@ export class Slime implements CreatureView {
   private knockX = 0;
   private knockY = 0;
   readonly id: string;
-  constructor(id: string, x: number, y: number) {
+  constructor(id: string, x: number, y: number, kind: CreatureKind = "slime") {
+    this.kind = kind;
+    this.hp = CREATURE_CATALOG[kind].maxHp;
     this.id = id;
     this.x = x;
     this.y = y;
@@ -42,7 +42,7 @@ export class Slime implements CreatureView {
         moveBody(this, (dx / d) * speed * dt, (dy / d) * speed * dt, world);
     }
     if (d < 24 && this.contactCooldown === 0 && clearPath(this, player, world)) {
-      player.takeDamage(Math.max(1, DEFINITION.contactDamage - defense), this.x, this.y);
+      player.takeDamage(Math.max(1, CREATURE_CATALOG[this.kind].contactDamage - defense), this.x, this.y);
       this.contactCooldown = 1.2;
     }
   }

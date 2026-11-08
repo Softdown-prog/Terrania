@@ -1,3 +1,6 @@
+import { rollCreatureLoot } from "../actors/RegionalMonster.ts";
+import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
+import { grantExperience } from "../engine/Experience.ts";
 import { Input } from "../input/Input.ts";
 import { WorldRenderer } from "../render/WorldRenderer.ts";
 import { Camera } from "../render/Camera.ts";
@@ -114,9 +117,9 @@ export class Game {
     this.hud.onTalk(() => this.talkToNpc());
     this.hud.onRespawn(() => this.respawn());
     this.hud.onPotionUse(() => {
-      if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
-      if (!this.sim.inventory.usePotion(this.sim.player))
-        return this.sim.player.hp >= this.sim.player.maxHp
+      if (this.sim.awaitingRespawn || this.cave?.player.hp === 0) return INVENTORY_FEEDBACK.unavailable;
+      if (!this.sim.inventory.usePotion(this.cave?.player ?? this.sim.player))
+        return (this.cave?.player ?? this.sim.player).hp >= (this.cave?.player ?? this.sim.player).maxHp
           ? INVENTORY_FEEDBACK["full-health"] : INVENTORY_FEEDBACK["no-potion"];
       this.save();
       this.updateHud();
@@ -125,7 +128,8 @@ export class Game {
     this.updateHud();
   }
   private updateHud(): void {
-    const { player, kills, inventory } = this.sim;
+    const { kills, inventory } = this.sim;
+    const player = this.cave?.player ?? this.sim.player;
     this.hud.updateHero({
       hp: player.hp,
       maxHp: player.maxHp,
@@ -141,7 +145,7 @@ export class Game {
   }
   /** Battle entries are derived from the same camera/viewport as the canvas. */
   private battleCreatures() {
-    return this.sim.slimes.values();
+    return this.cave?.monsters.values() ?? this.sim.slimes.values();
   }
   private hudBattleRows() {
     return visibleBattleCreatures(
@@ -149,12 +153,12 @@ export class Game {
     );
   }
   private selectBattleTarget(id: string): void {
-    if (this.interior || this.cave || this.hud.menuOpen || this.sim.awaitingRespawn ||
+    if (this.interior || this.hud.menuOpen || this.sim.awaitingRespawn ||
         !this.hudBattleRows().some(row => row.id === id)) return;
     this.selectTarget(id);
   }
   private selectTarget(id: string): void {
-    if (!this.classicCombat.select(id, this.sim.slimes)) return;
+    if (!this.classicCombat.select(id, this.cave?.monsters ?? this.sim.slimes)) return;
     this.classicAutoFollow = true;
     this.classicPursuit.reset();
     this.navigator.cancel();
@@ -297,10 +301,11 @@ export class Game {
     this.effects.reset();
     this.hud.setCombatTarget(null);
     this.hud.setBattleCreatures([],null);
-    this.cave=new CaveRoom(entrance);
+    this.cave=new CaveRoom(entrance,this.sim.player.hp,this.sim.player.maxHp);
     this.hud.setTravelNotice("Você desceu para "+entrance.name+". O mapa agora acompanha o primeiro andar da caverna.");
   }
   private leaveCave():void {
+    if(this.cave) this.sim.player.hp=this.cave.player.hp;
     this.cave=null;
     this.hud.setCave(null);
     this.input.clear();
@@ -376,7 +381,7 @@ export class Game {
         : this.scene.worldPoint(tap, this.camera);
       const player = this.cave?.player ?? this.interior?.player ?? this.sim.player;
       const collision = this.cave?.collision ?? this.interior?.collision ?? this.sim.collision;
-      const creature = destination && !this.interior && !this.cave
+      const creature = destination && !this.interior
         ? nearestCombatCreature(destination, this.battleCreatures()) : null;
       if (creature) {
         this.selectTarget(creature.id);
@@ -397,8 +402,24 @@ export class Game {
     if (this.cave) {
       const cave=this.cave;
       this.accumulator=0;
-      if (!paused && dt > 0) { cave.update(dt,movement); this.input.acknowledgeMovement(); }
-      if (cave.reachedExit) this.leaveCave();
+      if (!paused && dt > 0) {
+        cave.update(dt,movement,attack,this.sim.inventory.loadout.equipped,this.sim.inventory.defense);
+        this.input.acknowledgeMovement();
+        let changed=false;
+        for(const victory of cave.drainVictories()){
+          this.sim.experience=grantExperience(this.sim.experience,CREATURE_CATALOG[victory.kind].experience,cave.player);
+          this.sim.player.maxHp=cave.player.maxHp;
+          for(const item of rollCreatureLoot(victory.kind,victory.id))
+            changed=this.sim.inventory.addMaterial(item)||changed;
+          changed=true;
+        }
+        if(changed)this.save();
+      }
+      if(cave.player.hp<=0){
+        this.leaveCave();
+        this.sim.player.hp=0;
+        this.hud.setTravelNotice("Você tombou na caverna. Renasça para continuar.");
+      } else if(cave.reachedExit)this.leaveCave();
       else {
         this.updateHud();
         this.hud.setCave({floor:cave.floor,

@@ -1,3 +1,4 @@
+import { RegionalMonster, regionalSurfaceSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
 import { Player } from "../actors/Player.ts";
 import { Slime, slimeSpawns } from "../actors/Slime.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
@@ -85,7 +86,7 @@ export class OfflineSimulation {
     this.spawnedChunk = key;
     for (let cy = y0 - 2; cy <= y0 + 2; cy++)
       for (let cx = x0 - 2; cx <= x0 + 2; cx++) {
-        for (const slime of slimeSpawns(cx, cy, this.seed)) {
+        for (const slime of [...slimeSpawns(cx, cy, this.seed), ...regionalSurfaceSpawns(cx, cy, this.seed)]) {
           if (!this.defeated.has(slime.id) && !this.slimes.has(slime.id))
             this.slimes.set(slime.id, slime);
         }
@@ -136,9 +137,14 @@ export class OfflineSimulation {
           if (slime.hp <= 0) {
             this.slimes.delete(id);
             this.defeated.add(id);
-            this.kills++;
+            if (slime.kind === "slime") this.kills++;
+            if (slime instanceof RegionalMonster) {
+              slime.deathBurst(this.player, this.collision, defense);
+              for (const item of rollCreatureLoot(slime.kind as Exclude<typeof slime.kind, "slime">, slime.id))
+                this.inventory.addMaterial(item);
+            }
             this.experience = grantExperience(this.experience, CREATURE_CATALOG[slime.kind].experience, this.player);
-            if (this.drops.size < MAX_WORLD_DROPS) {
+            if (slime.kind === "slime" && this.drops.size < MAX_WORLD_DROPS) {
               this.drops.set(slime.id, {
                 id: slime.id,
                 item: "gel",
