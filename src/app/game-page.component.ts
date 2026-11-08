@@ -68,6 +68,7 @@ export class GamePageComponent implements AfterViewInit {
         renderHero(ctx, {
           faceX: face.x, faceY: face.y, walkTime: 0, attackTime: 0,
           attackWeapon: this.hud.loadout()?.equipped ?? 'starter',
+          equippedWeapon: this.hud.loadout()?.equipped ?? 'starter',
           gear: this.hud.gear() ?? undefined,
           vx: 0, vy: 0, id: 'inventory-preview',
         }, 0, 0, time / 1000);

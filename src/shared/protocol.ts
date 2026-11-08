@@ -19,8 +19,10 @@ export interface HeroState {
   faceY: number;
   walkTime: number;
   attackTime: number;
-  /** Weapon committed to the displayed swing. Omission uses the starter pose. */
+  /** Sword committed to an active swing, never the next selected sword. */
   attackWeapon?: WeaponId;
+  /** Optional sword visibly held in idle poses; omitted for the starter sword. */
+  equippedWeapon?: WeaponId | undefined;
   /** Visual equipment snapshot for nearby heroes; never an authority for stats. */
   gear?: GearState | undefined;
   vx?: number;

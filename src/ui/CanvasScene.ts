@@ -2,6 +2,7 @@ import type { Player } from '../actors/Player.ts';
 import type { BattleViewport } from '../engine/ClassicBattleList.ts';
 import type { Slime } from '../actors/Slime.ts';
 import type { GearState } from '../engine/Equipment.ts';
+import type { WeaponId } from '../engine/Weapons.ts';
 import type { HeroState, MobState } from '../shared/protocol.ts';
 import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
@@ -62,7 +63,8 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   cameraX: number, cameraY: number, width: number, height: number,
   player: HeroVisual & { x: number; y: number }, mobs: ReadonlyArray<Slime | MobState>,
   remotePlayers: ReadonlyArray<HeroState> = [], selfId: string | null = null, time = 0, animated = false,
-  drops: ReadonlyArray<LootDrop> = [], effects?: Effects, playerGear?: GearState): void {
+  drops: ReadonlyArray<LootDrop> = [], effects?: Effects,
+  playerGear?: GearState, playerWeapon?: WeaponId): void {
   ctx.fillStyle = '#506f50'; ctx.fillRect(0, 0, width, height);
   world.render(ctx, cameraX, cameraY, width, height, time, animated);
   const left = cameraX - width / 2, top = cameraY - height / 2;
@@ -105,7 +107,7 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
     } });
   }
   actors.push({ y: player.y, draw: () => renderHero(ctx,
-    { ...player, gear: playerGear }, player.x - left, player.y - top, time) });
+    { ...player, gear: playerGear, equippedWeapon: playerWeapon }, player.x - left, player.y - top, time) });
   actors.sort((a, b) => a.y - b.y);
   for (const actor of actors) actor.draw();
 }
@@ -229,10 +231,11 @@ export class CanvasScene {
   render(world: WorldRenderer, camera: Camera, player: Player, mobs: ReadonlyArray<Slime | MobState>,
     remotePlayers: ReadonlyArray<HeroState>, selfId: string | null, time: number, effects: Effects,
     destination: Point | null = null, drops: ReadonlyArray<LootDrop> = [],
-    combatTargetId: string | null = null, playerGear?: GearState): void {
+    combatTargetId: string | null = null, playerGear?: GearState,
+    playerWeapon?: WeaponId): void {
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale, 0, 0);
-    drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, remotePlayers, selfId, time, effects.enabled, drops, effects, playerGear);
+    drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, remotePlayers, selfId, time, effects.enabled, drops, effects, playerGear, playerWeapon);
     // Original Terrania visual: um anel dourado procedural, nunca arte copiada.
     if (combatTargetId) {
       const target = mobs.find(mob => mob.id === combatTargetId);

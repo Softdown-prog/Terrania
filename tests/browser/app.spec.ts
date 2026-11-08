@@ -481,3 +481,46 @@ test('minimapa não bloqueia conversas, caminhada nem toques no Android', async 
   await toggle.click();
   await expect(map).toBeVisible();
 });
+
+test('espada forjada equipada aparece parada na prévia e troca para a inicial sem atacar', async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = CanvasRenderingContext2D.prototype.fillRect;
+    const swordFrames = { all: 0, forge: 0 };
+    Object.assign(window, { swordFrames });
+    CanvasRenderingContext2D.prototype.fillRect = function (x, y, width, height) {
+      if (this.canvas.id === 'inventoryHero' && Math.abs(width - 3) < 0.0001 &&
+          Math.abs(height - 12.8) < 0.0001) {
+        swordFrames.all++;
+        if (this.fillStyle === '#e2a24f') swordFrames.forge++;
+      }
+      original.call(this, x, y, width, height);
+    };
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({
+      seed: 842136, x: 16, y: 16, hp: 100, kills: 0, defeated: [],
+      inventory: { gel: 0, potion: 0, questRewardClaimed: false,
+        loadout: { forged: true, equipped: 'starter' } },
+    }));
+  });
+  const readFrames = () => page.evaluate(() =>
+    (window as typeof window & { swordFrames: { all: number; forge: number } }).swordFrames);
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('canvas#game')).toBeVisible();
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  const equipmentTab = page.locator('#inventoryTabEquipment');
+  if (await equipmentTab.isVisible()) await equipmentTab.click();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
+  await expect.poll(async () => (await readFrames()).all).toBeGreaterThan(2);
+  expect((await readFrames()).forge).toBe(0);
+  await page.locator('#equipOtherWeapon').click();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
+  await expect.poll(async () => (await readFrames()).forge).toBeGreaterThan(1);
+  await page.locator('#equipOtherWeapon').click();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
+  const previous = (await readFrames()).all;
+  await page.evaluate(() => {
+    (window as typeof window & { swordFrames: { forge: number } }).swordFrames.forge = 0;
+  });
+  await expect.poll(async () => (await readFrames()).all).toBeGreaterThan(previous + 3);
+  expect((await readFrames()).forge).toBe(0);
+});

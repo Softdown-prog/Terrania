@@ -649,6 +649,7 @@ export class Game {
       online ? this.multiplayer?.inventory?.drops ?? [] : [...this.sim.drops.values()],
       targetId,
       online ? this.multiplayer?.inventory?.gear ?? {} : this.sim.inventory.gear,
+      online ? this.multiplayer?.inventory?.loadout?.equipped ?? 'starter' : this.sim.inventory.loadout.equipped,
     );
   }
   destroy(): void {

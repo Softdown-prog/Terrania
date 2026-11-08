@@ -62,6 +62,7 @@ function heroBetween(a: HeroState, b: HeroState, span: number, offset: number): 
     vx: nx * pathLength / span, vy: ny * pathLength / span,
     walkTime: lerp(a.walkTime, b.walkTime, t), attackTime,
     attackWeapon: attackTime > 0 && swing.attackWeapon === "forge" ? "forge" : "starter",
+    equippedWeapon: b.equippedWeapon,
     gear: b.gear,
     hurtTime: timer(a.hurtTime ?? 0, b.hurtTime ?? 0, span, offset, 0.3),
   };

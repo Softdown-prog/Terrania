@@ -238,6 +238,10 @@ export class Room {
         ? Math.hypot(guest.input.x, guest.input.y) >= 0.08 ? guest.input : guest.inputPulse ?? guest.input
         : STILL;
       guest.inputPulse = null;
+      // Tile movement consumes each network input at most once. A delayed
+      // release packet must not turn a short key press into a second step.
+      // Legacy continuous clients intentionally retain their held input.
+      if (guest.walking) guest.input = STILL;
       const { walking, actor, targeting } = guest;
       if (walking) {
         const manual = Math.hypot(input.x, input.y) >= 0.08;
@@ -382,6 +386,8 @@ export class Room {
         walkTime: a.walkTime,
         attackTime: a.attackTime,
         ...(a.attackTime > 0 && a.attackWeapon === "forge" ? { attackWeapon: a.attackWeapon } : {}),
+        ...(g.inventory?.equipment && g.inventory.bag.loadout.equipped === "forge"
+          ? { equippedWeapon: "forge" as const } : {}),
         vx: a.vx,
         vy: a.vy,
         hurtTime: a.hurtTime,
