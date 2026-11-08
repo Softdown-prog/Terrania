@@ -85,8 +85,15 @@ A implementação dos itens marcados não certifica o lançamento, apenas indica
 
 ### Mapa e patrulha de QA online
 
-- [x] Minimapa local de 31×31 tiles, derivado de `getTile` e centrado nas coordenadas atuais, incluindo sessão online; colapsável no Android
+- [x] Atlas na terceira aba do inventário, oculto durante o jogo, com mundo amostrado completo (limite técnico de 62.500×62.500 tiles), nove setores cartográficos, classificação amostrada de terreno e visão detalhada de 128 tiles
 - [x] Marcadores dos jogadores online próximos provenientes de snapshots, limpos após desconexão
-- [ ] Avaliar legibilidade do minimapa no Android físico em uma sala com vários jogadores
+- [ ] Avaliar legibilidade do atlas dentro do inventário no Android físico e em uma sala com vários jogadores
 - [x] Patrulha do QA-BOT-001 contra movimentação, colisões e snapshots da sala Node em diferentes regiões, com relatório reproduzível e sem acessar VPS em produção
 - [ ] Ampliar a patrulha para WebSocket real com dois clientes e medir reconexões, latência e divergência sob pacotes atrasados
+
+### Retorno involuntário ao início
+
+- [x] Confirmar que a sala Node ressuscita automaticamente na origem após morte e cria novo visitante após reconexão.
+- [x] Exibir ao jogador o motivo do respawn comprovado pela sala Node, diferenciando uma nova sessão por reconexão sem inventar a causa da queda de rede.
+- [ ] Reproduzir/medir quedas de WebSocket ao atravessar chunks distantes no backend **efetivamente publicado**, inclusive Go se estiver ativo; não declarar a causa original resolvida por apenas exibir o aviso.
+- [ ] Avaliar persistência segura da posição ao reconectar, política de morte explícita e compatibilidade dos backends antes de alterar o protocolo ou o modelo temporário de sala.
