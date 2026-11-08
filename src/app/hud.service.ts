@@ -5,6 +5,7 @@ import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, ty
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/Experience.ts';
+import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
@@ -20,7 +21,7 @@ export interface BackpackItemView {
   readonly kind: 'material' | 'potion' | 'food' | 'gear' | 'weapon';
   readonly name: string;
   readonly description: string;
-  readonly symbol: string;
+  readonly icon: ItemIconId;
   readonly quantity: number;
   readonly foodId?: FoodId;
   readonly gearId?: GearId;
@@ -80,15 +81,15 @@ export class HudService implements GameUi {
   readonly selectedBagId = signal('potion');
   readonly backpackItems = computed<readonly BackpackItemView[]>(() => {
     const result: BackpackItemView[] = [
-      { id: 'gel', kind: 'material', name: 'Gel de slime', symbol: '◆', quantity: this.gel(),
+      { id: 'gel', kind: 'material', name: 'Gel de slime', icon: 'gel', quantity: this.gel(),
         description: 'Recurso de troca com Lina e Toren na vila.' },
-      { id: 'potion', kind: 'potion', name: 'Poção de cura', symbol: '✚', quantity: this.potions(),
+      { id: 'potion', kind: 'potion', name: 'Poção de cura', icon: 'potion', quantity: this.potions(),
         description: 'Recupera 35 HP imediatamente, sem ultrapassar a vida máxima.' },
     ];
     const food = this.food();
     for (const id of FOOD_IDS) {
       const item = FOODS[id];
-      result.push({ id: 'food-' + id, kind: 'food', name: item.name, symbol: id === 'apple' ? '●' : id === 'bread' ? '▰' : '♨',
+      result.push({ id: 'food-' + id, kind: 'food', name: item.name, icon: foodItemIcon(id),
         quantity: food[id], foodId: id, description: 'Recupera até ' + item.healBudget + ' HP aos poucos.' });
     }
     const gear = this.gear();
@@ -98,7 +99,7 @@ export class HudService implements GameUi {
         if (gear[item.slot] === id) continue;
         const current = gear[item.slot];
         result.push({ id: 'gear-' + id, kind: 'gear', gearId: id, name: item.name,
-          symbol: EQUIPMENT_SLOTS.find(slot => slot.id === item.slot)?.icon ?? '◈',
+          icon: slotItemIcon(item.slot, 'starter'),
           quantity: 1, defense: item.defense, comparedDefense: current ? GEAR[current].defense : 0,
           description: 'Conjunto inicial · ' + (item.defense > 0 ? 'Defesa +' + item.defense : 'Acessório') });
       }
@@ -109,7 +110,7 @@ export class HudService implements GameUi {
         if (id === loadout.equipped || (id === 'forge' && !loadout.forged)) continue;
         const item = WEAPONS[id];
         result.push({ id: 'weapon-' + id, kind: 'weapon', weaponId: id, name: item.name,
-          symbol: '⚔', quantity: 1, damage: item.damage,
+          icon: weaponItemIcon(id), quantity: 1, damage: item.damage,
           comparedDamage: WEAPONS[loadout.equipped].damage,
           description: item.damage + ' dano · ' + item.interval + 's entre golpes' });
       }
@@ -242,6 +243,10 @@ export class HudService implements GameUi {
   equipGear(id: GearId): void {
     const { slot } = GEAR[id];
     this.inventoryFeedback.set(this.gearEquipCallback(slot, this.gear()?.[slot] === id ? null : id));
+  }
+  /** Ícone do espaço: a arma mostra a espada realmente equipada. */
+  slotIcon(slot: EquipmentSlot): ItemIconId {
+    return slotItemIcon(slot, this.loadout()?.equipped ?? 'starter');
   }
   equippedName(slot: EquipmentSlot): string {
     if (slot === 'weapon') {

@@ -27,7 +27,7 @@
             <button id="quickPotion" type="button" (click)="hud.usePotion()"
               [disabled]="!hud.inventoryAvailable() || hud.inventoryPending() || hud.potions() === 0 || hud.hp() <= 0 || hud.hp() >= hud.maxHp()"
               [attr.aria-label]="'Usar poção de cura; disponíveis: ' + hud.potions()">
-              <span aria-hidden="true">✚</span> Poção ({{ hud.potions() }})
+              <app-item-icon class="quick-potion-icon" name="potion" /> Poção ({{ hud.potions() }})
             </button>
             <span id="quickPotionFeedback" role="status" [attr.title]="hud.quickPotionFeedback()">{{ hud.quickPotionFeedback() }}</span>
           </div>
@@ -188,7 +188,7 @@
                     [attr.aria-label]="slot.label + ': ' + (equipped || 'vazio')"
                     [attr.title]="slot.label + ': ' + (equipped || 'vazio')"
                     (click)="hud.selectEquipmentSlot(slot.id)">
-                    <span class="equipment-symbol" aria-hidden="true">{{ slot.icon }}</span>
+                    <app-item-icon class="equipment-symbol" [name]="hud.slotIcon(slot.id)" />
                     <strong>{{ slot.label }}</strong><small>{{ equipped || 'Vazio' }}</small>
                   </button>
                 }
@@ -251,7 +251,7 @@
                   [attr.aria-label]="item.name + ', quantidade ' + item.quantity"
                   [class.is-empty]="item.quantity === 0" [class.is-selected]="hud.selectedBagId() === item.id"
                   (click)="hud.selectBagItem(item.id)">
-                  <span class="backpack-icon" [attr.data-kind]="item.kind" aria-hidden="true">{{ item.symbol }}</span>
+                  <span class="backpack-icon" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" /></span>
                   <span class="backpack-name">{{ item.name }}</span>
                   @if (item.kind === 'material' || item.kind === 'potion' || item.kind === 'food') {
                     <b class="backpack-quantity"
@@ -262,8 +262,13 @@
             </div>
             <div class="backpack-details" aria-live="polite">
               @if (hud.selectedBagItem(); as item) {
-                <span class="dialog-kicker">ITEM SELECIONADO</span>
-                <h3 id="selectedBagName">{{ item.name }}</h3>
+                <div class="backpack-details-head">
+                  <span class="backpack-icon large" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" /></span>
+                  <div>
+                    <span class="dialog-kicker">ITEM SELECIONADO</span>
+                    <h3 id="selectedBagName">{{ item.name }}</h3>
+                  </div>
+                </div>
                 <p id="selectedBagDescription">{{ item.description }}</p>
                 @if (item.kind === 'gear') {
                   <p id="bagItemComparison">Defesa do item: {{ item.defense }} · Defesa atual do espaço: {{ item.comparedDefense }}</p>
