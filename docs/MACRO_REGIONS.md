@@ -17,4 +17,6 @@
 ## Pendências explícitas
 - Criaturas regionais autênticas, drops, recursos, chefes, cavernas e dungeons jogáveis.
 - Landmarks físicos e navegáveis com colisão/visual próprios (por enquanto há apenas temas de conteúdo).
-- Verificação prática do atlas e do deslocamento em Android; smoke multiplayer Node + diferenças de Go shadow em servidor de testes.
+- Verificação prática do atlas e do deslocamento em Android; testes de runtime de salas Go em ambientes reais.
+
+O Go experimental agora reproduz a geração regional em `server-go/engine/world_regions.go` e `world.go`; alterações devem manter a paridade TypeScript/Go.

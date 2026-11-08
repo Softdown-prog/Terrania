@@ -193,6 +193,7 @@
       ],
       "entrypoints": [
         "server-go/engine/room.go",
+        "server-go/engine/world_regions.go",
         "server-go/engine/protocol.go"
       ],
       "doc": "server-go/README.md",
