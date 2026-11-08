@@ -40,7 +40,7 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
       if(data[i+3]!==255)continue;
       opaque++;
       if(data[i]!>=240&&data[i+1]!>=240&&data[i+2]!>=240)light++;
-      if(i%1024===0)palette.add([data[i],data[i+1],data[i+2]].join(","));
+      if(i%128===0)palette.add([data[i],data[i+1],data[i+2]].join(","));
     }
     return {opaque,light,colors:palette.size};
   });
