@@ -16,8 +16,9 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/npcs.ts`](../../src/world/npcs.ts)
 - [`src/world/aelaQuest.ts`](../../src/world/aelaQuest.ts)
 - [`src/world/mountLocations.ts`](../../src/world/mountLocations.ts)
+- [`src/world/mountQuests.ts`](../../src/world/mountQuests.ts)
 
-## Todos os arquivos deste módulo (16)
+## Todos os arquivos deste módulo (17)
 
 - [`src/world/README.md`](../../src/world/README.md)
 - [`src/world/aelaQuest.ts`](../../src/world/aelaQuest.ts)
@@ -27,6 +28,7 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/collision.ts`](../../src/world/collision.ts)
 - [`src/world/landmarks.ts`](../../src/world/landmarks.ts)
 - [`src/world/mountLocations.ts`](../../src/world/mountLocations.ts)
+- [`src/world/mountQuests.ts`](../../src/world/mountQuests.ts)
 - [`src/world/npcs.ts`](../../src/world/npcs.ts)
 - [`src/world/random.ts`](../../src/world/random.ts)
 - [`src/world/regionDifficulty.ts`](../../src/world/regionDifficulty.ts)

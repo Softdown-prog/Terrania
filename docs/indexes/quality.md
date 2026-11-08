@@ -12,8 +12,9 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
 - [`tests/mounts.test.ts`](../../tests/mounts.test.ts)
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
+- [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (54)
+## Todos os arquivos deste módulo (55)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -51,6 +52,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/mcp-navigator.test.ts`](../../tests/mcp-navigator.test.ts)
 - [`tests/mobile-controls.test.ts`](../../tests/mobile-controls.test.ts)
 - [`tests/mobile-layout.test.ts`](../../tests/mobile-layout.test.ts)
+- [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 - [`tests/mounts.test.ts`](../../tests/mounts.test.ts)
 - [`tests/npcs.test.ts`](../../tests/npcs.test.ts)
 - [`tests/phaser-install.test.ts`](../../tests/phaser-install.test.ts)

@@ -67,7 +67,8 @@
         "src/engine/Experience.ts",
         "src/engine/Weapons.ts",
         "src/engine/Equipment.ts",
-        "src/engine/MountStable.ts"
+        "src/engine/MountStable.ts",
+        "src/engine/MountQuestState.ts"
       ],
       "doc": "src/engine/README.md",
       "description": "Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular."
@@ -105,7 +106,8 @@
         "src/world/collision.ts",
         "src/world/npcs.ts",
         "src/world/aelaQuest.ts",
-        "src/world/mountLocations.ts"
+        "src/world/mountLocations.ts",
+        "src/world/mountQuests.ts"
       ],
       "doc": "src/world/README.md",
       "description": "Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, colisão, vila e marcos."
@@ -167,7 +169,8 @@
         "src/qa/QaBot.ts",
         "tests/classic-tile-walker.test.ts",
         "tests/mounts.test.ts",
-        "tests/browser/mounts.spec.ts"
+        "tests/browser/mounts.spec.ts",
+        "tests/mount-quests.test.ts"
       ],
       "doc": "tests/README.md",
       "description": "Testes unitários e navegador desktop/Android; cenários de regressão e robôs de QA."
