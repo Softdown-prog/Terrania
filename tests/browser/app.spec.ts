@@ -434,6 +434,8 @@ test('atlas escondido no inventário cobre todo o limite técnico com setores re
   await page.locator('#inventoryTabMap').click();
   const canvas = page.locator('#worldAtlasCanvas');
   await expect(canvas).toBeVisible();
+  await expect(page.locator('.atlas-map-frame')).toBeVisible();
+  await expect(page.locator('.atlas-legend .atlas-swatch')).toHaveCount(7);
   await expect(page.locator('#worldMapDimensions')).toContainText('62.500 × 62.500');
   await expect(page.locator('[data-atlas-sector]')).toHaveCount(9);
   const sample = () => canvas.evaluate(element => {
@@ -454,6 +456,12 @@ test('atlas escondido no inventário cobre todo o limite técnico com setores re
   await expect.poll(async () => (await sample()).colors).toBeGreaterThan(3);
   await page.locator('#closeInventory').click();
   await expect(canvas).toHaveCount(0);
+  // Reopening must not keep an offscreen atlas animating behind the backpack.
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  await expect(page.locator('#inventoryTabBag')).toHaveAttribute('aria-pressed', 'true');
+  await expect(canvas).toHaveCount(0);
+  await page.locator('#closeInventory').click();
   expect(errors).toEqual([]);
 });
 
