@@ -70,6 +70,11 @@ export class HudService implements GameUi {
   readonly inventoryFeedback = signal('');
   readonly quickPotionFeedback = signal('');
   readonly weapons = WEAPONS;
+  readonly availableWeapons = computed<readonly WeaponId[]>(() => {
+    const level=this.progression()?.level ?? 1;
+    const forged=this.loadout()?.forged ?? false;
+    return WEAPON_IDS.filter(id=>weaponUnlocked(id,level,forged));
+  });
   readonly equipmentSlots = EQUIPMENT_SLOTS;
   readonly gearCatalog = GEAR;
   readonly gear = signal<GearState | null>(null, { equal: (a, b) => a === b ||
@@ -110,10 +115,8 @@ export class HudService implements GameUi {
     }
     const loadout = this.loadout();
     if (loadout) {
-      const level=this.progression()?.level ?? 1;
-      for (const id of WEAPON_IDS) {
-        if (id === loadout.equipped ||
-            !weaponUnlocked(id,level,loadout.forged)) continue;
+      for (const id of this.availableWeapons()) {
+        if (id === loadout.equipped) continue;
         const item = WEAPONS[id];
         result.push({ id: 'weapon-' + id, kind: 'weapon', weaponId: id, name: item.name,
           icon: weaponItemIcon(id), quantity: 1, damage: item.damage,
