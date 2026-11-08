@@ -422,64 +422,64 @@ test('equipar elmo muda o desenho real do cavaleiro e retirar remove a chapa', a
 });
 
 
-test('minimapa usa terreno real da sala online, mantém norte e abre/fecha no Android', async ({ page }) => {
+test('atlas escondido no inventário cobre todo o limite técnico com setores reais', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/jogar/?room=minimap-qa');
   await expect(page.locator('#multiplayerStatus')).toContainText('Online');
-  const panel = page.locator('#miniMapPanel');
-  const canvas = page.locator('#worldMiniMapCanvas');
-  await expect(panel).toBeVisible();
+  await expect(page.locator('#miniMapPanel')).toHaveCount(0);
+  await expect(page.locator('#worldAtlasCanvas')).toHaveCount(0);
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  await page.locator('#inventoryTabMap').click();
+  const canvas = page.locator('#worldAtlasCanvas');
   await expect(canvas).toBeVisible();
-  await expect(page.locator('#miniMapToggle')).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('#worldMapDimensions')).toContainText('62.500 × 62.500');
+  await expect(page.locator('[data-atlas-sector]')).toHaveCount(9);
   const sample = () => canvas.evaluate(element => {
     const map = element as HTMLCanvasElement;
-    const context = map.getContext('2d')!;
-    const rgba = context.getImageData(0, 0, map.width, map.height).data;
-    const center = [...rgba.slice((61 * map.width + 61) * 4, (61 * map.width + 61) * 4 + 4)];
+    const rgba = map.getContext('2d')!.getImageData(0, 0, map.width, map.height).data;
+    const center = Array.from(rgba.slice((128 * map.width + 128) * 4, (128 * map.width + 128) * 4 + 4));
     const colors = new Set<string>();
-    for (let i = 0; i < rgba.length; i += 4) {
-      colors.add(rgba[i] + ',' + rgba[i + 1] + ',' + rgba[i + 2]);
-    }
+    for (let i = 0; i < rgba.length; i += 4) colors.add(rgba[i] + ',' + rgba[i + 1] + ',' + rgba[i + 2]);
     return { width: map.width, height: map.height, colors: colors.size, center };
   });
   await expect.poll(async () => (await sample()).colors).toBeGreaterThan(3);
-  expect(await sample()).toMatchObject({ width: 124, height: 124, center: [255, 255, 255, 255] });
-  await page.locator('#miniMapToggle').click();
-  await expect(page.locator('#worldMiniMapCanvas')).toHaveCount(0);
-  await expect(page.locator('#miniMapToggle')).toHaveAttribute('aria-expanded', 'false');
-  await page.locator('#miniMapToggle').click();
-  await expect(canvas).toBeVisible();
+  expect(await sample()).toMatchObject({ width: 256, height: 256, center: [255, 255, 255, 255] });
+  await page.locator('[data-atlas-sector="0"]').click();
+  await expect(page.locator('[data-atlas-sector="0"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#atlasScaleDetails')).toContainText('20833 tiles');
+  await page.locator('#mapScaleNearby').click();
+  await expect(page.locator('#atlasScaleDetails')).toContainText('128 tiles');
   await expect.poll(async () => (await sample()).colors).toBeGreaterThan(3);
+  await page.locator('#closeInventory').click();
+  await expect(canvas).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
-test('minimapa não bloqueia conversas, caminhada nem toques no Android', async ({ page }) => {
+test('mapa no inventário não intercepta toques do mundo no Android', async ({ page }, info) => {
   await page.goto('/jogar/?modo=solo');
-  const map = page.locator('#worldMiniMapCanvas');
-  const toggle = page.locator('#miniMapToggle');
-  await expect(map).toBeVisible();
-  await expect(toggle).toBeVisible();
-  const interaction = await page.locator('#miniMapPanel').evaluate(panel => ({
-    panel: getComputedStyle(panel).pointerEvents,
-    canvas: getComputedStyle(panel.querySelector('canvas')!).pointerEvents,
-    toggle: getComputedStyle(panel.querySelector('button')!).pointerEvents,
-  }));
-  expect(interaction).toEqual({ panel: 'none', canvas: 'none', toggle: 'auto' });
-  // Hit-testing inside the decorative map must reach the world or a game
-  // control, not the map overlay that previously blocked nine browser tests.
-  const rect = await map.boundingBox();
+  const world = page.locator('canvas#game');
+  await expect(world).toBeVisible();
+  await expect(page.locator('#miniMapToggle')).toHaveCount(0);
+  await expect(page.locator('#worldAtlasCanvas')).toHaveCount(0);
+  const rect = await world.boundingBox();
   expect(rect).not.toBeNull();
-  const top = await page.evaluate(({ x, y }) =>
+  const target = await page.evaluate(({ x, y }) =>
     document.elementFromPoint(x, y)?.id ?? '', {
-      x: rect!.x + rect!.width / 2, y: rect!.y + rect!.height / 2,
+      x: rect!.x + rect!.width / 2,
+      y: rect!.y + rect!.height / 2,
     });
-  expect(top).not.toBe('worldMiniMapCanvas');
-  expect(top).not.toBe('miniMapPanel');
-  await toggle.click();
-  await expect(map).toHaveCount(0);
-  await toggle.click();
-  await expect(map).toBeVisible();
+  expect(target).toBe('game');
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  await page.locator('#inventoryTabMap').click();
+  await expect(page.locator('#worldAtlasCanvas')).toBeVisible();
+  await page.locator('#closeInventory').click();
+  const position = { x: rect!.width / 2 + 64, y: rect!.height / 2 + 32 };
+  if (info.project.name === 'android') await world.tap({ position });
+  else await world.click({ position });
+  await expect(world).toBeVisible();
 });
 
 test('espada forjada equipada aparece parada na prévia e troca para a inicial sem atacar', async ({ page }) => {
