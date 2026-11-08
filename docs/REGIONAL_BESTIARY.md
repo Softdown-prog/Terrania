@@ -67,3 +67,46 @@ Os vinte são criaturas do jogo **solo**; Go/Rust permanecem
 experimentais e não devem ser adaptados como se o multiplayer estivesse ativo.
 Drops de armas raras e tridente são itens de materiais colecionáveis até a
 definição de equipamento correspondente, sem criar armamento falso.
+
+## Auditoria de jogabilidade dos dois lotes (08/11/2026)
+
+Compilar não substitui testar o jogo. A revisão cruzou as espécies com o
+controlador de tiles, combate, caverna, inventário e HUD Angular.
+
+### Regressões corrigidas
+
+- Inimigos derrotados são registrados no motor solo; reentrar na mesma caverna
+  não cria novos IDs apenas porque outros inimigos foram removidos.
+- Movimento por tiles respeita congelamento, atordoamento e lentidão;
+  um passo em andamento pausa em vez de atravessar o efeito.
+- A Battle List subterrânea usa câmera/personagem subterrâneos,
+  permite seleção e perseguição e mantém o alvo de golpes focados.
+- HP, HP máximo, nutrição e efeitos temporários são sincronizados
+  entre simulações de superfície/caverna ao entrar e sair.
+- Cura salva na caverna usa HP atual, sem restaurar valores antigos ao recarregar.
+- O loot regional aparece na bolsa Angular com quantidades canônicas
+  e ícone de material reutilizável.
+- O spawn de superfície seleciona o bioma do tile real, não do centro do chunk.
+- O Verme da Areia só ataca se alcançar uma emergência livre dentro
+  do alcance melee, respeitando corredores e colisão.
+- A caverna glacial aplica um piso gelado real, ativando o bônus do lobo.
+- O HUD evita recalcular material e Battle List desnecessariamente a cada frame.
+
+### Limites restantes — não considerar concluídos
+
+- Magias compartilham um modelo de conjuração e dano imediato após preparação:
+  ainda faltam projéteis individualizados, trajetórias e impactos animados.
+- As formas Canvas são aproximações da folha de referência. O contrato de arte
+  verifica complexidade e contraste, mas não semelhança visual.
+- Cavernas derrotadas permanecem vazias até que se defina respawn temporizado;
+  a correção atual evita farm imediato mas não implementa reaparecimento futuro.
+- Espada de Coral e Tridente das Marés ainda são colecionáveis, não armas
+  equipáveis sem uma definição de combate e arte.
+- HP e nutrição são persistidos ao salvar na caverna, mas o save não retoma
+  a posição subterrânea e não serializa estados temporários de debuff.
+- Densidade e dificuldade de encontros precisam de playtest prolongado
+  nas transições entre biomas e em dispositivos móveis.
+
+Regressões automatizadas em tests/bestiary-audit.test.ts.
+Validação: architecture:check, typecheck, testes unitários, build e
+Playwright desktop/Android, antes de liberar merge.
