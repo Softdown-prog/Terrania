@@ -15,8 +15,9 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/Weapons.ts`](../../src/engine/Weapons.ts)
 - [`src/engine/Equipment.ts`](../../src/engine/Equipment.ts)
 
-## Todos os arquivos deste módulo (15)
+## Todos os arquivos deste módulo (16)
 
+- [`src/engine/CaveRoom.ts`](../../src/engine/CaveRoom.ts)
 - [`src/engine/ClassicBattleList.ts`](../../src/engine/ClassicBattleList.ts)
 - [`src/engine/ClassicCombat.ts`](../../src/engine/ClassicCombat.ts)
 - [`src/engine/ClassicPursuit.ts`](../../src/engine/ClassicPursuit.ts)

@@ -16,6 +16,8 @@ import { FOODS, type FoodId } from "../engine/Food.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../engine/Weapons.ts";
 import type { GearId, GearSlot } from "../engine/Equipment.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
+import { CaveRoom } from "../engine/CaveRoom.ts";
+import { caveEntranceNear, type CaveEntrance } from "../world/caves.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { TapNavigator } from "../engine/TapNavigator.ts";
 import { ClassicCombat, nearestCombatCreature } from "../engine/ClassicCombat.ts";
@@ -69,6 +71,7 @@ export class Game {
   private sim = new OfflineSimulation(842136);
   private world = new WorldRenderer(842136);
   private interior: InteriorRoom | null = null;
+  private cave: CaveRoom | null = null;
   private saveClock = 0;
   private accumulator = 0;
   private clock = 0;
@@ -146,7 +149,7 @@ export class Game {
     );
   }
   private selectBattleTarget(id: string): void {
-    if (this.interior || this.hud.menuOpen || this.sim.awaitingRespawn ||
+    if (this.interior || this.cave || this.hud.menuOpen || this.sim.awaitingRespawn ||
         !this.hudBattleRows().some(row => row.id === id)) return;
     this.selectTarget(id);
   }
@@ -185,6 +188,8 @@ export class Game {
     this.hud.setBattleCreatures([], null);
     this.hud.setCombatTarget(null);
     this.interior = null;
+    this.cave = null;
+    this.hud.setCave(null);
     this.world.clear();
     this.world = new WorldRenderer(seed);
     this.sim = new OfflineSimulation(seed, saved);
@@ -196,10 +201,16 @@ export class Game {
   private talkToNpc(): void {
     if (this.hud.menuOpen || this.sim.awaitingRespawn) return;
     this.navigator.cancel();
+    if (this.cave) {
+      if (this.cave.nearExit) this.leaveCave();
+      return;
+    }
     if (this.interior) {
       this.leaveInterior();
       return;
     }
+    const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
+    if (entrance) { this.enterCave(entrance); return; }
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
     if (!npc) return;
     this.input.clear();
@@ -276,6 +287,31 @@ export class Game {
     }
     return INVENTORY_FEEDBACK[result];
   }
+  private enterCave(entrance:CaveEntrance):void {
+    this.navigator.cancel();
+    this.classicCombat.reset();
+    this.classicPursuit.reset();
+    this.tileWalker.reset();
+    this.input.clear();
+    this.accumulator=0;
+    this.effects.reset();
+    this.hud.setCombatTarget(null);
+    this.hud.setBattleCreatures([],null);
+    this.cave=new CaveRoom(entrance);
+    this.hud.setTravelNotice("Você desceu para "+entrance.name+". O mapa agora acompanha o primeiro andar da caverna.");
+  }
+  private leaveCave():void {
+    this.cave=null;
+    this.hud.setCave(null);
+    this.input.clear();
+    this.navigator.cancel();
+    this.tileWalker.reset();
+    this.classicPursuit.reset();
+    this.accumulator=0;
+    this.camera.snap(this.sim.player.x,this.sim.player.y);
+    this.hud.setTravelNotice("Você retornou à superfície pela mesma entrada.");
+    this.updateHud();
+  }
   private leaveInterior(): void {
     this.tileWalker.reset();
     this.navigator.cancel();
@@ -319,7 +355,7 @@ export class Game {
     const attack = !paused && this.input.consumeAttack(false);
     const stopTarget = this.input.consumeCancelTarget();
     if (stopTarget) this.cancelTarget();
-    if (attack && !stopTarget && !this.interior) {
+    if (attack && !stopTarget && !this.interior && !this.cave) {
       if (!this.classicCombat.targetId)
         this.classicCombat.selectNearest(this.sim.player, this.sim.slimes.values());
       if (this.classicCombat.targetId) {
@@ -331,15 +367,16 @@ export class Game {
     if (paused || manualActive) this.navigator.cancel();
     if (manualActive) this.classicPursuit.suspend();
     const tap = this.input.consumeTap();
-    const walkByTiles = !this.interior;
+    const walkByTiles = !this.interior && !this.cave;
     const committedStep = walkByTiles ? this.tileWalker.destination : null;
     if (tap && !paused && !manualActive && !attack) {
-      const destination = this.interior
-        ? this.scene.interiorPoint(tap)
+      const destination = this.cave
+        ? this.scene.cavePoint(tap,this.cave,this.camera.zoom)
+        : this.interior ? this.scene.interiorPoint(tap)
         : this.scene.worldPoint(tap, this.camera);
-      const player = this.interior?.player ?? this.sim.player;
-      const collision = this.interior?.collision ?? this.sim.collision;
-      const creature = destination && !this.interior
+      const player = this.cave?.player ?? this.interior?.player ?? this.sim.player;
+      const collision = this.cave?.collision ?? this.interior?.collision ?? this.sim.collision;
+      const creature = destination && !this.interior && !this.cave
         ? nearestCombatCreature(destination, this.battleCreatures()) : null;
       if (creature) {
         this.selectTarget(creature.id);
@@ -353,10 +390,26 @@ export class Game {
         }
       }
     }
-    const controlled = this.interior?.player ?? this.sim.player;
+    const controlled = this.cave?.player ?? this.interior?.player ?? this.sim.player;
     const tileRoute = walkByTiles && this.navigator.target !== null;
     const movement = paused ? still : manualActive ? manual : tileRoute ? still :
       this.navigator.target ? this.navigator.direction(controlled, dt) : still;
+    if (this.cave) {
+      const cave=this.cave;
+      this.accumulator=0;
+      if (!paused && dt > 0) { cave.update(dt,movement); this.input.acknowledgeMovement(); }
+      if (cave.reachedExit) this.leaveCave();
+      else {
+        this.updateHud();
+        this.hud.setCave({floor:cave.floor,
+          tileX:Math.floor(cave.player.x/TILE_SIZE),tileY:Math.floor(cave.player.y/TILE_SIZE)});
+        this.hud.setNearbyAction(cave.nearExit?"leave":null);
+        this.hud.setBattleCreatures([],null);
+        this.scene.renderCave(cave,this.camera.zoom,this.clock,this.navigator.target,
+          this.sim.inventory.gear,this.sim.inventory.loadout.equipped);
+        return;
+      }
+    }
     if (this.interior) {
       const room = this.interior;
       this.accumulator = 0;
@@ -438,7 +491,8 @@ export class Game {
     this.hud.setCombatTarget(focusedLabel && following
       ? focusedLabel + " · seguindo" : focusedLabel);
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
-    this.hud.setNearbyAction(npc ? NPC_ACTIONS[npc.kind ?? "character"] : null);
+    const portal = caveEntranceNear(this.sim.player.x,this.sim.player.y,this.sim.seed);
+    this.hud.setNearbyAction(portal ? "enter" : npc ? NPC_ACTIONS[npc.kind ?? "character"] : null);
     this.scene.render(
       this.world,
       this.camera,

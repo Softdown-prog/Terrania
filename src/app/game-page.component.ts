@@ -9,6 +9,7 @@ import { heartbeatEndpoint } from '../net/presence.ts';
 import { runtimeConfig } from './runtime-config.ts';
 import { renderHero } from '../render/actors.ts';
 import { drawWorldAtlas } from '../render/terrain.ts';
+import { drawCaveAtlas } from '../render/cave.ts';
 import { atlasFrame, GROUND_NAMES, BIOME_NAMES, sectorIndex, surveySectors, type AtlasScale } from '../world/atlas.ts';
 import { REGIONS, getWorldRegion } from '../world/regions.ts';
 import { getRegionDifficulty } from '../world/regionDifficulty.ts';
@@ -69,12 +70,18 @@ export class GamePageComponent implements AfterViewInit {
     effect(() => {
       // No map computation or Canvas work while playing or in another tab.
       if (!this.inventoryOpen() || this.hud.inventoryTab() !== 'map') return;
-      const { x, y } = this.hud.mapTile();
-      const seed = this.hud.seed();
-      const scale = this.atlasScale();
-      const sector = this.selectedSector();
+      const cave = this.hud.cave();
       const ctx = this.atlasCanvas()?.nativeElement.getContext('2d');
-      if (ctx) drawWorldAtlas(ctx, scale, x, y, seed, sector);
+      if (!ctx) return;
+      if (cave) {
+        drawCaveAtlas(ctx,cave.floor,cave.tileX,cave.tileY);
+      } else {
+        const { x, y } = this.hud.mapTile();
+        const seed = this.hud.seed();
+        const scale = this.atlasScale();
+        const sector = this.selectedSector();
+        drawWorldAtlas(ctx, scale, x, y, seed, sector);
+      }
     });
     effect(() => {
       const awaitingRespawn = this.hud.awaitingRespawn();

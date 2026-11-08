@@ -100,7 +100,12 @@
         <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
         ><small id="saveMode">Aventura local · progresso neste navegador</small>
       </div>
-      <p id="gameNotice" role="status">{{ notice() }}</p>
+      <p id="gameNotice" role="status">{{ notice() || hud.travelNotice() }}
+        @if (hud.travelNotice()) {
+          <button type="button" id="dismissTravelNotice" (click)="hud.dismissTravelNotice()"
+            aria-label="Fechar aviso">Fechar</button>
+        }
+      </p>
       @if (hud.targetCombat()) {
         <aside id="classicCombat" class="classic-status" aria-label="Combate por alvo">
           <strong>COMBATE POR ALVO</strong>
@@ -282,6 +287,35 @@
           </section>
         </div>
         @if (hud.inventoryTab() === 'map') {
+          @if (hud.cave(); as cave) {
+            <section id="inventoryMapPanel" class="world-atlas-panel" aria-label="Mapa do andar subterrâneo">
+              <div class="atlas-titlebar">
+                <div><span class="atlas-eyebrow">TERRANIA · SUBSOLO</span>
+                  <h2 id="caveMapTitle">{{ cave.floor.name }}</h2></div>
+                <span class="atlas-seed">ANDAR −1</span>
+              </div>
+              <p id="worldMapDimensions">Mapa do primeiro andar desta caverna. As paredes e águas profundas são obstáculos reais.</p>
+              <div class="atlas-main">
+                <div class="atlas-map-frame">
+                  <div class="atlas-map-topline"><span>✦ PLANTA DA CAVERNA ✦</span><span>N ↑</span></div>
+                  <canvas #atlasCanvas id="worldAtlasCanvas" width="256" height="256" role="img"
+                    [attr.aria-label]="'Mapa interior de ' + cave.floor.name + ', andar subterrâneo um, sua posição e a saída'"></canvas>
+                  <div class="atlas-map-bottomline"><span>O ←</span><span>ANDAR −1</span><span>→ L</span></div>
+                </div>
+                <div class="atlas-details">
+                  <strong id="atlasCurrentRegion">Você está em: {{ cave.floor.name }}</strong>
+                  <span id="atlasCoordinates">Posição interna: X {{ cave.tileX }} · Y {{ cave.tileY }}</span>
+                  <span id="atlasGround">Região exterior: {{ cave.floor.entrance.theme }}</span>
+                  <span id="atlasScaleDetails">Primeiro andar: 42 × 30 tiles</span>
+                  <div class="atlas-legend" aria-label="Legenda subterrânea">
+                    <span>□ Você (branco)</span><span>□ Saída (âmbar)</span>
+                    <span>Solo escuro: paredão</span><span>Solo colorido: área transitável</span>
+                  </div>
+                </div>
+              </div>
+              <p class="dialog-note">Aperte E perto da escada ou caminhe até ela para voltar à superfície.</p>
+            </section>
+          } @else {
           <section id="inventoryMapPanel" class="world-atlas-panel" aria-label="Atlas de Terrania">
             <div class="atlas-titlebar">
               <div>
@@ -319,6 +353,7 @@
                   <span><i class="atlas-swatch village"></i> Vila da Travessia</span>
                   <span><i class="atlas-swatch party"></i> Aventureiros próximos</span>
                   <span>◆ Marcos regionais (visão próxima)</span>
+                  <span>⬟ Entradas de cavernas (arredores)</span>
                   <span><i class="atlas-swatch grass"></i> Campos</span>
                   <span><i class="atlas-swatch forest"></i> Floresta</span>
                   <span><i class="atlas-swatch trail"></i> Trilha e areia</span>
@@ -342,6 +377,7 @@
             </div>
             <p class="dialog-note">O atlas representa o terreno real da seed: norte gelado, sul desértico, leste costeiro, oeste montanhoso e centro temperado. Setores e biomas são amostras cartográficas, não rotas garantidas; navegação, monstros e marcos temáticos futuros ainda dependem de implementação própria.</p>
           </section>
+          }
         }
         <p id="inventoryFeedback" class="dialog-note" role="status" aria-live="polite">{{ hud.inventoryFeedback() }}</p>
         <button id="closeInventory" (click)="close($event)" class="secondary-button" type="button">Voltar à aventura</button>
@@ -403,7 +439,7 @@
           </div>
           <div>
             <dt>E ou botão Conversar</dt>
-            <dd>Converse com moradores, leia placas e entre nas construções. Nos interiores, use WASD ou o joystick; E retorna à vila.</dd>
+            <dd>Converse com moradores, leia placas, entre nas construções e desça por buracos, escadas e passagens para cavernas no modo solo. O mapa do inventário acompanha o andar subterrâneo; volte pela saída iluminada.</dd>
           </div>
           <div>
             <dt>Espaço ou J</dt>

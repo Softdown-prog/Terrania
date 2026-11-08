@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import type { GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
+import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
 import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
@@ -12,6 +12,7 @@ const ACTION_LABELS: Record<NearbyAction, string> = {
   talk: 'Conversar',
   read: 'Ler',
   enter: 'Entrar',
+  leave: 'Subir',
 };
 const KIT_IDS = Object.keys(GEAR) as GearId[];
 
@@ -36,6 +37,7 @@ type InventoryTab = 'bag' | 'equipment' | 'map';
 
 @Injectable()
 export class HudService implements GameUi {
+  readonly travelNotice = signal('');
   readonly targetCombat = signal(false);
   readonly combatTarget = signal<string | null>(null);
   readonly battleCreatures = signal<readonly BattleCreature[]>([]);
@@ -53,6 +55,8 @@ export class HudService implements GameUi {
   readonly coords = signal('X 0 · Y 0');
   readonly mapTile = signal({ x: 0, y: 0 }, { equal: (a, b) => a.x === b.x && a.y === b.y });
   readonly seed = signal(842136);
+  readonly cave = signal<CaveMapState | null>(null, {equal:(a,b)=> a===b ||
+    (a!==null && b!==null && a.floor===b.floor && a.tileX===b.tileX && a.tileY===b.tileY)});
   readonly gel = signal(0);
   readonly potions = signal(0);
   readonly foodIds = FOOD_IDS;
@@ -257,9 +261,19 @@ export class HudService implements GameUi {
     (section === 'bag' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
   }
   setQuickPotionFeedback(message: string): void { this.quickPotionFeedback.set(message); }
+  setTravelNotice(message: string): void { this.travelNotice.set(message); }
+  dismissTravelNotice(): void { this.travelNotice.set(''); }
   setTargetCombat(enabled: boolean): void { this.targetCombat.set(enabled); }
   setCombatTarget(label: string | null): void { this.combatTarget.set(label); }
   setSeed(seed: number): void { this.seed.set(seed); }
+  setCave(location:CaveMapState|null):void {
+    this.cave.set(location);
+    if(location) {
+      this.coords.set("Subsolo · X "+location.tileX+" · Y "+location.tileY);
+      this.quest.set(location.floor.name);
+      this.questProgress.set("Andar −1 · retorne pela escada");
+    }
+  }
   setNearbyAction(action: NearbyAction | null): void {
     this.talkVisible.set(action !== null);
     if (action) this.talkLabel.set(`${ACTION_LABELS[action]} (E)`);

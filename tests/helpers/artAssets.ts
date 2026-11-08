@@ -8,6 +8,8 @@ import { renderNpc } from "../../src/render/npcs.ts";
 import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
 import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
+import { drawCaveEntrance } from "../../src/render/cave.ts";
+import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
 import type { RegionalLandmarkKind } from "../../src/world/regionalLandmarks.ts";
 import { NPCS } from "../../src/world/npcs.ts";
 
@@ -44,6 +46,17 @@ export const ASSETS: ArtAsset[] = [
     .map<ArtAsset>(kind => ({ id: "marco " + kind, tier: "structure", fn: "paintRegionalLandmark",
       draw: c => paintRegionalLandmark(c, kind, 0) })),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
+  ...([
+    ["verdant","hole"],["glacial","hole"],["desert","stairs"],
+    ["coastal","stairs"],["basalt","ladder"],["marsh","ladder"],
+  ] as const satisfies readonly (readonly [CaveTheme,CaveEntranceKind])[])
+    .map<ArtAsset>(([theme,kind],i) => {
+      const entry:CaveEntrance={id:"cave-test:"+theme,tileX:22+i,tileY:11,
+        x:0,y:0,name:"Entrada "+theme,theme,kind,seed:842136};
+      return {id:"entrada de caverna "+theme+" ("+kind+")",
+        tier:"prop",fn:"drawCaveEntrance",
+        draw:c=>drawCaveEntrance(c,entry,0,0,1)};
+    }),
 ];
 
 /** Funções `render*`/`draw*` que NÃO são peças: compõem cenas inteiras. Cada exceção precisa de motivo. */
@@ -55,4 +68,6 @@ export const NOT_AN_ASSET: Record<string, string> = {
   drawWorldView: "compõe a cena inteira a partir das peças registradas",
   drawWorldAtlas: "cartografia do mapa, não uma peça de arte",
   drawInterior: "composição de ambiente interno; as peças dele devem ser registradas se forem extraídas",
+  drawCaveView: "composição da cena subterrânea com tiles e herói já registrados",
+  drawCaveAtlas: "cartografia do andar interno, não uma peça de arte",
 };

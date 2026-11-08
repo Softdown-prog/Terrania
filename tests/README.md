@@ -11,3 +11,9 @@
 **Limites:** Testes não substituem observabilidade real nem carga de 500 jogadores.
 
 **MCP:** `mcp-navigator.test.ts` verifica leitura limitada dos índices, respostas de protocolo stdio, bloqueio de caminhos maliciosos e ausência de comandos de escrita.
+
+**Subsolo:** `tests/caves.test.ts` valida entradas determinísticas,
+variação regional (incluindo sudeste pantanoso), limites, colisão do
+primeiro andar e conectividade das câmaras. Antes de integrar, executar
+também o Playwright de desktop/Android com descida, atlas interno e retorno
+pela escada; CI verde sem esse cenário não comprova que a navegação está correta.
