@@ -92,4 +92,59 @@ try {
   writeFileSync(caveFile, Buffer.from(caves.split(',')[1], 'base64'));
   console.log('Comparação real de seis cavernas e seus mapas: ' + caveFile);
 
+  // A second real scene at a wall-facing traversable cell. The previous
+  // starter-area preview was almost all floor, so it could not reveal missing
+  // wall relief or whether regional formations actually appear in-frame.
+  const wallDetails = await page.evaluate(() => {
+    const themes = [
+      ['verdant', 'Gruta das Raízes'], ['glacial', 'Gruta das Geadas'],
+      ['desert', 'Cripta das Dunas'], ['coastal', 'Caverna das Marés'],
+      ['basalt', 'Galeria das Montanhas'], ['marsh', 'Masmorra do Brejo'],
+    ];
+    const sheet = document.createElement('canvas');
+    sheet.width = 1410;
+    sheet.height = 740;
+    const ctx = sheet.getContext('2d');
+    ctx.fillStyle = '#10201d';
+    ctx.fillRect(0, 0, sheet.width, sheet.height);
+    themes.forEach(([theme, name], i) => {
+      const column = i % 3, row = Math.floor(i / 3);
+      const bx = column * 470, by = row * 370;
+      const room = new globalThis.CAVES.CaveRoom({
+        id: 'art-wall:' + theme, name, theme, kind: 'stairs',
+        x: 0, y: 0, tileX: 34 + i, tileY: -78 - i, seed: 842136,
+      });
+      let target = null;
+      let best = -1;
+      for (let y = 4; y < 26; y++) for (let x = 4; x < 38; x++) {
+        if (room.floor.at(x, y) !== 1) continue;
+        const walls = [[0,-1],[1,0],[0,1],[-1,0]]
+          .filter(([dx,dy]) => room.floor.at(x+dx,y+dy) === 0).length;
+        if (walls < 1) continue;
+        // Prefer a chamber boundary rather than another wide blank patch.
+        const score = walls * 10 + Math.min(x, 41-x) / 100;
+        if (score > best) { best = score; target = { x, y, walls }; }
+      }
+      if (!target) throw new Error('Nenhuma parede próxima de piso acessível: ' + theme);
+      room.player.x = (target.x + .5) * 32;
+      room.player.y = (target.y + .5) * 32;
+      ctx.fillStyle = '#fff6dc'; ctx.font = 'bold 16px system-ui';
+      ctx.textAlign = 'left'; ctx.fillText(name, bx + 15, by + 28);
+      ctx.save();
+      ctx.translate(bx + 15, by + 43);
+      ctx.beginPath(); ctx.rect(0, 0, 438, 303); ctx.clip();
+      ctx.scale(1.36, 1.36);
+      globalThis.CAVES.drawCaveView(ctx, room,
+        room.player.x - 161, room.player.y - 111.5,
+        322, 223, 1);
+      ctx.restore();
+      ctx.fillStyle = '#b4c8ba'; ctx.font = '10px system-ui';
+      ctx.fillText('Parede real: ' + target.walls + ' faces adjacentes · andar -1', bx + 15, by + 361);
+    });
+    return sheet.toDataURL('image/png');
+  });
+  const wallFile = join(out, 'cavernas-paredes.png');
+  writeFileSync(wallFile, Buffer.from(wallDetails.split(',')[1], 'base64'));
+  console.log('Amostra real de paredes e formações nos seis temas: ' + wallFile);
+
 } finally { await browser.close(); }

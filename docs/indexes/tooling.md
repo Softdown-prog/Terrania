@@ -12,10 +12,11 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 - [`scripts/mcp/server.mjs`](../../scripts/mcp/server.mjs)
 
-## Todos os arquivos deste módulo (26)
+## Todos os arquivos deste módulo (27)
 
 - [`.github/workflows/autoscale-lab.yml`](../../.github/workflows/autoscale-lab.yml)
 - [`.github/workflows/capacity-lab.yml`](../../.github/workflows/capacity-lab.yml)
+- [`.github/workflows/cave-art-contract.yml`](../../.github/workflows/cave-art-contract.yml)
 - [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 - [`.github/workflows/deploy-go-shadow.yml`](../../.github/workflows/deploy-go-shadow.yml)
 - [`.github/workflows/deploy-pages.yml`](../../.github/workflows/deploy-pages.yml)

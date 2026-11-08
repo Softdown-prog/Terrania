@@ -18,6 +18,8 @@ export interface Metrics {
   lightest: number;
   saves: number;
   restores: number;
+  /** Quantas vezes o material foi recortado na silhueta. */
+  clips: number;
   /** Alguma cor foi usada com alfa < 1 (sombras, brilho, vidro). */
   usesAlpha: boolean;
   /** Pixels (em unidades do contexto) cobertos pela caixa de todos os caminhos desenhados. */
@@ -147,7 +149,8 @@ export class Recorder {
       paintOps, fills: (this.counts.fill ?? 0) + (this.counts.fillRect ?? 0), strokes: (this.counts.stroke ?? 0) + (this.counts.strokeRect ?? 0),
       colors: this.palette.size, gradients: this.counts.gradients ?? 0, curves,
       darkest: lums.length ? Math.min(...lums) : 1, lightest: lums.length ? Math.max(...lums) : 0,
-      saves: this.counts.save ?? 0, restores: this.counts.restore ?? 0, usesAlpha: this.alpha,
+      saves: this.counts.save ?? 0, restores: this.counts.restore ?? 0,
+      clips: this.counts.clip ?? 0, usesAlpha: this.alpha,
       width: Number.isFinite(this.maxX) ? this.maxX - this.minX : 0, height: Number.isFinite(this.maxY) ? this.maxY - this.minY : 0,
       signature: (h >>> 0).toString(16),
     };
