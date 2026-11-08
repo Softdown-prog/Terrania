@@ -248,6 +248,9 @@ function drawSerpent(ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void 
       i%2?c.accent:c.light);
   }
   headEyes(ctx,[[-19,-51],[-10,-50]],c,2.4);
+  // Cristal condutor na linha dorsal, com brilho volumétrico próprio.
+  ellipse(ctx,4,-17,4.1,2.3,c.accent,-.45);
+  ellipse(ctx,3.2,-17.8,1.5,.7,rgba(GLINT,.84),-.45);
   ctx.strokeStyle=c.accent;ctx.lineWidth=1.4;
   for(let i=0;i<4;i++) {
     ctx.beginPath();ctx.moveTo(10+i*2,-27-i*3);
