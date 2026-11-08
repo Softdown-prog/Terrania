@@ -14,8 +14,9 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/Experience.ts`](../../src/engine/Experience.ts)
 - [`src/engine/Weapons.ts`](../../src/engine/Weapons.ts)
 - [`src/engine/Equipment.ts`](../../src/engine/Equipment.ts)
+- [`src/engine/MountStable.ts`](../../src/engine/MountStable.ts)
 
-## Todos os arquivos deste módulo (16)
+## Todos os arquivos deste módulo (17)
 
 - [`src/engine/CaveRoom.ts`](../../src/engine/CaveRoom.ts)
 - [`src/engine/ClassicBattleList.ts`](../../src/engine/ClassicBattleList.ts)
@@ -27,6 +28,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/Food.ts`](../../src/engine/Food.ts)
 - [`src/engine/InteriorRoom.ts`](../../src/engine/InteriorRoom.ts)
 - [`src/engine/Inventory.ts`](../../src/engine/Inventory.ts)
+- [`src/engine/MountStable.ts`](../../src/engine/MountStable.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
 - [`src/engine/README.md`](../../src/engine/README.md)
 - [`src/engine/TapNavigator.ts`](../../src/engine/TapNavigator.ts)

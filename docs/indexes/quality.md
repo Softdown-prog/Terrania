@@ -10,8 +10,10 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
+- [`tests/mounts.test.ts`](../../tests/mounts.test.ts)
+- [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 
-## Todos os arquivos deste módulo (52)
+## Todos os arquivos deste módulo (54)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -28,6 +30,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/classic-battle-list.spec.ts`](../../tests/browser/classic-battle-list.spec.ts)
 - [`tests/browser/classic-combat.spec.ts`](../../tests/browser/classic-combat.spec.ts)
 - [`tests/browser/classic-tiles.spec.ts`](../../tests/browser/classic-tiles.spec.ts)
+- [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/browser/session.spec.ts`](../../tests/browser/session.spec.ts)
 - [`tests/caves.test.ts`](../../tests/caves.test.ts)
 - [`tests/classic-battle-list.test.ts`](../../tests/classic-battle-list.test.ts)
@@ -48,6 +51,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/mcp-navigator.test.ts`](../../tests/mcp-navigator.test.ts)
 - [`tests/mobile-controls.test.ts`](../../tests/mobile-controls.test.ts)
 - [`tests/mobile-layout.test.ts`](../../tests/mobile-layout.test.ts)
+- [`tests/mounts.test.ts`](../../tests/mounts.test.ts)
 - [`tests/npcs.test.ts`](../../tests/npcs.test.ts)
 - [`tests/phaser-install.test.ts`](../../tests/phaser-install.test.ts)
 - [`tests/physics.test.ts`](../../tests/physics.test.ts)
