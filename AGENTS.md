@@ -19,6 +19,26 @@ Leia primeiro [docs/INDEX.md](docs/INDEX.md), [architecture/modules.json](archit
 - `server/`: backend Node atual; `server-go/` e Rust têm componentes experimentais; não promover por suposição.
 - `docs/indexes/`: **gerados**. Não editar à mão; alterar código/registro e regenerar.
 
+## Padrão obrigatório da arte procedural
+
+Antes de criar uma nova peça visual, inspecionar um exemplo existente da mesma categoria:
+`src/app/item-icon.component.ts` para ícones (silhueta legível, camadas e contorno),
+`src/render/scenery.ts` para construções/árvores e `src/render/actors.ts` para personagens.
+Não substituir uma peça elaborada por geometria placeholder só para terminar a tarefa.
+O número de linhas não é critério de aprovação, mas a **paridade de acabamento**
+(material, volume, sombras, iluminação, detalhes secundários, orientação e escala móvel) é.
+Para estruturas grandes, separar o *painter* em `src/render/`; a posição,
+colisão, seed e gameplay continuam em `src/world/`.
+
+- Derivar variantes de seed/ID estáveis; não consumir `Math.random()` ou gerar
+  gradientes e partículas complexas em cada frame.
+- Cachear sprites estáticos com chave que inclua a variante e teto de entradas.
+- Reutilizar `draw.ts` e o renderizador canônico, sem duplicar Canvas ou motor.
+- Exigir teste determinístico e visual/desktop/Android antes do merge; revisar
+  o resultado renderizado, além do TypeScript compilado.
+- Ao trabalhar em paralelo com outro agente, comparar o estado atual de `main`
+  antes de editar, preservar alterações concorrentes e não mesclar com CI vermelho.
+
 ## Diagnóstico e recuperação
 
 Consultar [docs/MANUTENCAO.md](docs/MANUTENCAO.md). Índice, testes e MCP ajudam a localizar problemas; não são backup, rollback, telemetria, alta disponibilidade nem prova de capacidade. Tags Git preservam versões de código; dados de jogadores exigirão uma estratégia própria de persistência/backup.
