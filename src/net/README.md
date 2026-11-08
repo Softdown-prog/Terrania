@@ -15,3 +15,5 @@
 **Inventário online:** após negociar `inventory=loot`, o cliente consome o estado privado da bolsa e só libera outro pedido quando chega o recibo do pedido pendente. Ver [ADR 0007](../../docs/adr/0007-inventario-da-sala.md).
 
 **Alimentação online:** os comandos `buy-apple|bread|meat` e `eat-apple|bread|meat` passam por `isValidInventoryMessage` e recibos privados. A sala Node valida compra com Lina, saldo de gel, quantidade, cooldown, saciedade e HP; o navegador só mostra o resultado. `food` e `nutrition` são campos opcionais de `RoomInventoryState` para leitura compatível, mas clientes e servidores precisam ser atualizados de maneira coordenada para habilitar novos comandos.
+
+**Arma visual online:** `HeroState.equippedWeapon` anuncia opcionalmente a espada forjada equipada e visível em repouso, sem expor a bolsa. A ausência indica espada inicial. `attackWeapon` continua indicando a arma comprometida com o golpe ativo. O buffer de snapshots adota o equipamento mais recente para o estado ocioso, mas mantém a arma da animação já iniciada. O contrato continua v3 com campos opcionais para compatibilidade visual com servidores anteriores.

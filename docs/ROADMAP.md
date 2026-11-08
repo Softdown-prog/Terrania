@@ -80,4 +80,5 @@ A implementação dos itens marcados não certifica o lançamento, apenas indica
 
 - [x] Peças do conjunto inicial (elmo, escudo, peitoral, botas, calça, mochila e pingente) desenhadas sobre o herói procedural, no mundo e na prévia, usando o estado real de equipamento
 - [x] Aparência de outros cavaleiros equipados transmitida nos snapshots da sala Node, sem publicar os itens da bolsa
+- [x] Espada realmente equipada visível em repouso no solo, no inventário e no multiplayer; arma do golpe em curso preservada após trocar equipamento
 - [ ] Conferir cada conjunto em todas as direções, animação de caminhada, golpe, dano e colisão visual no Android
