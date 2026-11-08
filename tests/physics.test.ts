@@ -47,7 +47,7 @@ test("strike has windup, happens once and respects its cooldown", () => {
   assert.equal(player.consumeStrike(), true);
   assert.equal(player.consumeStrike(), false);
   assert.equal(player.startAttack(), false);
-  for (let i = 0; i < 5; i++) player.update(0.1, { x: 0, y: 0 }, floor);
+  for (let i = 0; i < 8; i++) player.update(0.1, { x: 0, y: 0 }, floor);
   assert.equal(player.startAttack(), true);
 });
 test("sword respects range, direction and intervening obstacles", () => {
@@ -97,8 +97,9 @@ test("offline combat applies one hit per swing after windup", () => {
   sim.update(1 / 60, { x: 0, y: 0 }, true);
   assert.equal(slime.hp, 2);
   for (let i = 0; i < 15; i++) sim.update(1 / 60, { x: 0, y: 0 }, false);
-  assert.equal(slime.hp, 1);
-  assert.equal(sim.kills, 0);
+  assert.equal(slime.hp, 0);
+  assert.equal(sim.kills, 1);
+  assert.equal(sim.defeated.has(slime.id),true);
 });
 test("camera damping is time based, bounds zoom and snaps after teleport", () => {
   const a = new Camera(),
