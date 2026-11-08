@@ -11,3 +11,5 @@ A regra de progresso da missão da Aela fica em `aelaQuest.ts`. As falas da vila
 **Verificação:** tests/world, physics, village, NPCs e paridade com Go.
 
 **Limites:** Não permitir atravessar colisões; cuidado com divergência entre cliente e servidor.
+
+**Escala do atlas:** `atlas.ts` partilha com `collision.ts` o limite técnico de movimento (±1.000.000 px em cada eixo; tiles de 32 px). O gerador `getTile` continua procedural, sem borda geográfica explícita. Os nove setores são divisões de coordenadas e as classificações de terreno são amostragens reprodutíveis; não se deve tratá-las como garantia de travessia ou mapa totalmente revelado. O render fica em `src/render/terrain.ts`, fora do domínio.
