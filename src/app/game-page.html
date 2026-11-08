@@ -203,12 +203,19 @@
                   @let current = hud.weapons[loadout.equipped];
                   <strong id="equippedWeapon">{{ current.name }}</strong>
                   <p>{{ current.damage }} de dano · {{ current.interval }} s entre golpes · {{ current.windup * 1000 }} ms de preparo</p>
-                  @if (loadout.forged) {
-                    @let other = loadout.equipped === 'forge' ? 'starter' : 'forge';
-                    <button id="equipOtherWeapon" (click)="hud.equipWeapon(other)"
-                      class="secondary-button" type="button">Equipar {{ hud.weapons[other].name }}
-                      ({{ hud.weapons[other].damage }} dano)</button>
-                  } @else { <p class="dialog-note">A espada forjada pode ser adquirida com Toren.</p> }
+                  <div class="weapon-picker" role="group" aria-label="Espadas desbloqueadas">
+                    @for (id of hud.availableWeapons(); track id) {
+                      @if (id !== loadout.equipped) {
+                        <button type="button" class="secondary-button"
+                          [attr.id]="'equip-weapon-' + id"
+                          (click)="hud.equipWeapon(id)">Equipar {{ hud.weapons[id].name }}
+                          ({{ hud.weapons[id].damage }} dano · nível {{ hud.weapons[id].level }})</button>
+                      }
+                    }
+                  </div>
+                  @if (!loadout.forged) {
+                    <p class="dialog-note">A espada de ferro é vendida por Toren, e só pode ser equipada a partir do nível 10.</p>
+                  }
                 } @else {
                   @for (id of hud.selectedGearOptions(); track id) {
                     @let gear = hud.gearCatalog[id];
