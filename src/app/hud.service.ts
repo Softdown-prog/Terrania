@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
-import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
+import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
@@ -110,13 +110,15 @@ export class HudService implements GameUi {
     }
     const loadout = this.loadout();
     if (loadout) {
-      for (const id of ['starter', 'forge'] as const) {
-        if (id === loadout.equipped || (id === 'forge' && !loadout.forged)) continue;
+      const level=this.progression()?.level ?? 1;
+      for (const id of WEAPON_IDS) {
+        if (id === loadout.equipped ||
+            !weaponUnlocked(id,level,loadout.forged)) continue;
         const item = WEAPONS[id];
         result.push({ id: 'weapon-' + id, kind: 'weapon', weaponId: id, name: item.name,
           icon: weaponItemIcon(id), quantity: 1, damage: item.damage,
           comparedDamage: WEAPONS[loadout.equipped].damage,
-          description: item.damage + ' dano · ' + item.interval + 's entre golpes' });
+          description: item.damage + ' de ataque · Nível ' + item.level + ' · ' + item.interval + 's entre golpes' });
       }
     }
     return result;
