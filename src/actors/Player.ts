@@ -194,6 +194,7 @@ export class Player {
     this.advanceNutrition(dt);
     this.advanceDebuffs(dt);
   }
+  get attackSequence(): number { return this.swingNumber; }
   get strikeDamage(): number { return WEAPONS[this.attackWeapon].damage; }
   startAttack(weapon: WeaponId = "starter"): boolean {
     if (this.attackCooldown > 0 || this.hp <= 0 || this.effects.stun > 0) return false;
