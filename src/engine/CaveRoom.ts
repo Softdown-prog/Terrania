@@ -1,3 +1,4 @@
+import { SOUTH_COMMON_KINDS } from "../actors/CreatureCatalog.ts";
 import { RegionalMonster, caveMonsterKinds } from "../actors/RegionalMonster.ts";
 import { canStrike, faceTarget } from "./combat.ts";
 import type { WeaponId } from "./Weapons.ts";
@@ -69,7 +70,7 @@ export class CaveFloor {
         return ([-r,r] as const).every(dx=>([-r,r] as const).every(dy=>
           this.at(Math.floor((x+dx)/TILE_SIZE),Math.floor((y+dy)/TILE_SIZE))===1));
       },
-      speedAt: ():number => this.theme === "marsh" ? 0.85 : 1,
+      speedAt: ():number => this.theme === "marsh" ? 0.85 : this.theme === "glacial" ? 0.88 : 1,
     };
   }
   at(tx:number,ty:number): CaveCell {
@@ -83,7 +84,10 @@ export class CaveRoom {
   readonly monsters = new Map<string, RegionalMonster>();
   readonly collision: CollisionMap;
   private readonly victories: Array<{ kind: RegionalCreatureKind; id: string }> = [];
-  constructor(entrance:CaveEntrance, hp = 100, maxHp = 100) {
+  private readonly defeated: ReadonlySet<string>;
+  constructor(entrance:CaveEntrance, hp = 100, maxHp = 100,
+    defeated: ReadonlySet<string> = new Set()) {
+    this.defeated=defeated;
     this.floor=new CaveFloor(entrance);
     this.collision=this.floor.collision;
     this.player=new Player(maxHp);
@@ -98,31 +102,36 @@ export class CaveRoom {
     if (!kinds.length) return;
     const salt=entrance.seed ^ Math.imul(entrance.tileX,1033) ^ Math.imul(entrance.tileY,2053);
     // Dois a quatro encontros por andar, fora da escada e somente em solo transitável.
+    let viableSpots=0;
     for(let i=0;i<8;i++) {
       const tx=4+Math.floor(hash2(i,7,salt+71)*(CAVE_WIDTH-8));
       const ty=4+Math.floor(hash2(i,11,salt+83)*(CAVE_HEIGHT-12));
       const x=(tx+.5)*TILE_SIZE,y=(ty+.5)*TILE_SIZE;
       if (!this.collision.canMove(x,y) ||
           Math.hypot(x-this.player.x,y-this.player.y)<170) continue;
-      if (this.monsters.size>=4) break;
-      const kind=kinds[Math.floor(hash2(i,19,salt+91)*kinds.length)]!;
+      if (viableSpots >= 4) break;
+      viableSpots++;
+      const commons=kinds.filter(kind=>SOUTH_COMMON_KINDS.some(k=>k===kind));
+      const source=commons.length && hash2(i,17,salt+109)<.76 ? commons : kinds;
+      const kind=source[Math.floor(hash2(i,19,salt+91)*source.length)]!;
       const id=this.floor.id+":mob:"+i;
-      this.monsters.set(id,new RegionalMonster(id,kind,x,y));
+      if (!this.defeated.has(id)) this.monsters.set(id,new RegionalMonster(id,kind,x,y));
     }
     // Garantia de encontro nas câmaras, caso o hash caia só em paredes.
-    if(!this.monsters.size){
+    if(!this.monsters.size && viableSpots===0){
       for(let y=5;y<22 && !this.monsters.size;y++) for(let x=5;x<38 && !this.monsters.size;x++){
         if(!this.collision.canMove((x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE))continue;
         const kind=kinds[Math.floor(hash2(x,y,salt+99)*kinds.length)]!;
         const id=this.floor.id+":mob:0";
-        this.monsters.set(id,new RegionalMonster(id,kind,(x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE));
+        if (!this.defeated.has(id)) this.monsters.set(id,new RegionalMonster(id,kind,(x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE));
       }
     }
   }
   drainVictories(): Array<{kind:RegionalCreatureKind;id:string}> {
     return this.victories.splice(0);
   }
-  update(dt:number,movement:{x:number;y:number},attack=false,weapon:WeaponId="starter",defense=0):void {
+  update(dt:number,movement:{x:number;y:number},attack=false,weapon:WeaponId="starter",defense=0,
+    targetId?: string | null):void {
     if(!Number.isFinite(dt)||dt<=0||this.player.hp<=0)return;
     dt=Math.min(dt,.1);
     this.player.update(dt,movement,this.collision);
@@ -130,12 +139,14 @@ export class CaveRoom {
     for(const monster of this.monsters.values()) monster.update(dt,this.player,this.collision,defense);
     if(this.player.consumeStrike()){
       const targets=[...this.monsters.values()]
-        .filter(monster=>canStrike({...this.player,faceX:this.player.faceX,faceY:this.player.faceY},monster,this.collision))
+        .filter(monster=>(targetId === undefined || monster.id === targetId) &&
+          canStrike(this.player,monster,this.collision))
         .sort((a,b)=>Math.hypot(a.x-this.player.x,a.y-this.player.y)-Math.hypot(b.x-this.player.x,b.y-this.player.y));
       const monster=targets[0];
       if(monster){
         faceTarget(this.player,monster);
         monster.takeHit(this.player.x,this.player.y,this.player.strikeDamage);
+        monster.onSwordHit(this.player,weapon);
         if(monster.hp<=0){
           monster.deathBurst(this.player,this.collision,defense);
           this.monsters.delete(monster.id);

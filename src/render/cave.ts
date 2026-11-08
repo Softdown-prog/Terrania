@@ -210,6 +210,14 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   light.addColorStop(.65,"rgba(3,10,13,.2)");
   light.addColorStop(1,"rgba(3,8,12,.66)");
   ctx.fillStyle=light;ctx.fillRect(0,0,width,height);
+  if(player.debuffs.blind>0){
+    const radius=Math.min(width,height)*.36;
+    const ink=ctx.createRadialGradient(player.x-left,player.y-top,56,
+      player.x-left,player.y-top,Math.max(92,radius));
+    ink.addColorStop(0,"rgba(4,12,21,0)");
+    ink.addColorStop(1,"rgba(3,9,18,.89)");
+    ctx.fillStyle=ink;ctx.fillRect(0,0,width,height);
+  }
 }
 
 /** Readable cartography, not the same terrain screenshot shrunk to a few pixels. */

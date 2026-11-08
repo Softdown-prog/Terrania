@@ -5,7 +5,7 @@ import type { WeaponId } from '../engine/Weapons.ts';
 
 /** Ícones desenhados para o Terrania. Somente apresentação: não carregam regra de jogo. */
 export type ItemIconId =
-  | 'gel' | 'potion' | 'apple' | 'bread' | 'meat'
+  | 'gel' | 'material' | 'potion' | 'apple' | 'bread' | 'meat'
   | 'sword-starter' | 'sword-forge'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots';
 
@@ -38,6 +38,12 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
           <path d="M16 3.5C13 10 6.5 13.5 6.5 20C6.5 25.5 10.5 28.5 16 28.5C21.5 28.5 25.5 25.5 25.5 20C25.5 13.5 19 10 16 3.5Z" fill="#4fd68a"/>
           <path d="M9 23.5Q16 29.5 23 23.5Q23 27.5 16 28Q10 27.5 9 23.5Z" fill="#2a9b63" stroke="none"/>
           <ellipse cx="11.6" cy="19" rx="2" ry="3.4" fill="#c4f9da" stroke="none" transform="rotate(12 11.6 19)"/>
+        }
+        @case ('material') {
+          <path d="M16 3L25 8L28 19L20 28L10 27L4 18L7 8Z" fill="#807da0"/>
+          <path d="M16 3L15 14L4 18L7 8ZM15 14L28 19L20 28L10 27Z" fill="#a5c6d1"/>
+          <path d="M16 3L25 8L15 14L4 18M15 14L20 28" fill="none" stroke="#edf4f4" stroke-width="1.5"/>
+          <path d="M8 11L12 9L11 13" fill="none" stroke="#f5fbff" stroke-width="1.4"/>
         }
         @case ('potion') {
           <path d="M13 11V14C8 16 6 19.5 6 23C6 27 10 29 16 29C22 29 26 27 26 23C26 19.5 24 16 19 14V11Z" fill="#e6e2ec"/>

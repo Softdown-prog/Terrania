@@ -45,7 +45,8 @@ export interface GameUi {
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void;
   onRespawn(callback: () => void): void;
-  updateInventory(gel: number, potions: number, food: FoodCounts): void;
+  updateInventory(gel: number, potions: number, food: FoodCounts,
+    materials?: Readonly<Record<string,number>>): void;
   updateLoadout(loadout: WeaponLoadout | null): void;
   updateGear(gear: GearState | null): void;
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void;

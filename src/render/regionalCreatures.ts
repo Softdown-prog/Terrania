@@ -1,4 +1,6 @@
-import { CREATURE_CATALOG, type RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
+import { renderWave3Creature } from "./regionalWave3.ts";
+import { renderWave2Creature } from "./regionalWave2.ts";
+import { CREATURE_CATALOG, SECOND_WAVE_KINDS, SOUTH_COMMON_KINDS, type SouthCommonKind, type SecondWaveKind, type RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, hashString, limb, mix, pill, rgba, shade, softShadow, TAU } from "./draw.ts";
 
 export interface RegionalCreatureVisual {
@@ -9,7 +11,7 @@ export interface RegionalCreatureVisual {
   readonly casting?: number;
 }
 type ColorRamp = { base: string; light: string; dark: string; accent: string; eye: string };
-const PALETTE: Readonly<Record<RegionalCreatureKind, ColorRamp>> = {
+const PALETTE: Readonly<Partial<Record<RegionalCreatureKind, ColorRamp>>> = {
   "basalt-golem": { base: "#716f6b", light: "#b4a79a", dark: "#343944", accent: "#729267", eye: "#ffbf59" },
   "cliff-draconid": { base: "#66646a", light: "#b0a499", dark: "#292d3b", accent: "#e38b4f", eye: "#f7bb4d" },
   "mire-hydra": { base: "#4bba66", light: "#a0e375", dark: "#376a56", accent: "#ad54b1", eye: "#b6f6ef" },
@@ -244,11 +246,13 @@ function drawSerpent(ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void 
   organic(ctx,-14,-48,13,10,c,-.18);
   organic(ctx,-21,-44,12,5,c,.1);
   for(let i=0;i<7;i++){
-    const t=i/6;
     shard(ctx,-3+Math.sin(i*1.5)*20,-18-i*4,4,10+(i%3)*2,
       i%2?c.accent:c.light);
   }
   headEyes(ctx,[[-19,-51],[-10,-50]],c,2.4);
+  // Cristal condutor na linha dorsal, com brilho volumétrico próprio.
+  ellipse(ctx,4,-17,4.1,2.3,c.accent,-.45);
+  ellipse(ctx,3.2,-17.8,1.5,.7,rgba(GLINT,.84),-.45);
   ctx.strokeStyle=c.accent;ctx.lineWidth=1.4;
   for(let i=0;i<4;i++) {
     ctx.beginPath();ctx.moveTo(10+i*2,-27-i*3);
@@ -257,10 +261,18 @@ function drawSerpent(ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void 
   }
   shard(ctx,-8,-58,7,12,c.accent);
 }
-/** Dez silhuetas próprias; volumes, detalhes e animações são geometria Canvas, sem sprites. */
+/** Desenha as 30 espécies usando as três camadas procedurais, sem PNGs. */
 export function renderRegionalCreature(ctx: CanvasRenderingContext2D,
   creature: RegionalCreatureVisual, sx: number, sy: number, time = 0): void {
-  const c=PALETTE[creature.kind], seed=hashString(creature.id ?? creature.kind);
+  if(SOUTH_COMMON_KINDS.some(kind=>kind===creature.kind)) {
+    renderWave3Creature(ctx,{...creature,kind:creature.kind as SouthCommonKind},sx,sy,time);
+    return;
+  }
+  if (SECOND_WAVE_KINDS.some(kind => kind === creature.kind)) {
+    renderWave2Creature(ctx, {...creature,kind:creature.kind as SecondWaveKind},sx,sy,time);
+    return;
+  }
+  const c=PALETTE[creature.kind]!, seed=hashString(creature.id ?? creature.kind);
   const max=CREATURE_CATALOG[creature.kind].maxHp;
   const flash=clamp01((creature.hurtTime ?? 0)/.24);
   ctx.save();ctx.translate(sx,sy);
