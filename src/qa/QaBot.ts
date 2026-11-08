@@ -287,17 +287,25 @@ export function runOnlinePatrolQa(maxTicks = 8000): OnlinePatrolQaReport {
     }
   };
   const advance = (): void => {
-    const before = { x: bot.actor.x, y: bot.actor.y };
+    const previousActor = bot.actor;
+    const before = { x: previousActor.x, y: previousActor.y };
     room.tick(0.05, now += 50);
     ticks++;
+    const respawned = previousActor !== bot.actor;
     const moved = Math.hypot(bot.actor.x - before.x, bot.actor.y - before.y);
-    walkedUnits += moved;
-    if (moved < 0.01) blockedTicks++;
+    if (respawned) {
+      // Respawn legítimo não é movimento nem colisão; a Room troca a instância do Player.
+      deaths++;
+      record("death", "O herói morreu e a sala reiniciou sua posição");
+    } else {
+      walkedUnits += moved;
+      if (moved < 0.01 && (bot.walking?.navigator.target || bot.walking?.walker.destination))
+        blockedTicks++;
+      if (moved > 8) record("navigation", "Deslocamento impossível em um tick de 50ms");
+    }
     if (!room.world.canMove(bot.actor.x, bot.actor.y)) {
       record("collision", "Bot atravessou terreno, marco ou prédio bloqueado");
     }
-    if (moved > 8) record("navigation", "Deslocamento impossível em um tick de 50ms");
-    if (bot.actor.hp <= 0 || moved > 120) deaths++;
     mark();
     if (ticks % 5 === 0) snap();
   };
@@ -329,12 +337,13 @@ export function runOnlinePatrolQa(maxTicks = 8000): OnlinePatrolQaReport {
     const from = position(bot.actor);
     room.receiveWalk(bot.id, goal);
     let reached = false;
+    const deathsBefore = deaths;
     for (let budget = 0; budget < 1000 && ticks < maxTicks; budget++) {
       advance();
       if (Math.hypot(bot.actor.x - goal.x, bot.actor.y - goal.y) < 1.5) {
         reached = true; break;
       }
-      if (bot.actor.hp <= 0) break;
+      if (deaths > deathsBefore) break;
       if (budget > 30 && bot.walking?.navigator.target === null &&
           bot.walking.walker.destination === null) break;
     }
@@ -349,12 +358,14 @@ export function runOnlinePatrolQa(maxTicks = 8000): OnlinePatrolQaReport {
     }
     room.receiveWalk(bot.id, null);
   }
-  if (regions.size < 3 || walkedUnits < 180)
+  if (regions.size < 3 || walkedUnits < 180 || selectedRegions.size < 2)
     record("coverage", "Cobertura insuficiente: " + regions.size + " regiões e " +
-      Math.round(walkedUnits) + " unidades realmente caminhadas");
+      Math.round(walkedUnits) + " unidades realmente caminhadas; " +
+      selectedRegions.size + " destinos distintos alcançados");
   const broken = findings.some(f => f.kind === "collision" || f.kind === "snapshot" ||
     (f.kind === "navigation" && f.detail.startsWith("Deslocamento impossível")));
-  const status = broken || regions.size < 3 || walkedUnits < 180 ? "failed" : "passed";
+  const status = broken || routeFailures > 0 || regions.size < 3 ||
+    selectedRegions.size < 2 || walkedUnits < 180 ? "failed" : "passed";
   return { botId: QA_BOT_ID, environment: "authoritative-room-memory", seed: room.seed, status,
     regionsVisited: [...regions].sort(), tilesVisited: tiles.size, walkedUnits: Number(walkedUnits.toFixed(2)),
     blockedTicks, deaths, snapshotsChecked, ticks, routeAttempts, routeFailures, findings,
