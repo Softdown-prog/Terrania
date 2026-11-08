@@ -1,6 +1,6 @@
 # Bestiário regional procedural — trinta monstros
 
-Os dois lotes nascem de folhas autorais 5×2 fornecidas pelo criador. O código não importa imagens como texturas: cada criatura é reconstruída por Canvas 2D com sombra, silhueta, volume, detalhes, contorno e brilho.
+Os três lotes nascem de folhas autorais 5×2 fornecidas pelo criador. O código não importa imagens como texturas: cada criatura é reconstruída por Canvas 2D com sombra, silhueta, volume, detalhes, contorno e brilho.
 
 | Origem | Espécie | Região | Caverna |
 | --- | --- | --- | --- |
@@ -19,7 +19,7 @@ Os dois lotes nascem de folhas autorais 5×2 fornecidas pelo criador. O código 
 
 - src/actors/CreatureCatalog.ts: fonte de atributos, habitats e probabilidades.
 - src/actors/RegionalMonster.ts: perseguição, conjuração, colisão e drops determinísticos.
-- src/render/regionalCreatures.ts: dez desenhos distintos, 100% procedurais.
+- src/render/regionalCreatures.ts, regionalWave2.ts e regionalWave3.ts: 30 desenhos distintos, 100% procedurais.
 - src/engine/CaveRoom.ts: encontros locais, sem ocupar paredes nem saída.
 - src/engine/OfflineSimulation.ts: criaturas na superfície, preservando a missão dos slimes.
 - src/engine/Inventory.ts: materiais persistidos no save da aventura solo.
