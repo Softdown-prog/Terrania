@@ -159,3 +159,16 @@ test("perda de pacote que esconde duas curvas não inventa um atalho diagonal", 
   const arrived = timeline.advance(0.05)!.players[0]!;
   assert.deepEqual([arrived.x, arrived.y], [80, 23]);
 });
+
+test("equipamentos visuais da sala seguem o snapshot recente e somem ao retirar", () => {
+  const timeline = new SnapshotTimeline();
+  timeline.push(1, [hero({ gear: { head: "trail-helm" } })], []);
+  timeline.push(1.1, [hero({ gear: { shield: "willow-shield" } })], []);
+  start(timeline);
+  const during = timeline.advance(0.04)!.players[0]!;
+  assert.equal(during.gear?.shield, "willow-shield");
+  assert.equal(during.gear?.head, undefined);
+  timeline.push(1.2, [hero()], []);
+  const removed = timeline.advance(0.12)!.players[0]!;
+  assert.equal(removed.gear, undefined);
+});

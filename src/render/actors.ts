@@ -10,7 +10,7 @@ export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
-  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> & { id?: string; gear?: GearState };
+  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> & { id?: string; gear?: GearState | undefined };
 export type SlimeVisual = Pick<Slime, "hp" | "bounce"> & { hurtTime?: number; id?: string };
 /** Contexto opcional de apresentação; nada aqui altera regras ou dano. */
 export interface SlimeFx {
@@ -145,7 +145,8 @@ function renderWeapon(ctx: CanvasRenderingContext2D, frame: WeaponFrame, player:
 
 /** Perna: quadril → joelho → tornozelo, bota por cima. Desenhada em pares ordenados por profundidade. */
 function drawLeg(ctx: CanvasRenderingContext2D, hipX: number, footX: number, footY: number,
-  lift: number, mvx: number, tone: (c: string) => string, front: number): void {
+  lift: number, mvx: number, tone: (c: string) => string, front: number,
+  armoredBoots = false, armoredLegs = false): void {
   const hipY = -11.5;
   const kneeX = (hipX + footX) / 2 + mvx * lift * 0.5;
   const kneeY = (hipY + footY) / 2 - lift * 0.35;
@@ -158,6 +159,19 @@ function drawLeg(ctx: CanvasRenderingContext2D, hipX: number, footX: number, foo
   ctx.fillRect(footX - 2.6, footY - 5.4, 5.2, 1.3);
   ellipse(ctx, footX + mvx * 1.6, footY - 0.8 + front * 0.5, 4.4, 2.5, tone(PAL.boots));
   ellipse(ctx, footX + mvx * 1.6 - 0.6, footY - 1.5, 2.4, 1, rgba("#ffffff", 0.16));
+  if (armoredLegs) {
+    ellipse(ctx, kneeX, kneeY + 1, 3.1, 2.4, tone("#6e8582"));
+    ctx.fillStyle = tone("#b4c8bf"); ctx.fillRect(kneeX - 1.8, kneeY + 0.2, 3.6, 0.9);
+  }
+  if (armoredBoots) {
+    // A chapa acompanha o tornozelo calculado pela passada; não anima separada do pé.
+    ctx.fillStyle = tone("#91aaa5");
+    ctx.fillRect(footX - 2.7, footY - 5.1, 5.4, 3.7);
+    ctx.fillStyle = tone("#e4e6c8");
+    ctx.fillRect(footX - 2.1, footY - 5, 2.5, 0.9);
+    ellipse(ctx, footX + mvx * 1.6, footY - 0.7 + front * 0.5,
+      4.2, 1.4, tone("#748f87"));
+  }
 }
 
 function drawArm(ctx: CanvasRenderingContext2D, sx: number, sy: number, hx: number, hy: number,
@@ -168,7 +182,28 @@ function drawArm(ctx: CanvasRenderingContext2D, sx: number, sy: number, hx: numb
   ellipse(ctx, hx - 0.6, hy - 0.6, 1, 1, rgba("#ffffff", 0.3));
 }
 
-/**
+/** Escudo do salgueiro no antebraço oposto à espada, acompanhando sua oscilação. */
+function drawShield(ctx: CanvasRenderingContext2D, x: number, y: number, side: number,
+  swing: number, tone: (c: string) => string): void {
+  ctx.save();
+  ctx.translate(x, y - 2);
+  ctx.rotate(side * (0.14 + swing * 0.025));
+  const wood = ctx.createLinearGradient(-6, -10, 6, 8);
+  wood.addColorStop(0, tone("#a5beab")); wood.addColorStop(1, tone("#577e70"));
+  ctx.fillStyle = wood;
+  ctx.strokeStyle = tone("#d9c691");
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(-5.9, -8.5); ctx.quadraticCurveTo(0, -11, 5.9, -8.5);
+  ctx.lineTo(5.1, 3); ctx.quadraticCurveTo(0, 10, -5.1, 3);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = tone("#2d5549"); ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(0, 6.1); ctx.stroke();
+  ellipse(ctx, 0, -1.8, 2.1, 2.1, tone("#efdb9b"));
+  ctx.restore();
+}
+
+/** 
  * Herói completo: ciclo de passos com joelhos e pés levantados, balanço de
  * braços, capa e rabo-de-cavalo com inércia, respiração parada, recuo e avanço
  * do corpo no golpe, piscadas e rosto direcional. `time` é opcional (prévias
@@ -203,6 +238,14 @@ export function renderHero(
   const wf = 1 - 0.2 * prof;
   const dirX = Math.cos(Math.atan2(player.faceY, player.faceX));
   const frame = weaponFrame(player);
+  const gear = player.gear;
+  const hasHelm = gear?.head === "trail-helm";
+  const hasChest = gear?.chest === "quilted-vest";
+  const hasShield = gear?.shield === "willow-shield";
+  const hasBoots = gear?.feet === "trail-boots";
+  const hasLegs = gear?.legs === "travel-trousers";
+  const hasBackpack = gear?.backpack === "canvas-pack";
+  const hasPendant = gear?.neck === "river-pendant";
 
   ctx.save();
   ctx.translate(
@@ -220,7 +263,8 @@ export function renderHero(
   const leftFoot = { hip: -3.6 * wf, x: -3.6 * wf + g.a.along * mvx, y: g.a.along * mvy * 0.55 - g.a.lift, lift: g.a.lift };
   const rightFoot = { hip: 3.6 * wf, x: 3.6 * wf + g.b.along * mvx, y: g.b.along * mvy * 0.55 - g.b.lift, lift: g.b.lift };
   const legs = leftFoot.y + g.a.lift <= rightFoot.y + g.b.lift ? [leftFoot, rightFoot] : [rightFoot, leftFoot];
-  legs.forEach((leg, i) => drawLeg(ctx, leg.hip, leg.x, leg.y, leg.lift, mvx, tone, i));
+  legs.forEach((leg, i) => drawLeg(ctx, leg.hip, leg.x, leg.y, leg.lift, mvx, tone, i,
+    hasBoots, hasLegs));
 
   // --- capa (por baixo do tronco de frente; sobre ele de costas) ----------
   const trailX = -mvx * g.moving * 5 + Math.sin(t * 2.1 + seed * 5) * (0.7 + g.moving * 0.5) +
@@ -253,6 +297,13 @@ export function renderHero(
     ctx.stroke();
   };
   if (!back) drawCape();
+  if (hasBackpack && !back) {
+    // Mochila vista de frente: uma lateral da bolsa sob o ombro.
+    ctx.save(); ctx.translate(-9 * wf - side * 3, -18);
+    ctx.fillStyle = tone("#715c42"); ctx.fillRect(-3.2, -8, 6.4, 17);
+    ctx.strokeStyle = tone("#c6aa78"); ctx.strokeRect(-3.2, -8, 6.4, 17);
+    ctx.restore();
+  }
 
   // --- tronco (inclinado na direção do movimento e do golpe) ------------
   ctx.save();
@@ -284,6 +335,27 @@ export function renderHero(
     ctx.beginPath(); ctx.moveTo(-4.4 * wf, -25.2); ctx.lineTo(4.4 * wf, -25.2); ctx.lineTo(side * 0.8, -20.6); ctx.closePath(); ctx.fill();
     ellipse(ctx, -3 * wf, -19, 2.4, 4.2, rgba("#ffffff", 0.14), -0.2);
   }
+  if (hasChest) {
+    // Peitoral acolchoado: segmentos presos ao mesmo torso inclinado que a túnica.
+    const plate = ctx.createLinearGradient(-9 * wf, -23, 9 * wf, -9);
+    plate.addColorStop(0, tone("#c0caba"));
+    plate.addColorStop(0.48, tone("#819c90"));
+    plate.addColorStop(1, tone("#48685f"));
+    ctx.fillStyle = plate; ctx.strokeStyle = tone("#d7c194"); ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(-6.5 * wf, -23.5); ctx.lineTo(6.5 * wf, -23.5);
+    ctx.lineTo(7 * wf, -12); ctx.lineTo(0, -10); ctx.lineTo(-7 * wf, -12);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = tone("#405d55"); ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(-5.8 * wf, -18); ctx.lineTo(5.8 * wf, -18); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-5.8 * wf, -14); ctx.lineTo(5.8 * wf, -14); ctx.stroke();
+    ellipse(ctx, side * 1.2, -20, 2.2, 2.1, tone("#e2d09d"));
+  }
+  if (hasPendant && !back) {
+    ctx.strokeStyle = tone("#b4d7cf"); ctx.lineWidth = 0.9;
+    ctx.beginPath(); ctx.moveTo(-3.5, -25); ctx.quadraticCurveTo(0, -19, 3.5, -25); ctx.stroke();
+    ellipse(ctx, 0, -20.8, 1.8, 2.1, tone("#71b7b3"));
+  }
   // cinto, fivela e bolsa
   ctx.fillStyle = tone(PAL.leather);
   ctx.fillRect(-9.2 * wf, -13.3, 18.4 * wf, 3.4);
@@ -312,6 +384,12 @@ export function renderHero(
     const hy = -12.5 + mvy * swing * -s * 2.8 - swing * -s * 1.2 + breath * 0.3;
     drawArm(ctx, s * 8.6 * wf, -22.6, hx, hy, tone, PAL.tunic);
   }
+  if (hasShield) {
+    const shieldSide = -swordSide;
+    const hx = shieldSide * 9.6 * wf + mvx * swing * -shieldSide * 4.2;
+    const hy = -12.5 + mvy * swing * -shieldSide * 2.8 - swing * -shieldSide * 1.2 + breath * 0.3;
+    drawShield(ctx, hx, hy, shieldSide, swing, tone);
+  }
   const gripX = frame.ox + Math.cos(frame.rot) * 9, gripY = frame.oy + Math.sin(frame.rot) * 9;
   const swordArm = (): void => {
     limb(ctx, swordSide * 8.6 * wf, -22.6, gripX, gripY, 4.6, tone(PAL.tunic));
@@ -322,6 +400,13 @@ export function renderHero(
   const headX = player.faceX * 1.3, headY = -31.5 + breath * 0.35 + Math.abs(Math.cos(player.walkTime)) * g.moving * -0.4 +
     atk.lunge * 0.8;
   if (back) drawCape();
+  if (back && hasBackpack) {
+    ctx.fillStyle = tone("#806b4b");
+    ctx.beginPath();
+    ctx.roundRect(-6.2 * wf, -25, 12.4 * wf, 17, 2.2);
+    ctx.fill(); ctx.strokeStyle = tone("#d7b581"); ctx.lineWidth = 0.9; ctx.stroke();
+    ctx.fillStyle = tone("#c0a577"); ctx.fillRect(-2.2 * wf, -21, 4.4 * wf, 2.2);
+  }
   if (!back) { swordArm(); renderWeapon(ctx, frame, player, tone, atk.impact); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); }
   const tailDir = side !== 0 ? -side : 1;
   const tailSway = Math.sin(t * 2.4 + seed * 4) * 0.8 + Math.sin(player.walkTime * 2) * g.moving * 2.4 - mvx * g.moving * 3;
@@ -407,6 +492,25 @@ export function renderHero(
     ctx.moveTo(headX + 4.6, headY - 3.4);
     ctx.quadraticCurveTo(headX + 8 + tailSway * 0.3, headY, headX + 8 + tailSway * 0.7, headY + 3.2);
     ctx.stroke();
+  }
+  if (hasHelm) {
+    // Elmo preserva o rosto e as piscadas; a viseira fica acima dos olhos.
+    const metal = ctx.createLinearGradient(headX - 9, headY - 9, headX + 9, headY + 1);
+    metal.addColorStop(0, tone("#d4dfc7"));
+    metal.addColorStop(0.45, tone("#9ab5aa"));
+    metal.addColorStop(1, tone("#567970"));
+    ctx.fillStyle = metal; ctx.strokeStyle = tone("#344e47"); ctx.lineWidth = 0.9;
+    ctx.beginPath();
+    ctx.moveTo(headX - 8.2, headY - 3.4);
+    ctx.quadraticCurveTo(headX - 8.4, headY - 10.9, headX, headY - 11.4);
+    ctx.quadraticCurveTo(headX + 8.4, headY - 10.9, headX + 8.2, headY - 3.4);
+    ctx.lineTo(headX + 6.9, headY - 0.8);
+    ctx.lineTo(headX - 6.9, headY - 0.8);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = tone("#e5d39e");
+    ctx.fillRect(headX - 8.6, headY - 3.3, 17.2, 1.3);
+    ctx.fillStyle = tone("#e4e6c8");
+    ctx.fillRect(headX - 1, headY - 9.6, 2, 6.1);
   }
   if (back) { swordArm(); }
   if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); }

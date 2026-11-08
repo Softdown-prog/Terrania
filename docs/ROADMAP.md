@@ -77,3 +77,7 @@ A implementação dos itens marcados não certifica o lançamento, apenas indica
 - [ ] Elmos, escudos, armaduras e acessórios mudarem visualmente o herói no mundo e na prévia
 - [ ] Definir capacidade real por células somente quando houver economia/loot que a exija; não confundir grade visual com capacidade de armazenamento
 - [ ] Avaliar fluidez, ergonomia e toques em aparelhos Android reais antes de declarar a UI concluída
+
+- [x] Peças do conjunto inicial (elmo, escudo, peitoral, botas, calça, mochila e pingente) desenhadas sobre o herói procedural, no mundo e na prévia, usando o estado real de equipamento
+- [x] Aparência de outros cavaleiros equipados transmitida nos snapshots da sala Node, sem publicar os itens da bolsa
+- [ ] Conferir cada conjunto em todas as direções, animação de caminhada, golpe, dano e colisão visual no Android
