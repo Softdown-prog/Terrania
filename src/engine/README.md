@@ -34,3 +34,9 @@
 
 ### Domesticação e Cavalaria
 `MountStable.ts` mantém cercado, treinamento I–III, quest do Garrano, cabresto, selas, energia, summon, montaria e persistência serializável. O `ClassicTileWalker` aplica o multiplicador de velocidade somente sobre a malha de colisão existente. Não criar segundo loop de simulação.
+
+**Missões de domesticação:** `MountQuestState.ts` é o reducer genérico de
+eventos tipados com controle de objetivos, contagem, estado determinístico
+e normalização de save. `MountStable.ts` consome esse reducer e valida
+nível, Cavalaria, proximidade e recursos, entregando montarias apenas após
+os objetivos reais da quest. Nenhum estado do Angular é autoridade de gameplay.

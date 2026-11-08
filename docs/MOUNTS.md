@@ -31,26 +31,28 @@ As dez quests de domesticação, descrições, regiões, selas, iscas e drops
 exatos estão no catálogo. Quests regionais não são tratadas como concluídas:
 precisam de artefatos/interações, novos pontos de interesse e lógica de habilidades.
 
-## Fluxo jogável — O Garrano Fugitivo da Vila
+## Fluxo jogável — O Garrano Fugitivo (nova narrativa)
 
-1. Alcance nível 15; converse com **Eron**, Mestre de Estábulos da Vila.
-2. Construa o cercado por 12 unidades de gel e treine **Cavalaria I**.
-3. Inicie a quest **O Garrano Fugitivo da Vila**. Afaste cinco slimes
-   **a partir desse momento** (abates antigos não completam a etapa).
-4. Colha a **Maçã Silvestre** a sudoeste da vila e prepare um **cabresto**
-   no estábulo por 3 gel (recursos só são consumidos em operações válidas).
-5. Encontre o cavalo fugitivo e use E ou o botão de ação para acalmá-lo.
-6. Ganhe o Cavalo de Batalha com sua **Sela de Couro Simples**, volte ao
-   estábulo e selecione montar. Pode desmontar pelo HUD.
+1. Com nível 15, vá até **Eron** e repare o cercado do estábulo (12 gel).
+   Treine Cavalaria I e aceite a missão. Eron entrega automaticamente
+   uma **Maçã Silvestre Doce**, registrada no estado da quest.
+2. Examine as **marcas de cascos** na saída oeste da Vila da Travessia.
+   A trilha tem representação física Canvas auditada no contrato de arte.
+3. Afaste **cinco slimes derrotados depois de aceitar a missão**; derrotas
+   anteriores não servem. O estado de avanço é serializável e determinístico.
+4. Volte a Eron para fabricar **Cabresto** por 3 gel e aproxime-se do Garrano.
+   O cavalo só aceita a maçã após os objetivos anteriores.
+5. Acalme o animal e **conduza-o de volta ao estábulo**: uma representação
+   visual do cavalo acompanha o herói, sem ignorar colisões do jogador.
+6. A recompensa **Cavalo de Batalha + Sela de Couro Simples** é entregue
+   apenas ao retornar a Eron; também são sorteados os drops de captura
+   de forma determinística e uma única vez. Montar/desmontar permanece no HUD.
 
-A jornada tem validações reais de nível, proximidade, consumo, quest, inventário
-e estado. O cavalo rende Crina Forte (80%) e Couro Comum (100%) ao ser
-domado, com sorteio reproduzível pela seed. A mesma captura não dá recompensa
-duas vezes. A montaria só muda a velocidade dos passos clássicos, sem atravessar
-paredes; a energia é consumida durante corrida e recuperada quando para.
-Na cavalgada contínua em linha reta, o cavalo prepara a Investida Firme.
-O save tem campos opcionais e mantém compatibilidade com saves anteriores;
-respawn e entrada em cavernas desmontam o cavalo.
+O estado é gerenciado por `MountQuestState.ts` (reducer por evento) e
+`MountStable.ts` (regras, proximidade, gastos e recompensas), sem misturar
+a quest de Aela. A maçã doce é **item vinculado à missão** exibido no painel,
+não material de comércio ou loot. Uma nova quest não pode ser ativada
+enquanto seus locais, gatilhos e testes não estiverem implementados.
 
 ## Evolução e pendências deliberadas
 
@@ -73,3 +75,17 @@ catálogo. Não declarar montaria capturável sem uma quest física validada.
 - \`npm run art:preview\`: revisar a aparência procedural das dez espécies.
 - \`npm run test:browser\`: desktop e Android; acompanhar toque nos botões.
 - Não adicionar exceção \`NOT_AN_ASSET\`, nem diminuir \`FLOORS.creature\`.
+
+## As dez histórias e o que realmente está liberado
+
+`src/world/mountQuests.ts` contém os dez roteiros sugeridos: local,
+origem, nível, gatilho, introdução, item inicial, objetivos tipados e dicas.
+Somente o **Garrano Fugitivo** está `playable: true`; as outras nove usam
+`playable: false`, pois faltar um barco, pesca, furtividade, ritual lunar,
+planado ou ponto de interesse real não pode ser disfarçado por um botão.
+
+Os eventos possíveis são `inspect`, `defeat`, `craft`, `collect`,
+`protect`, `interact`, `escort`, `traverse` e `ritual`. A classe de
+progresso só aceita o evento correspondente ao **objetivo atual**, com
+alvo e quantidade validados. Quest não pode ser concluída antecipadamente
+com um evento de outro monstro ou outro local.

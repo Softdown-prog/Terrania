@@ -56,3 +56,41 @@ test("Montaria: save validado não pode exigir multiplayer; UI exibe desmontar",
   await expect(page.locator("#mountStatus")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test("Rastro do Garrano: pegadas de mundo e resgate no estábulo usando controles reais",async ({page},info)=>{
+  await page.addInitScript(xp=>{
+    localStorage.setItem("terrania-origins-v1",JSON.stringify({
+      seed:842136,x:288,y:144,hp:100,kills:5,defeated:[],experience:xp,
+      mounts:{stableTier:1,ridingTier:1,quest:{
+        id:"warhorse",step:0,count:0,killsAtStart:5,gift:"Maçã Silvestre Doce",
+      }},
+    }));
+  },experienceForLevel(15));
+  const errors:string[]=[];page.on("pageerror",e=>errors.push(e.message));
+  await page.goto("/jogar/?modo=solo");
+  const button=page.locator("#talkButton");
+  await expect(button).toContainText("Examinar pegadas");
+  if(info.project.name==="android")await button.tap();else await button.click();
+  await expect(page.locator("#talkButton")).not.toContainText("Examinar pegadas");
+  expect(errors).toEqual([]);
+});
+test("Entrega: com cavalo acalmado, Eron concede selo uma única vez",async ({page},info)=>{
+  await page.addInitScript(xp=>{
+    localStorage.setItem("terrania-origins-v1",JSON.stringify({
+      seed:842136,x:384,y:112,hp:100,kills:8,defeated:[],experience:xp,
+      mounts:{stableTier:1,ridingTier:1,quest:{
+        id:"warhorse",step:4,count:0,killsAtStart:3,gift:"Maçã Silvestre Doce",
+      }},
+    }));
+  },experienceForLevel(15));
+  const errors:string[]=[];page.on("pageerror",e=>errors.push(e.message));
+  await page.goto("/jogar/?modo=solo");
+  const talk=page.locator("#talkButton");
+  await expect(talk).toContainText("Conversar");
+  if(info.project.name==="android")await talk.tap();else await talk.click();
+  await expect(page.locator("#mountStatus")).toHaveCount(0);
+  // Ao concluir, o NPC volta ao diálogo normal e agora oferece montar.
+  if(info.project.name==="android")await talk.tap();else await talk.click();
+  await expect(page.locator("#rideWarhorse")).toBeVisible();
+  expect(errors).toEqual([]);
+});

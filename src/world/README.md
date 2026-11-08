@@ -32,3 +32,8 @@ subsolo e a interação está desabilitada nas salas online.
 
 ### Localizações do primeiro estábulo
 `mountLocations.ts` declara posições determinísticas de Eron, Cavalo de Batalha fugitivo e Maçã Silvestre. São dados de mundo, e não regras de quest nem lógica de interface.
+
+**Quests de montarias:** `mountQuests.ts` é o catálogo de histórias,
+desbloqueios e objetivos para as dez espécies, mas só a missão inicial está
+habilitada. `mountLocations.ts` fixa Eron, as marcas de cascos e o cavalo
+fugitivo no mapa da vila, sem criar terrenos secretos nem colisões novas.
