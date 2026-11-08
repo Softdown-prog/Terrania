@@ -2,7 +2,7 @@ import { CREATURE_CATALOG, type CreatureView } from "../actors/CreatureCatalog.t
 import type { Player } from "../actors/Player.ts";
 import type { CollisionMap } from "../world/collision.ts";
 import { canStrike, faceTarget } from "./combat.ts";
-import { WEAPONS } from "./Weapons.ts";
+import { WEAPONS, type WeaponId } from "./Weapons.ts";
 
 /** Terrania's original classic-RPG prototype: target-and-wait, not an action combo.
  * Shared by the solo simulation and the authoritative Node room.
@@ -64,7 +64,8 @@ export class ClassicCombat {
    * still validates the impact after wind-up and grants loot/kills.
    */
   tick(dt: number, player: Player, mobs: ReadonlyMap<string, CreatureView>,
-      collision: CollisionMap, interval: number = CLASSIC_ATTACK_INTERVAL): boolean {
+      collision: CollisionMap, interval: number = CLASSIC_ATTACK_INTERVAL,
+      weapon: WeaponId = "starter"): boolean {
     if (!Number.isFinite(dt) || dt <= 0) return false;
     this.remaining = Math.max(0, this.remaining - Math.min(dt, 0.1));
     if (!this.selected) return false;
@@ -74,7 +75,8 @@ export class ClassicCombat {
     if (this.remaining > 0 || player.attackCooldown > 0) return false;
     const facing = { x: player.x, y: player.y, faceX: player.faceX, faceY: player.faceY };
     faceTarget(facing, mob);
-    if (!canStrike(facing, mob, collision)) return false;
+    const astral = weapon === "astral";
+    if (!canStrike(facing, mob, collision, astral ? 72 : 52, astral ? -0.5 : -0.1)) return false;
     player.faceX = facing.faceX;
     player.faceY = facing.faceY;
     this.swingTarget = mob.id;
