@@ -11,9 +11,10 @@ Páginas do site, navegação, HUD e ações de interface. Não calcula regras a
 - [`src/app/routes.ts`](../../src/app/routes.ts)
 - [`src/app/game-page.component.ts`](../../src/app/game-page.component.ts)
 
-## Todos os arquivos deste módulo (23)
+## Todos os arquivos deste módulo (25)
 
 - [`src/app/README.md`](../../src/app/README.md)
+- [`src/app/catalog-page.component.ts`](../../src/app/catalog-page.component.ts)
 - [`src/app/game-page.component.ts`](../../src/app/game-page.component.ts)
 - [`src/app/game-page.html`](../../src/app/game-page.html)
 - [`src/app/hud.service.ts`](../../src/app/hud.service.ts)
@@ -24,6 +25,7 @@ Páginas do site, navegação, HUD e ações de interface. Não calcula regras a
 - [`src/app/pages/comunidade.html`](../../src/app/pages/comunidade.html)
 - [`src/app/pages/guia.html`](../../src/app/pages/guia.html)
 - [`src/app/pages/home.html`](../../src/app/pages/home.html)
+- [`src/app/pages/mercado.html`](../../src/app/pages/mercado.html)
 - [`src/app/pages/mundo.html`](../../src/app/pages/mundo.html)
 - [`src/app/pages/novidades.html`](../../src/app/pages/novidades.html)
 - [`src/app/pages/privacidade.html`](../../src/app/pages/privacidade.html)
