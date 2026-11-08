@@ -1,4 +1,7 @@
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
+import type { Player } from "../actors/Player.ts";
+import { FOODS, emptyFoodCounts, normalizeFoodCounts, type FoodCounts, type FoodId,
+  type FoodTradeResult, type FoodUseResult } from "./Food.ts";
 import { nearestNpc } from "../world/npcs.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
@@ -16,6 +19,7 @@ export interface InventoryState {
   gel: number;
   potion: number;
   questRewardClaimed: boolean;
+  food?: FoodCounts;
   loadout?: WeaponLoadout;
   gear?: GearState;
 }
@@ -34,10 +38,12 @@ export function normalizeInventory(value: unknown): InventoryState {
     ? { forged: true, equipped: state.loadout.equipped === "forge" ? "forge" : "starter" }
     : undefined;
   const gear = normalizeGear(state.gear);
+  const food = normalizeFoodCounts(state.food);
   return {
     gel: count(state.gel),
     potion: count(state.potion),
     questRewardClaimed: state.questRewardClaimed === true,
+    ...(Object.values(food).some(v => v > 0) ? { food } : {}),
     ...(loadout ? { loadout } : {}),
     ...(Object.keys(gear).length ? { gear } : {}),
   };
@@ -46,6 +52,7 @@ export function normalizeInventory(value: unknown): InventoryState {
 export class Inventory {
   private gelCount = 0;
   private potionCount = 0;
+  private foods: FoodCounts = emptyFoodCounts();
   private claimed = false;
   private weapons: WeaponLoadout;
   private equippedGear: GearState;
@@ -54,6 +61,7 @@ export class Inventory {
     const state = normalizeInventory(value);
     this.gelCount = state.gel;
     this.potionCount = state.potion;
+    this.foods = normalizeFoodCounts(state.food);
     this.claimed = state.questRewardClaimed;
     this.weapons = state.loadout ?? { forged: false, equipped: "starter" };
     this.equippedGear = state.gear ?? {};
@@ -61,6 +69,7 @@ export class Inventory {
 
   get gel(): number { return this.gelCount; }
   get potion(): number { return this.potionCount; }
+  get food(): FoodCounts { return { ...this.foods }; }
   get questRewardClaimed(): boolean { return this.claimed; }
   get hasRoomForGel(): boolean { return this.gelCount < MAX_STACK; }
   get loadout(): WeaponLoadout { return this.weapons; }
@@ -101,6 +110,19 @@ export class Inventory {
     return "traded";
   }
 
+  tradeGelForFood(id: FoodId): FoodTradeResult {
+    if (this.foods[id] >= MAX_STACK) return "food-stack-full";
+    if (this.gelCount < FOODS[id].gelPrice) return "insufficient-gel";
+    this.gelCount -= FOODS[id].gelPrice;
+    this.foods[id]++;
+    return "food-traded";
+  }
+  useFood(id: FoodId, hero: Player): FoodUseResult {
+    if (this.foods[id] < 1) return "no-food";
+    const outcome = hero.eatFood(id);
+    if (outcome === "ate") this.foods[id]--;
+    return outcome;
+  }
   buyForgeSword(hero: { x: number; y: number; hp: number }): SwordPurchaseResult {
     if (hero.hp <= 0) return "unavailable";
     if (nearestNpc(hero.x, hero.y)?.id !== "toren") return "too-far-from-forge";
@@ -131,6 +153,7 @@ export class Inventory {
       gel: this.gelCount,
       potion: this.potionCount,
       questRewardClaimed: this.claimed,
+      ...(Object.values(this.foods).some(v => v > 0) ? { food: { ...this.foods } } : {}),
       ...(this.weapons.forged ? { loadout: this.weapons } : {}),
       ...(Object.keys(this.equippedGear).length ? { gear: this.equippedGear } : {}),
     };

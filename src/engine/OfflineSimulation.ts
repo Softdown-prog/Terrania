@@ -9,6 +9,7 @@ import type { ClassicTileWalker, WalkDirection } from "./ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./Inventory.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
 import { grantExperience, maxHpForExperience, normalizeExperience } from "./Experience.ts";
+import { hasNutrition, type NutritionState } from "./Food.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
 export interface OfflineSave {
@@ -20,6 +21,7 @@ export interface OfflineSave {
   defeated: string[];
   /** Campos opcionais mantêm compatibilidade com saves antigos. */
   inventory?: InventoryState;
+  nutrition?: NutritionState;
   drops?: LootDrop[];
   experience?: number;
   awaitingRespawn?: true;
@@ -52,6 +54,7 @@ export class OfflineSimulation {
       this.player.maxHp = maxHpForExperience(this.experience);
       this.player.hp = saved.awaitingRespawn === true && saved.hp === 0
         ? 0 : Math.min(this.player.maxHp, Math.max(1, saved.hp));
+      if (this.player.hp > 0) this.player.restoreNutrition(saved.nutrition);
       this.kills = saved.kills;
       for (const id of saved.defeated) this.defeated.add(id);
       for (const drop of normalizeDrops(saved.drops)) {
@@ -170,6 +173,7 @@ export class OfflineSimulation {
       ...(this.awaitingRespawn ? { awaitingRespawn: true } : {}),
       defeated: [...this.defeated].slice(-2000),
       inventory: this.inventory.snapshot(),
+      ...(hasNutrition(this.player.nutrition) ? { nutrition: this.player.nutrition } : {}),
       drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),
     };
   }
