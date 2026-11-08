@@ -39,7 +39,7 @@ export class RegionalMonster extends Slime {
   }
   /** Reflected damage is a consequence of a landed short-sword strike. */
   onSwordHit(hero: Player, weapon: WeaponId): void {
-    if(this.definition.special==="thorns" && weapon==="starter")
+    if(this.definition.special==="thorns" && weapon==="forge")
       hero.receiveThorns(2);
   }
   /** Aviso visual do golpe à distância, respeitando linha de visão e recarga. */
