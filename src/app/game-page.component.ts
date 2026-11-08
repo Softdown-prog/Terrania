@@ -142,6 +142,10 @@ export class GamePageComponent implements AfterViewInit {
     try { this.destroy.onDestroy(mountGame(this.mount().nativeElement, this.hud)); }
     catch { this.notice.set('Não foi possível iniciar o jogo neste navegador. Recarregue a página para tentar novamente.'); }
   }
+  dismissNotice(): void {
+    this.notice.set('');
+    this.hud.dismissTravelNotice();
+  }
   dismissCombatHelp(): void {
     this.combatHelpVisible.set(false);
     try { localStorage.setItem('terrania-combat-help-dismissed-v1', '1'); }

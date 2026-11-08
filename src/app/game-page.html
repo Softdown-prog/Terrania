@@ -103,10 +103,8 @@
       @if (notice() || hud.travelNotice()) {
         <div id="gameNotice" role="status" aria-live="polite">
           <span>{{ notice() || hud.travelNotice() }}</span>
-          @if (hud.travelNotice()) {
-            <button type="button" id="dismissTravelNotice" (click)="hud.dismissTravelNotice()"
-              aria-label="Fechar aviso">Fechar</button>
-          }
+          <button type="button" id="dismissTravelNotice" (click)="dismissNotice()"
+            aria-label="Fechar aviso">Fechar</button>
         </div>
       }
       @if (hud.targetCombat() && !hud.cave() && !hud.travelNotice() && !notice() && (hud.combatTarget() || combatHelpVisible())) {
