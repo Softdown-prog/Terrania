@@ -1133,9 +1133,12 @@ noscript a {
   background: #0d2325e9;
   box-shadow: 0 4px 18px #06151ab8;
   color: #f5e8be;
-  pointer-events: auto;
+  /* Overlay is read-only: clicks and touches reach game controls underneath. */
+  pointer-events: none;
 }
 .world-mini-map button {
+  /* Only the MAPA collapse control accepts touch/click. */
+  pointer-events: auto;
   width: 100%;
   min-height: 36px;
   background: #28483c;

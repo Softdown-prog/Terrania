@@ -453,3 +453,31 @@ test('minimapa usa terreno real da sala online, mantém norte e abre/fecha no An
   await expect.poll(async () => (await sample()).colors).toBeGreaterThan(3);
   expect(errors).toEqual([]);
 });
+
+test('minimapa não bloqueia conversas, caminhada nem toques no Android', async ({ page }) => {
+  await page.goto('/jogar/?modo=solo');
+  const map = page.locator('#worldMiniMapCanvas');
+  const toggle = page.locator('#miniMapToggle');
+  await expect(map).toBeVisible();
+  await expect(toggle).toBeVisible();
+  const interaction = await page.locator('#miniMapPanel').evaluate(panel => ({
+    panel: getComputedStyle(panel).pointerEvents,
+    canvas: getComputedStyle(panel.querySelector('canvas')!).pointerEvents,
+    toggle: getComputedStyle(panel.querySelector('button')!).pointerEvents,
+  }));
+  expect(interaction).toEqual({ panel: 'none', canvas: 'none', toggle: 'auto' });
+  // Hit-testing inside the decorative map must reach the world or a game
+  // control, not the map overlay that previously blocked nine browser tests.
+  const rect = await map.boundingBox();
+  expect(rect).not.toBeNull();
+  const top = await page.evaluate(({ x, y }) =>
+    document.elementFromPoint(x, y)?.id ?? '', {
+      x: rect!.x + rect!.width / 2, y: rect!.y + rect!.height / 2,
+    });
+  expect(top).not.toBe('worldMiniMapCanvas');
+  expect(top).not.toBe('miniMapPanel');
+  await toggle.click();
+  await expect(map).toHaveCount(0);
+  await toggle.click();
+  await expect(map).toBeVisible();
+});
