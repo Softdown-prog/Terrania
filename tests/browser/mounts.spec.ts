@@ -30,7 +30,7 @@ test("Estábulo: construir, treinar e iniciar quest na UI Android/desktop", asyn
   await expect(page.locator("#mountQuestHint")).toContainText("marcas de cascos");
   await expect(page.locator("#mountQuestGift")).toContainText("Maçã Silvestre Doce");
   await expect(page.locator(".mount-roster-entry")).toHaveCount(10);
-  await expect(page.locator("#npcTradeFeedback")).toContainText("Garrano Fugitivo");
+  await expect(page.locator("#npcTradeFeedback")).toContainText("Eron entregou a Maçã Silvestre Doce");
   expect(errors).toEqual([]);
 });
 test("Montaria: save validado não pode exigir multiplayer; UI exibe desmontar",async ({page},info)=>{
@@ -71,7 +71,13 @@ test("Rastro do Garrano: pegadas de mundo e resgate no estábulo usando controle
   const button=page.locator("#talkButton");
   await expect(button).toContainText("Examinar pegadas");
   if(info.project.name==="android")await button.tap();else await button.click();
-  await expect(page.locator("#talkButton")).not.toContainText("Examinar pegadas");
+  // The nearby-action button is hidden after completing the inspect step;
+  // Angular deliberately retains its previous text while hidden.
+  await expect(button).toBeHidden();
+  await expect.poll(() => page.evaluate(() => {
+    const save=JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
+    return save?.mounts?.quest?.step;
+  })).toBe(1);
   expect(errors).toEqual([]);
 });
 test("Entrega: com cavalo acalmado, Eron concede selo uma única vez",async ({page},info)=>{
