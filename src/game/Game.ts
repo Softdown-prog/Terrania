@@ -321,6 +321,7 @@ export class Game {
     this.accumulator=0;
     this.camera.snap(this.sim.player.x,this.sim.player.y);
     this.hud.setTravelNotice("Você retornou à superfície pela mesma entrada.");
+    this.save();
     this.updateHud();
   }
   private leaveInterior(): void {
@@ -443,7 +444,6 @@ export class Game {
         this.hud.setTravelNotice("Você tombou na caverna. Renasça para continuar.");
       } else if(cave.reachedExit){
         this.leaveCave();
-        this.save();
       } else {
         this.saveClock += dt;
         if(this.saveClock>12){this.saveClock=0;this.save();}
