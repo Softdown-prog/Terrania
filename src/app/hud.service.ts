@@ -117,8 +117,9 @@ export class HudService implements GameUi {
       ? item.kind === 'gear' || item.kind === 'weapon'
       : item.kind !== 'gear' && item.kind !== 'weapon');
   }));
+  readonly ownedBackpackCount = computed(() => this.backpackItems().filter(item => item.quantity > 0).length);
   readonly selectedBagItem = computed(() =>
-    this.backpackItems().find(item => item.id === this.selectedBagId()) ?? null);
+    this.visibleBackpackItems().find(item => item.id === this.selectedBagId()) ?? null);
   readonly canUseSelectedBagItem = computed(() => {
     const item = this.selectedBagItem();
     if (!item || !this.inventoryAvailable() || this.inventoryPending() || this.hp() <= 0) return false;
