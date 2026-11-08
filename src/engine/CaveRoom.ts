@@ -83,8 +83,10 @@ export class CaveRoom {
   readonly monsters = new Map<string, RegionalMonster>();
   readonly collision: CollisionMap;
   private readonly victories: Array<{ kind: RegionalCreatureKind; id: string }> = [];
+  private readonly defeated: ReadonlySet<string>;
   constructor(entrance:CaveEntrance, hp = 100, maxHp = 100,
-    private readonly defeated: ReadonlySet<string> = new Set()) {
+    defeated: ReadonlySet<string> = new Set()) {
+    this.defeated=defeated;
     this.floor=new CaveFloor(entrance);
     this.collision=this.floor.collision;
     this.player=new Player(maxHp);
