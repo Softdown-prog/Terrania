@@ -1,5 +1,6 @@
 import type { Player } from "../actors/Player.ts";
 import type { Slime } from "../actors/Slime.ts";
+import type { GearState } from "../engine/Equipment.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { attackBody, swingTrail, swordSwing } from "./heroPose.ts";
 import { blink, gait, slimePose, smoothTo } from "./animation.ts";
@@ -9,7 +10,7 @@ export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
-  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> & { id?: string };
+  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> & { id?: string; gear?: GearState };
 export type SlimeVisual = Pick<Slime, "hp" | "bounce"> & { hurtTime?: number; id?: string };
 /** Contexto opcional de apresentação; nada aqui altera regras ou dano. */
 export interface SlimeFx {

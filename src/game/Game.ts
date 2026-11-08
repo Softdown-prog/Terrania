@@ -641,6 +641,7 @@ export class Game {
       onlineTiles ? this.multiplayer?.walkTarget ?? null : this.navigator.target,
       online ? this.multiplayer?.inventory?.drops ?? [] : [...this.sim.drops.values()],
       targetId,
+      online ? this.multiplayer?.inventory?.gear ?? {} : this.sim.inventory.gear,
     );
   }
   destroy(): void {
