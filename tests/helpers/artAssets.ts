@@ -11,6 +11,7 @@ import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
 import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
+import { drawCaveExitStair, drawCaveFormation } from "../../src/render/caveDetails.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
 import type { RegionalLandmarkKind } from "../../src/world/regionalLandmarks.ts";
 import { NPCS } from "../../src/world/npcs.ts";
@@ -50,6 +51,13 @@ export const ASSETS: ArtAsset[] = [
     .map<ArtAsset>(kind => ({ id: "marco " + kind, tier: "structure", fn: "paintRegionalLandmark",
       draw: c => paintRegionalLandmark(c, kind, 0) })),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
+  ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
+    .flatMap<ArtAsset>(theme => [
+      { id: "formação subterrânea " + theme, tier: "prop", fn: "drawCaveFormation",
+        draw: c => drawCaveFormation(c, theme, 0, 0, .61) },
+      { id: "escada subterrânea " + theme, tier: "prop", fn: "drawCaveExitStair",
+        draw: c => drawCaveExitStair(c, theme, 0, 0) },
+    ]),
   ...([
     ["verdant","hole"],["glacial","hole"],["desert","stairs"],
     ["coastal","stairs"],["basalt","ladder"],["marsh","ladder"],
@@ -72,6 +80,6 @@ export const NOT_AN_ASSET: Record<string, string> = {
   drawWorldView: "compõe a cena inteira a partir das peças registradas",
   drawWorldAtlas: "cartografia do mapa, não uma peça de arte",
   drawInterior: "composição de ambiente interno; as peças dele devem ser registradas se forem extraídas",
-  drawCaveView: "composição da cena subterrânea com tiles e herói já registrados",
-  drawCaveAtlas: "cartografia do andar interno, não uma peça de arte",
+  drawCaveView: "composição de cena com sprites já registrados; teste direto em tests/cave-art-contract.test.ts",
+  drawCaveAtlas: "cartografia do andar interno; teste direto em tests/cave-art-contract.test.ts",
 };
