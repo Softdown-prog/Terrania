@@ -56,10 +56,18 @@ export class RegionalMonster extends Slime {
         if (ability.special === "burrow" && d > 44) {
           // Emerging from below: no wall crossing or collision bypass.
           const arrivalX=hero.x-dx/d*27,arrivalY=hero.y-dy/d*27;
-          if (world.canMove(arrivalX,arrivalY))
-            moveBody(this,arrivalX-this.x,arrivalY-this.y,world);
+          if (world.canMove(arrivalX,arrivalY) &&
+              clearPath(this,{x:arrivalX,y:arrivalY},world)) {
+            // Emerge at the last safe point in the open corridor.
+            this.x=arrivalX;
+            this.y=arrivalY;
+          }
         }
-        this.strike(hero, world, defense, true);
+        // Underground bite is melee. It cannot damage the player from far away
+        // when the tunnel is obstructed or an emergence spot is unavailable.
+        if (ability.special !== "burrow" ||
+            Math.hypot(hero.x-this.x,hero.y-this.y) <= 44)
+          this.strike(hero, world, defense, true);
       }
       return;
     }
@@ -101,24 +109,25 @@ export class RegionalMonster extends Slime {
 export function regionalSurfaceSpawns(cx: number, cy: number, seed: number): RegionalMonster[] {
   const tx = cx * CHUNK_TILES + Math.floor(CHUNK_TILES / 2);
   const ty = cy * CHUNK_TILES + Math.floor(CHUNK_TILES / 2);
-  const region = getWorldRegion(tx, ty);
-  if (region === "center" || hash2(cx, cy, seed + 441) > .42) return [];
-  const biome = getBiomeAt(tx, ty, seed);
-  const marsh = caveThemeAt(tx,ty)==="marsh";
-  const candidates = REGIONAL_CREATURE_KINDS.filter(kind => {
-    const def = CREATURE_CATALOG[kind];
-    if (marsh) return def.caveThemes.includes("marsh");
-    return def.region === region && def.biomes.includes(biome) &&
-      !def.caveThemes.includes("marsh");
-  });
-  if (!candidates.length) return [];
-  const kind = candidates[Math.floor(hash2(cx, cy, seed + 449) * candidates.length)]!;
+  if (getWorldRegion(tx,ty) === "center" || hash2(cx,cy,seed+441) > .42) return [];
   const monsters: RegionalMonster[] = [];
   for (let n = 0; n < (hash2(cx, cy, seed + 453) > .81 ? 2 : 1); n++) {
     const sx = cx * CHUNK_TILES + Math.floor(hash2(cx + n * 13, cy, seed + 469) * CHUNK_TILES);
     const sy = cy * CHUNK_TILES + Math.floor(hash2(cx, cy + n * 17, seed + 479) * CHUNK_TILES);
-    if (villageGround(sx, sy) || !canMoveOnSeed((sx + .5) * TILE_SIZE, (sy + .5) * TILE_SIZE, seed)) continue;
-    // A colisão é verificada na fábrica, não depois de apresentar uma criatura presa.
+    const region=getWorldRegion(sx,sy);
+    if (region==="center" || villageGround(sx,sy) ||
+        !canMoveOnSeed((sx + .5) * TILE_SIZE, (sy + .5) * TILE_SIZE, seed)) continue;
+    const biome=getBiomeAt(sx,sy,seed);
+    const marsh=caveThemeAt(sx,sy)==="marsh";
+    const candidates=REGIONAL_CREATURE_KINDS.filter(kind=>{
+      const def=CREATURE_CATALOG[kind];
+      return marsh ? def.caveThemes.includes("marsh") :
+        def.region===region && def.biomes.includes(biome) &&
+        !def.caveThemes.includes("marsh");
+    });
+    if (!candidates.length) continue;
+    const kind=candidates[Math.floor(hash2(cx+n*13,cy+n*17,seed+449)*candidates.length)]!;
+    // Habitat and collision are verified at the actual spawn tile, not the chunk center.
     const x = (sx + .5) * TILE_SIZE, y = (sy + .5) * TILE_SIZE;
     monsters.push(new RegionalMonster("regional:" + seed + ":" + cx + ":" + cy + ":" + n,
       kind, x, y));
