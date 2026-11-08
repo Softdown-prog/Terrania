@@ -99,19 +99,21 @@ export class CaveRoom {
     if (!kinds.length) return;
     const salt=entrance.seed ^ Math.imul(entrance.tileX,1033) ^ Math.imul(entrance.tileY,2053);
     // Dois a quatro encontros por andar, fora da escada e somente em solo transitável.
+    let viableSpots=0;
     for(let i=0;i<8;i++) {
       const tx=4+Math.floor(hash2(i,7,salt+71)*(CAVE_WIDTH-8));
       const ty=4+Math.floor(hash2(i,11,salt+83)*(CAVE_HEIGHT-12));
       const x=(tx+.5)*TILE_SIZE,y=(ty+.5)*TILE_SIZE;
       if (!this.collision.canMove(x,y) ||
           Math.hypot(x-this.player.x,y-this.player.y)<170) continue;
+      viableSpots++;
       if (this.monsters.size>=4) break;
       const kind=kinds[Math.floor(hash2(i,19,salt+91)*kinds.length)]!;
       const id=this.floor.id+":mob:"+i;
       if (!this.defeated.has(id)) this.monsters.set(id,new RegionalMonster(id,kind,x,y));
     }
     // Garantia de encontro nas câmaras, caso o hash caia só em paredes.
-    if(!this.monsters.size){
+    if(!this.monsters.size && viableSpots===0){
       for(let y=5;y<22 && !this.monsters.size;y++) for(let x=5;x<38 && !this.monsters.size;x++){
         if(!this.collision.canMove((x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE))continue;
         const kind=kinds[Math.floor(hash2(x,y,salt+99)*kinds.length)]!;
