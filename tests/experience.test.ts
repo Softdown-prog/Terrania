@@ -17,7 +17,7 @@ test("XP tem curva cumulativa, limite e bônus de vida ao subir de nível", () =
   const hero = { hp: 73, maxHp: 100 };
   assert.equal(grantExperience(20, 10, hero), 30);
   assert.deepEqual(hero, { hp: 83, maxHp: 110 });
-  const veteran = { hp: 420, maxHp: 590 };
+  const veteran = { hp: 420, maxHp: 100 + (MAX_LEVEL - 1) * 10 };
   assert.equal(grantExperience(MAX_EXPERIENCE, 10, veteran), MAX_EXPERIENCE);
   assert.equal(veteran.hp, 420);
 });
