@@ -1,3 +1,4 @@
+import type { WeaponId } from "../engine/Weapons.ts";
 import { Slime } from "./Slime.ts";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS,
   type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
@@ -19,18 +20,42 @@ export class RegionalMonster extends Slime {
   private windup = 0;
   private enraged = 0;
   private frozenFloor = false;
+  private successfulHits = 0;
+  private quietSeconds = 0;
+  private regenElapsed = 0;
+  private readonly strikeSeed: number;
 
   constructor(id: string, kind: RegionalCreatureKind, x: number, y: number) {
     super(id, x, y, kind);
     this.kind = kind;
     this.definition = CREATURE_CATALOG[kind];
+    this.strikeSeed = [...id].reduce((h,ch)=>Math.imul(h^ch.charCodeAt(0),16777619),2166136261);
   }
   get casting(): number { return Math.min(1, this.windup / .42); }
+  override takeHit(sourceX: number, sourceY: number, damage = 1): void {
+    super.takeHit(sourceX,sourceY,damage);
+    this.quietSeconds=0;
+    this.regenElapsed=0;
+  }
+  /** Reflected damage is a consequence of a landed short-sword strike. */
+  onSwordHit(hero: Player, weapon: WeaponId): void {
+    if(this.definition.special==="thorns" && weapon==="starter")
+      hero.receiveThorns(2);
+  }
   /** Aviso visual do golpe à distância, respeitando linha de visão e recarga. */
   override update(dt: number, hero: Player, world: CollisionMap, defense = 0): void {
     if (this.hp <= 0 || hero.hp <= 0 || !Number.isFinite(dt) || dt <= 0) return;
     dt = Math.min(dt, .1);
     this.phase += dt;
+    this.quietSeconds += dt;
+    if(abilitySpecialIsTroll(this.definition) && this.hp < this.definition.maxHp &&
+       this.quietSeconds > 4 && Math.hypot(hero.x-this.x,hero.y-this.y)>120){
+      this.regenElapsed += dt;
+      while(this.regenElapsed >= 1 && this.hp < this.definition.maxHp){
+        this.regenElapsed -= 1;
+        this.hp += 1;
+      }
+    }
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     this.contactCooldown = Math.max(0, this.contactCooldown - dt);
     this.cooldown = Math.max(0, this.cooldown - dt);
@@ -46,7 +71,8 @@ export class RegionalMonster extends Slime {
       ability.special === "spore-cloud" || ability.special === "lava-burst");
     if (d < 245 && d > (keepRange ? 70 : 22) &&
         this.hurtTime <= 0 && d > .001) {
-      const speed = ability.speed * speedBoost * (1 + .18 * this.enraged);
+      const vultureRage=ability.special==="carrion-dive" && hero.hp < hero.maxHp*.5 ? 1.45 : 1;
+      const speed = ability.speed * speedBoost * vultureRage * (1 + .18 * this.enraged);
       moveBody(this, dx / d * speed * dt, dy / d * speed * dt, world);
     }
     const inSight = d <= ability.range && d > .001 && clearPath(this, hero, world);
@@ -71,24 +97,34 @@ export class RegionalMonster extends Slime {
       }
       return;
     }
-    const ranged = ability.range > 35 && ability.special !== "none";
+    const ranged = ability.range > 35 && ability.special !== "none" &&
+      (ability.special!=="sand-throw" || this.hp <= ability.maxHp*.35);
     if (ranged && this.cooldown === 0 && inSight && d > 36) {
       this.windup = .42;
       this.cooldown = ability.interval + .42;
     }
     if (d <= 29 && this.contactCooldown === 0 && inSight) {
       this.strike(hero, world, defense, false);
-      this.contactCooldown = ability.interval;
+      this.contactCooldown = ability.interval * (ability.special==="carrion-dive" &&
+        hero.hp < hero.maxHp*.5 ? .72 : 1);
     }
   }
   private strike(hero: Player, world: CollisionMap, defense: number, ranged: boolean): void {
     const d = this.definition;
     const base = d.contactDamage;
     // Rajadas especiais têm alcance, mas nunca atravessam rocha sólida.
-    const power = ranged ? Math.max(1, Math.round(base * .75)) : base;
+    const power = (ranged ? Math.max(1, Math.round(base * .75)) : base) +
+      (!ranged && d.special==="sun-spear" ? 2 : 0);
     const hit=hero.takeDamage(Math.max(1, power - defense), this.x, this.y);
     if (!hit) return;
-    if (d.status) hero.applyStatus(d.status,d.statusSeconds);
+    this.successfulHits++;
+    // Infection is 10% per successful bite, rolled from monster ID and hit count.
+    if(d.special==="infected-bite"){
+      if(hash2(this.strikeSeed,this.successfulHits,73021)<.1)
+        hero.applyStatus("infection",3);
+    } else if(d.status) hero.applyStatus(d.status,d.statusSeconds);
+    if(d.special==="orc-club" && !ranged && this.successfulHits%3===0)
+      hero.pushFrom(this.x,this.y,12,world);
     if (d.special === "gust") hero.pushFrom(this.x,this.y,32,world);
     if (d.special === "trample" && Math.hypot(hero.x-this.x,hero.y-this.y)<54)
       hero.applyStatus("stun",.75);
@@ -142,4 +178,8 @@ export function rollCreatureLoot(kind: RegionalCreatureKind, id: string): string
   const def = CREATURE_CATALOG[kind];
   const salt = [...id].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
   return def.loot.filter((entry, i) => hash2(salt, i, 811) < entry.chance).map(entry => entry.item);
+}
+
+function abilitySpecialIsTroll(species: CreatureDefinition): boolean {
+  return species.special === "clay-clod";
 }
