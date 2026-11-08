@@ -115,3 +115,12 @@ Limitação honesta: esses testes ainda não certificam beleza, composição
 artística, direção de luz por pixel nem desempenho no aparelho físico. A
 galeria `cavernas-regionais.png` e os testes de navegador continuam sendo
 etapas obrigatórias de revisão; jamais aprovar só por métricas.
+
+### Evidência adicional do relevo
+
+A captura inicial das seis cavernas enquadra apenas a posição inicial perto
+da escada e pode esconder completamente as paredes, produzindo uma imagem
+enganosamente homogênea. `npm run art:preview` agora gera também
+`cavernas-paredes.png`: cada uma das seis regiões é fotografada junto a uma
+parede **real**, escolhida pela planta transitável da própria caverna. Não
+aprovar a qualidade ambiental usando somente o retrato perto da escada.

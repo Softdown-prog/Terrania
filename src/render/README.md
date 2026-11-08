@@ -76,3 +76,8 @@ validação de material recortado, gradiente, contorno, detalhes de profundidade
 contraste e determinismo. A composição `cave.ts` continua em cache por
 `CaveFloor` e tem teste específico de seis temas/atlas para fechar a
 lacuna anterior sem criar renderizador ou motor paralelo.
+
+**Prévia de cavernas com parede à vista:** além da planta e da imagem da
+câmara inicial, `art:preview` produz `cavernas-paredes.png`, escolhendo
+para cada seed uma célula transitável com rocha adjacente. Assim a revisão
+enxerga relevo, material e formas regionais, não apenas o piso plano da saída.

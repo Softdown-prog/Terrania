@@ -49,5 +49,6 @@ jobs:
           path: |
             test-results/art-preview/pecas.png
             test-results/art-preview/cavernas-regionais.png
+            test-results/art-preview/cavernas-paredes.png
           if-no-files-found: warn
           retention-days: 14
