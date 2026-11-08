@@ -17,7 +17,7 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Persistência local](indexes/local-save.md) | active | 2 | Save no navegador, versão e compatibilidade; não é persistência autoritativa online. |
 | [QA e testes](indexes/quality.md) | active | 44 | Testes unitários e navegador desktop/Android; cenários de regressão e robôs de QA. |
 | [Servidor Node atual](indexes/node-server.md) | active | 13 | Backend WebSocket ainda utilizado como referência funcional/produção segundo a documentação; não confundir com Go shadow. |
-| [Motor Go autoritativo em validação](indexes/go-engine.md) | experimental | 20 | Implementação Go de regras e paridade; substituição do backend ativo requer decisão e validação separadas. |
+| [Motor Go autoritativo em validação](indexes/go-engine.md) | experimental | 22 | Implementação Go de regras e paridade; substituição do backend ativo requer decisão e validação separadas. |
 | [Executáveis e presença Go](indexes/go-runtime.md) | experimental | 28 | Worker, gateway, laboratório de capacidade, presença e scripts de paridade. |
 | [Cluster e recuperação experimental Go](indexes/go-cluster.md) | lab | 62 | Handoff, epochs, autoscale e laboratórios de quorum. Não pressupor produção, failover ou capacidade comprovada. |
 | [Módulo Rust espacial e entidades](indexes/rust-spatial.md) | experimental | 10 | Kernel Rust e FFI opt-in; não é servidor de rede. |
