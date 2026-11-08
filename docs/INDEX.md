@@ -15,7 +15,7 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Entrada e controles](indexes/input.md) | active | 4 | Normalização de teclado, joystick e toque; regras de gameplay pertencem à simulação. |
 | [Rede cliente e protocolo](indexes/client-network.md) | active | 5 | Conexão WebSocket e contrato de mensagens; servidor é autoridade online. |
 | [Persistência local](indexes/local-save.md) | active | 2 | Save no navegador, versão e compatibilidade; não é persistência autoritativa online. |
-| [QA e testes](indexes/quality.md) | active | 47 | Testes unitários e navegador desktop/Android; cenários de regressão e robôs de QA. |
+| [QA e testes](indexes/quality.md) | active | 48 | Testes unitários e navegador desktop/Android; cenários de regressão e robôs de QA. |
 | [Servidor Node atual](indexes/node-server.md) | active | 21 | Backend Node, presença e catálogo PostgreSQL isolado; salas legadas preservadas. Escrita do mercado depende de identidade autenticada, não do save local. |
 | [Motor Go autoritativo em validação](indexes/go-engine.md) | experimental | 23 | Implementação Go de regras e paridade; substituição do backend ativo requer decisão e validação separadas. |
 | [Executáveis e presença Go](indexes/go-runtime.md) | experimental | 28 | Worker, gateway, laboratório de capacidade, presença e scripts de paridade. |
