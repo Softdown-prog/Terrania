@@ -58,7 +58,10 @@ export class HudService implements GameUi {
   readonly cave = signal<CaveMapState | null>(null, {equal:(a,b)=> a===b ||
     (a!==null && b!==null && a.floor===b.floor && a.tileX===b.tileX && a.tileY===b.tileY)});
   readonly gel = signal(0);
-  readonly creatureMaterials = signal<Readonly<Record<string,number>>>({});
+  readonly creatureMaterials = signal<Readonly<Record<string,number>>>({}, {
+    equal: (a,b) => a===b || (Object.keys(a).length===Object.keys(b).length &&
+      Object.entries(a).every(([key,quantity])=>b[key]===quantity)),
+  });
   readonly potions = signal(0);
   readonly foodIds = FOOD_IDS;
   readonly foodCatalog = FOODS;
