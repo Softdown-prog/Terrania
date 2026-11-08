@@ -116,6 +116,11 @@ test("goblin: só tenta arremessar areia quando a vida está baixa",()=>{
   assert.equal(goblin.casting,0);
   goblin.hp=20;goblin.update(1/60,hero,collision);
   assert.ok(goblin.casting>0);
+  const nearHero=new Player();nearHero.x=45;nearHero.y=0;
+  const fleeing=new RegionalMonster("fleeing","sand-goblin",0,0);
+  fleeing.hp=18;
+  fleeing.update(.1,nearHero,collision);
+  assert.ok(fleeing.x<0,"goblin should retreat when wounded and approached");
 });
 
 test("troll: recupera um HP por segundo somente após afastar-se do combate",()=>{
