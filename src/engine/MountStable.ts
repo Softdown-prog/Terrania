@@ -1,27 +1,24 @@
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL, isMountId,
   type MountId, type RidingTier } from "../actors/MountCatalog.ts";
 import { hash2 } from "../world/random.ts";
-import { STABLE_MASTER,WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
-export { STABLE_MASTER,WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
+import { advanceMountQuest, currentMountQuestStep, mountQuestHint, normalizeMountQuest,
+  startMountQuest, synchronizeQuestKills, type MountQuestProgress } from "./MountQuestState.ts";
+import { STABLE_MASTER,WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
+export { STABLE_MASTER,WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
 
 export const HALTER_GEL_COST = 3;
 export const RIDE_STAMINA_DRAIN = 9;
 export const RIDE_STAMINA_RECOVERY = 12;
 type Tier = 0 | RidingTier;
 export type MountAction = "build" | "upgrade" | "train" | "start-warhorse" |
-  "make-halter" | "forage" | "tame" | "mount-warhorse" | "dismount";
+  "make-halter" | "inspect-tracks" | "tame" | "return-warhorse" |
+  "mount-warhorse" | "dismount";
 export type MountActionResult = "built" | "upgraded" | "trained" | "quest-started" |
-  "halter-made" | "apple-picked" | "tamed" | "mounted" | "dismounted" |
+  "halter-made" | "tracks-found" | "calmed" | "returned" | "mounted" | "dismounted" |
   "no-level" | "no-gel" | "no-stable" | "no-training" | "missing-quest" |
   "quest-active" | "already-owned" | "no-apple" | "no-halter" |
-  "slimes-needed" | "too-far" | "unavailable" | "stamina-low";
-export interface MountQuestSave {
-  readonly id: MountId;
-  readonly apple?: true;
-  readonly halter?: true;
-  /** Slimes mortos antes da quest não contam para resgatar o animal. */
-  readonly slimesBefore?: number;
-}
+  "slimes-needed" | "too-far" | "unavailable" | "stamina-low" | "not-ready";
+export type MountQuestSave = MountQuestProgress;
 export interface MountSave {
   readonly stableTier?: Tier;
   readonly ridingTier?: Tier;
@@ -57,11 +54,9 @@ export function normalizeMountSave(value: unknown): MountSave {
     ? s.active : undefined;
   const rawStamina = typeof s.stamina === "number" && Number.isFinite(s.stamina) ? s.stamina : null;
   const stamina = active ? Math.min(MOUNTS[active].stamina, Math.max(0, rawStamina ?? MOUNTS[active].stamina)) : 0;
-  const quest = s.quest?.id === "warhorse" && !owned.includes("warhorse") && stableTier >= 1
-    ? { id:"warhorse" as const, ...(s.quest.apple === true ? {apple:true as const}:{}),
-        ...(s.quest.halter === true ? {halter:true as const}:{}),
-        ...(typeof s.quest.slimesBefore==="number" && Number.isSafeInteger(s.quest.slimesBefore) &&
-          s.quest.slimesBefore>=0 ? {slimesBefore:Math.min(9999999,s.quest.slimesBefore)}:{}) } : undefined;
+  const normalizedQuest=normalizeMountQuest(s.quest);
+  const quest=normalizedQuest && !owned.includes(normalizedQuest.id) && stableTier >= 1
+    ? normalizedQuest : undefined;
   return {
     ...(stableTier ? {stableTier}:{}),
     ...(ridingTier ? {ridingTier}:{}),
@@ -127,36 +122,52 @@ export class MountStable {
     if(this.stable < 1)return "no-stable";
     if(this.skill < 1 || level < MOUNTS.warhorse.level)return "no-training";
     if(this.questState)return "quest-active";
-    this.questState={id:"warhorse",slimesBefore:Number.isSafeInteger(kills)&&kills>0?kills:0};
-    return "quest-started";
+    this.questState=startMountQuest("warhorse",kills);
+    return this.questState?"quest-started":"unavailable";
   }
-  craftHalter(gel:number,spend:(amount:number)=>boolean,x:number,y:number): MountActionResult {
+  /** O motor mantém as mortes da missão distintas das mortes anteriores. */
+  synchronizeKills(kills:number):void {
+    if(this.questState)this.questState=synchronizeQuestKills(this.questState,kills);
+  }
+  inspectTracks(x:number,y:number):MountActionResult {
+    if(!near(x,y,WILD_HOOFPRINTS))return "too-far";
+    if(!this.questState)return "missing-quest";
+    const next=advanceMountQuest(this.questState,{kind:"inspect",target:"garrano-tracks"});
+    if(next===this.questState)return "not-ready";
+    this.questState=next;
+    return "tracks-found";
+  }
+  craftHalter(gel:number,spend:(amount:number)=>boolean,x:number,y:number):MountActionResult {
     if(!near(x,y,STABLE_MASTER))return "too-far";
     if(!this.questState)return "missing-quest";
-    if(this.questState.halter)return "unavailable";
+    if(currentMountQuestStep(this.questState)?.id!=="halter")return "not-ready";
     if(gel<HALTER_GEL_COST||!spend(HALTER_GEL_COST))return "no-gel";
-    this.questState={...this.questState,halter:true};
+    this.questState=advanceMountQuest(this.questState,{kind:"craft",target:"cabresto"});
     return "halter-made";
   }
-  forage(x:number,y:number): MountActionResult {
-    if(!near(x,y,WILD_APPLES))return "too-far";
-    if(!this.questState)return "missing-quest";
-    if(this.questState.apple)return "unavailable";
-    this.questState={...this.questState,apple:true};
-    return "apple-picked";
-  }
-  tame(level:number,kills:number,x:number,y:number): MountActionResult {
+  tame(level:number,kills:number,x:number,y:number):MountActionResult {
     if(!near(x,y,WILD_WARHORSE))return "too-far";
     if(this.has("warhorse"))return "already-owned";
     if(this.stable<1||this.skill<1||level<15)return "no-training";
     if(!this.questState)return "missing-quest";
-    if(kills<(this.questState.slimesBefore??0)+5)return "slimes-needed";
-    if(!this.questState.apple)return "no-apple";
-    if(!this.questState.halter)return "no-halter";
+    this.synchronizeKills(kills);
+    if(currentMountQuestStep(this.questState!)?.id!=="calm")
+      return currentMountQuestStep(this.questState!)?.id==="slimes"?"slimes-needed":"not-ready";
+    if(!this.questState!.gift)return "no-apple";
+    this.questState=advanceMountQuest(this.questState!,{kind:"interact",target:"warhorse"});
+    return "calmed";
+  }
+  /** O cavalo e a sela só são concedidos ao retornar com ele ao estábulo. */
+  returnWarhorse(x:number,y:number):MountActionResult {
+    if(!near(x,y,STABLE_MASTER))return "too-far";
+    if(!this.questState)return "missing-quest";
+    if(currentMountQuestStep(this.questState)?.id!=="return")return "not-ready";
+    const finished=advanceMountQuest(this.questState,{kind:"escort",target:"stablemaster"});
+    if(currentMountQuestStep(finished))return "not-ready";
     this.ownedSet.add("warhorse");
-    this.saddles.add("warhorse"); // recompensa explícita da primeira quest
+    this.saddles.add("warhorse");
     this.questState=null;
-    return "tamed";
+    return "returned";
   }
   mount(id:MountId,level:number,x:number,y:number): MountActionResult {
     if(!near(x,y,STABLE_MASTER))return "too-far";
@@ -204,19 +215,14 @@ export class MountStable {
     }
   }
   view(kills:number):MountView {
+    this.synchronizeKills(kills);
     const quest=this.questState;
-    const questHint=quest
-      ? kills<(quest.slimesBefore??0)+5
-        ?"Afaste cinco slimes: "+Math.min(5,Math.max(0,kills-(quest.slimesBefore??0)))+"/5":!quest.apple
-        ?"Colete a Maçã Silvestre no campo a sudoeste da vila."
-        : !quest.halter?"Volte ao Mestre de Estábulos e fabrique um cabresto (3 gel)."
-          :"Acalme o cavalo fugitivo a sudoeste da vila usando E."
-      : this.has("warhorse")?"Garrano resgatado · selecione a montaria no estábulo."
-        :"Procure o Mestre de Estábulos na Vila da Travessia.";
+    const hint=quest?mountQuestHint(quest,kills):
+      this.has("warhorse")?"Garrano resgatado · selecione o cavalo no estábulo.":
+      "Procure Eron na Vila Inicial para recuperar o cavalo da guarnição.";
     return {stableTier:this.stable,ridingTier:this.skill,owned:[...this.ownedSet],
       active:this.mounted,stamina:this.energy,
-      maxStamina:this.mounted?MOUNTS[this.mounted].stamina:0,
-      quest,questHint};
+      maxStamina:this.mounted?MOUNTS[this.mounted].stamina:0,quest,questHint:hint};
   }
   snapshot():MountSave {
     return normalizeMountSave({stableTier:this.stable,ridingTier:this.skill,
