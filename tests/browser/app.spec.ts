@@ -363,6 +363,18 @@ test('inventário mobile tem mochila por toque, comparação real e cavaleiro pr
 
 test('equipar elmo muda o desenho real do cavaleiro e retirar remove a chapa', async ({ page }) => {
   await page.addInitScript(() => {
+    // Observa a faixa dourada do elmo no Canvas original do jogo, não apenas na prévia.
+    const original = CanvasRenderingContext2D.prototype.fillRect;
+    Object.assign(window, { worldHelmetStrokes: 0 });
+    CanvasRenderingContext2D.prototype.fillRect = function (x, y, width, height) {
+      if (this.canvas.id !== 'inventoryHero' && this.fillStyle === '#e5d39e' &&
+          Math.abs(width - 17.2) < 0.001 && Math.abs(height - 1.3) < 0.001) {
+        const data = window as typeof window & { worldHelmetStrokes: number };
+        data.worldHelmetStrokes++;
+      }
+      original.call(this, x, y, width, height);
+    };
+
     localStorage.setItem('terrania-origins-v1', JSON.stringify({
       seed: 842136, x: 16, y: 16, hp: 100, kills: 0, defeated: [],
       inventory: { gel: 0, potion: 0, questRewardClaimed: false },
@@ -390,6 +402,15 @@ test('equipar elmo muda o desenho real do cavaleiro e retirar remove a chapa', a
   await page.getByRole('button', { name: 'Equipar Elmo de trilha' }).click();
   await expect(page.locator('[data-equipment-slot="head"]')).toContainText('Elmo de trilha');
   await expect.poll(helmPixels).toBeGreaterThan(8);
+  await page.locator('#inventoryDialog .dialog-x').click();
+  const readWorldHelmet = () => page.evaluate(() =>
+    (window as typeof window & { worldHelmetStrokes: number }).worldHelmetStrokes);
+  await expect.poll(readWorldHelmet).toBeGreaterThan(0);
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  if (await page.locator('#inventoryTabEquipment').isVisible()) {
+    await page.locator('#inventoryTabEquipment').click();
+  }
   // A mesma peça continua visível nas quatro orientações do personagem procedural.
   for (let facing = 0; facing < 4; facing++) {
     await page.locator('#rotateInventoryHero').click();
