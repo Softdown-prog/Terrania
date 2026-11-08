@@ -1,3 +1,5 @@
+import { RegionalMonster } from "../actors/RegionalMonster.ts";
+import { renderRegionalCreature } from "../render/regionalCreatures.ts";
 import type { Player } from '../actors/Player.ts';
 import type { BattleViewport } from '../engine/ClassicBattleList.ts';
 import type { Slime } from '../actors/Slime.ts';
@@ -94,7 +96,8 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   for (const mob of mobs) if (Math.abs(mob.x - cameraX) < width / 2 + 30 && Math.abs(mob.y - cameraY) < height / 2 + 40) {
     actors.push({ y: mob.y, draw: () => {
       const dx = player.x - mob.x, dy = player.y - 10 - mob.y;
-      renderSlime(ctx, mob, mob.x - left, mob.y - top, {
+      if (mob instanceof RegionalMonster) renderRegionalCreature(ctx,mob,mob.x-left,mob.y-top,time);
+      else renderSlime(ctx, mob, mob.x - left, mob.y - top, {
         time, lookX: dx, lookY: dy,
         near: clamp01((84 - Math.hypot(dx, dy)) / 56),
         bite: effects?.biteAmount(mob.id) ?? 0,
