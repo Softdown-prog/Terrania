@@ -276,7 +276,7 @@ export class Game {
   }
   private equipWeapon(weapon: WeaponId): string {
     if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
-    const result = this.sim.inventory.equipWeapon(weapon);
+    const result = this.sim.inventory.equipWeapon(weapon, experienceProgress(this.sim.experience).level);
     if (result === "equipped") {
       this.save();
       this.updateHud();
