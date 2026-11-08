@@ -295,8 +295,14 @@
         </div>
         @if (hud.inventoryTab() === 'map') {
           <section id="inventoryMapPanel" class="world-atlas-panel" aria-label="Atlas de Terrania">
-            <h2>Atlas do mundo procedural</h2>
-            <p id="worldMapDimensions">Área com limite técnico de movimento: 62.500 × 62.500 tiles (32 unidades por tile).</p>
+            <div class="atlas-titlebar">
+              <div>
+                <span class="atlas-eyebrow">TERRANIA · CARTOGRAFIA</span>
+                <h2>Atlas do mundo</h2>
+              </div>
+              <span class="atlas-seed">MUNDO {{ hud.seed() }}</span>
+            </div>
+            <p id="worldMapDimensions">Extensão técnica navegável: <strong>62.500 × 62.500 tiles</strong> · 32 unidades por tile.</p>
             <div class="atlas-controls" role="group" aria-label="Escala do mapa">
               <button type="button" id="mapScaleWorld" [attr.aria-pressed]="atlasScale() === 'world'"
                 (click)="atlasScale.set('world')">Mundo inteiro</button>
@@ -306,18 +312,32 @@
                 (click)="atlasScale.set('nearby')">Arredores</button>
             </div>
             <div class="atlas-main">
-              <canvas #atlasCanvas id="worldAtlasCanvas" width="256" height="256" role="img"
-                [attr.aria-label]="'Atlas com norte para cima, escala ' + atlasScale() + ', centrado na região escolhida.'"></canvas>
+              <div class="atlas-map-frame">
+                <div class="atlas-map-topline"><span>✦ TERRA COGNITA ✦</span><span>N ↑</span></div>
+                <canvas #atlasCanvas id="worldAtlasCanvas" width="256" height="256" role="img"
+                  [attr.aria-label]="'Atlas com norte para cima, escala ' + atlasScale() + ', centrado na região escolhida.'"></canvas>
+                <div class="atlas-map-bottomline"><span>O ←</span><span>COORDENADAS REAIS</span><span>→ L</span></div>
+              </div>
               <div class="atlas-details">
                 <strong id="atlasCurrentSector">Você está no setor {{ currentAtlasSector().name }}.</strong>
                 <span id="atlasCoordinates">Sua posição: {{ hud.coords() }}</span>
                 <span id="atlasGround">Terreno atual: {{ currentAtlasGround() }}</span>
                 <span id="atlasScaleDetails">Largura da visão: {{ atlasView().spanTiles.toFixed(0) }} tiles</span>
-                <p>Branco: você · Dourado: Vila da Travessia · Lilás: outros aventureiros próximos.</p>
-                <p>Verde-claro: campo · Verde-escuro: floresta · Bege: trilha ou areia · Azul: água.</p>
+                <div class="atlas-legend" aria-label="Legenda do atlas">
+                  <span><i class="atlas-swatch self"></i> Você</span>
+                  <span><i class="atlas-swatch village"></i> Vila da Travessia</span>
+                  <span><i class="atlas-swatch party"></i> Aventureiros próximos</span>
+                  <span><i class="atlas-swatch grass"></i> Campos</span>
+                  <span><i class="atlas-swatch forest"></i> Floresta</span>
+                  <span><i class="atlas-swatch trail"></i> Trilha e areia</span>
+                  <span><i class="atlas-swatch water"></i> Água</span>
+                </div>
               </div>
             </div>
-            <h3>Regiões cartográficas</h3>
+            <div class="atlas-region-title">
+              <h3>Regiões cartográficas</h3>
+              <small>9 setores · classificação por terreno</small>
+            </div>
             <div class="atlas-sectors" role="group" aria-label="Selecionar um dos nove setores">
               @for (sector of atlasSectors(); track sector.id) {
                 <button type="button" [attr.data-atlas-sector]="sector.id"
