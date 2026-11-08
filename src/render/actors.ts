@@ -440,7 +440,7 @@ export function renderHero(
   if (back) { swordArm(); }
   if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); }
   // Rastro e brilho por cima de tudo para ler bem em qualquer direção.
-  renderTrail(ctx, player, player.attackWeapon === "forge");
+  renderTrail(ctx, player);
   ctx.restore();
 }
 
