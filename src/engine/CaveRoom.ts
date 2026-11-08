@@ -143,6 +143,7 @@ export class CaveRoom {
       if(monster){
         faceTarget(this.player,monster);
         monster.takeHit(this.player.x,this.player.y,this.player.strikeDamage);
+        monster.onSwordHit(this.player,weapon);
         if(monster.hp<=0){
           monster.deathBurst(this.player,this.collision,defense);
           this.monsters.delete(monster.id);
