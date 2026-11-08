@@ -221,6 +221,14 @@ export class Player {
     if (d <= .001) return;
     moveBody(this,dx/d*pixels,dy/d*pixels,world);
   }
+  /** Counterattack from a physical thorn, no hit invulnerability or knockback. */
+  receiveThorns(amount: number): boolean {
+    if(this.hp<=0 || !Number.isFinite(amount) || amount<=0)return false;
+    this.hp=Math.max(0,this.hp-amount);
+    this.receivedHits++;
+    this.hurtTime=Math.max(this.hurtTime,.12);
+    return true;
+  }
   takeDamage(amount: number, sourceX: number, sourceY: number): boolean {
     if (this.invulnerable > 0 || this.hp <= 0 || !Number.isFinite(amount) || amount <= 0 ||
         !Number.isFinite(sourceX) || !Number.isFinite(sourceY)) return false;
