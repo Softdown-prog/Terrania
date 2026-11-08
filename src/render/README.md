@@ -43,3 +43,10 @@ gráfico altera posição, colisão ou estado autoritativo. O teste
 diversidade de formas e variantes; testes de navegador e inspeção visual real
 continuam necessários antes do merge. O checklist de autores fica em
 `AGENTS.md`.
+
+**Arte subterrânea:** `cave.ts` gera textura procedural e a cacheia por
+`CaveFloor` usando `WeakMap`; `CanvasScene` reutiliza Phaser e o canvas
+existentes. O render oferece rochas facetadas, fissuras, minerais, água profunda,
+musgo, gelo e areia conforme a região, além de entrada exterior por buraco,
+escada ou escadaria. O atlas desenha *somente* a planta daquele andar, com
+jogador e saída; não sobrepõe cartografia da superfície.

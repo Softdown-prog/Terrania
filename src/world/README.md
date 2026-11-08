@@ -15,3 +15,15 @@ A regra de progresso da missão da Aela fica em `aelaQuest.ts`. As falas da vila
 **Escala do atlas:** `atlas.ts` partilha com `collision.ts` o limite técnico de movimento (±1.000.000 px em cada eixo; tiles de 32 px). O gerador `getTile` continua procedural, sem borda geográfica explícita. Os nove setores são divisões de coordenadas e as classificações de terreno são amostragens reprodutíveis; não se deve tratá-las como garantia de travessia ou mapa totalmente revelado. O render fica em `src/render/terrain.ts`, fora do domínio.
 
 **Regionalização:** consulte [docs/MACRO_REGIONS.md](../../docs/MACRO_REGIONS.md) para biomas, risco, rotas e conteúdo pendente. A geração de ambos os lados do multiplayer usa as mesmas regras de `terrain.ts`.
+
+**Cavernas regionais (primeiro andar, solo):** `caves.ts` coloca entradas
+determinísticas em células de 96 tiles, com um acesso acessível fora da vila
+inicial. `CaveRoom` gera uma planta 42×30 independente das coordenadas de
+superfície, com câmaras conectadas, paredes e águas profundas bloqueadas e uma
+escada para voltar pela mesma entrada. A diagonal sudeste recebe a identidade
+pantanosa; gelo, deserto, costa, montanha e centro usam temas próprios.
+Este primeiro andar não possui combate, monstros, drops, teleporte para outros
+andares ou persistência de posição subterrânea. Não confundir com masmorras
+sincronizadas: a autoridade do multiplayer Node/Go **não** suporta transições de
+subsolo e a interação está desabilitada nas salas online.
+`tests/caves.test.ts` testa seeds, acessibilidade, conectividade e paredes.
