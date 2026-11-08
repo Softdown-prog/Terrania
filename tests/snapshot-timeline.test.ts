@@ -49,6 +49,20 @@ test("a chegada fica exata e o relógio de ataque nunca reinicia a cada pacote",
   close(stopped.x, 28); close(stopped.attackTime, 0); close(stopped.vx!, 0);
 });
 
+test("a espada visível em repouso acompanha a troca sem exigir ataque", () => {
+  const timeline = new SnapshotTimeline();
+  timeline.push(1, [hero({ equippedWeapon: "forge" })], []);
+  timeline.push(1.1, [hero({ equippedWeapon: "forge" })], []);
+  start(timeline);
+  const idle = timeline.advance(0.05)!.players[0]!;
+  assert.equal(idle.attackTime, 0);
+  assert.equal(idle.equippedWeapon, "forge");
+  timeline.push(1.2, [hero()], []);
+  const swapped = timeline.advance(0.08)!.players[0]!;
+  assert.equal(swapped.attackTime, 0);
+  assert.equal(swapped.equippedWeapon, undefined);
+});
+
 test("jitter mantém progresso monótono e pacotes antigos não retrocedem o herói", () => {
   const timeline = new SnapshotTimeline();
   timeline.push(1, [hero()], []);
