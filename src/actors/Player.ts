@@ -1,7 +1,6 @@
 import type { DebuffKind } from "./CreatureCatalog.ts";
 import { moveBody, type CollisionMap } from "../world/collision.ts";
 import {
-  ATTACK_COOLDOWN,
   ATTACK_DURATION,
 } from "../engine/combat.ts";
 import { BASE_MAX_HP } from "../engine/Experience.ts";
