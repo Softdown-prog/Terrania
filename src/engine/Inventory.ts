@@ -4,7 +4,7 @@ import type { Player } from "../actors/Player.ts";
 import { FOODS, emptyFoodCounts, normalizeFoodCounts, type FoodCounts, type FoodId,
   type FoodTradeResult, type FoodUseResult } from "./Food.ts";
 import { nearestNpc } from "../world/npcs.ts";
-import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
+import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 
 /** Regras da bolsa do jogo solo (antes compartilhadas com a sala Node, já retirada). */
@@ -14,7 +14,7 @@ export const POTION_HEAL = 35;
 export const POTION_GEL_PRICE = 3;
 export type PotionTradeResult = "traded" | "insufficient-gel" | "potions-full";
 export type SwordPurchaseResult = "purchased" | "already-owned" | "insufficient-sword-gel" | "too-far-from-forge" | "unavailable";
-export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned";
+export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned" | "level-too-low";
 /** Tudo que uma ação da bolsa pode responder; a interface traduz cada valor em uma mensagem. */
 export type InventoryOutcome = PotionTradeResult | SwordPurchaseResult | SwordEquipResult | GearResult |
   FoodTradeResult | FoodUseResult | "healed" | "full-health" | "no-potion" | "too-far";
@@ -48,8 +48,10 @@ export function normalizeInventory(value: unknown): InventoryState {
     return { gel: 0, potion: 0, questRewardClaimed: false };
   }
   const state = value as Partial<InventoryState>;
-  const loadout: WeaponLoadout | undefined = state.loadout?.forged === true
-    ? { forged: true, equipped: state.loadout.equipped === "forge" ? "forge" : "starter" }
+  const loadout: WeaponLoadout | undefined = state.loadout?.forged === true ||
+    isWeaponId(state.loadout?.equipped)
+    ? { forged: state.loadout?.forged === true,
+        equipped: isWeaponId(state.loadout?.equipped) ? state.loadout.equipped : "starter" }
     : undefined;
   const gear = normalizeGear(state.gear);
   const food = normalizeFoodCounts(state.food);
@@ -73,14 +75,16 @@ export class Inventory {
   private weapons: WeaponLoadout;
   private equippedGear: GearState;
 
-  constructor(value?: unknown) {
+  constructor(value?: unknown, private readonly level = 1) {
     const state = normalizeInventory(value);
     this.gelCount = state.gel;
     this.materialCounts = normalizeMaterials(state.materials);
     this.potionCount = state.potion;
     this.foods = normalizeFoodCounts(state.food);
     this.claimed = state.questRewardClaimed;
-    this.weapons = state.loadout ?? { forged: false, equipped: "starter" };
+    const restored=state.loadout ?? { forged: false, equipped: "starter" };
+    this.weapons = weaponUnlocked(restored.equipped, this.level, restored.forged)
+      ? restored : { ...restored, equipped: "starter" };
     this.equippedGear = state.gear ?? {};
   }
 
@@ -156,9 +160,11 @@ export class Inventory {
     return "purchased";
   }
 
-  equipWeapon(weapon: WeaponId): SwordEquipResult {
+  equipWeapon(weapon: WeaponId, level: number = this.level): SwordEquipResult {
+    if (!isWeaponId(weapon)) return "not-owned";
     if (weapon === this.weapons.equipped) return "already-equipped";
-    if (weapon === "forge" && !this.weapons.forged) return "not-owned";
+    if (!Number.isInteger(level) || level < WEAPONS[weapon].level) return "level-too-low";
+    if (!weaponUnlocked(weapon,level,this.weapons.forged)) return "not-owned";
     this.weapons = { ...this.weapons, equipped: weapon };
     return "equipped";
   }
@@ -177,7 +183,7 @@ export class Inventory {
       potion: this.potionCount,
       questRewardClaimed: this.claimed,
       ...(Object.values(this.foods).some(v => v > 0) ? { food: { ...this.foods } } : {}),
-      ...(this.weapons.forged ? { loadout: this.weapons } : {}),
+      ...(this.weapons.forged || this.weapons.equipped !== "starter" ? { loadout: this.weapons } : {}),
       ...(Object.keys(this.equippedGear).length ? { gear: this.equippedGear } : {}),
       ...(Object.keys(this.materialCounts).length ? { materials: { ...this.materialCounts } } : {}),
     };
