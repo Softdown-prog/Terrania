@@ -385,6 +385,8 @@ export class Room {
         vx: a.vx,
         vy: a.vy,
         hurtTime: a.hurtTime,
+        ...(g.inventory?.gearSlots && Object.keys(g.inventory.bag.gear).length > 0
+          ? { gear: g.inventory.bag.gear } : {}),
         ...(me.walking && g.walking ? { stepTarget: g.walking.walker.destination } : {}),
       });
     }
