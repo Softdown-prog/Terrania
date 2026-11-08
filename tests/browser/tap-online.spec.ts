@@ -267,6 +267,9 @@ test('a forja online usa a posse e a espada equipada confirmadas pela sala', asy
   await toren.getByRole('button', { name: 'Fechar conversa' }).click();
   await page.locator('#gameMenuButton').click();
   await page.locator('#inventoryButton').click();
+  const equipmentTab = page.locator('#inventoryTabEquipment');
+  if (await equipmentTab.isVisible()) await equipmentTab.click();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
   await page.getByRole('button', { name: 'Equipar Espada da Travessia' }).click();
   await expect.poll(() => commands.at(1)).toEqual({ type: 'inventory', action: 'equip-forge', requestId: 2 });
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
@@ -281,13 +284,15 @@ test('a sala Node confirma equipar e tirar o escudo', async ({ page }) => {
   await expect(page.locator('#multiplayerStatus')).toContainText('Online');
   await page.locator('#gameMenuButton').click();
   await page.locator('#inventoryButton').click();
+  const equipmentTab = page.locator('#inventoryTabEquipment');
+  if (await equipmentTab.isVisible()) await equipmentTab.click();
   const slot = page.locator('[data-equipment-slot="shield"]');
   await slot.click();
   await page.getByRole('button', { name: 'Equipar Escudo de salgueiro' }).click();
   await expect(slot).toContainText('Escudo de salgueiro');
   await expect(page.locator('#equipmentDefense')).toHaveText('Defesa 2');
   await expect(page.locator('#inventoryFeedback')).toHaveText('Item equipado.');
-  await page.getByRole('button', { name: 'Tirar Escudo de salgueiro' }).click();
+  await page.getByRole('button', { name: 'Retirar Escudo de salgueiro' }).click();
   await expect(slot).toContainText('Vazio');
   await expect(page.locator('#equipmentDefense')).toHaveText('Defesa 0');
 });

@@ -19,13 +19,6 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      - name: Instalar navegador de teste
-        run: npx playwright install --with-deps chromium
-      - name: Validar Angular, Phaser e presença real no navegador
-        run: npm run test:browser
-      - name: Validar empacotamento do Worker e assets (sem publicar)
-        if: github.ref == 'refs/heads/main'
-        run: npx --no-install wrangler deploy --dry-run
       - run: npm run typecheck --prefix server
       - run: npm test --prefix server
       - run: npm run build --prefix server
@@ -44,3 +37,12 @@ jobs:
           done
           docker logs terrania-smoke
           exit 1
+
+      - name: Instalar navegador de teste
+        run: npx playwright install --with-deps chromium
+      - name: Validar Angular, Phaser e presença real no navegador
+        run: npm run test:browser
+      - name: Validar empacotamento do Worker e assets (sem publicar)
+        if: github.ref == 'refs/heads/main'
+        run: npx --no-install wrangler deploy --dry-run
+

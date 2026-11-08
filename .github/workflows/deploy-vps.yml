@@ -2,7 +2,7 @@ name: Deploy verified Terrania multiplayer to VPS
 on:
   push:
     branches: [main]
-    paths: ['server/**', 'src/actors/**', 'src/world/**', 'src/shared/**', 'src/engine/combat.ts', 'src/engine/ClassicCombat.ts', 'src/engine/ClassicPursuit.ts', 'src/engine/ClassicTileWalker.ts', 'src/engine/TapNavigator.ts', 'src/engine/Experience.ts', 'package.json', '.github/workflows/deploy-vps.yml']
+    paths: ['server/**', 'src/actors/**', 'src/world/**', 'src/shared/**', 'src/engine/**', 'package.json', '.github/workflows/deploy-vps.yml']
   workflow_dispatch:
 permissions:
   contents: read
