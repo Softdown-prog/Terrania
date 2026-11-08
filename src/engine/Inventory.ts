@@ -75,7 +75,9 @@ export class Inventory {
   private weapons: WeaponLoadout;
   private equippedGear: GearState;
 
-  constructor(value?: unknown, private readonly level = 1) {
+  private readonly level: number;
+  constructor(value?: unknown, level = 1) {
+    this.level = level;
     const state = normalizeInventory(value);
     this.gelCount = state.gel;
     this.materialCounts = normalizeMaterials(state.materials);
