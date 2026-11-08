@@ -9,6 +9,7 @@ import {
 import { hash2, valueNoise } from "../world/random.ts";
 import { ellipse, mix, TAU } from "./draw.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
+import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 
 /** Pares (sombra, luz) por tipo de solo; a mistura segue ruído contínuo. */
 const PALETTE: Record<Ground, { lo: string; hi: string }> = {
@@ -277,51 +278,73 @@ export function generateChunkCanvas(
 }
 
 
-/** Janela de 31×31 tiles do mesmo mundo procedural, norte para cima.
- * Desenho simples e barato, independente do cache gráfico dos chunks.
+/** Atlas no inventário: usa getTile, como o mundo real. Visões amplas são
+ * amostradas e não representam passagens garantidas em cada pixel.
+ * A renderização só é chamada com a aba Mapa aberta, nunca no loop Phaser.
  */
-export function drawMiniMap(ctx: CanvasRenderingContext2D,
-  centerX: number, centerY: number, seed: number,
-  nearbyPlayers: readonly { readonly tileX: number; readonly tileY: number }[] = []): void {
-  const size = 31;
-  const cell = 4;
-  const startX = Math.floor(centerX) - 15;
-  const startY = Math.floor(centerY) - 15;
-  const colors: Record<Ground, string> = {
+export function drawWorldAtlas(
+  ctx: CanvasRenderingContext2D, scale: AtlasScale,
+  tileX: number, tileY: number, seed: number, selectedSector: number,
+  players: readonly { readonly tileX: number; readonly tileY: number }[] = [],
+): void {
+  const { centerX, centerY, spanTiles } = atlasFrame(scale, tileX, tileY, selectedSector);
+  const width = ctx.canvas.width, height = ctx.canvas.height;
+  const cells = 128, cellWidth = width / cells, cellHeight = height / cells;
+  const originX = centerX - spanTiles / 2, originY = centerY - spanTiles / 2;
+  const palette: Record<Ground, string> = {
     grass: "#789b62", forest: "#3c6647", path: "#baa780",
     sand: "#d8c894", water: "#286e87",
   };
-  ctx.clearRect(0, 0, size * cell, size * cell);
-  for (let y = 0; y < size; y++)
-    for (let x = 0; x < size; x++) {
-      const tile = getTile(startX + x, startY + y, seed);
-      ctx.fillStyle = colors[tile.ground];
-      ctx.fillRect(x * cell, y * cell, cell, cell);
-      if (tile.tree || tile.rock) {
-        ctx.fillStyle = tile.tree ? "#203d30" : "#5b574f";
-        ctx.fillRect(x * cell + 1, y * cell + 1, 2, 2);
+  ctx.clearRect(0, 0, width, height);
+  for (let cy = 0; cy < cells; cy++) for (let cx = 0; cx < cells; cx++) {
+    const tx = originX + (cx + 0.5) / cells * spanTiles;
+    const ty = originY + (cy + 0.5) / cells * spanTiles;
+    if (Math.abs(tx) >= WORLD_HALF_TILES || Math.abs(ty) >= WORLD_HALF_TILES) {
+      ctx.fillStyle = "#182727"; // movement safety limit, not water or invented coastline
+    } else {
+      // Sample multiple real terrain points in large views; local view preserves detail.
+      const offsets = scale === "nearby" ? [0] : [-0.22, 0.22];
+      const tally: Record<Ground, number> = { grass: 0, forest: 0, path: 0, sand: 0, water: 0 };
+      let blocking = false;
+      for (const oy of offsets) for (const ox of offsets) {
+        const sampled = getTile(Math.floor(tx + ox * spanTiles / cells),
+          Math.floor(ty + oy * spanTiles / cells), seed);
+        tally[sampled.ground]++;
+        if (scale === "nearby" && (sampled.tree || sampled.rock)) blocking = true;
       }
+      const dominant = (Object.keys(tally) as Ground[]).reduce((a, b) =>
+        tally[a] >= tally[b] ? a : b);
+      ctx.fillStyle = blocking ? "#233a2f" : palette[dominant];
     }
-  // A Vila da Travessia é uma referência geográfica verdadeira, não um ponto inventado.
-  const villageX = Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE) - startX;
-  const villageY = Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE) - startY;
-  if (villageX >= 0 && villageX < size && villageY >= 0 && villageY < size) {
-    ctx.fillStyle = "#ffe0a1";
-    ctx.fillRect(villageX * cell, villageY * cell, cell, cell);
+    ctx.fillRect(cx * cellWidth, cy * cellHeight, cellWidth, cellHeight);
   }
-  // Draw other players only within the local map. Never hide the own marker.
-  for (const hero of nearbyPlayers) {
-    const x = hero.tileX - startX, y = hero.tileY - startY;
-    if (!Number.isInteger(x) || !Number.isInteger(y) ||
-        x < 0 || x >= size || y < 0 || y >= size || (x === 15 && y === 15)) continue;
-    ctx.fillStyle = "#51376b";
-    ctx.fillRect(x * cell, y * cell, 4, 4);
-    ctx.fillStyle = "#eac5ff";
-    ctx.fillRect(x * cell + 1, y * cell + 1, 2, 2);
+  if (scale === "world") {
+    ctx.strokeStyle = "#f8ecc170";
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 2; i++) {
+      const pos = i * width / 3;
+      ctx.beginPath(); ctx.moveTo(pos, 0); ctx.lineTo(pos, height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i * height / 3); ctx.lineTo(width, i * height / 3); ctx.stroke();
+    }
+    const labels = ["NO", "N", "NE", "O", "C", "L", "SO", "S", "SE"];
+    ctx.font = "bold 11px system-ui"; ctx.textAlign = "left";
+    ctx.fillStyle = "#fff5d8";
+    for (let i = 0; i < labels.length; i++)
+      ctx.fillText(labels[i] ?? "", (i % 3) * width / 3 + 4,
+        Math.floor(i / 3) * height / 3 + 14);
   }
-  // Centro do mapa: posição real do herói, inclusive snapshots autoritativos da sala.
-  ctx.fillStyle = "#102d41";
-  ctx.fillRect(58, 58, 8, 8);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(60, 60, 4, 4);
+  const mark = (x: number, y: number, color: string, size: number): void => {
+    const px = (x - originX) / spanTiles * width;
+    const py = (y - originY) / spanTiles * height;
+    if (px < 0 || px > width || py < 0 || py > height) return;
+    ctx.fillStyle = "#14201d";
+    ctx.fillRect(px - size / 2 - 2, py - size / 2 - 2, size + 4, size + 4);
+    ctx.fillStyle = color;
+    ctx.fillRect(px - size / 2, py - size / 2, size, size);
+  };
+  mark(Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE),
+    Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE), "#ffe0a1", 5);
+  for (const other of players) mark(other.tileX, other.tileY, "#eac5ff", 4);
+  // Self marker is always painted last and is driven by the server in online rooms.
+  mark(tileX, tileY, "#ffffff", 6);
 }
