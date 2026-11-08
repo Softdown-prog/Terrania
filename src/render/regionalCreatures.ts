@@ -261,7 +261,7 @@ function drawSerpent(ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void 
   }
   shard(ctx,-8,-58,7,12,c.accent);
 }
-/** Dez silhuetas próprias; volumes, detalhes e animações são geometria Canvas, sem sprites. */
+/** Desenha as 30 espécies usando as três camadas procedurais, sem PNGs. */
 export function renderRegionalCreature(ctx: CanvasRenderingContext2D,
   creature: RegionalCreatureVisual, sx: number, sy: number, time = 0): void {
   if(SOUTH_COMMON_KINDS.some(kind=>kind===creature.kind)) {
