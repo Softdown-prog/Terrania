@@ -46,6 +46,8 @@ export class RegionalMonster extends Slime {
   override update(dt: number, hero: Player, world: CollisionMap, defense = 0): void {
     if (this.hp <= 0 || hero.hp <= 0 || !Number.isFinite(dt) || dt <= 0) return;
     dt = Math.min(dt, .1);
+    this.tickSwordStatuses(dt);
+    if(this.hp<=0)return;
     this.phase += dt;
     this.quietSeconds += dt;
     if(abilitySpecialIsTroll(this.definition) && this.hp < this.definition.maxHp &&
@@ -77,7 +79,7 @@ export class RegionalMonster extends Slime {
     } else if (d < 245 && d > (keepRange ? 70 : 22) &&
         this.hurtTime <= 0 && d > .001) {
       const vultureRage=ability.special==="carrion-dive" && hero.hp < hero.maxHp*.5 ? 1.45 : 1;
-      const speed = ability.speed * speedBoost * vultureRage * (1 + .18 * this.enraged);
+      const speed = ability.speed * this.swordSpeedMultiplier * speedBoost * vultureRage * (1 + .18 * this.enraged);
       moveBody(this, dx / d * speed * dt, dy / d * speed * dt, world);
     }
     const inSight = d <= ability.range && d > .001 && clearPath(this, hero, world);
