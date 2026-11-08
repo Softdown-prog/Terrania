@@ -10,7 +10,7 @@ import { NPCS, NPC_TALK_RANGE } from '../world/npcs.ts';
 import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
 import { drawInterior } from '../render/interior.ts';
-import { drawCaveAtlas, drawCaveEntrance, drawCaveView } from '../render/cave.ts';
+import { drawCaveEntrance, drawCaveView } from '../render/cave.ts';
 import { caveEntrancesInArea } from '../world/caves.ts';
 import { TILE_SIZE } from '../world/terrain.ts';
 import type { CaveRoom } from '../engine/CaveRoom.ts';

@@ -17,7 +17,7 @@ const PALETTE: Record<CaveTheme, { ground: string; light: string; wall: string; 
 };
 const wallCache = new WeakMap<CaveFloor,HTMLCanvasElement>();
 
-function paintFloor(ctx:CanvasRenderingContext2D, floor:CaveFloor):HTMLCanvasElement {
+function paintFloor(floor:CaveFloor):HTMLCanvasElement {
   const source=document.createElement("canvas");
   source.width=CAVE_WIDTH*TILE_SIZE;
   source.height=CAVE_HEIGHT*TILE_SIZE;
@@ -139,7 +139,7 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   gear?:GearState,weapon?:WeaponId):void {
   ctx.fillStyle="#070e13";ctx.fillRect(0,0,width,height);
   let texture=wallCache.get(room.floor);
-  if(!texture){texture=paintFloor(ctx,room.floor);wallCache.set(room.floor,texture);}
+  if(!texture){texture=paintFloor(room.floor);wallCache.set(room.floor,texture);}
   ctx.drawImage(texture,-left,-top);
   const player=room.player;
   renderHero(ctx,{...player,gear,equippedWeapon:weapon},player.x-left,player.y-top,time);
