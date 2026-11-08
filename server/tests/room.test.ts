@@ -560,3 +560,16 @@ test('um comando curto online inicia somente um tile mesmo com atraso na liberaÃ
   for (let i = 0; i < 12; i++) room.tick(0.05, now += 50);
   assert.deepEqual([guest.actor.x, guest.actor.y], [80, 16]);
 });
+
+test('morte online registra respawn autoritativo apenas no snapshot privado do jogador', () => {
+  const room = new Room('origins');
+  const own = room.add('a', 'Jogador A', true, true);
+  room.add('b', 'Jogador B', true, true);
+  assert.equal(room.snapshotFor('a')?.players.find(p => p.id === 'a')?.respawns, 0);
+  assert.equal(room.snapshotFor('b')?.players.find(p => p.id === 'a')?.respawns, undefined);
+  own.actor.takeDamage(200, own.actor.x, own.actor.y - 10);
+  room.tick(0.05, own.lastInputAt + 50);
+  assert.deepEqual([own.actor.x, own.actor.y, own.actor.hp], [16, 16, 100]);
+  assert.equal(room.snapshotFor('a')?.players.find(p => p.id === 'a')?.respawns, 1);
+  assert.equal(room.snapshotFor('b')?.players.find(p => p.id === 'a')?.respawns, undefined);
+});
