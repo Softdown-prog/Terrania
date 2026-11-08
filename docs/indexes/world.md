@@ -12,8 +12,9 @@ Mundo procedural determinístico, tiles, colisão, vila e marcos.
 - [`src/world/collision.ts`](../../src/world/collision.ts)
 - [`src/world/npcs.ts`](../../src/world/npcs.ts)
 - [`src/world/aelaQuest.ts`](../../src/world/aelaQuest.ts)
+- [`src/world/atlas.ts`](../../src/world/atlas.ts)
 
-## Todos os arquivos deste módulo (8)
+## Todos os arquivos deste módulo (9)
 
 - [`src/world/README.md`](../../src/world/README.md)
 - [`src/world/aelaQuest.ts`](../../src/world/aelaQuest.ts)

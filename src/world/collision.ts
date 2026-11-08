@@ -1,6 +1,8 @@
 import { getTile, isWalkable, TILE_SIZE } from "./terrain.ts";
 import { landmarkBlocks } from "./landmarks.ts";
 import { villageBlocks } from "./village.ts";
+/** Limite técnico por eixo da colisão, não uma fronteira geográfica desenhada. */
+export const WORLD_EDGE_PIXELS = 1_000_000;
 /** Interface sem dependência de DOM, compartilhada entre navegador e servidor. */
 export interface CollisionMap {
   canMove(x: number, y: number): boolean;
@@ -43,8 +45,8 @@ export function canMoveOnSeed(x: number, y: number, seed: number): boolean {
   if (
     !Number.isFinite(x) ||
     !Number.isFinite(y) ||
-    Math.abs(x) > 1_000_000 ||
-    Math.abs(y) > 1_000_000
+    Math.abs(x) > WORLD_EDGE_PIXELS ||
+    Math.abs(y) > WORLD_EDGE_PIXELS
   )
     return false;
   const radius = 7;

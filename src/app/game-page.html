@@ -46,7 +46,7 @@
           [attr.aria-expanded]="toolsExpanded()" aria-controls="gameToolActions"
           (click)="toolsExpanded.set(!toolsExpanded())">{{ toolsExpanded() ? 'Fechar menu' : '☰ Opções' }}</button>
         <div id="gameToolActions" class="game-tool-actions" [hidden]="!toolsExpanded()">
-          <button id="inventoryButton" [disabled]="!hud.inventoryAvailable()" (click)="open(inventoryDialog)" type="button" aria-haspopup="dialog" aria-controls="inventoryDialog">{{ hud.inventoryAvailable() ? "Bolsa (" + (hud.gel() + hud.potions() + hud.food().apple + hud.food().bread + hud.food().meat) + ")" : "Bolsa · solo" }}</button>
+          <button id="inventoryButton" (click)="open(inventoryDialog)" type="button" aria-haspopup="dialog" aria-controls="inventoryDialog">Inventário / Mapa</button>
           <button id="playersButton" (click)="open(playersDialog)" type="button" aria-haspopup="dialog" aria-controls="playersDialog">Jogadores online</button>
           <button id="helpButton" (click)="open(helpDialog)" type="button" title="Como jogar">Ajuda</button>
           <button id="settingsButton" (click)="open(settingsDialog)" type="button">Ajustes</button>
@@ -96,17 +96,6 @@
         </section>
       }
 
-      <aside id="miniMapPanel" class="world-mini-map" aria-label="Minimapa do mundo procedural">
-        <button id="miniMapToggle" type="button" [attr.aria-expanded]="miniMapOpen()"
-          aria-controls="worldMiniMapCanvas" (click)="miniMapOpen.set(!miniMapOpen())">
-          MAPA <span aria-hidden="true">{{ miniMapOpen() ? '▾' : '▴' }}</span>
-        </button>
-        @if (miniMapOpen()) {
-          <canvas id="worldMiniMapCanvas" #miniMapCanvas width="124" height="124"
-            role="img" [attr.aria-label]="'Minimapa centrado no herói. ' + hud.coords() + '. Norte para cima.'"></canvas>
-          <small>● Eu · ◆ Vila · <span aria-hidden="true" style="color:#eac5ff">●</span> Outros</small>
-        }
-      </aside>
       <div class="bottom-info">
         <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
         ><small id="saveMode">{{ hud.online() ? "Sala experimental · progresso temporário" : "Aventura local · progresso neste navegador" }}</small>
@@ -177,8 +166,10 @@
             (click)="hud.inventoryTab.set('bag')">Mochila</button>
           <button id="inventoryTabEquipment" type="button" [attr.aria-pressed]="hud.inventoryTab() === 'equipment'"
             (click)="hud.inventoryTab.set('equipment')">Equipamento</button>
+          <button id="inventoryTabMap" type="button" [attr.aria-pressed]="hud.inventoryTab() === 'map'"
+            (click)="hud.inventoryTab.set('map')">Mapa do mundo</button>
         </div>
-        <div class="inventory-columns">
+        <div class="inventory-columns" [class.map-hidden]="hud.inventoryTab() === 'map'">
           <section class="inventory-panel armory-panel" [class.mobile-hidden]="hud.inventoryTab() !== 'equipment'" aria-labelledby="equipmentTitle">
             <div class="equipment-heading"><h2 id="equipmentTitle">Equipamento</h2>
               @if (hud.gear() !== null) { <span id="equipmentDefense">Defesa {{ hud.defense() }}</span> }
@@ -292,6 +283,44 @@
             </div>
           </section>
         </div>
+        @if (hud.inventoryTab() === 'map') {
+          <section id="inventoryMapPanel" class="world-atlas-panel" aria-label="Atlas de Terrania">
+            <h2>Atlas do mundo procedural</h2>
+            <p id="worldMapDimensions">Área com limite técnico de movimento: 62.500 × 62.500 tiles (32 unidades por tile).</p>
+            <div class="atlas-controls" role="group" aria-label="Escala do mapa">
+              <button type="button" id="mapScaleWorld" [attr.aria-pressed]="atlasScale() === 'world'"
+                (click)="atlasScale.set('world')">Mundo inteiro</button>
+              <button type="button" id="mapScaleSector" [attr.aria-pressed]="atlasScale() === 'sector'"
+                (click)="showOwnSector()">Meu setor</button>
+              <button type="button" id="mapScaleNearby" [attr.aria-pressed]="atlasScale() === 'nearby'"
+                (click)="atlasScale.set('nearby')">Arredores</button>
+            </div>
+            <div class="atlas-main">
+              <canvas #atlasCanvas id="worldAtlasCanvas" width="256" height="256" role="img"
+                [attr.aria-label]="'Atlas com norte para cima, escala ' + atlasScale() + ', centrado na região escolhida.'"></canvas>
+              <div class="atlas-details">
+                <strong id="atlasCurrentSector">Você está no setor {{ currentAtlasSector().name }}.</strong>
+                <span id="atlasCoordinates">Sua posição: {{ hud.coords() }}</span>
+                <span id="atlasGround">Terreno atual: {{ currentAtlasGround() }}</span>
+                <span id="atlasScaleDetails">Largura da visão: {{ atlasView().spanTiles.toFixed(0) }} tiles</span>
+                <p>Branco: você · Dourado: Vila da Travessia · Lilás: outros aventureiros próximos.</p>
+                <p>Verde-claro: campo · Verde-escuro: floresta · Bege: trilha ou areia · Azul: água.</p>
+              </div>
+            </div>
+            <h3>Regiões cartográficas</h3>
+            <div class="atlas-sectors" role="group" aria-label="Selecionar um dos nove setores">
+              @for (sector of atlasSectors(); track sector.id) {
+                <button type="button" [attr.data-atlas-sector]="sector.id"
+                  [attr.aria-pressed]="atlasScale() === 'sector' && selectedSector() === sector.id"
+                  (click)="showAtlasSector(sector.id)">
+                  <strong>{{ sector.name }}</strong>
+                  <small>{{ groundNames[sector.dominant] }} (amostra)</small>
+                </button>
+              }
+            </div>
+            <p class="dialog-note">Este atlas utiliza o mesmo terreno da aventura. As cores em grandes distâncias são amostras, não rotas comprovadas. Os setores são divisões geográficas para orientação, não cidades inventadas. Água, árvores e obstáculos continuam bloqueando caminhos.</p>
+          </section>
+        }
         <p id="inventoryFeedback" class="dialog-note" role="status" aria-live="polite">{{ hud.inventoryFeedback() }}</p>
         <button id="closeInventory" (click)="close($event)" class="secondary-button" type="button">Voltar à aventura</button>
       </dialog>

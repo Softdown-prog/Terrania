@@ -31,7 +31,7 @@ export interface BackpackItemView {
   readonly comparedDamage?: number;
 }
 type BackpackFilter = 'all' | 'supplies' | 'gear';
-type InventoryTab = 'bag' | 'equipment';
+type InventoryTab = 'bag' | 'equipment' | 'map';
 
 @Injectable()
 export class HudService implements GameUi {

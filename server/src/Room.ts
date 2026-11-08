@@ -52,6 +52,7 @@ export interface Guest {
   attackQueued: boolean;
   lastInputAt: number;
   kills: number;
+  respawns: number;
   experience: number | null;
   readonly walking: TileMovement | null;
   readonly targeting: TargetCombat | null;
@@ -87,6 +88,7 @@ export class Room {
       inputPulse: null,
       lastInputAt: Date.now(),
       kills: 0,
+      respawns: 0,
       experience: progression ? 0 : null,
       walking: tiles ? { walker: new ClassicTileWalker(), navigator: new TapNavigator(), nextPlanAt: 0 } : null,
       targeting: tiles && targetCombat
@@ -340,6 +342,7 @@ export class Room {
           guest.targeting.pursuit.reset();
           guest.targeting.follow = false;
         }
+        guest.respawns++;
         guest.actor = new Player(maxHpForExperience(guest.experience ?? 0));
         guest.input = { x: 0, y: 0 };
         guest.inputPulse = null;
@@ -380,6 +383,7 @@ export class Room {
         y: a.y,
         hp: a.hp,
         kills: g.kills,
+        ...(g === me ? { respawns: g.respawns } : {}),
         ...(g === me && g.experience !== null ? { experience: g.experience } : {}),
         faceX: a.faceX,
         faceY: a.faceY,
