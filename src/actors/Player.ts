@@ -198,7 +198,7 @@ export class Player {
   startAttack(weapon: WeaponId = "starter"): boolean {
     if (this.attackCooldown > 0 || this.hp <= 0 || this.effects.stun > 0) return false;
     this.attackTime = ATTACK_DURATION;
-    this.attackCooldown = ATTACK_COOLDOWN * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
+    this.attackCooldown = WEAPONS[weapon].interval * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
     this.attackWeapon = weapon;
     this.strikePending = true;
     return true;
