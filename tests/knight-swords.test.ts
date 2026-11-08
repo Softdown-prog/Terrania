@@ -103,7 +103,7 @@ test("faísca elétrica não atravessa colisões e atinge no máximo dois vizinh
   assert.equal(result.extra.length,2);
   assert.equal(a.hp<3,true);
   assert.equal(b.hp<3,true);
-  assert.equal(c.hp,3);
+  assert.equal(c.hp,2,"third adjacent slime must remain at its original HP");
   const wall={canMove:(x:number)=>x<=25};
   const blocked=applySwordImpact("tempest",p,target,[target,a,b,c],wall);
   assert.equal(blocked.extra.length,0);
