@@ -296,6 +296,7 @@ test('Cavaleiro come alimento da bolsa e recupera HP de verdade no Canvas do jog
   await page.locator('#gameMenuButton').click();
   await page.locator('#inventoryButton').click();
   await expect(page.locator('#foodCount-apple')).toHaveText('1 / 99');
+  await page.locator('[data-bag-item="food-apple"]').click();
   await page.locator('#eat-apple').click();
   await expect(page.locator('#inventoryFeedback')).toContainText('recuperada gradualmente');
   await expect(page.locator('#foodCount-apple')).toHaveText('0 / 99');
@@ -304,4 +305,58 @@ test('Cavaleiro come alimento da bolsa e recupera HP de verdade no Canvas do jog
   await expect.poll(async () => Number((await page.locator('#hpText').innerText()).split(' / ')[0]),
     { timeout: 10000 }).toBeGreaterThan(70);
   await expect(page.locator('#hpText')).toHaveText(/7[1-9] \/ 100/);
+});
+
+
+test('inventário mobile tem mochila por toque, comparação real e cavaleiro procedural', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', error => pageErrors.push(error.message));
+  await page.addInitScript(() => {
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({
+      seed: 842136, x: 16, y: 16, hp: 80, kills: 0, defeated: [],
+      inventory: {
+        gel: 3, potion: 1, questRewardClaimed: false,
+        loadout: { forged: true, equipped: 'starter' },
+        gear: { chest: 'quilted-vest' },
+      },
+    }));
+  });
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('canvas#game')).toBeVisible();
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  await expect(page.locator('#inventoryDialog')).toBeVisible();
+  await expect(page.locator('[data-bag-item="gear-trail-helm"]')).toBeVisible();
+  await page.locator('[data-bag-item="gear-trail-helm"]').click();
+  await expect(page.locator('#selectedBagName')).toHaveText('Elmo de trilha');
+  await expect(page.locator('#bagItemComparison')).toContainText('Defesa do item: 1');
+  await page.locator('#equip-gear-trail-helm').click();
+  await expect(page.locator('#inventoryFeedback')).toContainText('Item equipado');
+  await expect(page.locator('[data-bag-item="gear-trail-helm"]')).toHaveCount(0);
+  await page.locator('#bagFilterGear').click();
+  await expect(page.locator('[data-bag-item="weapon-forge"]')).toBeVisible();
+  await page.locator('[data-bag-item="weapon-forge"]').click();
+  await expect(page.locator('#bagItemComparison')).toContainText('Dano da arma equipada: 1');
+  await page.locator('#equip-weapon-forge').click();
+  await expect(page.locator('#inventoryFeedback')).toContainText('Espada equipada');
+  if (await page.locator('#inventoryTabEquipment').isVisible()) {
+    await page.locator('#inventoryTabEquipment').click();
+  }
+  await expect(page.locator('[data-equipment-slot="head"]')).toContainText('Elmo');
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
+  await expect(page.locator('#inventoryHero')).toBeVisible();
+  await expect.poll(async () => page.locator('#inventoryHero').evaluate(node => {
+    const canvas = node as HTMLCanvasElement;
+    const pixels = canvas.getContext('2d')?.getImageData(0, 0, canvas.width, canvas.height).data;
+    if (!pixels) return 0;
+    let opaque = 0;
+    for (let index = 3; index < pixels.length; index += 4) if (pixels[index]! > 0) opaque++;
+    return opaque;
+  })).toBeGreaterThan(300);
+  await page.locator('#rotateInventoryHero').click();
+  await expect(page.locator('#inventoryHero')).toBeVisible();
+  const noHorizontalOverflow = await page.locator('#inventoryDialog').evaluate(
+    node => node.scrollWidth <= node.clientWidth + 2);
+  expect(noHorizontalOverflow).toBe(true);
+  expect(pageErrors).toEqual([]);
 });

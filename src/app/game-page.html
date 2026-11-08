@@ -153,86 +153,136 @@
         <button class="primary-button" (click)="close($event)" type="button">Voltar à aventura</button>
       </dialog>
       <dialog id="inventoryDialog" #inventoryDialog (close)="closed()" aria-labelledby="inventoryTitle" [class.has-equipment]="hud.gear() !== null">
-        <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar bolsa">×</button>
-        <span class="dialog-kicker">{{ hud.online() ? "SEUS ITENS · SALA ONLINE" : "SEUS ITENS · AVENTURA SOLO" }}</span>
-        <h1 id="inventoryTitle">Bolsa do aventureiro</h1>
+        <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar inventário">×</button>
+        <span class="dialog-kicker">{{ hud.online() ? "INVENTÁRIO · SALA ONLINE" : "INVENTÁRIO · AVENTURA SOLO" }}</span>
+        <h1 id="inventoryTitle">Inventário do cavaleiro</h1>
+        <div class="inventory-overview">
+          <span>Nível {{ hud.progression()?.level ?? 1 }}</span>
+          <span>Vida {{ hud.hp() }} / {{ hud.maxHp() }}</span>
+          @if (hud.gear() !== null) { <span>Defesa {{ hud.defense() }}</span> }
+        </div>
+        <div class="inventory-mobile-tabs" role="group" aria-label="Seções do inventário">
+          <button id="inventoryTabBag" type="button" [attr.aria-pressed]="hud.inventoryTab() === 'bag'"
+            (click)="hud.inventoryTab.set('bag')">Mochila</button>
+          <button id="inventoryTabEquipment" type="button" [attr.aria-pressed]="hud.inventoryTab() === 'equipment'"
+            (click)="hud.inventoryTab.set('equipment')">Equipamento</button>
+        </div>
         <div class="inventory-columns">
-          <section aria-labelledby="suppliesTitle">
-            <h2 id="suppliesTitle">Bolsa</h2>
-            <div class="inventory-item">
-              <span class="item-icon item-gel" aria-hidden="true">◆</span>
-              <span><strong>Gel de slime</strong><small>Lina troca gel por poções perto da hospedaria</small></span>
-              <b id="gelCount">{{ hud.gel() + " / 99" }}</b>
+          <section class="inventory-panel armory-panel" [class.mobile-hidden]="hud.inventoryTab() !== 'equipment'" aria-labelledby="equipmentTitle">
+            <div class="equipment-heading"><h2 id="equipmentTitle">Equipamento</h2>
+              @if (hud.gear() !== null) { <span id="equipmentDefense">Defesa {{ hud.defense() }}</span> }
             </div>
-            <div class="inventory-item">
-              <span class="item-icon item-potion" aria-hidden="true">✚</span>
-              <span><strong>Poção de cura</strong><small>Restaura 35 pontos de vida</small></span>
-              <b id="potionCount">{{ hud.potions() + " / 99" }}</b>
-            </div>
-            <button id="usePotion" [disabled]="!hud.inventoryAvailable() || hud.inventoryPending() || hud.potions() === 0" (click)="hud.usePotion()" class="primary-button" type="button">Usar poção</button>
-            <h3>Alimentação do cavaleiro</h3>
-            <p id="foodRegeneration" class="dialog-note">Comida recupera 1 HP a cada 2 segundos, até esgotar sua reserva. Intervalo: 5 segundos. Limite: 60 HP futuros.</p>
-            <p id="foodCooldownStatus" class="dialog-note" role="status">{{ hud.nutrition().cooldown > 0 ? "Próxima refeição em " + hud.nutrition().cooldown.toFixed(0) + "s" : "Pronto para comer" }}</p>
-            @for (id of hud.foodIds; track id) {
-              @let item = hud.foodCatalog[id];
-              <div class="inventory-item">
-                <span class="item-icon" aria-hidden="true">✦</span>
-                <span><strong>{{ item.name }}</strong><small>Até {{ item.healBudget }} HP gradualmente</small></span>
-                <b [attr.id]="'foodCount-' + id">{{ hud.food()[id] + " / 99" }}</b>
+            @if (hud.loadout(); as loadout) {
+              <div class="equipment-grid" role="group" aria-label="Dez espaços de equipamento do cavaleiro">
+                @for (slot of hud.equipmentSlots; track slot.id) {
+                  @let equipped = hud.equippedName(slot.id);
+                  <button type="button" class="equipment-slot" [attr.data-equipment-slot]="slot.id"
+                    [class.equipped]="!!equipped" [attr.aria-pressed]="hud.selectedSlot() === slot.id"
+                    [attr.aria-label]="slot.label + ': ' + (equipped || 'vazio')"
+                    [attr.title]="slot.label + ': ' + (equipped || 'vazio')"
+                    (click)="hud.selectEquipmentSlot(slot.id)">
+                    <span class="equipment-symbol" aria-hidden="true">{{ slot.icon }}</span>
+                    <strong>{{ slot.label }}</strong><small>{{ equipped || 'Vazio' }}</small>
+                  </button>
+                }
+                <div class="hero-preview">
+                  <span class="preview-eyebrow">SEU CAVALEIRO</span>
+                  <canvas #inventoryHero id="inventoryHero" width="160" height="208"
+                    role="img" aria-label="Personagem real renderizado pelo motor gráfico do Terrania"></canvas>
+                  <button id="rotateInventoryHero" type="button" class="preview-rotate"
+                    (click)="rotateInventoryHero()" aria-label="Girar o cavaleiro para observar outra direção">↻ Girar</button>
+                </div>
               </div>
-              <button [attr.id]="'eat-' + id" type="button" class="secondary-button"
-                [disabled]="!hud.inventoryAvailable() || hud.inventoryPending() || hud.food()[id] === 0 || hud.hp() <= 0 || hud.nutrition().cooldown > 0 || hud.nutrition().reserve + item.healBudget > 60"
-                (click)="hud.useFood(id)">Comer {{ item.name }}</button>
+              <div class="equipment-detail">
+                <h3 id="selectedSlotTitle">
+                  @for (slot of hud.equipmentSlots; track slot.id) {
+                    @if (slot.id === hud.selectedSlot()) { {{ slot.label }} }
+                  }
+                </h3>
+                @if (hud.selectedSlot() === 'weapon') {
+                  @let current = hud.weapons[loadout.equipped];
+                  <strong id="equippedWeapon">{{ current.name }}</strong>
+                  <p>{{ current.damage }} de dano · {{ current.interval }} s entre golpes · {{ current.windup * 1000 }} ms de preparo</p>
+                  @if (loadout.forged) {
+                    @let other = loadout.equipped === 'forge' ? 'starter' : 'forge';
+                    <button id="equipOtherWeapon" [disabled]="hud.inventoryPending()" (click)="hud.equipWeapon(other)"
+                      class="secondary-button" type="button">Equipar {{ hud.weapons[other].name }}
+                      ({{ hud.weapons[other].damage }} dano)</button>
+                  } @else { <p class="dialog-note">A espada forjada pode ser adquirida com Toren.</p> }
+                } @else {
+                  @for (id of hud.selectedGearOptions(); track id) {
+                    @let gear = hud.gearCatalog[id];
+                    @let equipped = hud.gear()?.[gear.slot] === id;
+                    <strong>{{ gear.name }}</strong>
+                    <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto inicial" }}</p>
+                    @if (hud.gear() !== null) {
+                      <button type="button" class="secondary-button" [disabled]="hud.inventoryPending()"
+                        (click)="hud.equipGear(id)">{{ equipped ? 'Retirar' : 'Equipar' }} {{ gear.name }}</button>
+                    }
+                  }
+                }
+              </div>
+            } @else {
+              <p class="dialog-note">O equipamento ficará disponível quando a sala confirmar os recursos do personagem.</p>
             }
           </section>
-          @if (hud.loadout(); as loadout) {
-            <section aria-labelledby="equipmentTitle">
-              <div class="equipment-heading"><h2 id="equipmentTitle">Equipamento</h2>
-                @if (hud.gear() !== null) { <span id="equipmentDefense">Defesa {{ hud.defense() }}</span> }
-              </div>
-              @if (hud.gear() !== null) {
-                <div class="equipment-grid" aria-label="Espaços de equipamento" role="group">
-                  @for (slot of hud.equipmentSlots; track slot.id) {
-                    @let equipped = hud.equippedName(slot.id);
-                    <button type="button" [attr.data-equipment-slot]="slot.id" [class.equipped]="!!equipped"
-                      [attr.aria-pressed]="hud.selectedSlot() === slot.id" (click)="hud.selectedSlot.set(slot.id)">
-                      <span aria-hidden="true" class="equipment-symbol">{{ slot.icon }}</span>
-                      <strong>{{ slot.label }}</strong><small>{{ equipped || 'Vazio' }}</small>
-                    </button>
-                  }
-                </div>
-              }
-              @if (hud.gear() === null || hud.selectedSlot() === 'weapon') {
-                @let weapon = hud.weapons[loadout.equipped];
-                <div class="inventory-item">
-                  <span class="item-icon" aria-hidden="true">⚔</span>
-                  <span><strong id="equippedWeapon">{{ weapon.name }}</strong><small>{{ weapon.damage }} de dano · {{ weapon.interval }} s entre golpes · {{ weapon.windup * 1000 }} ms até o impacto</small></span>
-                  <b>Equipada</b>
-                </div>
-                @if (loadout.forged) {
-                  @let other = loadout.equipped === 'forge' ? 'starter' : 'forge';
-                  <button [disabled]="hud.inventoryPending()" (click)="hud.equipWeapon(other)" class="secondary-button" type="button">Equipar {{ hud.weapons[other].name }}</button>
-                } @else {
-                  <p class="dialog-note">Toren, na vila, oferece uma espada forjada em troca de gel.</p>
+          <section class="inventory-panel bag-panel" [class.mobile-hidden]="hud.inventoryTab() !== 'bag'" aria-labelledby="suppliesTitle">
+            <div class="backpack-heading"><h2 id="suppliesTitle">Mochila</h2>
+              <span>{{ hud.ownedBackpackCount() }} tipos de itens</span></div>
+            <div class="backpack-filters" role="group" aria-label="Filtrar itens na mochila">
+              <button type="button" id="bagFilterAll" [attr.aria-pressed]="hud.bagFilter() === 'all'"
+                (click)="hud.bagFilter.set('all')">Todos</button>
+              <button type="button" id="bagFilterSupplies" [attr.aria-pressed]="hud.bagFilter() === 'supplies'"
+                (click)="hud.bagFilter.set('supplies')">Suprimentos</button>
+              <button type="button" id="bagFilterGear" [attr.aria-pressed]="hud.bagFilter() === 'gear'"
+                (click)="hud.bagFilter.set('gear')">Armas e armaduras</button>
+            </div>
+            <div class="backpack-grid" role="group" aria-label="Itens na mochila">
+              @for (item of hud.visibleBackpackItems(); track item.id) {
+                <button type="button" class="backpack-cell" [attr.data-bag-item]="item.id"
+                  [attr.aria-pressed]="hud.selectedBagId() === item.id"
+                  [attr.aria-label]="item.name + ', quantidade ' + item.quantity"
+                  [class.is-empty]="item.quantity === 0" [class.is-selected]="hud.selectedBagId() === item.id"
+                  (click)="hud.selectBagItem(item.id)">
+                  <span class="backpack-icon" [attr.data-kind]="item.kind" aria-hidden="true">{{ item.symbol }}</span>
+                  <span class="backpack-name">{{ item.name }}</span>
+                  @if (item.kind === 'material' || item.kind === 'potion' || item.kind === 'food') {
+                    <b class="backpack-quantity"
+                      [attr.id]="item.kind === 'material' ? 'gelCount' : item.kind === 'potion' ? 'potionCount' : 'foodCount-' + item.foodId">{{ item.quantity }} / 99</b>
+                  } @else { <b class="backpack-quantity">1</b> }
+                </button>
+              } @empty { <p class="dialog-note">Nenhum item nesta categoria.</p> }
+            </div>
+            <div class="backpack-details" aria-live="polite">
+              @if (hud.selectedBagItem(); as item) {
+                <span class="dialog-kicker">ITEM SELECIONADO</span>
+                <h3 id="selectedBagName">{{ item.name }}</h3>
+                <p id="selectedBagDescription">{{ item.description }}</p>
+                @if (item.kind === 'gear') {
+                  <p id="bagItemComparison">Defesa do item: {{ item.defense }} · Defesa atual do espaço: {{ item.comparedDefense }}</p>
                 }
-              } @else {
-                @for (id of hud.selectedGearOptions(); track id) {
-                  @let item = hud.gearCatalog[id];
-                  @let equipped = hud.gear()?.[item.slot] === id;
-                  <div class="gear-detail">
-                    <strong>{{ item.name }}</strong>
-                    @if (item.defense > 0) { <small>Defesa +{{ item.defense }}</small> }
-                    <button type="button" class="secondary-button" [disabled]="hud.inventoryPending()" (click)="hud.equipGear(id)">
-                      {{ (equipped ? 'Tirar ' : 'Equipar ') + item.name }}
-                    </button>
-                  </div>
+                @if (item.kind === 'weapon') {
+                  <p id="bagItemComparison">Dano do item: {{ item.damage }} · Dano da arma equipada: {{ item.comparedDamage }}</p>
                 }
-              }
-            </section>
-          }
+                @if (item.kind !== 'material') {
+                  <button class="primary-button" type="button"
+                    [attr.id]="item.kind === 'food' ? 'eat-' + item.foodId : item.kind === 'potion' ? 'usePotion' : 'equip-' + item.id"
+                    [disabled]="!hud.canUseSelectedBagItem()" (click)="hud.useSelectedBagItem()">
+                    {{ item.kind === 'potion' ? 'Usar poção' : item.kind === 'food' ? 'Comer ' + item.name : 'Equipar ' + item.name }}
+                  </button>
+                }
+              } @else { <p>Toque em um item para conferir seus detalhes.</p> }
+            </div>
+            <div class="food-status">
+              <span>Alimentação: {{ hud.nutrition().reserve }} HP de reserva</span>
+              <small id="foodCooldownStatus">{{ hud.nutrition().cooldown > 0
+                ? "Próxima refeição em " + hud.nutrition().cooldown.toFixed(0) + "s" : "Pode comer" }}</small>
+              <p id="foodRegeneration">Alimentos recuperam 1 HP a cada 2 segundos; poções curam imediatamente.</p>
+            </div>
+          </section>
         </div>
         <p id="inventoryFeedback" class="dialog-note" role="status" aria-live="polite">{{ hud.inventoryFeedback() }}</p>
-        <button (click)="close($event)" class="secondary-button" type="button">Voltar à aventura</button>
+        <button id="closeInventory" (click)="close($event)" class="secondary-button" type="button">Voltar à aventura</button>
       </dialog>
       <dialog id="settingsDialog" #settingsDialog (close)="closed()" aria-labelledby="settingsTitle">
         <button class="dialog-x" (click)="close($event)" aria-label="Fechar ajustes">

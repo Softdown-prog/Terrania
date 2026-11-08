@@ -67,3 +67,13 @@ Checklist de aceite do Cavaleiro 1.0:
 - [ ] Validar usabilidade e desempenho no celular e corrigir defeitos bloqueantes antes de marcar a 1.0 como concluída
 
 A implementação dos itens marcados não certifica o lançamento, apenas indica mecanismos presentes. Não adicionar vocações, montarias ou mecânicas especulativas até a avaliação do cavaleiro.
+
+
+### Inventário mobile do Cavaleiro 1.0
+
+- [x] Mochila em grade com filtros de itens, detalhes por toque e comparação de equipamento baseada no estado verdadeiro
+- [x] Dez slots ao redor da prévia do próprio renderHero, com giro do cavaleiro em quatro direções
+- [x] Desktop exibe armaria e mochila lado a lado; celular alterna seções de toque acessíveis
+- [ ] Elmos, escudos, armaduras e acessórios mudarem visualmente o herói no mundo e na prévia
+- [ ] Definir capacidade real por células somente quando houver economia/loot que a exija; não confundir grade visual com capacidade de armazenamento
+- [ ] Avaliar fluidez, ergonomia e toques em aparelhos Android reais antes de declarar a UI concluída
