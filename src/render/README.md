@@ -68,3 +68,6 @@ colisões, salas, seeds ou protocolo online. `npm run art:preview`
 agora gera `cavernas-regionais.png` com as **seis** áreas e seus mapas
 reais para revisão comparativa (além de `pecas.png`); os screenshots
 de desktop e Android continuam exigidos antes do merge.
+
+### Arte das montarias
+`mounts.ts` contém silhuetas procedurais diferentes para as dez montarias, além do cercado da vila. `renderMount` e `renderStableFence` estão em `tests/helpers/artAssets.ts` como `creature` e `structure`; sem imagens externas ou novas exceções ao contrato.

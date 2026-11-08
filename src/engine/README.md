@@ -31,3 +31,6 @@
 **Equipamento:** `Equipment.ts` descreve espaços e itens do conjunto inicial. A bolsa valida e guarda a combinação de espaço e item. Os Slimes recebem a defesa calculada pela bolsa no solo e na sala Node. Veja [ADR 0009](../../docs/adr/0009-espacos-de-equipamento.md).
 
 **Alimentação do Cavaleiro 1.0:** `Food.ts` concentra a tabela de maçã (+8 HP futuros; 1 gel), pão (+18; 2 gel) e carne (+30; 3 gel). Consumir um item acumula até 60 HP futuros de regeneração e impõe espera de 5 s até a próxima refeição. O `Player` restaura 1 HP a cada 2 s enquanto está ferido; não revive nem excede a vida máxima. Lina vende suprimentos por gel em solo e Node. A reserva, o progresso fracionário e a espera são persistidos no save solo e enviados privadamente no snapshot online.
+
+### Domesticação e Cavalaria
+`MountStable.ts` mantém cercado, treinamento I–III, quest do Garrano, cabresto, selas, energia, summon, montaria e persistência serializável. O `ClassicTileWalker` aplica o multiplicador de velocidade somente sobre a malha de colisão existente. Não criar segundo loop de simulação.

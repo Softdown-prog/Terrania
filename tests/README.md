@@ -17,3 +17,6 @@ variação regional (incluindo sudeste pantanoso), limites, colisão do
 primeiro andar e conectividade das câmaras. Antes de integrar, executar
 também o Playwright de desktop/Android com descida, atlas interno e retorno
 pela escada; CI verde sem esse cenário não comprova que a navegação está correta.
+
+### Montarias
+`mounts.test.ts`: dez fichas, tier/nível, stable, taming, captura idempotente, stamina, save e colisão com velocidade montada. `browser/mounts.spec.ts` exercita controles reais do mestre de estábulos e Android. As dez artes obedecem ao mesmo contrato de criaturas existente.
