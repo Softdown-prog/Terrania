@@ -69,7 +69,7 @@ export class CaveFloor {
         return ([-r,r] as const).every(dx=>([-r,r] as const).every(dy=>
           this.at(Math.floor((x+dx)/TILE_SIZE),Math.floor((y+dy)/TILE_SIZE))===1));
       },
-      speedAt: ():number => this.theme === "marsh" ? 0.85 : 1,
+      speedAt: ():number => this.theme === "marsh" ? 0.85 : this.theme === "glacial" ? 0.88 : 1,
     };
   }
   at(tx:number,ty:number): CaveCell {
