@@ -29,6 +29,22 @@ export class Player {
   private swingNumber = 0;
   private poisonStacks = 0;
   get debuffs(): Readonly<Record<DebuffKind, number>> { return { ...this.effects }; }
+  /** Status apply equally to tile-mode outdoor movement and free cave movement. */
+  get movementMultiplier(): number {
+    if (this.effects.freeze > 0 || this.effects.stun > 0) return 0;
+    return this.effects.slow > 0 ? .58 : 1;
+  }
+  /** Copy only adventure vitals across the cave/surface boundary, preserving coordinates. */
+  syncAdventureStateFrom(other: Player): void {
+    this.hp = other.hp;
+    this.maxHp = other.maxHp;
+    this.nourishment = { ...other.nourishment };
+    for (const kind of Object.keys(this.effects) as DebuffKind[])
+      this.effects[kind] = other.effects[kind];
+    this.poisonElapsed = other.poisonElapsed;
+    this.poisonStacks = other.poisonStacks;
+    this.burnElapsed = other.burnElapsed;
+  }
   applyStatus(kind: DebuffKind, seconds: number): void {
     if (!Number.isFinite(seconds) || seconds <= 0 || this.hp <= 0) return;
     this.effects[kind] = Math.max(this.effects[kind], Math.min(12, seconds));
@@ -129,7 +145,7 @@ export class Player {
     const terrainSpeed = world.speedAt?.(this.x, this.y) ?? 1;
     const speed =
       126 *
-      (this.effects.freeze > 0 || this.effects.stun > 0 ? 0 : this.effects.slow > 0 ? .58 : 1) *
+      this.movementMultiplier *
       (Number.isFinite(terrainSpeed) ? Math.max(0, terrainSpeed) : 0) *
       (this.attackTime > 0 ? 0.72 : 1);
     const response = moving ? 18 : 25;
