@@ -12,6 +12,7 @@ import { villageGround } from "../world/village.ts";
 
 /** Instância viva do bestiário, compatível com a Battle List e o motor solo. */
 export class RegionalMonster extends Slime {
+  override readonly kind: RegionalCreatureKind;
   readonly definition: CreatureDefinition;
   private phase = 0;
   private cooldown = 0;
