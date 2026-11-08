@@ -3,17 +3,26 @@ import type { CaveTheme } from "../world/caves.ts";
 import type { Biome } from "../world/biomes.ts";
 
 /** A sprite sheet é referência de silhueta, nunca uma textura carregada no jogo. */
+export const SECOND_WAVE_KINDS = [
+  "summit-griffin", "magma-salamander", "rotten-marsh-ent", "poison-scout-toad",
+  "carrion-sandworm", "tundra-mammoth", "frost-banshee", "runic-polar-bear",
+  "abyssal-octopus", "tide-hunter-triton",
+] as const;
+export type SecondWaveKind = typeof SECOND_WAVE_KINDS[number];
 export const REGIONAL_CREATURE_KINDS = [
   "basalt-golem", "cliff-draconid", "mire-hydra", "dune-scorpion", "solar-scarab",
   "boreal-yeti", "glacial-wolf", "frost-spirit", "coral-crab", "storm-serpent",
+  ...SECOND_WAVE_KINDS,
 ] as const;
 export type RegionalCreatureKind = typeof REGIONAL_CREATURE_KINDS[number];
 export type CreatureKind = "slime" | RegionalCreatureKind;
 export type CombatNature = "physical" | "magical" | "hybrid";
 export type SpecialAttack =
   "none" | "boulder" | "fire" | "acid" | "venom" | "solar-burst" |
-  "snowball" | "frost-bite" | "ice-shards" | "reef-stones" | "lightning";
-export type DebuffKind = "slow" | "poison" | "freeze" | "attack-slow";
+  "snowball" | "frost-bite" | "ice-shards" | "reef-stones" | "lightning" |
+  "gust" | "lava-burst" | "spore-cloud" | "tongue" | "burrow" |
+  "trample" | "spectral-ice" | "rune-bite" | "ink" | "tidal-lightning";
+export type DebuffKind = "slow" | "poison" | "freeze" | "attack-slow" | "burn" | "stun" | "blind";
 export interface LootChance { readonly item: string; readonly chance: number; }
 export interface CreatureDefinition {
   readonly name: string;
@@ -110,6 +119,77 @@ export const CREATURE_CATALOG: Readonly<Record<CreatureKind, CreatureDefinition>
     status: null, statusSeconds: 0, region: "east", caveThemes: ["coastal"],
     biomes: ["island", "beach"],
     loot: [{ item: "Escama Condutora", chance: .4 }, { item: "Orbe da Tempestade", chance: .12 }, { item: "Espada de Coral Rara", chance: .03 }],
+  },
+
+  "summit-griffin": {
+    name: "Grifo das Cumeadas", maxHp: 260, contactDamage: 33, experience: 220,
+    nature: "physical", special: "gust", speed: 83, range: 112, interval: 2.4,
+    status: null, statusSeconds: 0, region: "west", caveThemes: ["basalt"],
+    biomes: ["highlands", "stone-peak"],
+    loot: [{ item: "Pena Cinzenta Rara", chance: .65 }, { item: "Garra Afiada", chance: .45 }, { item: "Carne de Caça", chance: .70 }],
+  },
+  "magma-salamander": {
+    name: "Salamandra de Magma", maxHp: 220, contactDamage: 31, experience: 205,
+    nature: "hybrid", special: "lava-burst", speed: 53, range: 152, interval: 2.6,
+    status: "burn", statusSeconds: 4, region: "west", caveThemes: ["basalt"],
+    biomes: ["volcanic", "stone-peak"],
+    loot: [{ item: "Escama Incandescente", chance: .55 }, { item: "Carvão Mineral", chance: .75 }, { item: "Núcleo de Brasa", chance: .18 }],
+  },
+  "rotten-marsh-ent": {
+    name: "Ent Apodrecido do Pântano", maxHp: 350, contactDamage: 27, experience: 255,
+    nature: "hybrid", special: "spore-cloud", speed: 24, range: 72, interval: 3.1,
+    status: "poison", statusSeconds: 6, region: "south", caveThemes: ["marsh"],
+    biomes: ["oasis", "ruins"],
+    loot: [{ item: "Madeira Encharcada", chance: .80 }, { item: "Cogumelo Luminoso", chance: .50 }, { item: "Seiva Tóxica", chance: .30 }],
+  },
+  "poison-scout-toad": {
+    name: "Sapo Batedor Venenoso", maxHp: 165, contactDamage: 23, experience: 130,
+    nature: "physical", special: "tongue", speed: 70, range: 74, interval: 1.5,
+    status: "poison", statusSeconds: 6, region: "south", caveThemes: ["marsh"],
+    biomes: ["oasis", "ruins"],
+    loot: [{ item: "Glândula de Veneno", chance: .60 }, { item: "Perna de Rã", chance: .65 }, { item: "Mucosa Pantanosa", chance: .40 }],
+  },
+  "carrion-sandworm": {
+    name: "Verme da Areia Carniceiro", maxHp: 310, contactDamage: 35, experience: 245,
+    nature: "physical", special: "burrow", speed: 39, range: 128, interval: 3.1,
+    status: null, statusSeconds: 0, region: "south", caveThemes: ["desert"],
+    biomes: ["dunes", "ruins"],
+    loot: [{ item: "Placa Quitinosa", chance: .60 }, { item: "Dente de Verme", chance: .35 }, { item: "Quartzo Bruto", chance: .25 }],
+  },
+  "tundra-mammoth": {
+    name: "Mamute Blindado da Tundra", maxHp: 450, contactDamage: 40, experience: 340,
+    nature: "physical", special: "trample", speed: 32, range: 46, interval: 2.9,
+    status: "stun", statusSeconds: .75, region: "north", caveThemes: ["glacial"],
+    biomes: ["tundra", "snowfield"],
+    loot: [{ item: "Marfim Glacial", chance: .30 }, { item: "Couro Pesado", chance: .85 }, { item: "Carne Nobre", chance: .90 }],
+  },
+  "frost-banshee": {
+    name: "Banshee da Geada", maxHp: 155, contactDamage: 37, experience: 185,
+    nature: "magical", special: "spectral-ice", speed: 62, range: 185, interval: 2.6,
+    status: "slow", statusSeconds: 3.5, region: "north", caveThemes: ["glacial"],
+    biomes: ["snowfield", "frozen-lake"],
+    loot: [{ item: "Ectoplasma Congelado", chance: .35 }, { item: "Fragmento de Runa", chance: .12 }],
+  },
+  "runic-polar-bear": {
+    name: "Urso Polar Rúnico", maxHp: 340, contactDamage: 34, experience: 260,
+    nature: "hybrid", special: "rune-bite", speed: 53, range: 28, interval: 1.7,
+    status: "freeze", statusSeconds: .9, region: "north", caveThemes: ["glacial"],
+    biomes: ["tundra", "snowfield"],
+    loot: [{ item: "Pelagem Branca Real", chance: .60 }, { item: "Garra de Cristal", chance: .40 }, { item: "Carne Gorda", chance: .75 }],
+  },
+  "abyssal-octopus": {
+    name: "Polvo Abissal dos Recifes", maxHp: 275, contactDamage: 29, experience: 220,
+    nature: "hybrid", special: "ink", speed: 37, range: 138, interval: 2.6,
+    status: "blind", statusSeconds: 4, region: "east", caveThemes: ["coastal"],
+    biomes: ["beach", "island"],
+    loot: [{ item: "Tentáculo Fresco", chance: .70 }, { item: "Bolsa de Tinta Abissal", chance: .50 }, { item: "Moedas Antigas", chance: .45 }],
+  },
+  "tide-hunter-triton": {
+    name: "Tritão Caçador das Marés", maxHp: 250, contactDamage: 36, experience: 245,
+    nature: "hybrid", special: "tidal-lightning", speed: 65, range: 181, interval: 2.7,
+    status: null, statusSeconds: 0, region: "east", caveThemes: ["coastal"],
+    biomes: ["beach", "island"],
+    loot: [{ item: "Escama Azulada", chance: .65 }, { item: "Coral Energizado", chance: .30 }, { item: "Tridente das Marés", chance: .04 }],
   },
 });
 
