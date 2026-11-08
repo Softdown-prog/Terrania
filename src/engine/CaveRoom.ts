@@ -108,8 +108,8 @@ export class CaveRoom {
       const x=(tx+.5)*TILE_SIZE,y=(ty+.5)*TILE_SIZE;
       if (!this.collision.canMove(x,y) ||
           Math.hypot(x-this.player.x,y-this.player.y)<170) continue;
+      if (viableSpots >= 4) break;
       viableSpots++;
-      if (this.monsters.size>=4) break;
       const kind=kinds[Math.floor(hash2(i,19,salt+91)*kinds.length)]!;
       const id=this.floor.id+":mob:"+i;
       if (!this.defeated.has(id)) this.monsters.set(id,new RegionalMonster(id,kind,x,y));
