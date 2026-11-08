@@ -14,6 +14,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/Experience.ts`](../../src/engine/Experience.ts)
 - [`src/engine/Weapons.ts`](../../src/engine/Weapons.ts)
 - [`src/engine/Equipment.ts`](../../src/engine/Equipment.ts)
+- [`src/engine/CaveRoom.ts`](../../src/engine/CaveRoom.ts)
 
 ## Todos os arquivos deste módulo (16)
 

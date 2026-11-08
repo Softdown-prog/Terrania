@@ -15,6 +15,7 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/collision.ts`](../../src/world/collision.ts)
 - [`src/world/npcs.ts`](../../src/world/npcs.ts)
 - [`src/world/aelaQuest.ts`](../../src/world/aelaQuest.ts)
+- [`src/world/caves.ts`](../../src/world/caves.ts)
 
 ## Todos os arquivos deste módulo (15)
 
