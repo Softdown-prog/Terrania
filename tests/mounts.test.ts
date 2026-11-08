@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL } from "../src/actors/MountCatalog.ts";
-import { MountStable, STABLE_MASTER, WILD_APPLES, WILD_WARHORSE,
+import { MountStable, STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE,
   sampleMountCaptureLoot,normalizeMountSave } from "../src/engine/MountStable.ts";
 import { experienceForLevel, levelForExperience, MAX_LEVEL } from "../src/engine/Experience.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
@@ -58,21 +58,26 @@ test("estábulo: nível, gel e Cavalaria não podem ser burlados por botões",()
   assert.equal(stable.upgrade(55,gel,spend,x,y),"no-gel");
   assert.equal(stable.stableTier,2);
 });
-test("Garrano Fugitivo: exige slimes, maçã, cabresto e devolução ao estábulo",()=>{
+test("Garrano Fugitivo: Eron entrega maçã, cascos, cinco slimes novos, cabresto, escolta e sela",()=>{
   let gel=30;const spend=(n:number)=>gel>=n?(gel-=n,true):false;
   const s=new MountStable();
   assert.equal(s.upgrade(15,gel,spend,STABLE_MASTER.x,STABLE_MASTER.y),"built");
   assert.equal(s.train(15,STABLE_MASTER.x,STABLE_MASTER.y),"trained");
   assert.equal(s.beginWarhorse(15,STABLE_MASTER.x,STABLE_MASTER.y,5),"quest-started");
-  assert.equal(s.tame(15,5,WILD_WARHORSE.x,WILD_WARHORSE.y),"slimes-needed");
-  assert.equal(s.tame(15,10,WILD_WARHORSE.x,WILD_WARHORSE.y),"no-apple");
-  assert.equal(s.forage(0,0),"too-far");
-  assert.equal(s.forage(WILD_APPLES.x,WILD_APPLES.y),"apple-picked");
+  assert.equal(s.quest?.gift,"Maçã Silvestre Doce");
+  assert.equal(s.tame(15,10,WILD_WARHORSE.x,WILD_WARHORSE.y),"not-ready");
+  assert.equal(s.inspectTracks(0,0),"too-far");
+  assert.equal(s.inspectTracks(WILD_HOOFPRINTS.x,WILD_HOOFPRINTS.y),"tracks-found");
   assert.equal(s.tame(15,9,WILD_WARHORSE.x,WILD_WARHORSE.y),"slimes-needed");
-  assert.equal(s.tame(15,10,WILD_WARHORSE.x,WILD_WARHORSE.y),"no-halter");
+  s.synchronizeKills(10);
+  assert.equal(s.quest?.step,2);
   assert.equal(s.craftHalter(gel,spend,STABLE_MASTER.x,STABLE_MASTER.y),"halter-made");
   assert.equal(gel,15);
-  assert.equal(s.tame(15,10,WILD_WARHORSE.x,WILD_WARHORSE.y),"tamed");
+  assert.equal(s.tame(15,10,WILD_WARHORSE.x,WILD_WARHORSE.y),"calmed");
+  assert.equal(s.has("warhorse"),false,"acalmar não concede montaria antes de voltar");
+  assert.equal(s.returnWarhorse(0,0),"too-far");
+  assert.equal(s.returnWarhorse(STABLE_MASTER.x,STABLE_MASTER.y),"returned");
+  assert.equal(s.returnWarhorse(STABLE_MASTER.x,STABLE_MASTER.y),"missing-quest");
   assert.equal(s.has("warhorse"),true);
   assert.equal(s.quest,null);
   assert.equal(s.mount("warhorse",15,0,0),"too-far");

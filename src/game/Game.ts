@@ -613,7 +613,7 @@ export class Game {
       this.sim.inventory.gear,
       this.sim.inventory.loadout.equipped,
       this.sim.mounts.active,
-      !this.sim.mounts.has("warhorse") && currentMountQuestStep(this.sim.mounts.quest!)?.id!=="return",
+      !this.sim.mounts.has("warhorse") && this.sim.mounts.quest?.step!==4,
       this.sim.mounts.stableTier>0,
       !!this.sim.mounts.quest && currentMountQuestStep(this.sim.mounts.quest)?.id==="tracks",
       !!this.sim.mounts.quest && currentMountQuestStep(this.sim.mounts.quest)?.id==="return",
