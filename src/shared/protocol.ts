@@ -15,6 +15,8 @@ export interface HeroState {
   hp: number;
   kills: number;
   experience?: number;
+  /** Optional authoritative number of deaths followed by an automatic respawn. */
+  respawns?: number;
   faceX: number;
   faceY: number;
   walkTime: number;
