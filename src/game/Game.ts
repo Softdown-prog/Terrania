@@ -29,7 +29,7 @@ import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import { levelForExperience } from "../engine/Experience.ts";
 import { sampleMountCaptureLoot,type MountAction,type MountActionResult } from "../engine/MountStable.ts";
-import { WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
+import { WILD_WARHORSE,WILD_HOOFPRINTS,STABLE_MASTER,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
 import { currentMountQuestStep } from "../engine/MountQuestState.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/Experience.ts";
@@ -229,7 +229,7 @@ export class Game {
     if(questStep==="calm" && nearby(WILD_WARHORSE)) {
       this.hud.setTravelNotice(this.mountAction("tame"));return;
     }
-    if(questStep==="return" && nearby({x:384,y:112})) {
+    if(questStep==="return" && nearby(STABLE_MASTER)) {
       this.hud.setTravelNotice(this.mountAction("return-warhorse"));return;
     }
     const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
@@ -613,9 +613,10 @@ export class Game {
       this.sim.inventory.gear,
       this.sim.inventory.loadout.equipped,
       this.sim.mounts.active,
-      !this.sim.mounts.has("warhorse"),
+      !this.sim.mounts.has("warhorse") && currentMountQuestStep(this.sim.mounts.quest!)?.id!=="return",
       this.sim.mounts.stableTier>0,
       !!this.sim.mounts.quest && currentMountQuestStep(this.sim.mounts.quest)?.id==="tracks",
+      !!this.sim.mounts.quest && currentMountQuestStep(this.sim.mounts.quest)?.id==="return",
     );
   }
   destroy(): void {

@@ -4,7 +4,7 @@
  * Os pisos abaixo são ~80 % do pior caso das peças boas que já existem: mínimo de acabamento, não meta.
  */
 import { renderRegionalCreature } from "../../src/render/regionalCreatures.ts";
-import { renderMount, renderStableFence } from "../../src/render/mounts.ts";
+import { renderMount, renderMountTracks, renderStableFence } from "../../src/render/mounts.ts";
 import { MOUNTS, MOUNT_IDS } from "../../src/actors/MountCatalog.ts";
 import { REGIONAL_CREATURE_KINDS, CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
 import { renderHero, renderSlime } from "../../src/render/actors.ts";
@@ -46,6 +46,8 @@ export const ASSETS: ArtAsset[] = [
   })),
   {id:"cercado de estábulo",tier:"structure",fn:"renderStableFence",
     draw:c=>renderStableFence(c,0,0,true)},
+  {id:"pegadas do Garrano",tier:"prop",fn:"renderMountTracks",
+    draw:c=>renderMountTracks(c,0,0)},
   ...REGIONAL_CREATURE_KINDS.map<ArtAsset>(kind => ({id:"monstro "+kind,tier:"creature",fn:"renderRegionalCreature",
     draw:c=>renderRegionalCreature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"art-"+kind},0,0,1)})),
   ...NPCS.filter(n => n.kind !== "sign" && n.kind !== "door").map<ArtAsset>(npc =>

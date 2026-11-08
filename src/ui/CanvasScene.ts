@@ -12,8 +12,8 @@ import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
 import { drawInterior } from '../render/interior.ts';
 import { drawCaveEntrance, drawCaveView } from '../render/cave.ts';
-import { renderMount, renderStableFence } from '../render/mounts.ts';
-import { STABLE_MASTER, WILD_WARHORSE, WILD_APPLES } from '../world/mountLocations.ts';
+import { renderMount, renderMountTracks, renderStableFence } from '../render/mounts.ts';
+import { STABLE_MASTER, WILD_WARHORSE, WILD_HOOFPRINTS } from '../world/mountLocations.ts';
 import type { MountId } from '../actors/MountCatalog.ts';
 import { caveEntrancesInArea } from '../world/caves.ts';
 import { TILE_SIZE } from '../world/terrain.ts';
@@ -73,7 +73,8 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   time = 0, animated = false,
   drops: ReadonlyArray<LootDrop> = [], effects?: Effects,
   playerGear?: GearState, playerWeapon?: WeaponId,
-  mount: MountId | null = null, wildHorse=true, stableBuilt=false, appleVisible=false): void {
+  mount: MountId | null = null, wildHorse=true, stableBuilt=false,
+  tracksVisible=false, leadingHorse=false): void {
   ctx.fillStyle = '#506f50'; ctx.fillRect(0, 0, width, height);
   world.render(ctx, cameraX, cameraY, width, height, time, animated);
   const left = cameraX - width / 2, top = cameraY - height / 2;
@@ -98,17 +99,13 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
       Math.abs(WILD_WARHORSE.y-cameraY)<height/2+80)
     actors.push({y:WILD_WARHORSE.y,draw:()=>renderMount(ctx,"warhorse",
       WILD_WARHORSE.x-left,WILD_WARHORSE.y-top,time)});
-  if(appleVisible && Math.abs(WILD_APPLES.x-cameraX)<width/2+90 &&
-      Math.abs(WILD_APPLES.y-cameraY)<height/2+90)
-    actors.push({y:WILD_APPLES.y,draw:()=>{
-      const sx=WILD_APPLES.x-left,sy=WILD_APPLES.y-top;
-      renderScenery(ctx,{kind:"tree",x:WILD_APPLES.x,y:WILD_APPLES.y,variant:1},sx,sy,time);
-      ctx.fillStyle="#c84335";ctx.strokeStyle="#fff6dc";ctx.lineWidth=1;
-      for(const offset of [-13,7,18]){
-        ctx.beginPath();ctx.arc(sx+offset,sy-29+(offset%3)*3,3,0,Math.PI*2);
-        ctx.fill();ctx.stroke();
-      }
-    }});
+  if(tracksVisible && Math.abs(WILD_HOOFPRINTS.x-cameraX)<width/2+50 &&
+      Math.abs(WILD_HOOFPRINTS.y-cameraY)<height/2+55)
+    actors.push({y:WILD_HOOFPRINTS.y,draw:()=>renderMountTracks(ctx,
+      WILD_HOOFPRINTS.x-left,WILD_HOOFPRINTS.y-top)});
+  // Acompanhamento visual temporário: a conclusão ainda exige chegar a Eron.
+  if(leadingHorse)actors.push({y:player.y+11,draw:()=>renderMount(ctx,
+    "warhorse",player.x-left-35,player.y-top+11,time)});
   for (const npc of NPCS) {
     if (Math.abs(npc.x - cameraX) > width / 2 + 40 || Math.abs(npc.y - cameraY) > height / 2 + 65) continue;
     actors.push({ y: npc.y, draw: () =>
@@ -281,7 +278,7 @@ export class CanvasScene {
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale, 0, 0);
     drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, time, effects.enabled, drops, effects, playerGear, playerWeapon,
-      mount,wildHorse,stableBuilt,appleVisible);
+      mount,wildHorse,stableBuilt,tracksVisible,leadingHorse);
     // Original Terrania visual: um anel dourado procedural, nunca arte copiada.
     if (combatTargetId) {
       const target = mobs.find(mob => mob.id === combatTargetId);

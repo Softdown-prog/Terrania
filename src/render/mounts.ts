@@ -271,3 +271,33 @@ export function renderStableFence(ctx:CanvasRenderingContext2D,x:number,y:number
   ctx.fillText(built?"ESTÁBULO":"FUTURO ESTÁBULO",0,-12);
   ctx.restore();
 }
+
+/** Rastros no Bosque Oeste, prop físico fiscalizado pelo contrato procedural. */
+export function renderMountTracks(ctx:CanvasRenderingContext2D,x:number,y:number):void {
+  ctx.save();ctx.translate(x,y);
+  softShadow(ctx,0,3,31,10,.28);
+  for(let i=0;i<5;i++){
+    const px=-28+i*14,py=i%2===0?-6:5;
+    const mud=ctx.createLinearGradient(px-7,py-7,px+9,py+9);
+    mud.addColorStop(0,mix("#5e4638","#dac39b",i/9+.12));
+    mud.addColorStop(.45,shade("#987052",i*.04));
+    mud.addColorStop(1,shade("#2b3030",i*.025));
+    ctx.fillStyle=mud;
+    ctx.strokeStyle="#142a2a";ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(px-6,py-6);
+    ctx.quadraticCurveTo(px,py-10,px+6,py-6);
+    ctx.quadraticCurveTo(px+9,py+1,px+5,py+6);
+    ctx.quadraticCurveTo(px,py+2,px-5,py+6);
+    ctx.quadraticCurveTo(px-8,py+1,px-6,py-6);
+    ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.strokeStyle=mix("#e6d0a7","#8b5940",i/6);ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(px-4,py-4);
+    ctx.quadraticCurveTo(px,py-7,px+4,py-4);ctx.stroke();
+    for(let k=0;k<2;k++){
+      ellipse(ctx,px+(k===0?-4:4),py+3,2,1.2,
+        rgba(k===0?"#f6e6bb":"#c79a6b",.72));
+    }
+  }
+  ctx.restore();
+}
