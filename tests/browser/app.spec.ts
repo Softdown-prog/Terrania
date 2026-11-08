@@ -437,6 +437,9 @@ test('atlas escondido no inventário cobre todo o limite técnico com setores re
   await expect(page.locator('.atlas-map-frame')).toBeVisible();
   await expect(page.locator('.atlas-legend .atlas-swatch')).toHaveCount(7);
   await expect(page.locator('#worldMapDimensions')).toContainText('62.500 × 62.500');
+  await expect(page.locator('#atlasCurrentRegion')).toContainText('Terras da Travessia');
+  await expect(page.locator('#atlasBiome')).not.toBeEmpty();
+  await expect(page.locator('#atlasDifficulty')).toContainText('1 / 5');
   await expect(page.locator('[data-atlas-sector]')).toHaveCount(9);
   const sample = () => canvas.evaluate(element => {
     const map = element as HTMLCanvasElement;

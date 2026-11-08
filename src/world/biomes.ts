@@ -12,7 +12,7 @@ export const BIOME_NAMES: Readonly<Record<Biome, string>> = {
 /** Sem pontos de interesse falsos: biomas descrevem o terreno efetivamente gerado. */
 export function classifyBiome(p: TerrainProfile): Biome {
   if (p.weights.north > 0.42 && p.temperature < 0.29)
-    return p.humidity > 0.54 ? "frozen-lake" : p.altitude > 0.54 ? "snowfield" : "tundra";
+    return p.altitude > 0.46 || p.humidity > 0.54 ? "snowfield" : "tundra";
   if (p.weights.south > 0.41 && p.humidity < 0.31)
     return p.humidity > 0.25 ? "oasis" : p.altitude > 0.55 ? "ruins" : "dunes";
   if (p.weights.east > 0.4) {

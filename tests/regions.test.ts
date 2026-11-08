@@ -33,7 +33,8 @@ test("biomas, mapa e dificuldade usam a mesma seed e posição", () => {
       assert.deepEqual(tile, getTile(x, y, seed));
       assert.equal(tile.biome, tile.ground === "path" ? "trail" :
         tile.ground === "water" && getTerrainProfile(x, y, seed).temperature < 0.28 ?
-          "frozen-lake" : getBiomeAt(x, y, seed));
+          "frozen-lake" : tile.ground !== "water" && getBiomeAt(x, y, seed) === "open-sea" ?
+          "island" : getBiomeAt(x, y, seed));
       assert.ok(BIOME_NAMES[tile.biome]);
       assert.ok(getRegionDifficulty(x, y).tier >= 1);
     }

@@ -48,7 +48,8 @@ export function getTile(tx: number, ty: number, seed: number): Tile {
   const rock = ground !== 'water' && ground !== 'path' && !center &&
     detail < (p.weights.west > 0.4 ? 0.09 : 0.022);
   return { ground, biome: ground === 'path' ? 'trail' :
-    ground === 'water' && p.temperature < 0.28 ? 'frozen-lake' : biome,
+    ground === 'water' && p.temperature < 0.28 ? 'frozen-lake' :
+    ground !== 'water' && biome === 'open-sea' ? 'island' : biome,
     tree, rock, decoration: detail };
 }
 export function isWalkable(tx: number, ty: number, seed: number): boolean {
