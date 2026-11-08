@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementR
 import { RouterLink } from '@angular/router';
 import { mountGame } from '../game/PhaserGame.ts';
 import { HudService } from './hud.service.ts';
+import { ItemIconComponent } from './item-icon.component.ts';
 import { OnlinePlayersComponent } from './online-players.component.ts';
 import { runtimeConfig } from './runtime-config.ts';
 import { renderHero } from '../render/actors.ts';
@@ -10,7 +11,7 @@ import { atlasFrame, GROUND_NAMES, sectorIndex, surveySectors, type AtlasScale }
 import { getTile } from '../world/terrain.ts';
 
 @Component({ selector: 'app-game-page', templateUrl: './game-page.html', styleUrl: '../style.css',
-  imports: [RouterLink, OnlinePlayersComponent], providers: [HudService], changeDetection: ChangeDetectionStrategy.OnPush })
+  imports: [RouterLink, OnlinePlayersComponent, ItemIconComponent], providers: [HudService], changeDetection: ChangeDetectionStrategy.OnPush })
 export class GamePageComponent implements AfterViewInit {
   readonly hud = inject(HudService);
   readonly notice = signal('');

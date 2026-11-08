@@ -111,6 +111,7 @@ input:focus-visible {
 }
 #nutritionStatus { display: block; max-width: 100%; font-size: 9px; line-height: 1.2; color: #d2dfaa; }
 #quickPotion:disabled { opacity: .55; cursor: not-allowed; }
+.quick-potion-icon { font-size: 16px; vertical-align: -4px; }
 #quickPotionFeedback {
   font-size: 9px;
   line-height: 1.2;
@@ -781,12 +782,17 @@ noscript a {
 .equipment-heading span, .backpack-heading span { font: 11px system-ui; color: #b6d3c1; }
 .equipment-grid { display: grid; grid-template-columns: minmax(70px, 1fr) minmax(105px, 1.45fr) minmax(70px, 1fr);
   grid-template-rows: repeat(5, minmax(58px, 1fr)); gap: 5px; }
-.equipment-slot { display: flex; flex-direction: column; justify-content: center; align-items: center;
+.equipment-slot { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;
   gap: 3px; min-width: 0; min-height: 58px; padding: 4px; color: #e3e6d2;
-  background: #20342d; border: 1px solid #7d967a77; border-radius: 7px; text-align: center; }
-.equipment-slot.equipped { background: #2d493e; border-color: #b59f67bb; }
+  background: linear-gradient(180deg, #243b33, #1a2d27); border: 1px solid #7d967a77; border-radius: 7px; text-align: center;
+  box-shadow: inset 0 1px 0 #ffffff14, inset 0 -3px 6px #0000003d; }
+.equipment-slot.equipped { background: linear-gradient(180deg, #34513f, #25402f); border-color: #c4ab6ccc; }
+.equipment-slot.equipped::after { content: ""; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px;
+  border-radius: 50%; background: #e9c46a; box-shadow: 0 0 5px #e9c46a99; }
 .equipment-slot[aria-pressed="true"] { border-color: #efd8a3; box-shadow: inset 0 0 0 2px #efd8a355; }
-.equipment-symbol { color: #e5c991; font-size: 20px; line-height: 1; }
+.equipment-symbol { font-size: 30px; line-height: 1; filter: grayscale(1) brightness(.62) opacity(.5);
+  transition: filter .15s; }
+.equipment-slot.equipped .equipment-symbol { filter: drop-shadow(0 2px 2px #0007); }
 .equipment-slot strong { font: 10px system-ui; }
 .equipment-slot small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: #c9d4c2; font: 9px system-ui; }
@@ -803,7 +809,8 @@ noscript a {
 .hero-preview { grid-area: 1 / 2 / span 5 / span 1; display: flex; flex-direction: column;
   align-items: center; justify-content: space-around; border: 1px solid #99875d66;
   border-radius: 8px; min-width: 0; overflow: hidden;
-  background: radial-gradient(ellipse at center, #345d4a88, #0b201d 74%); }
+  background: radial-gradient(ellipse 46% 7% at 50% 81%, #0000007a, #0000 100%),
+    radial-gradient(ellipse at 50% 42%, #3f6c55aa, #0b201d 74%); }
 .preview-eyebrow { color: #e3d2ab; font: 9px system-ui; letter-spacing: 1.4px; padding-top: 6px; }
 #inventoryHero { display: block; width: min(100%, 160px); height: auto; aspect-ratio: 160 / 208; }
 .preview-rotate { min-height: 38px; padding: 5px 12px; border-radius: 6px;
@@ -821,17 +828,25 @@ noscript a {
 .backpack-cell { display: flex; flex-direction: column; align-items: center; justify-content: space-around;
   min-height: 98px; min-width: 0; padding: 7px 3px; text-align: center;
   background: #1a302a; color: #e7e3cb; border: 1px solid #64867677; border-radius: 7px; }
-.backpack-cell.is-empty { opacity: .58; }
+.backpack-cell.is-empty { opacity: .72; }
 .backpack-cell.is-selected { border-color: #ecd195; background: #2e4a3c; box-shadow: inset 0 0 0 2px #e5c27a55; }
-.backpack-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 7px;
-  font-size: 25px; background: #284c40; color: #f5d39d; text-shadow: 0 1px 8px #0006; }
-.backpack-icon[data-kind="potion"] { color: #ffcece; background: #613d4f; }
-.backpack-icon[data-kind="food"] { color: #ffc78d; background: #58432e; }
-.backpack-icon[data-kind="material"] { color: #a1f1c7; background: #1c5848; }
-.backpack-icon[data-kind="weapon"], .backpack-icon[data-kind="gear"] { color: #fff0c2; background: #50533d; }
+.backpack-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 8px;
+  font-size: 32px; background: #284c40; border: 1px solid #0000004d;
+  box-shadow: inset 0 1px 0 #ffffff26, inset 0 -4px 8px #00000040; }
+.backpack-icon app-item-icon { filter: drop-shadow(0 2px 2px #0006); }
+.backpack-icon[data-kind="potion"] { background: #4f3446; }
+.backpack-icon[data-kind="food"] { background: #4d3d2a; }
+.backpack-icon[data-kind="material"] { background: #1d4a3e; }
+.backpack-icon[data-kind="weapon"], .backpack-icon[data-kind="gear"] { background: #3f4636; }
+.backpack-icon.large { width: 60px; height: 60px; font-size: 44px; flex: none; }
+.backpack-cell.is-empty .backpack-icon app-item-icon { filter: grayscale(.6) brightness(.85) opacity(.7); }
+.backpack-details-head { display: flex; align-items: center; gap: 12px; }
+.backpack-details-head h3 { margin: 0; }
 .backpack-name { width: 100%; color: #f0e8d0; font: 10px/1.25 system-ui; overflow-wrap: anywhere;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.backpack-quantity { color: #d1e5cf; font: 10px system-ui; font-variant-numeric: tabular-nums; }
+.backpack-quantity { color: #e6f0d8; font: 600 10px system-ui; font-variant-numeric: tabular-nums;
+  background: #0a1a17a0; border-radius: 4px; padding: 1px 6px; }
+.backpack-cell.is-empty .backpack-quantity { color: #aab9a8; font-weight: 400; }
 .backpack-details { margin-top: 12px; min-height: 124px; padding: 12px; background: #1c3830;
   border: 1px solid #79958180; border-radius: 8px; }
 .backpack-details .dialog-kicker { display: block; font-size: 10px; margin-bottom: 5px; }
@@ -856,12 +871,12 @@ noscript a {
   .inventory-panel { padding: 9px; }
   .backpack-filters button { min-height: 42px; }
   .backpack-cell { min-height: 92px; }
-  .backpack-icon { width: 36px; height: 36px; }
+  .backpack-icon { width: 40px; height: 40px; font-size: 29px; }
 }
 @media (max-width: 360px) {
   .backpack-grid { gap: 4px; }
   .backpack-cell { padding: 5px 2px; min-height: 86px; }
-  .backpack-icon { width: 31px; height: 31px; font-size: 20px; }
+  .backpack-icon { width: 34px; height: 34px; font-size: 25px; }
   .backpack-name { font-size: 9px; }
 }
 @media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
