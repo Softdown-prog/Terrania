@@ -1,111 +1,75 @@
-// Controlled CI-only load measurement. Does not touch VPS or public players.
-// Both servers get 12 clients, same input frequency, identical CPU quota.
+// CI-only HTTP smoke/load measurements after Terrania became solo.
+// Do not claim equivalence of game engines: both services are measured only
+// on their common /health contract. No game rooms, WebSocket or remote players.
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { setTimeout as sleep } from "node:timers/promises";
-import WebSocket from "../../server/node_modules/ws/index.js";
 
-const origin = "https://rpg.analysepro.com";
-const execFileAsync = promisify(execFile);
-const entries = [
-  { name:"go",container:"terrania-go-performance",port:18788 },
-  { name:"node",container:"terrania-node-performance",port:18787 },
+const execAsync=promisify(execFile);
+const entries=[
+  {name:"go",container:"terrania-go-performance",port:18788},
+  {name:"node",container:"terrania-node-performance",port:18787},
 ];
-const sockets = [];
-const stats = Object.fromEntries(entries.map(e=>[e.name,{welcome:0,snapshots:0,gaps:[],last:0,messages:0}]));
+async function readHealth(entry,timeout=1500) {
+  const begin=performance.now();
+  const response=await fetch("http://127.0.0.1:"+entry.port+"/health",{
+    signal:AbortSignal.timeout(timeout),headers:{"cache-control":"no-cache"}
+  });
+  assert.equal(response.status,200,entry.name+" HTTP status");
+  const body=await response.json();
+  assert.equal(body.status,"ok",entry.name+" health status");
+  return performance.now()-begin;
+}
 async function waitHealth(entry) {
-  for(let i=0;i<25;i++){
-    try {
-      const r=await fetch("http://127.0.0.1:"+entry.port+"/health",{signal:AbortSignal.timeout(1500)});
-      if(r.ok) {
-        const status=await r.json();
-        assert.equal(status.status,"ok");
-        return;
-      }
-    } catch {}
-    await sleep(300);
+  for(let i=0;i<30;i++){
+    try {await readHealth(entry);return;}
+    catch {await sleep(300);}
   }
   throw Error(entry.name+" did not become healthy");
 }
-async function connect(entry,i) {
-  return new Promise((resolve,reject)=>{
-    const room="perf-ci-"+entry.name;
-    const ws = new WebSocket("ws://127.0.0.1:"+entry.port+"/ws?room="+room,{
-      origin,handshakeTimeout:5000,perMessageDeflate:false,
-    });
-    sockets.push(ws);
-    ws.once("open",()=>resolve(ws));
-    ws.once("error",reject);
-    const sample=stats[entry.name];
-    ws.on("message",data=>{
-      const message=JSON.parse(data.toString());
-      sample.messages++;
-      if(message.type==="welcome"){
-        assert.equal(message.version,3);
-        sample.welcome++;
-      }
-      if(message.type==="state"){
-        sample.snapshots++;
-        const now=performance.now();
-        // Gaps for each client, not one global cross-client timer.
-        const prev=sample["last"+i]||0;
-        if(prev>0)sample.gaps.push(now-prev);
-        sample["last"+i]=now;
-        assert.ok(message.players.length>0);
-      }
-    });
-  });
-}
-async function sampleDockerStats() {
-  // Run asynchronously; sync child_process blocks WebSocket event handlers and
-  // falsely records near-0ms gaps when queued snapshots are drained in bursts.
-  const {stdout}=await execFileAsync("docker",[
+async function dockerSample(){
+  const {stdout}=await execAsync("docker",[
     "stats","--no-stream","--format","{{json .}}",
-    "terrania-go-performance","terrania-node-performance",
+    ...entries.map(e=>e.container)
   ],{encoding:"utf8",timeout:12000,maxBuffer:256*1024});
-  const rows=stdout.trim().split("\n").map(x=>JSON.parse(x));
-  if(rows.length!==2)throw Error("expected two docker stats rows");
-  return rows.map(r=>({container:r.Name,CPU:r.CPUPerc,memory:r.MemUsage,netIO:r.NetIO}));
+  const rows=stdout.trim().split("\n").filter(Boolean).map(x=>JSON.parse(x));
+  assert.equal(rows.length,entries.length,"docker stats containers");
+  return rows.map(r=>({container:r.Name,CPU:r.CPUPerc,memory:r.MemUsage}));
 }
-const intervals=[];
-try {
-  for(const entry of entries)await waitHealth(entry);
-  for(const entry of entries) {
-    for(let i=0;i<12;i++)await connect(entry,i);
-  }
-  // Run both servers simultaneously under identical input rate.
-  const clients=sockets;
-  intervals.push(setInterval(()=>{
-    for(const ws of clients) {
-      if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:"input",x:1,y:0,attack:false}));
-    }
-  },100));
-  await sleep(1200);
+function percentile(xs,p){
+  if(xs.length===0)return null;
+  const a=[...xs].sort((x,y)=>x-y),i=Math.max(0,Math.ceil(a.length*p)-1);
+  return Number(a[i].toFixed(2));
+}
+await Promise.all(entries.map(waitHealth));
+// 12 independent HTTP clients per service, 10 fixed iterations each; both
+// services start at once and share the same CPU quotas in Docker.
+async function workload(entry){
   const samples=[];
-  for(let i=0;i<3;i++) {
-    samples.push(await sampleDockerStats());
-    await sleep(500);
-  }
-  for(const item of entries){
-    const s=stats[item.name];
-    assert.equal(s.welcome,12,item.name+" welcome");
-    assert.ok(s.snapshots>=100,item.name+" expected snapshots");
-  }
-  const percentile=(xs,p)=>{
-    if(xs.length===0)return null;
-    const sorted=[...xs].sort((a,b)=>a-b);
-    return Number(sorted[Math.min(sorted.length-1,Math.ceil(sorted.length*p)-1)].toFixed(2));
-  };
-  const result={
-    context:"GitHub Actions runner, Docker limits 0.5 CPU, 12 clients/server, ~10 inputs/s/client. NOT VPS measurements.",
-    workloads:entries.map(e=>({engine:e.name,clients:12,welcomes:stats[e.name].welcome,
-      snapshots:stats[e.name].snapshots,snapshotGapP50ms:percentile(stats[e.name].gaps,.5),
-      snapshotGapP95ms:percentile(stats[e.name].gaps,.95)})),
-    dockerSamples:samples
-  };
-  console.log("CI_PERFORMANCE_RESULT="+JSON.stringify(result));
-} finally {
-  for(const it of intervals)clearInterval(it);
-  for(const ws of sockets)ws.terminate();
+  const clients=Array.from({length:12},async()=>{
+    for(let k=0;k<10;k++){
+      samples.push(await readHealth(entry,3000));
+      await sleep(70);
+    }
+  });
+  await Promise.all(clients);
+  assert.equal(samples.length,120,entry.name+" health samples");
+  return {engine:entry.name,clients:12,requests:samples.length,
+    failures:0,latencyP50ms:percentile(samples,.5),
+    latencyP95ms:percentile(samples,.95)};
 }
+async function resources(){
+  const samples=[];
+  for(let i=0;i<3;i++){samples.push(await dockerSample());await sleep(450);}
+  return samples;
+}
+const [workloads,dockerSamples]=await Promise.all([
+  Promise.all(entries.map(workload)),resources()
+]);
+const result={
+  context:"GitHub Actions local Docker only; NOT VPS or public-game performance.",
+  workload:"Concurrent HTTP GET /health only; not game simulation or WebSocket.",
+  version:2,workloads,dockerSamples
+};
+process.stdout.write("CI_PERFORMANCE_RESULT="+JSON.stringify(result)+"\n");
