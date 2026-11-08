@@ -84,24 +84,50 @@ function rat(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
   freckles(ctx,c,14,-2,-14,10,7);
 }
 function goblin(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
-  for(const s of [-1,1]){
-    line(ctx,s*6,-11,s*8,0,c,5);
-    line(ctx,s*9,-29,s*15,-14,c,4);
+  const linen:Palette={...c,base:"#b6a17e",light:"#f0dec0",dark:"#7b6958"};
+  for(const side of [-1,1]){
+    line(ctx,side*5,-13,side*9,-1,c,5);
+    body(ctx,side*8,-1,6,3.7,c);
+    line(ctx,side*9,-30,side*17,-17,c,4);
   }
-  body(ctx,0,-23,12,16,c);
-  body(ctx,0,-42,11,9,c);
-  for(const s of [-1,1])tip(ctx,s*13,-43,6,9,c.dark);
-  body(ctx,0,-31,11,4,{...c,base:c.extra,light:c.accent,dark:c.dark});
-  eye(ctx,-5,-44,c,2);eye(ctx,5,-44,c,2);
-  for(const s of [-1,1])tip(ctx,s*4,-35,2.3,4,c.light);
-  ctx.strokeStyle=c.accent;ctx.lineWidth=4;
-  ctx.beginPath();ctx.moveTo(-10,-25);ctx.quadraticCurveTo(-3,-16,9,-26);ctx.stroke();
-  // Rusty dagger and stolen pouch.
-  line(ctx,18,-16,25,-6,{...c,base:c.extra},2);
-  tip(ctx,25,-6,4,11,c.light);
-  body(ctx,-15,-18,6,7,c);
-  freckles(ctx,c,14,0,-23,8,11);
-  ellipse(ctx,0,-20,2+Math.sin(t*2)*.4,1.1,c.accent);
+  body(ctx,0,-23,12,17,linen);
+  body(ctx,0,-40,11,11,c);
+  // Long ears and pronounced nose give the bandit a readable goblin profile.
+  for(const side of [-1,1]){
+    ctx.fillStyle=c.base;ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(side*10,-41);ctx.lineTo(side*21,-47);
+    ctx.quadraticCurveTo(side*19,-35,side*10,-35);ctx.closePath();ctx.fill();ctx.stroke();
+    ellipse(ctx,side*15,-41,3,1.5,c.accent,side*.1);
+  }
+  body(ctx,1,-35,6.5,4,c);
+  ellipse(ctx,6,-37,5,3,c.light,.2);
+  eye(ctx,-4,-43,c,2.1);eye(ctx,5,-43,c,2.1);
+  for(const side of [-1,1])tip(ctx,side*4,-33,2,4,GLOW);
+  // Wrapped pale turban, folded several times above the green face.
+  body(ctx,0,-51,13,8,linen,.08);
+  for(let i=0;i<5;i++){
+    const y=-56+i*2.4;
+    ctx.strokeStyle=i%2?"#a2927b":"#f3e6cf";ctx.lineWidth=2.3;
+    ctx.beginPath();ctx.moveTo(-10+i%2*2,y);
+    ctx.bezierCurveTo(-4,y-3,5,y+3,10-i%2*2,y);ctx.stroke();
+  }
+  ctx.fillStyle="#b9aa8e";
+  ctx.beginPath();ctx.moveTo(-10,-52);ctx.quadraticCurveTo(-18,-43,-10,-36);
+  ctx.lineTo(-7,-38);ctx.lineTo(-5,-51);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.1;ctx.stroke();
+  // Short tunic with crossing belt and a stolen copper pouch.
+  ctx.strokeStyle="#77543b";ctx.lineWidth=3.7;
+  ctx.beginPath();ctx.moveTo(-11,-28);ctx.quadraticCurveTo(0,-23,11,-28);ctx.stroke();
+  body(ctx,-14,-19,5.5,7,{...c,base:"#9e7145",light:"#d3a878",dark:"#674d3b"});
+  ellipse(ctx,-14,-20,2,2,c.accent);
+  for(let i=0;i<5;i++)tip(ctx,-9+i*4,-13,1.6,4,linen.light);
+  // Curved rusty dagger: separate curved silhouette and a gold hilt.
+  line(ctx,17,-18,25,-27,{...c,base:"#97745c",light:"#c5a481"},2.7);
+  ctx.strokeStyle="#b9c0c1";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(25,-27);ctx.quadraticCurveTo(34,-38+Math.sin(t*1.6),35,-46);
+  ctx.quadraticCurveTo(40,-42,37,-34);ctx.stroke();
+  ctx.strokeStyle=GLOW;ctx.lineWidth=.9;ctx.stroke();
+  freckles(ctx,c,11,0,-22,7,12);
 }
 function orc(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
   for(const s of [-1,1]){
@@ -298,22 +324,53 @@ function viper(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
   freckles(ctx,c,12,-7,-37,8,5);
 }
 function vulture(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
-  for(const s of [-1,1]){
-    ctx.fillStyle=c.dark;ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(s*4,-29);
-    ctx.bezierCurveTo(s*20,-60+Math.sin(t*1.8)*2,s*43,-43,s*42,-28);
-    ctx.lineTo(s*32,-32);ctx.lineTo(s*22,-19);ctx.lineTo(s*15,-24);
-    ctx.closePath();ctx.fill();ctx.stroke();
-    for(let i=0;i<5;i++)tip(ctx,s*(20+i*5),-31-i%3*4,3.5,7,c.light);
-    line(ctx,s*5,-8,s*11,0,c,4);
+  const wood:Palette={...c,base:"#847052",light:"#b69a72",dark:"#554735"};
+  // A vulture sits on an old branch, wings CLOSED: the source pose isn't flying.
+  line(ctx,-36,-2,33,0,wood,5.7);
+  line(ctx,-5,-1,-14,8,wood,3.8);
+  line(ctx,21,1,30,7,wood,3.8);
+  for(const side of [-1,1]){
+    line(ctx,side*6,-15,side*8,-4,
+      {...c,base:"#a06b67",light:"#e5ad95",dark:"#764d52"},3.4);
+    for(let claw=-1;claw<=1;claw++){
+      ctx.strokeStyle="#685059";ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(side*8,-4);
+      ctx.quadraticCurveTo(side*8+claw*3,-1,side*8+claw*5,1);ctx.stroke();
+    }
   }
-  body(ctx,0,-27,14,17,c);
-  body(ctx,4,-46,10,11,{...c,base:c.light});
-  body(ctx,10,-45,5,5,c);
-  ctx.fillStyle=c.accent;ctx.beginPath();ctx.moveTo(13,-45);ctx.lineTo(24,-41);ctx.lineTo(17,-35);ctx.closePath();ctx.fill();
-  eye(ctx,7,-49,c,2.3);
-  for(let i=0;i<5;i++)tip(ctx,-10+i*4,-38+i%2*3,3,6,c.light);
-  freckles(ctx,c,14,0,-27,10,12);
+  body(ctx,0,-29,16,23,c,-.18);
+  // Folded dark primary feathers, tapering to a hanging tail.
+  ctx.fillStyle="#34353f";ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(-7,-43);
+  ctx.bezierCurveTo(13,-49,21,-31,13,-12);
+  ctx.quadraticCurveTo(5,-10,2,-8);
+  ctx.quadraticCurveTo(-4,-21,-7,-43);ctx.closePath();ctx.fill();ctx.stroke();
+  for(let i=0;i<7;i++){
+    const x=8+i*.95;
+    ctx.strokeStyle=i%2?"#696b73":"#97969d";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(-3+i*.7,-40+i*1.7);
+    ctx.quadraticCurveTo(x+5,-26,x,-12+i*.4);ctx.stroke();
+  }
+  for(let i=0;i<6;i++){
+    tip(ctx,-5+i*3,-9,2.6,7,i%2?c.base:c.dark);
+  }
+  // Gray-white ruff encircles an exposed pink, bald head and hooked beak.
+  for(let i=0;i<9;i++){
+    const x=-12+i*2.4;
+    tip(ctx,x,-44+i%3*1.8,3,7,i%2?"#dfd2bc":"#aba5a2");
+  }
+  body(ctx,-5,-47,9,11,{...c,base:"#c88791",light:"#efb9ac",dark:"#775667"},-.08);
+  body(ctx,-8,-59+Math.sin(t*1.2)*.6,8,8,
+    {...c,base:"#bb7e85",light:"#e6acaa",dark:"#7b5262"});
+  eye(ctx,-11,-60,{...c,eye:"#e3cf9b"},2.2);
+  // Dark, hooked, downward-pointing carrion beak.
+  ctx.fillStyle="#3c3b45";ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(-14,-61);
+  ctx.quadraticCurveTo(-25,-60,-26,-55);
+  ctx.lineTo(-21,-52);ctx.quadraticCurveTo(-19,-56,-13,-56);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ellipse(ctx,-18,-58,2.2,1,"#ad9b72",-.2);
+  freckles(ctx,c,13,3,-28,8,16);
 }
 function cactus(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
   for(const s of [-1,1]){
