@@ -1,3 +1,5 @@
+import { drawKnightSword } from "../../src/render/swords.ts";
+import { WEAPON_IDS } from "../../src/engine/Weapons.ts";
 import { renderWave3Creature } from "../../src/render/regionalWave3.ts";
 import { renderWave2Creature } from "../../src/render/regionalWave2.ts";
 /**
@@ -39,6 +41,10 @@ const kit = { head: "trail-helm", shield: "willow-shield", chest: "quilted-vest"
 export const ASSETS: ArtAsset[] = [
   { id: "hero", tier: "character", fn: "renderHero", draw: c => renderHero(c, hero, 0, 0, 1) },
   { id: "hero com conjunto", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, gear: kit }, 0, 0, 1) },
+  ...WEAPON_IDS.map<ArtAsset>(kind => ({
+    id:"Espada procedural "+kind,tier:"prop",fn:"drawKnightSword",
+    draw:c=>drawKnightSword(c,kind,1)
+  })),
   { id: "slime", tier: "creature", fn: "renderSlime", draw: c => renderSlime(c, { hp: 3, bounce: 0.2, id: "s1" }, 0, 0, {}) },
   ...REGIONAL_CREATURE_KINDS.map<ArtAsset>(kind => ({id:"monstro "+kind,tier:"creature",fn:"renderRegionalCreature",
     draw:c=>renderRegionalCreature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"art-"+kind},0,0,1)})),
@@ -79,6 +85,7 @@ export const NOT_AN_ASSET: Record<string, string> = {
   softShadow: "primitiva compartilhada de draw.ts, usada por todas as peças",
   pill: "primitiva compartilhada de draw.ts, usada por todas as peças",
   limb: "primitiva compartilhada de draw.ts, usada por todas as peças",
+  drawKnightTrail: "rastro temporário composto com a espada e o golpe do herói; cada lâmina está registrada em ASSETS",
   drawWorldView: "compõe a cena inteira a partir das peças registradas",
   drawWorldAtlas: "cartografia do mapa, não uma peça de arte",
   drawInterior: "composição de ambiente interno; as peças dele devem ser registradas se forem extraídas",
