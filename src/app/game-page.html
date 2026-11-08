@@ -228,7 +228,7 @@
           </section>
           <section class="inventory-panel bag-panel" [class.mobile-hidden]="hud.inventoryTab() !== 'bag'" aria-labelledby="suppliesTitle">
             <div class="backpack-heading"><h2 id="suppliesTitle">Mochila</h2>
-              <span>{{ hud.backpackItems().length }} tipos de itens</span></div>
+              <span>{{ hud.ownedBackpackCount() }} tipos de itens</span></div>
             <div class="backpack-filters" role="group" aria-label="Filtrar itens na mochila">
               <button type="button" id="bagFilterAll" [attr.aria-pressed]="hud.bagFilter() === 'all'"
                 (click)="hud.bagFilter.set('all')">Todos</button>
