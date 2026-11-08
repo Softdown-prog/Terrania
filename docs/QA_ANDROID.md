@@ -36,3 +36,9 @@ A CI garante matemática do joystick, TypeScript, build e regressões. **Não su
 - [ ] Registrar observações reais do Chrome Android antes de concluir a tarefa.
 
 Alterações restritas ao input e apresentação. Velocidade, combate, colisão, protocolo e estado do servidor não são alterados.
+
+## Atlas cartográfico e retorno à origem
+- [ ] No desktop e Android, iniciar Jogar: nenhum minimapa deve ocupar ou interceptar o Canvas do mundo.
+- [ ] Abrir Opções → Inventário / Mapa → Mapa do mundo: as três escalas, nove setores, dimensões, posição real e legenda devem estar acessíveis apenas nessa aba.
+- [ ] Verificar mapa completo amostrado, mudança de setor por toque e escala Arredores, depois fechar e voltar a caminhar sem toques bloqueados.
+- [ ] Confirmar em sessão Node que morte mostra mensagem de respawn do servidor; a reconexão mostra aviso de nova sessão. Isso **não** comprova recuperação da posição ou elimina quedas em regiões distantes.

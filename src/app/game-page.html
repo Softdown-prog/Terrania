@@ -100,7 +100,12 @@
         <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
         ><small id="saveMode">{{ hud.online() ? "Sala experimental · progresso temporário" : "Aventura local · progresso neste navegador" }}</small>
       </div>
-      <p id="gameNotice" role="status">{{ notice() }}</p>
+      <p id="gameNotice" role="status">{{ notice() || hud.travelNotice() }}
+        @if (hud.travelNotice()) {
+          <button type="button" id="dismissTravelNotice" (click)="hud.dismissTravelNotice()"
+            aria-label="Fechar aviso de retorno">Fechar</button>
+        }
+      </p>
       @if (hud.targetCombat()) {
         <aside id="classicCombat" class="classic-status" aria-label="Combate por alvo">
           <strong>COMBATE POR ALVO</strong>

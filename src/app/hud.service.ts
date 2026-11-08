@@ -36,6 +36,7 @@ type InventoryTab = 'bag' | 'equipment' | 'map';
 @Injectable()
 export class HudService implements GameUi {
   readonly status = signal('Preparando aventura…');
+  readonly travelNotice = signal('');
   readonly online = signal(false);
   readonly nearby = signal(0);
   readonly targetCombat = signal(false);
@@ -263,6 +264,8 @@ export class HudService implements GameUi {
   }
   setQuickPotionFeedback(message: string): void { this.quickPotionFeedback.set(message); }
   setStatus(status: string): void { this.status.set(status); }
+  setTravelNotice(message: string): void { this.travelNotice.set(message); }
+  dismissTravelNotice(): void { this.travelNotice.set(''); }
   setTargetCombat(enabled: boolean): void { this.targetCombat.set(enabled); }
   setCombatTarget(label: string | null): void { this.combatTarget.set(label); }
   setOnline(online: boolean): void {

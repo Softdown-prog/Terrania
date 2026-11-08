@@ -1157,3 +1157,10 @@ noscript a {
   #worldAtlasCanvas { width: min(100%, 256px); }
   .atlas-sectors button { min-height: 48px; font-size: 11px; }
 }
+
+#gameNotice:has(#dismissTravelNotice) { z-index: 9; width: min(480px, calc(100% - 28px));
+  padding: 9px 12px; border: 1px solid #adba9099; background: #122b29ec;
+  border-radius: 7px; line-height: 1.5; }
+#dismissTravelNotice { display: inline-block; margin-left: 8px; padding: 6px 10px;
+  border: 1px solid #d9c38d; border-radius: 5px; background: #324d3d;
+  color: #fff0c5; font-size: 12px; }

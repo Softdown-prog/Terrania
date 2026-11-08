@@ -80,6 +80,8 @@ export class Game {
   private saveClock = 0;
   private accumulator = 0;
   private clock = 0;
+  private hasJoinedOnline = false;
+  private lastReportedRespawns: number | null = null;
   constructor(private readonly scene: CanvasScene, private readonly hud: GameUi, multiplayerUrl: string) {
     const saved = loadLocalSave(),
       params = new URLSearchParams(location.search);
@@ -256,6 +258,9 @@ export class Game {
     }
   }
   private setOnlineWorld(seed: number): void {
+    const reconnecting = this.hasJoinedOnline;
+    this.hasJoinedOnline = true;
+    this.lastReportedRespawns = null;
     if (!this.offlineSnapshot) this.offlineSnapshot = this.sim.snapshot();
     this.save();
     this.networkClock = 0;
@@ -263,9 +268,16 @@ export class Game {
     this.replaceWorld(seed);
     this.hud.setOnline(true);
     this.hud.setTargetCombat(this.multiplayer?.targetCombat === true);
+    if (reconnecting) this.hud.setTravelNotice(
+      "A conexão foi refeita e uma nova sessão online começou na origem. O progresso da sala é temporário.");
     this.updateHud(true);
   }
   private applySnapshot(self: HeroState): void {
+    if (typeof self.respawns === "number" && Number.isSafeInteger(self.respawns) && self.respawns >= 0) {
+      if (this.lastReportedRespawns !== null && self.respawns > this.lastReportedRespawns)
+        this.hud.setTravelNotice("Seu personagem morreu e o servidor o trouxe de volta à origem.");
+      this.lastReportedRespawns = self.respawns;
+    }
     const player = this.sim.player;
     const experience = normalizeExperience(self.experience);
     this.onlineExperience = self.experience === experience ? experience : null;
