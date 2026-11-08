@@ -1,11 +1,13 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, effect, inject, signal, viewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { mountGame } from '../game/PhaserGame.ts';
 import { HudService } from './hud.service.ts';
 import { OnlinePlayersComponent } from './online-players.component.ts';
 import { runtimeConfig } from './runtime-config.ts';
 import { renderHero } from '../render/actors.ts';
-import { drawMiniMap } from '../render/terrain.ts';
+import { drawWorldAtlas } from '../render/terrain.ts';
+import { atlasFrame, GROUND_NAMES, sectorIndex, surveySectors, type AtlasScale } from '../world/atlas.ts';
+import { getTile } from '../world/terrain.ts';
 
 @Component({ selector: 'app-game-page', templateUrl: './game-page.html', styleUrl: '../style.css',
   imports: [RouterLink, OnlinePlayersComponent], providers: [HudService], changeDetection: ChangeDetectionStrategy.OnPush })
@@ -18,7 +20,20 @@ export class GamePageComponent implements AfterViewInit {
   readonly playersDialogOpen = signal(false);
   readonly inventoryOpen = signal(false);
   readonly previewDirection = signal(0);
-  readonly miniMapOpen = signal(true);
+  readonly atlasScale = signal<AtlasScale>('world');
+  readonly selectedSector = signal(4);
+  readonly groundNames = GROUND_NAMES;
+  readonly atlasSectors = computed(() => surveySectors(this.hud.seed()));
+  readonly currentAtlasSector = computed(() =>
+    this.atlasSectors()[sectorIndex(this.hud.mapTile().x, this.hud.mapTile().y)]!);
+  readonly currentAtlasGround = computed(() => {
+    const { x, y } = this.hud.mapTile();
+    return GROUND_NAMES[getTile(x, y, this.hud.seed()).ground];
+  });
+  readonly atlasView = computed(() => {
+    const { x, y } = this.hud.mapTile();
+    return atlasFrame(this.atlasScale(), x, y, this.selectedSector());
+  });
   private previewFrame = 0;
   private previewLastDraw = 0;
   private readonly mount = viewChild.required<ElementRef<HTMLElement>>('mount');
@@ -27,7 +42,7 @@ export class GamePageComponent implements AfterViewInit {
   private readonly playersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('playersDialog');
   private readonly inventoryDialog = viewChild.required<ElementRef<HTMLDialogElement>>('inventoryDialog');
   private readonly inventoryHero = viewChild<ElementRef<HTMLCanvasElement>>('inventoryHero');
-  private readonly miniMapCanvas = viewChild<ElementRef<HTMLCanvasElement>>('miniMapCanvas');
+  private readonly atlasCanvas = viewChild<ElementRef<HTMLCanvasElement>>('atlasCanvas');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroy = inject(DestroyRef);
   constructor() {
@@ -35,12 +50,15 @@ export class GamePageComponent implements AfterViewInit {
       if (this.hud.dialogueRequested() > 0) this.open(this.npcDialog().nativeElement);
     });
     effect(() => {
+      // No map computation or Canvas work while playing or in another tab.
+      if (!this.inventoryOpen() || this.hud.inventoryTab() !== 'map') return;
       const { x, y } = this.hud.mapTile();
       const seed = this.hud.seed();
-      if (!this.miniMapOpen()) return;
-      const canvas = this.miniMapCanvas()?.nativeElement;
-      const ctx = canvas?.getContext('2d');
-      if (ctx) drawMiniMap(ctx, x, y, seed, this.hud.mapPlayers());
+      const scale = this.atlasScale();
+      const sector = this.selectedSector();
+      const players = this.hud.mapPlayers();
+      const ctx = this.atlasCanvas()?.nativeElement.getContext('2d');
+      if (ctx) drawWorldAtlas(ctx, scale, x, y, seed, sector, players);
     });
     effect(() => {
       const awaitingRespawn = this.hud.awaitingRespawn();
@@ -49,6 +67,16 @@ export class GamePageComponent implements AfterViewInit {
       if (awaitingRespawn) dialog.showModal();
       else dialog.close();
     });
+  }
+  showOwnSector(): void {
+    const { x, y } = this.hud.mapTile();
+    this.selectedSector.set(sectorIndex(x, y));
+    this.atlasScale.set('sector');
+  }
+  showAtlasSector(id: number): void {
+    if (!Number.isInteger(id) || id < 0 || id > 8) return;
+    this.selectedSector.set(id);
+    this.atlasScale.set('sector');
   }
   rotateInventoryHero(): void { this.previewDirection.update(value => (value + 1) % 4); }
   /** Usa o mesmo personagem procedural do mundo, não uma ilustração independente. */
