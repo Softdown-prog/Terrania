@@ -30,7 +30,7 @@ jobs:
             import fs from "node:fs";
             const r = JSON.parse(fs.readFileSync("qa-bot-report.json", "utf8"));
             const lines = [
-              "### QA-BOT-001 (offline only)",
+              "### QA-BOT-001 (offline gameplay + local authoritative Room patrol)",
               "Seed: " + r.seed + " | Overall status: " + r.status,
               "Exploration: " + r.exploration.totals.passed + " passed, " +
                 r.exploration.totals.failed + " failed, " +
