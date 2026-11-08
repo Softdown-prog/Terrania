@@ -8,7 +8,7 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | --- | --- | ---: | --- |
 | [Site e HUD Angular](indexes/angular-site.md) | active | 22 | Páginas do site, navegação, HUD e ações de interface. Não calcula regras autoritativas. |
 | [Orquestração Phaser](indexes/phaser-game.md) | active | 3 | Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir regras do motor para este adaptador. |
-| [Renderização e adaptadores Canvas](indexes/renderer.md) | active | 12 | Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo. |
+| [Renderização e adaptadores Canvas](indexes/renderer.md) | active | 14 | Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo. |
 | [Regras e simulação offline](indexes/simulation.md) | active | 14 | Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular. |
 | [Entidades jogáveis](indexes/actors.md) | active | 4 | Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias. |
 | [Terreno, colisões e NPCs](indexes/world.md) | active | 8 | Mundo procedural determinístico, tiles, colisão, vila e marcos. |

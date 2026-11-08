@@ -37,6 +37,9 @@ export function attackBody(attackTime: number, weapon?: WeaponId): { lunge: numb
 
 /** Ângulos relativos recentes da lâmina, do mais antigo ao atual, para o rastro. */
 export function swingTrail(attackTime: number, weapon?: WeaponId): { angles: number[]; alpha: number } {
+  // Sem ataque ativo não pode haver rastro, inclusive na arma forjada,
+  // cujo preparo longo alcança a janela de rastro após o fim da pose.
+  if (!(attackTime > 0)) return { angles: [], alpha: 0 };
   const windup = WEAPONS[weapon === "forge" ? "forge" : "starter"].windup;
   const elapsed = Math.max(0, Math.min(ATTACK_DURATION, ATTACK_DURATION - attackTime));
   const visible = elapsed >= windup * 0.45 && elapsed <= windup + 0.16;
