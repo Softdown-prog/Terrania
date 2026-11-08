@@ -90,6 +90,7 @@ test("weighted species sampler is deterministic and favors common creatures",()=
 test("viper venom deals 2 HP/s for 4 seconds; rat infection is distinct and weaker",()=>{
   const h=new Player();
   h.applyStatus("poison",4,2);
+  h.applyStatus("poison",4,2); // repeated viper bites refresh, do not escalate to 3 HP/s
   assert.equal(h.debuffs.poison,4);
   const start=h.hp;
   for(let i=0;i<65;i++)h.update(1/60,{x:0,y:0},open);
@@ -132,4 +133,20 @@ test("goblin does not throw sand before its HP drops below 35%",()=>{
     if(goblin.casting>0){casting=true;break;}
   }
   assert.equal(casting,true);
+});
+
+test("rat infection applies with deterministic approximately 10% chance per real hit",()=>{
+  const count=(seed:string):number=>{
+    let infected=0;
+    for(let i=0;i<256;i++){
+      const rat=new RegionalMonster(seed+":"+i,"dune-rat",0,0);
+      const hero=new Player();hero.x=20;hero.y=0;
+      rat.update(1/60,hero,open);
+      if(hero.debuffs.infection>0)infected++;
+    }
+    return infected;
+  };
+  const a=count("rats"),b=count("rats");
+  assert.equal(a,b);
+  assert.ok(a>=12&&a<=44,"infection must be rare but present, not a guaranteed status");
 });
