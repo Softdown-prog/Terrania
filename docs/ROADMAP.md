@@ -2,7 +2,7 @@
 
 > **Direção atual:** RPG 2D de fantasia medieval inspirado nas *mecânicas* dos MMORPGs clássicos (sensação de Tibia antigo), mas com mundo, nomes, arte, interface e código próprios. Não reproduzir ativos ou conteúdo de terceiros.
 >
-> **Status:** caminhada por tiles e combate por alvo integrados à entrada normal do solo e às salas Node com suporte. O plano anterior foi preservado em [ROADMAP_ANTERIOR_20261104.md](ROADMAP_ANTERIOR_20261104.md).
+> **Status (2026-11-08):** o jogo é **solo e offline**; as salas online foram retiradas ([ADR 0012](adr/0012-retirada-do-multiplayer.md)). Os itens abaixo marcados `[x]` que citam *sala Node*, *snapshots* ou *online* registram o que existiu e foi removido; eles não descrevem o produto atual. Caminhada por tiles e combate por alvo seguem integrados à entrada do solo. O plano anterior foi preservado em [ROADMAP_ANTERIOR_20261104.md](ROADMAP_ANTERIOR_20261104.md).
 
 ## Organização que acompanha cada etapa
 
@@ -63,7 +63,7 @@ Checklist de aceite do Cavaleiro 1.0:
 - [x] Primeira economia de alimentos, saciedade e cura ao longo do tempo; integração com Lina, solo e sala Node
 - [ ] Jogar e corrigir poses em todas as direções, colisões visuais, ataques, hit feedback e troca de equipamento, no desktop e Android
 - [ ] Balancear tempo de matar Slimes, dano recebido, consumo de comida/poções, custo e tempo de recuperação
-- [ ] Exercitar morte, retorno, salvamento e sincronização online em sessão real; tratar desconexão e falhas no consumo
+- [~] **Obsoleto (modo online retirado, ADR 0012):** Exercitar morte, retorno, salvamento e sincronização online em sessão real; tratar desconexão e falhas no consumo
 - [ ] Validar usabilidade e desempenho no celular e corrigir defeitos bloqueantes antes de marcar a 1.0 como concluída
 
 A implementação dos itens marcados não certifica o lançamento, apenas indica mecanismos presentes. Não adicionar vocações, montarias ou mecânicas especulativas até a avaliação do cavaleiro.
@@ -87,7 +87,7 @@ A implementação dos itens marcados não certifica o lançamento, apenas indica
 
 - [x] Atlas na terceira aba do inventário, oculto durante o jogo, com mundo amostrado completo (limite técnico de 62.500×62.500 tiles), nove setores cartográficos, classificação amostrada de terreno e visão detalhada de 128 tiles
 - [x] Marcadores dos jogadores online próximos provenientes de snapshots, limpos após desconexão
-- [ ] Avaliar legibilidade do atlas dentro do inventário no Android físico e em uma sala com vários jogadores
+- [ ] Avaliar legibilidade do atlas dentro do inventário no Android físico (a parte sobre sala com vários jogadores ficou obsoleta com o ADR 0012)
 - [x] Patrulha do QA-BOT-001 contra movimentação, colisões e snapshots da sala Node em diferentes regiões, com relatório reproduzível e sem acessar VPS em produção
 - [ ] Ampliar a patrulha para WebSocket real com dois clientes e medir reconexões, latência e divergência sob pacotes atrasados
 
@@ -96,4 +96,4 @@ A implementação dos itens marcados não certifica o lançamento, apenas indica
 - [x] Confirmar que a sala Node ressuscita automaticamente na origem após morte e cria novo visitante após reconexão.
 - [x] Exibir ao jogador o motivo do respawn comprovado pela sala Node, diferenciando uma nova sessão por reconexão sem inventar a causa da queda de rede.
 - [ ] Reproduzir/medir quedas de WebSocket ao atravessar chunks distantes no backend **efetivamente publicado**, inclusive Go se estiver ativo; não declarar a causa original resolvida por apenas exibir o aviso.
-- [ ] Avaliar persistência segura da posição ao reconectar, política de morte explícita e compatibilidade dos backends antes de alterar o protocolo ou o modelo temporário de sala.
+- [~] **Obsoleto (modo online retirado, ADR 0012):** Avaliar persistência segura da posição ao reconectar, política de morte explícita e compatibilidade dos backends antes de alterar o protocolo ou o modelo temporário de sala.

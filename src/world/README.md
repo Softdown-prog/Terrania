@@ -1,5 +1,7 @@
 # Mundo procedural
 
+> **Atualização 2026-11-08:** o modo online/sala Node foi retirado ([ADR 0012](../../docs/adr/0012-retirada-do-multiplayer.md)). Trechos abaixo sobre sala, snapshot, `online` ou servidor autoritativo descrevem o que existiu e foi removido.
+
 **Papel:** Terreno por seed, colisão, vila, marcos e NPCs.
 
 A regra de progresso da missão da Aela fica em `aelaQuest.ts`. As falas da vila, o inventário solo e o HUD usam a mesma meta e a mesma condição de conclusão.

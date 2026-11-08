@@ -4,8 +4,8 @@ import { CanvasScene } from '../ui/CanvasScene.ts';
 import type { GameUi } from '../ui/GameUi.ts';
 
 /** Phaser owns the clock, scene, scaling and final rendering. Existing procedural
- * art paints a CanvasTexture; authoritative TS/Go simulation stays independent. */
-export function mountGame(parent: HTMLElement, ui: GameUi, multiplayerUrl: string): () => void {
+ * art paints a CanvasTexture; the TypeScript simulation stays independent and runs offline. */
+export function mountGame(parent: HTMLElement, ui: GameUi): () => void {
   let controller: Game | undefined;
   let disposed = false;
   const size = () => ({ width: Math.max(1, parent.clientWidth), height: Math.max(1, parent.clientHeight) });
@@ -26,7 +26,7 @@ export function mountGame(parent: HTMLElement, ui: GameUi, multiplayerUrl: strin
       this.game.canvas.id = 'game';
       this.game.canvas.tabIndex = 0;
       this.game.canvas.setAttribute('aria-label', 'Mundo de Terrania. Mova-se com WASD ou setas e ataque com Espaço ou J.');
-      controller = new Game(this.painter, ui, multiplayerUrl);
+      controller = new Game(this.painter, ui);
       this.scale.on(Phaser.Scale.Events.RESIZE, this.resize, this);
       this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
         this.scale.off(Phaser.Scale.Events.RESIZE, this.resize, this);

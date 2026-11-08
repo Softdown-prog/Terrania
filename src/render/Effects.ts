@@ -1,5 +1,4 @@
 import type { Player } from "../actors/Player.ts";
-import type { MobState } from "../shared/protocol.ts";
 import { clamp01 } from "./draw.ts";
 
 type Shape = "square" | "circle" | "spark" | "ring" | "puff";
@@ -109,7 +108,7 @@ export class Effects {
   update(
     dt: number,
     player: Player,
-    mobs: ReadonlyArray<Pick<MobState, "id" | "x" | "y" | "hp">>,
+    mobs: ReadonlyArray<{ id: string; x: number; y: number; hp: number }>,
   ): { hit: boolean; hurt: boolean } {
     let hit = false;
     const hurt = player.hp < this.hp;

@@ -1,34 +1,34 @@
 # Arquitetura técnica — Terrania: Origins
 
-O frontend é uma aplicação Angular 22 compilada em assets estáticos para o Worker Cloudflare. O Phaser 3.90 é carregado apenas ao abrir `/jogar/`. O backend autoritativo continua separado: Node em produção e infraestrutura Go de workers/gateway no mesmo repositório.
+O frontend é uma aplicação Angular 22 compilada em assets estáticos para o Worker Cloudflare. O Phaser 3.90 é carregado apenas ao abrir `/jogar/`. **O jogo é solo e offline** ([ADR 0010](adr/0010-solo-offline-e-mercado-online.md), [ADR 0012](adr/0012-retirada-do-multiplayer.md)): toda a simulação roda no navegador. O servidor Node só informa saúde, conta quem está jogando e serve o catálogo de itens (PostgreSQL). A infraestrutura Go/Rust no mesmo repositório é laboratório fora do produto.
 
 | Camada | Responsabilidade |
 | --- | --- |
 | `src/main.ts`, `src/app/routes.ts` | Bootstrap Angular, rotas e metadados |
-| `src/app/pages/`, `site-layout.*` | Site, navegação e convites de sala |
+| `src/app/pages/`, `site-layout.*` | Site e navegação |
 | `src/app/game-page.*`, `hud.service.ts` | HUD, opções, bolsa, ajuda e diálogos |
 | `src/ui/GameUi.ts` | Contrato da interface sem dependência Angular |
 | `src/game/PhaserGame.ts` | Cena Phaser, loop, textura, render final e resize |
 | `src/game/Game.ts` | Coordena controles, simulação, render procedural e rede |
 | `src/engine/`, `src/actors/`, `src/world/` | Regras e colisões independentes da interface |
 | `src/ui/CanvasScene.ts`, `src/render/` | Arte procedural desenhada na CanvasTexture do Phaser |
-| `src/net/MultiplayerClient.ts` | Conexão, snapshots e liberação ao sair |
+| `src/net/` | Contador de quem está jogando e catálogo de itens (HTTP) |
 | `src/net/presence.ts`, `src/app/presence.service.ts` | Protocolo do contador e atualização de 5 segundos |
-| `server/src/` | Salas, HTTP, WebSocket, heartbeat e presença Node |
-| `server-go/cmd/terrania/` | Worker Go autoritativo e presença por worker |
-| `server-go/cmd/gateway/`, `server-go/presence/` | Roteamento e soma das presenças reais dos workers |
+| `server/src/` | HTTP: saúde, presença por sinal anônimo e catálogo (sem salas nem WebSocket) |
+| `server-go/cmd/terrania/` | Laboratório: worker Go (fora do produto) |
+| `server-go/cmd/gateway/`, `server-go/presence/` | Laboratório: roteamento e presença do cluster Go (fora do produto) |
 
-A simulação não importa Angular nem Phaser. O servidor continua compartilhando regras TypeScript, ou verificando paridade com Go. Não foram introduzidas regras de física Arcade: isso alteraria a paridade do movimento/combate já existente.
+A simulação não importa Angular nem Phaser. O servidor reutiliza regras TypeScript apenas para derivar o catálogo de itens; a paridade com Go é de laboratório. Não foram introduzidas regras de física Arcade: isso alteraria a paridade do movimento/combate já existente.
 
 O Phaser é o dono do loop: uma Scene chama `Game.update(delta)` e apresenta uma CanvasTexture com a arte procedural. Não existe um segundo `requestAnimationFrame` de gameplay. Essa adaptação preserva a arte e os saves; não significa que todos os desenhistas Canvas foram reescritos como sprites Phaser, nem pressupõe ganho de FPS.
 
-Os tiles continuam 32×32, chunks 16×16 e cache visual limitado a 24 chunks. A simulação local mantém passo fixo de 1/60 s e o protocolo online continua na versão 3. Ao sair da rota, são liberados Phaser, WebSocket, temporizadores de reconexão, controles e observadores.
+Os tiles continuam 32×32, chunks 16×16 e cache visual limitado a 24 chunks. A simulação local mantém passo fixo de 1/60 s Ao sair da rota, são liberados Phaser, o sinal de presença, controles e observadores.
 
-A sala Node mantém o inventário online e valida coleta, troca e cura. O navegador apresenta a bolsa e os itens recebidos em estado privado. O [ADR 0007](adr/0007-inventario-da-sala.md) descreve a negociação e o ciclo dos itens.
+A bolsa, a coleta, a troca com Lina e Toren e a cura são regras de `src/engine/Inventory.ts`, aplicadas na simulação local; o save fica em `localStorage`. O [ADR 0007](adr/0007-inventario-da-sala.md) descreve o desenho original da bolsa por sala, hoje histórico.
 
 O site usa renderização Angular no cliente. O pós-build emite dez entradas HTML com títulos e descrições próprios, base `/` e a mesma aplicação; não é SSR nem prerender do conteúdo das páginas. Pré-visualizações de mundo são estáticas e liberam seus recursos ao trocar de rota.
 
-A contagem online usa conexões WebSocket, pois ainda não existem contas para deduplicar pessoas em várias abas. Solo e visitantes do site não entram na contagem. No Go, reservas do lobby não são usadas como jogadores confirmados; se um worker falhar, o total é declarado indisponível.
+A contagem de pessoas jogando vem de um sinal anônimo enviado a cada 20 s por cada aba com o jogo aberto e visível (`POST /presence/heartbeat`; id aleatório só em memória; o servidor o guarda ~45 s, no máximo 5.000). Visitantes do site que não abriram o jogo não entram. É um contador informativo, não uma estimativa de pessoas distintas nem prova de capacidade; se o servidor falhar, o total é declarado indisponível.
 
 Os Dockerfiles são só para os backends. O frontend não exige Docker. Nunca colocar segredos nas variáveis públicas `VITE_*`.
 

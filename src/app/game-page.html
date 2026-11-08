@@ -25,7 +25,7 @@
           <div class="quick-potion-actions">
             <small id="nutritionStatus">Comida: {{ hud.nutrition().reserve }} HP</small>
             <button id="quickPotion" type="button" (click)="hud.usePotion()"
-              [disabled]="!hud.inventoryAvailable() || hud.inventoryPending() || hud.potions() === 0 || hud.hp() <= 0 || hud.hp() >= hud.maxHp()"
+              [disabled]="hud.potions() === 0 || hud.hp() <= 0 || hud.hp() >= hud.maxHp()"
               [attr.aria-label]="'Usar poção de cura; disponíveis: ' + hud.potions()">
               <app-item-icon class="quick-potion-icon" name="potion" /> Poção ({{ hud.potions() }})
             </button>
@@ -98,12 +98,12 @@
 
       <div class="bottom-info">
         <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
-        ><small id="saveMode">{{ hud.online() ? "Sala experimental · progresso temporário" : "Aventura local · progresso neste navegador" }}</small>
+        ><small id="saveMode">Aventura local · progresso neste navegador</small>
       </div>
       <p id="gameNotice" role="status">{{ notice() || hud.travelNotice() }}
         @if (hud.travelNotice()) {
           <button type="button" id="dismissTravelNotice" (click)="hud.dismissTravelNotice()"
-            aria-label="Fechar aviso de retorno">Fechar</button>
+            aria-label="Fechar aviso">Fechar</button>
         }
       </p>
       @if (hud.targetCombat()) {
@@ -142,24 +142,17 @@
       </dialog>
       <dialog id="playersDialog" #playersDialog (close)="closed()" aria-labelledby="playersTitle">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar jogadores online">×</button>
-        <span class="dialog-kicker">MULTIPLAYER · INFORMAÇÕES DO SERVIDOR</span>
+        <span class="dialog-kicker">COMUNIDADE · QUEM ESTÁ JOGANDO</span>
         <h1 id="playersTitle">Jogadores online</h1>
-        <aside class="connection">
-          <i id="connectionDot" [attr.data-online]="hud.online()" aria-hidden="true"></i
-          ><span
-            ><b id="multiplayerStatus" role="status">{{ hud.status() }}</b
-            ><small id="playerCount">{{ hud.online() ? hud.nearby() + " aventureiro(s) por perto" : "Modo solo" }}</small></span
-          >
-        </aside>
         @if (playersDialogOpen()) {
           <app-online-players class="players-dialog-presence" />
         }
-        <p class="dialog-note">Mostramos conexões ativas informadas pelo servidor, não uma estimativa. A contagem é atualizada apenas enquanto esta janela estiver aberta.</p>
+        <p class="dialog-note">O jogo é solo e roda no seu navegador: ninguém joga junto nem vê você. O número mostra quantas pessoas estão jogando agora, informado pelo servidor, e só é atualizado enquanto esta janela estiver aberta.</p>
         <button class="primary-button" (click)="close($event)" type="button">Voltar à aventura</button>
       </dialog>
       <dialog id="inventoryDialog" #inventoryDialog (close)="closed()" aria-labelledby="inventoryTitle" [class.has-equipment]="hud.gear() !== null">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar inventário">×</button>
-        <span class="dialog-kicker">{{ hud.online() ? "INVENTÁRIO · SALA ONLINE" : "INVENTÁRIO · AVENTURA SOLO" }}</span>
+        <span class="dialog-kicker">INVENTÁRIO · AVENTURA SOLO</span>
         <h1 id="inventoryTitle">Inventário do cavaleiro</h1>
         <div class="inventory-overview">
           <span>Nível {{ hud.progression()?.level ?? 1 }}</span>
@@ -212,7 +205,7 @@
                   <p>{{ current.damage }} de dano · {{ current.interval }} s entre golpes · {{ current.windup * 1000 }} ms de preparo</p>
                   @if (loadout.forged) {
                     @let other = loadout.equipped === 'forge' ? 'starter' : 'forge';
-                    <button id="equipOtherWeapon" [disabled]="hud.inventoryPending()" (click)="hud.equipWeapon(other)"
+                    <button id="equipOtherWeapon" (click)="hud.equipWeapon(other)"
                       class="secondary-button" type="button">Equipar {{ hud.weapons[other].name }}
                       ({{ hud.weapons[other].damage }} dano)</button>
                   } @else { <p class="dialog-note">A espada forjada pode ser adquirida com Toren.</p> }
@@ -223,14 +216,14 @@
                     <strong>{{ gear.name }}</strong>
                     <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto inicial" }}</p>
                     @if (hud.gear() !== null) {
-                      <button type="button" class="secondary-button" [disabled]="hud.inventoryPending()"
+                      <button type="button" class="secondary-button"
                         (click)="hud.equipGear(id)">{{ equipped ? 'Retirar' : 'Equipar' }} {{ gear.name }}</button>
                     }
                   }
                 }
               </div>
             } @else {
-              <p class="dialog-note">O equipamento ficará disponível quando a sala confirmar os recursos do personagem.</p>
+              <p class="dialog-note">O equipamento ainda não foi carregado. Feche e abra o inventário.</p>
             }
           </section>
           <section class="inventory-panel bag-panel" [class.mobile-hidden]="hud.inventoryTab() !== 'bag'" aria-labelledby="suppliesTitle">
@@ -320,7 +313,7 @@
                   </div>
                 </div>
               </div>
-              <p class="dialog-note">Aperte E perto da escada ou caminhe até ela para voltar à superfície. Esta etapa funciona na aventura solo; salas online ainda não permitem explorar subsolos.</p>
+              <p class="dialog-note">Aperte E perto da escada ou caminhe até ela para voltar à superfície.</p>
             </section>
           } @else {
           <section id="inventoryMapPanel" class="world-atlas-panel" aria-label="Atlas de Terrania">
@@ -422,10 +415,10 @@
             ></span
           ></label
         >
-        <button id="newWorld" [disabled]="hud.online()" (click)="open(worldDialog)" class="secondary-button" type="button">
+        <button id="newWorld" (click)="open(worldDialog)" class="secondary-button" type="button">
           Gerar outro mundo local
         </button>
-        <p id="menuMode" class="dialog-note">{{ hud.online() ? "Você continua na sala online com o movimento desativado enquanto o menu está aberto." : "A aventura local fica pausada enquanto este menu está aberto." }}</p>
+        <p id="menuMode" class="dialog-note">A aventura local fica pausada enquanto este menu está aberto.</p>
         <button class="primary-button" (click)="close($event)" type="button">
           Voltar à aventura
         </button>
@@ -454,20 +447,19 @@
           </div>
           <div>
             <dt>No celular</dt>
-            <dd>Arraste o joystick para caminhar ou toque em um ponto livre do cenário para caminhar automaticamente, no modo solo ou online. No multiplayer, o servidor continua validando o movimento. Joystick e teclado cancelam a rota.</dd>
+            <dd>Arraste o joystick para caminhar ou toque em um ponto livre do cenário para caminhar automaticamente. Joystick e teclado cancelam a rota.</dd>
           </div>
           <div>
             <dt>Bolsa e itens</dt>
-            <dd>Recolha o gel dos slimes e leve à Lina, perto da hospedaria, para trocar por poções. No solo, Aela também recompensa quem derrota cinco slimes. No online, a bolsa vale durante a sessão da sala.</dd>
+            <dd>Recolha o gel dos slimes e leve à Lina, perto da hospedaria, para trocar por poções. Aela também recompensa quem derrota cinco slimes.</dd>
           </div>
           <div>
             <dt>Vida zerada</dt>
-            <dd>{{ hud.online() ? "Você retorna automaticamente à clareira com a vida cheia." : "Escolha retornar à Vila da Travessia com a vida cheia. O XP, os itens e a missão são preservados." }}</dd>
+            <dd>Escolha retornar à Vila da Travessia com a vida cheia. O XP, os itens e a missão são preservados.</dd>
           </div>
         </dl>
         <p class="dialog-note">
-          O modo solo usa progresso local. As salas online são experimentais e
-          temporárias.
+          O progresso é local: fica salvo neste navegador.
         </p>
         <button class="primary-button" (click)="close($event)" type="button">
           Entendi, vamos explorar
@@ -478,20 +470,20 @@
         <span class="dialog-kicker" id="npcRole">{{ hud.npcRole() }}</span>
         <h1 id="npcName">{{ hud.npcName() }}</h1>
         <p id="npcSpeech" aria-live="polite">{{ hud.npcSpeech() }}</p>
-        @if (hud.inventoryAvailable() && hud.npcOffer(); as offer) {
+        @if (hud.npcOffer(); as offer) {
           @if (offer.item === 'potion') {
             <p class="dialog-note">Gel {{ hud.gel() }} · Poções {{ hud.potions() }}</p>
-            <button [disabled]="hud.inventoryPending()" (click)="hud.tradePotion()" class="secondary-button" type="button">Trocar {{ offer.price }} de gel por 1 poção</button>
+            <button (click)="hud.tradePotion()" class="secondary-button" type="button">Trocar {{ offer.price }} de gel por 1 poção</button>
             <p class="dialog-note">Alimentos para recuperação gradual:</p>
             @for (id of hud.foodIds; track id) {
               @let item = hud.foodCatalog[id];
               <button [attr.id]="'buy-' + id" type="button" class="secondary-button"
-                [disabled]="hud.inventoryPending() || hud.gel() < item.gelPrice || hud.food()[id] >= 99"
+                [disabled]="hud.gel() < item.gelPrice || hud.food()[id] >= 99"
                 (click)="hud.tradeFood(id)">Comprar {{ item.name }} · {{ item.gelPrice }} gel</button>
             }
           } @else {
             <p class="dialog-note">Gel {{ hud.gel() }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes · {{ hud.weapons.forge.windup * 1000 }} ms até o impacto</p>
-            <button [disabled]="hud.inventoryPending() || hud.loadout()?.forged" (click)="hud.buySword()" class="secondary-button" type="button">{{ hud.loadout()?.forged ? "Espada já adquirida" : "Comprar " + hud.weapons.forge.name + " por " + offer.price + " de gel" }}</button>
+            <button [disabled]="hud.loadout()?.forged" (click)="hud.buySword()" class="secondary-button" type="button">{{ hud.loadout()?.forged ? "Espada já adquirida" : "Comprar " + hud.weapons.forge.name + " por " + offer.price + " de gel" }}</button>
           }
           <p id="npcTradeFeedback" role="status">{{ hud.npcTradeFeedback() }}</p>
         }
@@ -503,7 +495,6 @@
         <h1 id="worldTitle">Gerar outro mundo?</h1>
         <p>
           O mundo local atual será substituído, incluindo sua posição e missão.
-          Essa ação não altera uma sala online.
         </p>
         <div class="dialog-actions">
           <button class="secondary-button" (click)="close($event)" type="button">

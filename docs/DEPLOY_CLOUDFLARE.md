@@ -19,8 +19,10 @@ O frontend é estático e funciona offline sem backend. Não precisa de Function
 As rotas existentes são preservadas: `workers_dev: false`, sem `route`/`routes`.
 Variáveis existentes são preservadas com `keep_vars: true`.
 
-## Após disponibilizar WebSocket na VPS
-Definir uma variável de build **pública** no GitHub Actions:
+## Endereço do servidor (contador de pessoas jogando)
+> **2026-11-08:** não há mais WebSocket; o jogo é solo ([ADR 0012](adr/0012-retirada-do-multiplayer.md)). O nome `VITE_MULTIPLAYER_URL` é histórico: o site apenas o usa para derivar o endereço HTTP do servidor (`wss://…/ws` → `https://…/presence`). Mantenha o valor atual; ele não precisa mudar.
+
+A variável de build **pública** no GitHub Actions continua assim:
 
 `VITE_MULTIPLAYER_URL=wss://SEU-SUBDOMINIO-REAL/ws`
 
@@ -57,7 +59,7 @@ O deploy **falha antes de publicar** se não conseguir confirmar pela API que
 `rpg.analysepro.com` pertence ao Worker configurado em produção. Não cria Pages,
 não altera DNS e não publica em um projeto de outro site.
 
-A variável pública `TERRANIA_MULTIPLAYER_URL` é opcional. O padrão é `wss://api-rpg.analysepro.com/ws`, endereço de multiplayer verificado no script de smoke. Se o endpoint mudar, atualize essa variável antes de publicar.
+A variável pública `TERRANIA_MULTIPLAYER_URL` é opcional. O padrão é `wss://api-rpg.analysepro.com/ws`, endereço histórico do servidor, verificado no smoke público (de onde o site deriva o endereço HTTP). Se o endpoint mudar, atualize essa variável antes de publicar.
 
 Após o upload, o workflow verifica `release.json` com o SHA esperado, a página
 inicial, o guia e os arquivos CSS no domínio público, incluindo a paleta

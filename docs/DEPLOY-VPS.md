@@ -1,4 +1,7 @@
-# Multiplayer: GitHub → VPS com revisão comprovada
+# Servidor: GitHub → VPS com revisão comprovada
+
+> **2026-11-08:** o modo multiplayer foi retirado ([ADR 0012](adr/0012-retirada-do-multiplayer.md)). O container continua se chamando `terrania-multiplayer` (nome histórico da configuração da VPS), mas só atende HTTP. A verificação pós-deploy deixou de testar "dois clientes WSS" e passou a validar saúde com a revisão esperada, presença e o sinal anônimo (`server/scripts/public-smoke.mjs`).
+
 
 Antes desta mudança existia CI Docker, mas nenhum workflow que instalasse o multiplayer na VPS. O checkout do host estava em `d69dbd9...`; a imagem local não tinha SHA OCI. O frontend Worker Cloudflare é uma publicação separada.
 

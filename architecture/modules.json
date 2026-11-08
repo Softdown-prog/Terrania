@@ -123,20 +123,18 @@
     },
     {
       "id": "client-network",
-      "name": "Rede cliente e protocolo",
+      "name": "Rede cliente: presença e catálogo",
       "layer": "transport",
       "status": "active",
       "roots": [
-        "src/net",
-        "src/shared"
+        "src/net"
       ],
       "entrypoints": [
-        "src/net/MultiplayerClient.ts",
-        "src/net/SnapshotTimeline.ts",
-        "src/shared/protocol.ts"
+        "src/net/presence.ts",
+        "src/net/itemCatalog.ts"
       ],
       "doc": "src/net/README.md",
-      "description": "Conexão WebSocket e contrato de mensagens; servidor é autoridade online."
+      "description": "Consultas HTTP do site: contador de quem está jogando e catálogo de itens. O jogo é solo e offline; não há conexão de jogo."
     },
     {
       "id": "local-save",
@@ -178,12 +176,12 @@
       ],
       "entrypoints": [
         "server/src/main.ts",
-        "server/src/Room.ts",
         "server/src/db/database.ts",
-        "server/src/db/migrate.ts"
+        "server/src/db/migrate.ts",
+        "server/src/presence.ts"
       ],
       "doc": "server/README.md",
-      "description": "Backend Node, presença e catálogo PostgreSQL isolado; salas legadas preservadas. Escrita do mercado depende de identidade autenticada, não do save local."
+      "description": "Serviço HTTP: contador de quem está jogando, catálogo de itens (PostgreSQL) e saúde. Sem salas nem WebSocket; o jogo é solo e offline."
     },
     {
       "id": "go-engine",

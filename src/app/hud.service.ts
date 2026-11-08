@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import type { CaveMapState, GameUi, HeroHudState, MapPlayer, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
+import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
 import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
@@ -37,10 +37,7 @@ type InventoryTab = 'bag' | 'equipment' | 'map';
 
 @Injectable()
 export class HudService implements GameUi {
-  readonly status = signal('Preparando aventura…');
   readonly travelNotice = signal('');
-  readonly online = signal(false);
-  readonly nearby = signal(0);
   readonly targetCombat = signal(false);
   readonly combatTarget = signal<string | null>(null);
   readonly battleCreatures = signal<readonly BattleCreature[]>([]);
@@ -57,9 +54,6 @@ export class HudService implements GameUi {
   readonly questPercent = signal(0);
   readonly coords = signal('X 0 · Y 0');
   readonly mapTile = signal({ x: 0, y: 0 }, { equal: (a, b) => a.x === b.x && a.y === b.y });
-  readonly mapPlayers = signal<readonly MapPlayer[]>([], { equal: (a, b) =>
-    a.length === b.length && a.every((p, i) => p.id === b[i]?.id &&
-      p.tileX === b[i]?.tileX && p.tileY === b[i]?.tileY) });
   readonly seed = signal(842136);
   readonly cave = signal<CaveMapState | null>(null, {equal:(a,b)=> a===b ||
     (a!==null && b!==null && a.floor===b.floor && a.tileX===b.tileX && a.tileY===b.tileY)});
@@ -69,8 +63,6 @@ export class HudService implements GameUi {
   readonly foodCatalog = FOODS;
   readonly food = signal<FoodCounts>(emptyFoodCounts());
   readonly nutrition = signal<NutritionState>({ reserve: 0, elapsed: 0, cooldown: 0 });
-  readonly inventoryAvailable = signal(true);
-  readonly inventoryPending = signal(false);
   readonly inventoryFeedback = signal('');
   readonly quickPotionFeedback = signal('');
   readonly weapons = WEAPONS;
@@ -131,7 +123,7 @@ export class HudService implements GameUi {
     this.visibleBackpackItems().find(item => item.id === this.selectedBagId()) ?? null);
   readonly canUseSelectedBagItem = computed(() => {
     const item = this.selectedBagItem();
-    if (!item || !this.inventoryAvailable() || this.inventoryPending() || this.hp() <= 0) return false;
+    if (!item || this.hp() <= 0) return false;
     if (item.kind === 'material') return false;
     if (item.kind === 'potion') return item.quantity > 0 && this.hp() < this.maxHp();
     if (item.kind === 'food') {
@@ -260,10 +252,8 @@ export class HudService implements GameUi {
     return id ? GEAR[id].name : '';
   }
   respawn(): void { this.respawnCallback(); }
-  updateInventory(gel: number, potions: number, available: boolean, pending: boolean, food: FoodCounts): void {
+  updateInventory(gel: number, potions: number, food: FoodCounts): void {
     this.gel.set(gel); this.potions.set(potions); this.food.set(food);
-    this.inventoryAvailable.set(available);
-    this.inventoryPending.set(pending);
   }
   updateLoadout(loadout: WeaponLoadout | null): void { this.loadout.set(loadout); }
   updateGear(gear: GearState | null): void { this.gear.set(gear); }
@@ -271,23 +261,10 @@ export class HudService implements GameUi {
     (section === 'bag' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
   }
   setQuickPotionFeedback(message: string): void { this.quickPotionFeedback.set(message); }
-  setStatus(status: string): void { this.status.set(status); }
   setTravelNotice(message: string): void { this.travelNotice.set(message); }
   dismissTravelNotice(): void { this.travelNotice.set(''); }
   setTargetCombat(enabled: boolean): void { this.targetCombat.set(enabled); }
   setCombatTarget(label: string | null): void { this.combatTarget.set(label); }
-  setOnline(online: boolean): void {
-    this.online.set(online);
-    this.mapPlayers.set([]);
-    this.inventoryFeedback.set('');
-    this.quickPotionFeedback.set('');
-    this.npcTradeFeedback.set('');
-    this.npcOffer.set(null);
-    this.selectedSlot.set('weapon');
-    this.selectedBagId.set('potion');
-    this.inventoryTab.set('bag');
-    this.bagFilter.set('all');
-  }
   setSeed(seed: number): void { this.seed.set(seed); }
   setCave(location:CaveMapState|null):void {
     this.cave.set(location);
@@ -297,8 +274,6 @@ export class HudService implements GameUi {
       this.questProgress.set("Andar −1 · retorne pela escada");
     }
   }
-  setMapPlayers(players: readonly MapPlayer[]): void { this.mapPlayers.set(players); }
-  setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }
   setNearbyAction(action: NearbyAction | null): void {
     this.talkVisible.set(action !== null);
     if (action) this.talkLabel.set(`${ACTION_LABELS[action]} (E)`);

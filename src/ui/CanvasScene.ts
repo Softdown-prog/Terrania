@@ -3,7 +3,6 @@ import type { BattleViewport } from '../engine/ClassicBattleList.ts';
 import type { Slime } from '../actors/Slime.ts';
 import type { GearState } from '../engine/Equipment.ts';
 import type { WeaponId } from '../engine/Weapons.ts';
-import type { HeroState, MobState } from '../shared/protocol.ts';
 import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
 import { NPCS, NPC_TALK_RANGE } from '../world/npcs.ts';
@@ -65,8 +64,8 @@ function renderGel(ctx: CanvasRenderingContext2D, x: number, y: number, time: nu
 /** Shared by the game and honest, static world previews on the website. */
 export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRenderer,
   cameraX: number, cameraY: number, width: number, height: number,
-  player: HeroVisual & { x: number; y: number }, mobs: ReadonlyArray<Slime | MobState>,
-  remotePlayers: ReadonlyArray<HeroState> = [], selfId: string | null = null, time = 0, animated = false,
+  player: HeroVisual & { x: number; y: number }, mobs: ReadonlyArray<Slime>,
+  time = 0, animated = false,
   drops: ReadonlyArray<LootDrop> = [], effects?: Effects,
   playerGear?: GearState, playerWeapon?: WeaponId): void {
   ctx.fillStyle = '#506f50'; ctx.fillRect(0, 0, width, height);
@@ -107,14 +106,6 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
         Math.abs(drop.y - cameraY) > height / 2 + 18) continue;
     actors.push({ y: drop.y, draw: () =>
       renderGel(ctx, drop.x - left, drop.y - top, time) });
-  }
-  for (const remote of remotePlayers) {
-    if (remote.id === selfId || Math.abs(remote.x - cameraX) > width / 2 + 40 || Math.abs(remote.y - cameraY) > height / 2 + 50) continue;
-    actors.push({ y: remote.y, draw: () => {
-      renderHero(ctx, remote, remote.x - left, remote.y - top, time);
-      ctx.textAlign = 'center'; ctx.font = '600 9px system-ui'; ctx.fillStyle = '#fff1cb'; ctx.strokeStyle = '#15352c'; ctx.lineWidth = 3;
-      ctx.strokeText(remote.name, remote.x - left, remote.y - top - 50); ctx.fillText(remote.name, remote.x - left, remote.y - top - 50);
-    } });
   }
   actors.push({ y: player.y, draw: () => renderHero(ctx,
     { ...player, gear: playerGear, equippedWeapon: playerWeapon }, player.x - left, player.y - top, time) });
@@ -251,14 +242,14 @@ export class CanvasScene {
     if (destination) drawTarget(this.ctx, destination, time);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
   }
-  render(world: WorldRenderer, camera: Camera, player: Player, mobs: ReadonlyArray<Slime | MobState>,
-    remotePlayers: ReadonlyArray<HeroState>, selfId: string | null, time: number, effects: Effects,
+  render(world: WorldRenderer, camera: Camera, player: Player, mobs: ReadonlyArray<Slime>,
+    time: number, effects: Effects,
     destination: Point | null = null, drops: ReadonlyArray<LootDrop> = [],
     combatTargetId: string | null = null, playerGear?: GearState,
     playerWeapon?: WeaponId): void {
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale, 0, 0);
-    drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, remotePlayers, selfId, time, effects.enabled, drops, effects, playerGear, playerWeapon);
+    drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, time, effects.enabled, drops, effects, playerGear, playerWeapon);
     // Original Terrania visual: um anel dourado procedural, nunca arte copiada.
     if (combatTargetId) {
       const target = mobs.find(mob => mob.id === combatTargetId);

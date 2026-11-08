@@ -4,58 +4,24 @@
         ><span class="eyebrow">COMUNIDADE / NO MESMO CAMINHO</span>
         <h1>Uma aventura cresce<br />com quem <em>participa.</em></h1>
         <p>
-          Explore a alfa, convide alguém para experimentar uma sala e conte o
-          que encontrou. Seus relatos ajudam a melhorar o mundo de Terrania.
+          Explore a alfa e conte o que encontrou. Seus relatos ajudam a
+          melhorar o mundo de Terrania.
         </p>
       </section>
-      <section id="salas" class="section-shell room-section">
+      <section id="jogo-solo" class="section-shell">
         <div>
-          <span class="eyebrow">ENCONTRE SUA COMPANHIA</span>
-          <h2>Prepare o próximo encontro.</h2>
+          <span class="eyebrow">UMA AVENTURA SÓ SUA</span>
+          <h2>Terrania é um jogo solo.</h2>
           <p>
-            Escolha um nome de sala e compartilhe o link com seus amigos. Todos
-            precisam abrir a mesma sala. A conexão depende da disponibilidade do
-            servidor; o estado real aparece dentro do jogo.
+            Você explora, luta e evolui no seu navegador, no seu ritmo. Ninguém
+            joga junto, não há chat e ninguém vê o seu personagem. O número
+            abaixo mostra apenas quantas pessoas estão jogando agora.
           </p>
           <p class="field-note">
-            Salas são públicas e experimentais. O nome da sala não é uma senha.
-            Não use dados pessoais nele.
+            Em preparação: a troca de itens raros entre jogadores, dentro do
+            site. Ainda não está disponível.
           </p>
         </div>
-        <form class="room-form" (submit)="joinRoom($event, roomInput)">
-          <label for="room">NOME DA SALA</label>
-          <div class="room-input">
-            <span aria-hidden="true">✧</span
-            ><input
-              id="room" #roomInput
-              name="room"
-              type="text"
-              pattern="[a-z0-9-]{1,24}"
-              minlength="1"
-              maxlength="24"
-              value="origins"
-              required
-              autocomplete="off"
-              aria-describedby="roomHelp"
-            />
-          </div>
-          <p id="roomHelp">
-            Use letras minúsculas, números e hífen. Até 24 caracteres.
-          </p>
-          <button class="button" type="submit">
-            Acessar sala <span aria-hidden="true">↗</span></button
-          ><button class="copy-button" id="copyRoom" (click)="copyRoom(roomInput)" type="button">
-            Copiar link para convidar
-          </button>
-          <p id="roomFeedback" class="room-feedback" role="status">{{ feedback() }}</p>
-          <div class="room-warning">
-            <i></i>
-            <p id="roomAvailability">
-              O status da conexão será mostrado no jogo. Sem conexão, você pode
-              continuar em modo solo.
-            </p>
-          </div>
-        </form>
       </section>
       <section class="section-shell participation">
         <div class="section-heading">
@@ -120,9 +86,9 @@
         <span class="eyebrow">BOA COMPANHIA FAZ A DIFERENÇA</span>
         <h2>Explore com respeito.</h2>
         <p>
-          Respeite outros jogadores. Não tente interromper salas, automatizar
-          abusos ou explorar falhas para prejudicar a experiência. Se encontrar
-          uma vulnerabilidade, evite publicar dados sensíveis no relato.
+          Respeite quem participa. Não tente automatizar abusos nem explorar
+          falhas para prejudicar a experiência. Se encontrar uma
+          vulnerabilidade, evite publicar dados sensíveis no relato.
         </p>
       </section>
       <section class="final-cta section-shell">

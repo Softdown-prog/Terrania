@@ -1,6 +1,6 @@
 # ADR 0010 — Jogo solo offline; online só para presença e troca de itens raros
 
-**Estado:** proposta aceita como direção (2026-11-08). Nada abaixo está implementado ainda.
+**Estado:** direção aceita (2026-11-08). A retirada do multiplayer foi aplicada no [ADR 0012](0012-retirada-do-multiplayer.md); itens raros, contas e o serviço de mercado **ainda não existem**.
 
 ## Decisão
 

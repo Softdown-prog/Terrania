@@ -8,11 +8,10 @@ VPS, navegador, WebSocket ou IA externa. Somente o motor de gameplay opera.
     npm run qa:bot > qa-bot-report.json
     npm run qa:bot -- --strict
 
-O relatório JSON v5 possui cinco cenários independentes:
+O relatório JSON v6 possui quatro cenários independentes (a patrulha da `Room` online foi retirada junto com o multiplayer; ver ADR 0012):
 - exploration: A*, diálogos, placas e interiores.
 - combat: cinco monstros de treino controlados, gel, poções e persistência.
 - natural: um slime criado pelo gerador natural, combate e coleta real.
-- onlinePatrol: o mesmo QA-BOT-001 usa agora as chamadas e a colisão autoritativas da `Room` Node; visita regiões em etapas de movimento por tile, confere snapshots privados, contabiliza passos bloqueados e divergências. O cenário é **local em memória**: cobre a lógica multiplayer, mas NÃO o transporte WebSocket nem uma VPS em produção. O transporte tem teste separado em `server/tests/integration.test.ts`.
 - expedition: **dois ou mais slimes naturais em uma única simulação**, sem
   spawn artificial e sem teleporte. Coleta IDs, posições iniciais/finais,
   ticks por encontro, regiões (chunks de 512 px) visitadas, tiles visitados,
@@ -26,5 +25,5 @@ O modo --strict reprova a Action com qualquer falha, mas preserva o
 artefato JSON para análise. O cenário é reproduzível com a mesma seed.
 
 Não confundir esse QA de gameplay com Playwright ou teste de servidor.
-**Não testa** classes, personagens persistidos em banco, renderização Phaser, Angular, mobile físico ou conexão WebSocket na patrulha local. A patrulha cobre regras de sala Node e snapshot/colisão, mas não autoriza declarações de teste em produção.
+**Não testa** classes, personagens persistidos em banco, renderização Phaser, Angular nem mobile físico, e não autoriza declarações de teste em produção.
 Nenhum código é executado automaticamente na VPS.

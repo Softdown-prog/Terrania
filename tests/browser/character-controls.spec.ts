@@ -74,84 +74,29 @@ test("uma virada curta durante o passo é executada uma vez no próximo tile", a
   expect(await savedPosition(page)).toEqual([16, -16]);
 });
 
-test("tecla curta online chega ao servidor mesmo com soltar antes do tick", async ({ page }) => {
-  let id = "", position = [NaN, NaN];
-  page.on("websocket", socket => socket.on("framereceived", ({ payload }) => {
-    const message = JSON.parse(String(payload));
-    if (message.type === "welcome") id = message.id;
-    if (message.type === "state") {
-      const self = message.players.find((hero: { id: string }) => hero.id === id);
-      if (self) position = [self.x, self.y];
-    }
-  }));
-  await freezeGame(page, "/jogar/?room=short-press");
-  await expect.poll(() => id.length).toBeGreaterThan(0);
-  await page.keyboard.press("d");
+test("ATACAR sem alvo mantém o destino escolhido no mapa", async ({ page }, info) => {
+  await page.addInitScript(() => localStorage.setItem("terrania-preferences-v1", JSON.stringify({
+    zoom: 1, effects: false, cameraMotion: false,
+  })));
+  await freezeGame(page, "/jogar/?modo=solo");
+  const canvas = page.locator("canvas#game");
+  const size = (await canvas.boundingBox())!;
+  const position = { x: size.width / 2 + 128, y: size.height / 2 };
+  const attack = page.locator("#attack");
+  const tap = info.project.name === "android";
+  if (tap) await canvas.tap({ position }); else await canvas.click({ position });
   await page.clock.runFor(160);
-  await expect.poll(() => position).toEqual([48, 16]);
-  // The real server keeps ticking while the browser clock is paused. Advance
-  // presentation frames until its latest snapshot is visible, without assuming
-  // that a single fixed advance already contained the asynchronous packet.
+  await expect(page.locator("#coords")).toHaveText("X 1 · Y 0");
+  if (tap) await attack.tap(); else await page.keyboard.press("Space");
+  await page.clock.runFor(80);
   await expect.poll(async () => {
-    await page.clock.runFor(64);
-    return page.locator("#coords").textContent();
-  }).toBe("X 1 · Y 0");
-  await expect(page.locator("#multiplayerStatus")).toContainText("Online");
-});
-
-for (const mode of ["solo", "Node"] as const) {
-  test(`ATACAR sem alvo mantém o destino escolhido no mapa (${mode})`, async ({ page }, info) => {
-    let activeWalk = false;
-    let attackedDuringWalk = false;
-    let cancelledWalk = false;
-    page.on("websocket", socket => {
-      socket.on("framesent", ({ payload }) => {
-        const message = JSON.parse(String(payload));
-        if (message.type === "input" && message.attack) attackedDuringWalk = activeWalk;
-        if (message.type === "walk" && message.target === null) cancelledWalk = true;
-      });
-      socket.on("framereceived", ({ payload }) => {
-        const message = JSON.parse(String(payload));
-        if (message.type === "state") activeWalk = message.walkTarget != null;
-      });
-    });
-    await page.addInitScript(() => localStorage.setItem("terrania-preferences-v1", JSON.stringify({
-      zoom: 1, effects: false, cameraMotion: false,
-    })));
-    await freezeGame(page, mode === "solo" ? "/jogar/?modo=solo" : "/jogar/?room=origins");
-    if (mode === "Node") await expect(page.locator("#multiplayerStatus")).toContainText("Online");
-    const canvas = page.locator("canvas#game");
-    const size = (await canvas.boundingBox())!;
-    const position = { x: size.width / 2 + 128, y: size.height / 2 };
-    const attack = page.locator("#attack");
-    const tap = info.project.name === "android";
-    if (tap) await canvas.tap({ position }); else await canvas.click({ position });
-    if (mode === "Node") {
-      await page.clock.runFor(80);
-      // The server ticks independently of the browser clock. Wait for its route
-      // acknowledgement instead of polling for a single tile in the HUD.
-      await expect.poll(() => activeWalk, { intervals: [40] }).toBe(true);
-    } else {
-      await page.clock.runFor(160);
-      await expect(page.locator("#coords")).toHaveText("X 1 · Y 0");
-    }
-    if (tap) await attack.tap(); else await page.keyboard.press("Space");
     await page.clock.runFor(80);
-    if (mode === "Node") {
-      await expect.poll(() => attackedDuringWalk).toBe(true);
-      expect(cancelledWalk).toBe(false);
-    }
-    await expect.poll(async () => {
-      await page.clock.runFor(80);
-      return page.locator("#coords").textContent();
-    }, { intervals: [80], timeout: 5000 }).toBe("X 4 · Y 0");
-    await expect(page.locator("#classicTarget")).toHaveCount(0);
-    if (mode === "solo") {
-      await page.clock.runFor(300);
-      expect(await savedPosition(page)).toEqual([144, 16]);
-    }
-  });
-}
+    return page.locator("#coords").textContent();
+  }, { intervals: [80], timeout: 5000 }).toBe("X 4 · Y 0");
+  await expect(page.locator("#classicTarget")).toHaveCount(0);
+  await page.clock.runFor(300);
+  expect(await savedPosition(page)).toEqual([144, 16]);
+});
 
 test("dois dedos caminham e atacam no solo normal sem prender o joystick", async ({ page, context }) => {
   const errors: string[] = [];
@@ -272,27 +217,4 @@ test("cancelar o alvo com ATACAR segurado exige um novo acionamento", async ({ p
   } finally {
     await touch?.detach();
   }
-});
-
-test("segurar ATACAR envia uma seleção por acionamento à sala Node", async ({ page }) => {
-  const attacks: boolean[] = [];
-  page.on("websocket", socket => socket.on("framesent", ({ payload }) => {
-    const message = JSON.parse(String(payload));
-    if (message.type === "input") attacks.push(message.attack);
-  }));
-  await freezeGame(page, "/jogar/?room=attack-intent");
-  await expect.poll(async () => {
-    await page.clock.runFor(32);
-    return page.locator("#multiplayerStatus").textContent();
-  }).toContain("Online");
-  await expect(page.locator("#classicCombat")).toBeVisible();
-
-  await page.keyboard.down("j");
-  await page.clock.runFor(320);
-  await expect.poll(() => attacks.slice(attacks.indexOf(true)).length).toBeGreaterThanOrEqual(5);
-  expect(attacks.filter(Boolean)).toHaveLength(1);
-  await page.keyboard.up("j");
-  await page.keyboard.press("j");
-  await page.clock.runFor(120);
-  await expect.poll(() => attacks.filter(Boolean).length).toBe(2);
 });

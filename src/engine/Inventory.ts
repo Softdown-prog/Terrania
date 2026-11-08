@@ -6,7 +6,7 @@ import { nearestNpc } from "../world/npcs.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 
-/** Regras da bolsa compartilhadas pela simulação solo e pela sala Node. */
+/** Regras da bolsa do jogo solo (antes compartilhadas com a sala Node, já retirada). */
 export const MAX_STACK = 99;
 export const QUEST_REWARD_POTIONS = 2;
 export const POTION_HEAL = 35;
@@ -14,6 +14,9 @@ export const POTION_GEL_PRICE = 3;
 export type PotionTradeResult = "traded" | "insufficient-gel" | "potions-full";
 export type SwordPurchaseResult = "purchased" | "already-owned" | "insufficient-sword-gel" | "too-far-from-forge" | "unavailable";
 export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned";
+/** Tudo que uma ação da bolsa pode responder; a interface traduz cada valor em uma mensagem. */
+export type InventoryOutcome = PotionTradeResult | SwordPurchaseResult | SwordEquipResult | GearResult |
+  FoodTradeResult | FoodUseResult | "healed" | "full-health" | "no-potion" | "too-far";
 
 export interface InventoryState {
   gel: number;

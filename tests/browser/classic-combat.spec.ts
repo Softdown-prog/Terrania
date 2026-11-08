@@ -9,7 +9,6 @@ test('o solo normal oferece combate por alvo e ajuda',async({page})=>{
   await expect(page.locator('#classicCombat')).toBeVisible();
   await expect(page.locator('#classicCombat')).toContainText('COMBATE POR ALVO');
   await expect(page.locator('#classicHint')).toContainText('Toque em um slime');
-  await expect(page.locator('#multiplayerStatus')).toContainText('Offline');
   await expect(page.locator('#heavyAttack')).toHaveCount(0);
   await expect(page.locator('#dodge')).toHaveCount(0);
   await page.locator('#attack').click();

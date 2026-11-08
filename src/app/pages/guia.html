@@ -5,8 +5,7 @@
         <h1>A sua primeira<br /><em>expedição.</em></h1>
         <p>
           Tudo que você precisa para sair da clareira: como se mover, atacar,
-          acompanhar a missão e escolher entre a aventura local e uma sala
-          online.
+          acompanhar a missão e cuidar do seu progresso local.
         </p>
       </section>
       <div class="section-shell guide-layout">
@@ -14,7 +13,7 @@
           <span>NESTE GUIA</span><a [routerLink]="[]" fragment="comecar">01 · Começar</a
           ><a [routerLink]="[]" fragment="controles">02 · Controles</a
           ><a [routerLink]="[]" fragment="combate">03 · Combate e missão</a
-          ><a [routerLink]="[]" fragment="online">04 · Jogar online</a
+          ><a [routerLink]="[]" fragment="solo">04 · Uma aventura só sua</a
           ><a [routerLink]="[]" fragment="ajustes">05 · Câmera e desempenho</a
           ><a [routerLink]="[]" fragment="duvidas">06 · Perguntas frequentes</a>
         </nav>
@@ -24,19 +23,17 @@
             <h2>Entre. Explore. Descubra.</h2>
             <p>
               Clique em “Jogar agora” para abrir o jogo em uma página dedicada.
-              Sem servidor configurado, você começa em modo solo. Seu progresso
-              local é salvo neste navegador, quando o armazenamento está
-              permitido.
+              Terrania é um jogo solo: roda no seu navegador, sem conta. Seu
+              progresso local é salvo neste navegador, quando o armazenamento
+              está permitido.
             </p>
             <div class="guide-callout">
-              <strong>Quer jogar sozinho?</strong>
+              <strong>Pronto para a clareira?</strong>
               <p>
-                Use a opção abaixo para entrar diretamente no modo solo, mesmo
-                quando houver um servidor online configurado.
+                Não há sala para combinar nem amigos para esperar: é só abrir
+                e começar.
               </p>
-              <a routerLink="/jogar/" [queryParams]="{'modo': 'solo'}" class="text-link"
-                >Iniciar aventura solo ↗</a
-              >
+              <a routerLink="/jogar/" class="text-link">Iniciar aventura ↗</a>
             </div>
           </section>
           <section id="controles">
@@ -118,22 +115,18 @@
               equipamentos e missões fazem parte dos próximos passos do projeto.
             </p>
           </section>
-          <section id="online">
-            <span class="eyebrow">04 / OUTROS AVENTUREIROS</span>
-            <h2>Uma sala, o mesmo caminho.</h2>
+          <section id="solo">
+            <span class="eyebrow">04 / SÓ VOCÊ</span>
+            <h2>Uma aventura só sua.</h2>
             <p>
-              Quando o servidor estiver disponível, jogadores na mesma sala
-              compartilham o mundo e os slimes. A missão é individual. Use o
-              mesmo nome de sala que seus amigos para tentar se encontrar.
+              Ninguém joga junto e não há chat: o mundo, os slimes e o seu
+              progresso existem apenas no seu navegador. O site mostra somente
+              quantas pessoas estão jogando agora.
             </p>
             <p>
-              O online é experimental: não há contas nem progresso permanente
-              nas salas. Se a conexão cair, o jogo retoma sua aventura local e
-              tenta reconectar.
+              Em preparação: a troca de itens raros entre jogadores, dentro do
+              site. Ainda não está disponível.
             </p>
-            <a routerLink="/comunidade/" fragment="salas" class="text-link"
-              >Preparar um link de sala ↗</a
-            >
           </section>
           <section id="ajustes">
             <span class="eyebrow">05 / AJUSTE AO SEU RITMO</span>
@@ -144,8 +137,7 @@
               Suas preferências ficam neste navegador.
             </p>
             <p>
-              No modo solo, abrir um menu pausa a aventura. Online, o mundo
-              continua e seu movimento fica desativado até fechar o menu.
+              Abrir um menu pausa a aventura até você fechá-lo.
             </p>
           </section>
           <section id="duvidas">
@@ -155,8 +147,7 @@
               <summary>Preciso baixar ou criar uma conta?</summary>
               <p>
                 Não. O protótipo abre no navegador e não exige conta. É
-                necessário JavaScript e suporte a Canvas 2D. O online também
-                precisa de uma conexão WebSocket com o servidor.
+                necessário JavaScript e suporte a Canvas 2D.
               </p>
             </details>
             <details>
@@ -164,23 +155,14 @@
               <p>
                 O progresso solo fica no armazenamento deste navegador. Limpar
                 os dados do site, trocar de navegador ou usar uma sessão privada
-                pode apagá-lo. O progresso de uma sala online é temporário.
-              </p>
-            </details>
-            <details>
-              <summary>Por que entrei no modo solo?</summary>
-              <p>
-                O servidor pode não estar configurado ou acessível, ou você pode
-                ter aberto o link de modo solo. O estado real da conexão aparece
-                dentro do jogo.
+                pode apagá-lo.
               </p>
             </details>
             <details>
               <summary>O que acontece se eu gerar outro mundo?</summary>
               <p>
                 Seu mundo local, posição e missão são substituídos após
-                confirmação. Não é possível gerar outro mundo enquanto estiver
-                em uma sala online.
+                confirmação.
               </p>
             </details>
             <details>
