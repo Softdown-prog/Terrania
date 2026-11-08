@@ -14,7 +14,6 @@ import { villageGround } from "../world/village.ts";
 /** Instância viva do bestiário, compatível com a Battle List e o motor solo. */
 export class RegionalMonster extends Slime {
   override readonly kind: RegionalCreatureKind;
-  override readonly kind: RegionalCreatureKind;
   readonly definition: CreatureDefinition;
   private phase = 0;
   private cooldown = 0;
@@ -28,7 +27,6 @@ export class RegionalMonster extends Slime {
 
   constructor(id: string, kind: RegionalCreatureKind, x: number, y: number) {
     super(id, x, y, kind);
-    this.kind = kind;
     this.kind = kind;
     this.definition = CREATURE_CATALOG[kind];
     this.strikeSeed = [...id].reduce((h,ch)=>Math.imul(h^ch.charCodeAt(0),16777619),2166136261);

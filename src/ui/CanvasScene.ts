@@ -281,7 +281,8 @@ export class CanvasScene {
     destination: Point | null = null, drops: ReadonlyArray<LootDrop> = [],
     combatTargetId: string | null = null, playerGear?: GearState,
     playerWeapon?: WeaponId,
-    mount: MountId | null = null, wildHorse=true, stableBuilt=false, appleVisible=false): void {
+    mount: MountId | null = null, wildHorse=true, stableBuilt=false,
+    tracksVisible=false, leadingHorse=false): void {
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale, 0, 0);
     drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, time, effects.enabled, drops, effects, playerGear, playerWeapon,
