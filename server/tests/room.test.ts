@@ -297,6 +297,8 @@ test('a sala valida a forja e aplica o dano da espada equipada no início do ata
   assert.equal(state()?.gel, FORGE_SWORD_PRICE);
   send(5, 'equip-forge');
   assert.equal(state()?.loadout?.equipped, 'forge');
+  assert.equal(room.snapshotFor('b')?.players.find(hero => hero.id === 'a')?.equippedWeapon, 'forge');
+  assert.equal(room.snapshotFor('b')?.players.find(hero => hero.id === 'a')?.attackWeapon, undefined);
 
   Object.assign(owner.actor, { x: -560, y: -1008 });
   let now = owner.lastInputAt;
@@ -308,6 +310,7 @@ test('a sala valida a forja e aplica o dano da espada equipada no início do ata
   send(6, 'equip-starter');
   const remoteHero = () => room.snapshotFor('b')?.players.find(hero => hero.id === 'a');
   assert.equal(remoteHero()?.attackWeapon, 'forge');
+  assert.equal(remoteHero()?.equippedWeapon, undefined);
   for (let i = 0; i < 3; i++) room.tick(0.05, now += 50);
   assert.equal(owner.kills, 0);
   assert.equal(room.snapshotFor('a')?.mobs.find(mob => mob.id === '-2,-2,0')?.hp, 2);
@@ -319,6 +322,7 @@ test('a sala valida a forja e aplica o dano da espada equipada no início do ata
   room.tick(0.05, now += 50);
   assert.deepEqual(state()?.loadout, { forged: true, equipped: 'starter' });
   assert.equal(room.snapshotFor('a')?.players.find(hero => hero.id === 'a')?.attackWeapon, undefined);
+  assert.equal(remoteHero()?.equippedWeapon, undefined);
 });
 
 test('troca e cura usam posição e HP da sala e ignoram pedidos repetidos', () => {
@@ -538,4 +542,21 @@ test('alimentação da sala é autoritativa, tem recibo idempotente e cura gradu
   assert.equal(isValidInventoryMessage({ type: 'inventory', action: 'eat-bread', requestId: 5 }), true);
   assert.equal(isValidInventoryMessage({ type: 'inventory', action: 'buy-unknown', requestId: 6 }), false);
   assert.equal(isValidInventoryMessage({ type: 'inventory', action: 'eat-bread', requestId: 0 }), false);
+});
+
+
+test('um comando curto online inicia somente um tile mesmo com atraso na liberação', () => {
+  const room = new Room('origins');
+  const guest = room.add('short-pulse', 'Cavaleiro', true);
+  room.receiveInput(guest.id, 1, 0, false);
+  let now = guest.lastInputAt;
+  for (let i = 0; i < 12; i++) room.tick(0.05, now += 50);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [48, 16]);
+  room.receiveInput(guest.id, 0, 0, false);
+  for (let i = 0; i < 8; i++) room.tick(0.05, now += 50);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [48, 16]);
+  room.receiveInput(guest.id, 1, 0, false);
+  now = guest.lastInputAt;
+  for (let i = 0; i < 12; i++) room.tick(0.05, now += 50);
+  assert.deepEqual([guest.actor.x, guest.actor.y], [80, 16]);
 });
