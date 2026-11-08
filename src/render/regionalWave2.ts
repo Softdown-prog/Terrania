@@ -1,5 +1,5 @@
 import { CREATURE_CATALOG, type SecondWaveKind } from "../actors/CreatureCatalog.ts";
-import { clamp01, ellipse, hashString, limb, mix, pill, rgba, shade, softShadow, TAU } from "./draw.ts";
+import { clamp01, ellipse, hashString, mix, pill, rgba, shade, softShadow, TAU } from "./draw.ts";
 
 export interface Wave2Visual {
   readonly kind: SecondWaveKind;
@@ -120,7 +120,7 @@ function ent(ctx:CanvasRenderingContext2D,c:Ramp,t:number):void {
   for(let i=0;i<11;i++){
     const x=Math.sin(i*17)*23,y=-40-Math.abs(Math.cos(i*19))*23;
     joint(ctx,[[x*.5,y+11],[x,y+2]],c,2);
-    mass(ctx,x,y,3.4,1.7,{...c,base:i%2?c.accent:"#a161c6",light:GLINT,dark:c.dark});
+    mass(ctx,x,y+Math.sin(t*1.4+i)*.8,3.4,1.7,{...c,base:i%2?c.accent:"#a161c6",light:GLINT,dark:c.dark});
   }
   etched(ctx,c,9,0,-24,9,19);
 }
@@ -218,7 +218,7 @@ function bear(ctx:CanvasRenderingContext2D,c:Ramp,t:number):void {
     mass(ctx,s*21,-1,10,7,c);
     for(let i=0;i<3;i++)crystal(ctx,s*(17+i*4),1,2,4,c.dark);
   }
-  mass(ctx,0,-30,27,21,c);
+  mass(ctx,0,-30+Math.sin(t*2)*.38,27,21,c);
   mass(ctx,21,-38,17,16,c);
   for(const s of [-1,1])mass(ctx,20+s*10,-51,6,7,c);
   mass(ctx,31,-32,11,7,c);
