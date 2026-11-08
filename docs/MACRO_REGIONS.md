@@ -23,3 +23,10 @@
 - Verificação prática do atlas e do deslocamento em Android; testes de runtime de salas Go em ambientes reais.
 
 O Go experimental agora reproduz a geração regional em `server-go/engine/world_regions.go` e `world.go`; alterações devem manter a paridade TypeScript/Go.
+
+## Verificação desta etapa
+- `tests/landmarks.test.ts`: presença em quatro direções, seed, solo alcançável e corpo sólido.
+- `server-go/engine/regional_landmarks_test.go`: distribuição e colisão equivalentes.
+- `server-go/scripts/ts-reference.mjs` e `cmd/parity`: coordenadas de marcos na comparação TypeScript/Go.
+- `tests/browser/tap-online.spec.ts`: marcador remoto verificado no atlas do inventário (o minimapa sobreposto não faz parte da interface canônica).
+- CI e browser são obrigatórios antes de integrar; resultados não devem ser inferidos apenas da compilação.
