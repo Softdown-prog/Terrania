@@ -22,8 +22,7 @@ test("montarias: dez espécies únicas com atributos, tiers, selas, iscas e ques
     assert.equal(m.id,id);
     assert.deepEqual([m.hp,m.stamina,m.speedBonus,m.attack,m.tier,m.level],x,id);
     assert.ok(m.saddle.length>=8&&m.bait.length>=8);
-    assert.ok(m.questTitle.length>10&&m.questObjective.length>25);
-    assert.ok(m.questOrigin.length>8&&m.questReward.length>8);
+    assert.ok(m.name.length>7&&m.abilityDescription.length>25);
     assert.ok(m.dropsOnTame.length===2&&m.dropsOnTame.every(d=>d.chance>0&&d.chance<=1));
     assert.ok(m.level>=RIDING_LEVEL[m.tier]);
   });

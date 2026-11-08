@@ -14,3 +14,5 @@
 
 ### Montarias (aventura solo)
 `MountCatalog.ts` concentra todas as dez fichas, requisitos de nível e Cavalaria, selas, iscas, drops e quests. Montarias não são monstros de combate; `Player.ts` continua sendo o avatar do jogador.
+
+**Histórias e gatilhos regionais:** o catálogo não duplica fichas narrativas. As introduções e etapas das dez quests pertencem exclusivamente a `src/world/mountQuests.ts`.
