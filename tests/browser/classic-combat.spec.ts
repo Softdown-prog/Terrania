@@ -87,9 +87,9 @@ test('ATACAR acerta um Slime sobreposto sem deslocar o herói', async ({ page },
   if (info.project.name === 'android') await page.locator('#attack').tap();
   else await page.keyboard.press('Space');
   await page.clock.runFor(240);
-  await expect(slime).toHaveAttribute('aria-label', 'Selecionar Slime, vida 1 de 2');
-  await page.clock.runFor(1700);
+  // Starting wooden sword causes 8 damage: a 2-HP Slime dies on the FIRST hit.
   await expect(slime).toHaveCount(0);
+  await page.clock.runFor(1700);
   await expect(page.locator('#xpText')).toHaveText('XP 10 / 30');
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
   expect(save).toMatchObject({ x: -560, y: -1008, kills: 1 });
@@ -129,7 +129,9 @@ test('trocar de criatura durante a preparação descarta o golpe em andamento', 
 
   await page.clock.runFor(1500);
   await expect(first).toHaveAttribute('aria-label',fullHp);
-  await expect(second).toHaveAttribute('aria-label','Selecionar Slime, vida 1 de 2');
+  await expect(second).toHaveCount(0);
+  const save=await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1') ?? 'null'));
+  expect(save?.defeated).toContain('-8,-8,1');
 });
 
 for (const cancel of ['button', 'escape'] as const) {
