@@ -70,6 +70,12 @@ function rat(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
     line(ctx,x+2,-9,x+8,-1,c,3);
   }
   body(ctx,-1,-14,16,10,c);
+  // Coarse tufts on the arched dune-rat back, not a smooth domestic mouse.
+  for(let i=0;i<12;i++){
+    const x=-15+i*2.8,back=-19-Math.sin(i*Math.PI/12)*4;
+    tip(ctx,x,back,2.2+i%3*.25,3.6+i%4*1.1,
+      i%3===0?c.light:c.extra);
+  }
   body(ctx,-13,-19,10,8,c);
   for(const x of [-20,-8]){
     body(ctx,x,-26,5,6,{...c,base:c.accent,light:c.light,dark:c.dark});
@@ -136,6 +142,13 @@ function orc(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
     body(ctx,s*20,-17,6,6,c);
   }
   body(ctx,0,-31,18,20,c);
+  // Tribal harness crossing a muscular olive torso; shoulder bone plate.
+  ctx.strokeStyle="#624c3e";ctx.lineWidth=5;
+  ctx.beginPath();ctx.moveTo(-13,-44);ctx.lineTo(13,-21);
+  ctx.moveTo(13,-43);ctx.lineTo(-12,-22);ctx.stroke();
+  ctx.strokeStyle="#b09a73";ctx.lineWidth=1.7;
+  ctx.beginPath();ctx.moveTo(-12,-42);ctx.lineTo(9,-24);ctx.stroke();
+  for(let i=0;i<4;i++)tip(ctx,-18+i*4,-46+i%2*2,3.2,6,"#e2d6bd");
   body(ctx,0,-54,15,12,c);
   body(ctx,0,-47,10,5,c);
   eye(ctx,-6,-57,c,2.1);eye(ctx,6,-57,c,2.1);
@@ -144,7 +157,12 @@ function orc(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
   ctx.strokeStyle=c.dark;ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(-10,-30);ctx.lineTo(12,-31);ctx.stroke();
   line(ctx,23,-22,29,-61,{...c,base:c.extra,light:c.accent},4);
-  body(ctx,29,-63,8,9,{...c,base:c.extra});
+  // Bone-knobbed desert club, matching the pale weapon in the reference.
+  body(ctx,29,-63,8,9,{...c,base:"#dad1b5",light:"#f5edd4",dark:"#a89b80"});
+  for(const side of [-1,1]){
+    ellipse(ctx,29+side*7,-68,4,3,"#e9ddc4");
+    tip(ctx,29+side*8,-68,3.5,5,"#fff4dc");
+  }
   freckles(ctx,c,16,0,-33,13,12);
   ellipse(ctx,-10,-27,2,2,c.accent);
   ellipse(ctx,10,-27,2,2,c.accent);
@@ -157,6 +175,11 @@ function troll(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
     body(ctx,s*29,-15,8,8,c);
   }
   body(ctx,0,-29,22,25,c);
+  // Dust-baked plates and scars make this a clay troll, not a generic giant.
+  for(let i=0;i<9;i++){
+    const x=Math.sin(i*2.1)*16,y=-39+(i%5)*8;
+    body(ctx,x,y,3+i%3,1.7,{...c,base:c.extra,light:c.light,dark:c.dark},i*.1);
+  }
   body(ctx,0,-54,18,15,c);
   body(ctx,0,-45,12,8,{...c,base:c.dark});
   eye(ctx,-7,-56,c,2.4);eye(ctx,7,-56,c,2.4);
@@ -391,10 +414,14 @@ function cactus(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
     tip(ctx,x,y,2.1,5,c.light);
   }
   body(ctx,0,-52,5+Math.sin(t*2)*.2,5,{...c,base:c.accent,light:GLOW,dark:c.extra});
-  for(let i=0;i<6;i++){
-    const a=i*TAU/6;
-    ellipse(ctx,Math.cos(a)*6,-52+Math.sin(a)*5,2.6,2,c.accent,a);
+  // Layered purple-pink petals around a golden flower center.
+  for(let i=0;i<8;i++){
+    const a=i*TAU/8+t*.01;
+    ellipse(ctx,Math.cos(a)*6,-52+Math.sin(a)*5,3.2,2.2,
+      i%2?"#b86bc2":"#f087af",a);
+    ellipse(ctx,Math.cos(a)*5,-52+Math.sin(a)*4,1.3,.8,"#ffcf7a",a);
   }
+  ellipse(ctx,0,-52,2.3,2.4,"#ffd75a");
   freckles(ctx,c,14,0,-25,8,12);
 }
 
