@@ -334,7 +334,7 @@ test('inventário mobile tem mochila por toque, comparação real e cavaleiro pr
   await expect(page.locator('[data-bag-item="weapon-forge"]')).toBeVisible();
   await page.locator('[data-bag-item="weapon-forge"]').click();
   await expect(page.locator('#bagItemComparison')).toContainText('Dano da arma equipada: 8');
-  await page.locator('#equip-weapon-forge').click();
+  await page.locator('#equip-slot-weapon-forge').click();
   await expect(page.locator('#inventoryFeedback')).toContainText('Espada equipada');
   if (await page.locator('#inventoryTabEquipment').isVisible()) {
     await page.locator('#inventoryTabEquipment').click();
@@ -528,10 +528,10 @@ test('espada forjada equipada aparece parada na prévia e troca para a inicial s
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada de Treino de Carvalho');
   await expect.poll(async () => (await readFrames()).all).toBeGreaterThan(2);
   expect((await readFrames()).forge).toBe(0);
-  await page.locator('#equip-weapon-forge').click();
+  await page.locator('#equip-slot-weapon-forge').click();
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada Curta de Ferro Batido');
   await expect.poll(async () => (await readFrames()).forge).toBeGreaterThan(1);
-  await page.locator('#equip-weapon-starter').click();
+  await page.locator('#equip-slot-weapon-starter').click();
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada de Treino de Carvalho');
   const previous = (await readFrames()).all;
   await page.evaluate(() => {
