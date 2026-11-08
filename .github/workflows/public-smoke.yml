@@ -1,14 +1,46 @@
-name: Smoke público Terrania (saúde, presença e sinal anônimo)
+name: Smoke Terrania (servidor do PR e produção)
 on:
   pull_request:
     paths:
-      - "server/scripts/public-smoke.mjs"
+      - "server/**"
+      - "src/net/presence.ts"
       - "scripts/check-published-frontend.mjs"
       - ".github/workflows/public-smoke.yml"
   workflow_dispatch:
+    inputs:
+      alvo:
+        description: "local = sobe o servidor deste commit; producao = testa a VPS publicada (use só depois do deploy)"
+        type: choice
+        options: [local, producao]
+        default: local
 
 jobs:
-  presenca:
+  servidor-local:
+    # Testa o CÓDIGO do PR em um servidor local. A produção só muda no deploy, então testá-la
+    # aqui reprovaria toda mudança de contrato antes mesmo de ela ser publicada.
+    if: github.event_name == 'pull_request' || inputs.alvo == 'local'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --prefix server --no-audit --no-fund
+      - name: Subir o servidor deste commit
+        run: |
+          PORT=8787 ALLOWED_ORIGINS=http://localhost:5173 node --experimental-strip-types server/src/main.ts > server.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8787/health >/dev/null && exit 0; sleep 1; done
+          cat server.log; exit 1
+      - name: Smoke (saúde, presença, sinal anônimo, sem WebSocket)
+        env:
+          SMOKE_API: http://127.0.0.1:8787
+          SMOKE_ORIGIN: http://localhost:5173
+          SMOKE_SKIP_FRONTEND: "1"
+        run: node --experimental-strip-types server/scripts/public-smoke.mjs
+
+  producao:
+    if: github.event_name == 'workflow_dispatch' && inputs.alvo == 'producao'
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
@@ -16,7 +48,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Instalar dependências do servidor
-        run: npm ci --prefix server --no-audit --no-fund
-      - name: Testar Pages, health e sinal de presença na VPS
+      - run: npm ci --prefix server --no-audit --no-fund
+      - name: Testar Pages, health e sinal de presença na VPS publicada
         run: node --experimental-strip-types server/scripts/public-smoke.mjs
