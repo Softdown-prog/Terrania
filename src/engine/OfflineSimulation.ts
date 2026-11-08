@@ -134,6 +134,8 @@ export class OfflineSimulation {
         if ((strikeTargetId === undefined || id === strikeTargetId) &&
             canStrike(this.player, slime, this.collision)) {
           slime.takeHit(this.player.x, this.player.y, this.player.strikeDamage);
+          if(slime instanceof RegionalMonster)
+            slime.onSwordHit(this.player,this.inventory.loadout.equipped);
           if (slime.hp <= 0) {
             this.slimes.delete(id);
             this.defeated.add(id);
