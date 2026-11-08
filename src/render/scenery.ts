@@ -424,7 +424,7 @@ export function renderScenery(
   } else if (prop.kind === "regional-landmark" && prop.landmarkKind) {
     const kind = prop.landmarkKind, variation = landmarkArtVariant(prop.variant);
     // Four bounded visual variations per kind; painting stays off the frame loop.
-    const s = sprite("regional-" + kind + "-" + variation, 96, 112, 48, 94,
+    const s = sprite("regional-" + kind + "-" + variation, 96, 128, 48, 102,
       (c) => paintRegionalLandmark(c, kind, variation));
     if (s) blit(ctx, s); else paintRegionalLandmark(ctx, kind, variation);
   } else if (prop.kind === "arch") {
