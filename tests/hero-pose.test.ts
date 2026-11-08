@@ -47,9 +47,9 @@ test("caminhada procedural suaviza parada sem mover pés enquanto imóvel", () =
   const standing = gait(1.7, 0);
   assert.equal(standing.a.along, 0);
   assert.equal(standing.a.lift, 0);
-  assert.equal(standing.b.along, 0);
+  assert.ok(standing.b.along === 0);
   assert.equal(standing.b.lift, 0);
-  assert.equal(standing.bob, 0);
+  assert.ok(standing.bob === 0);
   const walking = gait(Math.PI / 2, 1);
   assert.ok(walking.a.along > 0 && walking.b.along < 0);
   assert.ok(Number.isFinite(walking.bob));
