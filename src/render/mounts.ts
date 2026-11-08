@@ -1,6 +1,6 @@
 /** Arte das dez montarias: formas autorais Canvas, sem reutilizar sprites dos monstros. */
 import type { MountId } from "../actors/MountCatalog.ts";
-import { ellipse, limb, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
+import { ellipse, limb, rgba, shade, softShadow, TAU } from "./draw.ts";
 
 type Palette = Readonly<{ base:string; dark:string; light:string; accent:string; tack:string }>;
 const PALETTES: Readonly<Record<MountId,Palette>> = {

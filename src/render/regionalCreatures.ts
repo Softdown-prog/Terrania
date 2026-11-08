@@ -244,7 +244,6 @@ function drawSerpent(ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void 
   organic(ctx,-14,-48,13,10,c,-.18);
   organic(ctx,-21,-44,12,5,c,.1);
   for(let i=0;i<7;i++){
-    const t=i/6;
     shard(ctx,-3+Math.sin(i*1.5)*20,-18-i*4,4,10+(i%3)*2,
       i%2?c.accent:c.light);
   }
