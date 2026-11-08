@@ -1,4 +1,5 @@
-import { CREATURE_CATALOG, type RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
+import { renderWave2Creature } from "./regionalWave2.ts";
+import { CREATURE_CATALOG, SECOND_WAVE_KINDS, type SecondWaveKind, type RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, hashString, limb, mix, pill, rgba, shade, softShadow, TAU } from "./draw.ts";
 
 export interface RegionalCreatureVisual {
@@ -9,7 +10,7 @@ export interface RegionalCreatureVisual {
   readonly casting?: number;
 }
 type ColorRamp = { base: string; light: string; dark: string; accent: string; eye: string };
-const PALETTE: Readonly<Record<RegionalCreatureKind, ColorRamp>> = {
+const PALETTE: Readonly<Partial<Record<RegionalCreatureKind, ColorRamp>>> = {
   "basalt-golem": { base: "#716f6b", light: "#b4a79a", dark: "#343944", accent: "#729267", eye: "#ffbf59" },
   "cliff-draconid": { base: "#66646a", light: "#b0a499", dark: "#292d3b", accent: "#e38b4f", eye: "#f7bb4d" },
   "mire-hydra": { base: "#4bba66", light: "#a0e375", dark: "#376a56", accent: "#ad54b1", eye: "#b6f6ef" },
@@ -262,7 +263,11 @@ function drawSerpent(ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void 
 /** Dez silhuetas próprias; volumes, detalhes e animações são geometria Canvas, sem sprites. */
 export function renderRegionalCreature(ctx: CanvasRenderingContext2D,
   creature: RegionalCreatureVisual, sx: number, sy: number, time = 0): void {
-  const c=PALETTE[creature.kind], seed=hashString(creature.id ?? creature.kind);
+  if (SECOND_WAVE_KINDS.some(kind => kind === creature.kind)) {
+    renderWave2Creature(ctx, {...creature,kind:creature.kind as SecondWaveKind},sx,sy,time);
+    return;
+  }
+  const c=PALETTE[creature.kind]!, seed=hashString(creature.id ?? creature.kind);
   const max=CREATURE_CATALOG[creature.kind].maxHp;
   const flash=clamp01((creature.hurtTime ?? 0)/.24);
   ctx.save();ctx.translate(sx,sy);

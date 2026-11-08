@@ -23,10 +23,28 @@ export class Player {
   attackCooldown = 0;
   hurtTime = 0;
   private receivedHits = 0;
-  private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0 };
+  private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0, burn: 0, stun: 0, blind: 0 };
   private poisonElapsed = 0;
+  private burnElapsed = 0;
+  private swingNumber = 0;
   private poisonStacks = 0;
   get debuffs(): Readonly<Record<DebuffKind, number>> { return { ...this.effects }; }
+  /** Status apply equally to tile-mode outdoor movement and free cave movement. */
+  get movementMultiplier(): number {
+    if (this.effects.freeze > 0 || this.effects.stun > 0) return 0;
+    return this.effects.slow > 0 ? .58 : 1;
+  }
+  /** Copy only adventure vitals across the cave/surface boundary, preserving coordinates. */
+  syncAdventureStateFrom(other: Player): void {
+    this.hp = other.hp;
+    this.maxHp = other.maxHp;
+    this.nourishment = { ...other.nourishment };
+    for (const kind of Object.keys(this.effects) as DebuffKind[])
+      this.effects[kind] = other.effects[kind];
+    this.poisonElapsed = other.poisonElapsed;
+    this.poisonStacks = other.poisonStacks;
+    this.burnElapsed = other.burnElapsed;
+  }
   applyStatus(kind: DebuffKind, seconds: number): void {
     if (!Number.isFinite(seconds) || seconds <= 0 || this.hp <= 0) return;
     this.effects[kind] = Math.max(this.effects[kind], Math.min(12, seconds));
@@ -42,6 +60,15 @@ export class Player {
         this.hurtTime = Math.max(this.hurtTime, .18);
       }
     } else { this.poisonElapsed = 0; this.poisonStacks = 0; }
+    if (this.effects.burn > 0 && this.hp > 0) {
+      this.burnElapsed += dt;
+      while (this.burnElapsed >= 1 && this.hp > 0) {
+        this.burnElapsed -= 1;
+        this.hp = Math.max(0, this.hp - 3);
+        this.receivedHits++;
+        this.hurtTime = Math.max(this.hurtTime, .15);
+      }
+    } else this.burnElapsed = 0;
     for (const kind of Object.keys(this.effects) as DebuffKind[])
       this.effects[kind] = Math.max(0, this.effects[kind] - dt);
   }
@@ -104,6 +131,9 @@ export class Player {
       this.advanceTimers(dt);
       return;
     }
+    if (this.effects.freeze > 0 || this.effects.stun > 0) {
+      this.vx = 0; this.vy = 0;
+    }
     const length = Math.hypot(dir.x, dir.y);
     const moving = Number.isFinite(length) && length > 0.001;
     const nx = moving ? dir.x / Math.max(1, length) : 0;
@@ -115,7 +145,7 @@ export class Player {
     const terrainSpeed = world.speedAt?.(this.x, this.y) ?? 1;
     const speed =
       126 *
-      (this.effects.freeze > 0 ? 0 : this.effects.slow > 0 ? .58 : 1) *
+      this.movementMultiplier *
       (Number.isFinite(terrainSpeed) ? Math.max(0, terrainSpeed) : 0) *
       (this.attackTime > 0 ? 0.72 : 1);
     const response = moving ? 18 : 25;
@@ -147,7 +177,7 @@ export class Player {
   }
   get strikeDamage(): number { return WEAPONS[this.attackWeapon].damage; }
   startAttack(weapon: WeaponId = "starter"): boolean {
-    if (this.attackCooldown > 0 || this.hp <= 0) return false;
+    if (this.attackCooldown > 0 || this.hp <= 0 || this.effects.stun > 0) return false;
     this.attackTime = ATTACK_DURATION;
     this.attackCooldown = ATTACK_COOLDOWN * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
     this.attackWeapon = weapon;
@@ -161,7 +191,16 @@ export class Player {
     )
       return false;
     this.strikePending = false;
-    return this.hp > 0;
+    this.swingNumber++;
+    // A tinta gera erro de precisão verificável, determinístico e sem RNG global.
+    return this.hp > 0 && (this.effects.blind <= 0 || this.swingNumber % 3 !== 0);
+  }
+  /** Uma rajada desloca um tile, barrada pela colisão real do mapa. */
+  pushFrom(x: number, y: number, pixels: number, world: CollisionMap): void {
+    if (![x,y,pixels].every(Number.isFinite) || pixels <= 0 || pixels > 32) return;
+    const dx=this.x-x,dy=this.y-y,d=Math.hypot(dx,dy);
+    if (d <= .001) return;
+    moveBody(this,dx/d*pixels,dy/d*pixels,world);
   }
   takeDamage(amount: number, sourceX: number, sourceY: number): boolean {
     if (this.invulnerable > 0 || this.hp <= 0 || !Number.isFinite(amount) || amount <= 0 ||

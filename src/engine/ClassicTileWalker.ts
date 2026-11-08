@@ -34,8 +34,14 @@ export class ClassicTileWalker {
     if (!Number.isFinite(dt) || dt <= 0) return;
     const time = Math.min(dt, 0.1);
     const attackRemaining = player.attackTime;
+    const movementMultiplier = player.movementMultiplier;
     player.update(time, STILL, collision, true);
     if (player.hp <= 0) { this.reset(); return; }
+    // A committed tile must pause (not finish) while frozen or stunned.
+    if (movementMultiplier <= 0) {
+      player.vx = player.vy = 0;
+      return;
+    }
     let elapsed = 0;
     // At normal speed a tick crosses at most one full tile boundary. The bound
     // also protects callers with a malformed/custom terrain speed multiplier.
@@ -63,7 +69,7 @@ export class ClassicTileWalker {
       }
       const step = this.step;
       const attacking = attackRemaining - elapsed > 1e-9;
-      const speed = CLASSIC_WALK_SPEED * (collision.speedAt?.(player.x, player.y) ?? 1) *
+      const speed = CLASSIC_WALK_SPEED * movementMultiplier * (collision.speedAt?.(player.x, player.y) ?? 1) *
         (attacking ? 0.72 : 1);
       if (!Number.isFinite(speed) || speed <= 0 || step.distance <= 0) {
         this.reset(); player.vx = 0; player.vy = 0;
