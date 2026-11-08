@@ -38,7 +38,7 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
   // Test the actual marker coordinates: a blank atlas with a pale caption
   // must never pass because a few bright pixels exist somewhere.
   const location=await page.locator("#atlasCoordinates").textContent();
-  const coordinates=/X\\s+(\\d+)\\s+·\\s+Y\\s+(\\d+)/.exec(location ?? "");
+  const coordinates=/X\s+(\d+)\s+·\s+Y\s+(\d+)/.exec(location ?? "");
   expect(coordinates, "posição subterrânea deve ser exibida no atlas").not.toBeNull();
   const position={x:Number(coordinates![1]),y:Number(coordinates![2])};
   const sampled=await atlas.evaluate((node,{position,exit,width,height})=>{
