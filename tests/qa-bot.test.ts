@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { QA_BOT_ID, runQaBot } from "../src/qa/QaBot.ts";
+import { QA_BOT_ID, runOnlinePatrolQa, runQaBot } from "../src/qa/QaBot.ts";
 
 test("bot interno cria relatório reproduzível sem conta ou navegador", () => {
   const a = runQaBot({ seed: 842136, maxTicks: 500 });
@@ -44,4 +44,23 @@ test("bot se aproxima de placas sólidas sem tentar atravessar o centro", () => 
   assert.equal(report.totals.failed, 0);
   assert.equal(report.totals.npcInteractions, 9);
   assert.equal(report.totals.interiorsVisited, 3);
+});
+
+
+test("QA-BOT-001 patrulha áreas diferentes pela Room online sem teleporte", () => {
+  const report = runOnlinePatrolQa();
+  assert.equal(report.status, "passed", JSON.stringify(report.findings.filter(f =>
+    f.kind === "collision" || f.kind === "snapshot" || f.kind === "navigation")));
+  assert.ok(report.regionsVisited.length >= 3, "visita chunks distintos");
+  assert.ok(report.walkedUnits >= 180, "movimento efetivo no motor autoritativo");
+  assert.ok(report.snapshotsChecked > 10);
+  assert.equal(report.capabilities.multiplayerRules, true);
+  assert.equal(report.capabilities.websocket, false);
+  assert.ok(report.findings.some(f => f.kind === "coverage"));
+});
+test("patrulha de QA rejeita orçamento inválido e reproduz o mesmo relatório", () => {
+  for (const ticks of [0, -1, Infinity, NaN, 299, 12001]) {
+    assert.throws(() => runOnlinePatrolQa(ticks), RangeError);
+  }
+  assert.deepEqual(runOnlinePatrolQa(4000), runOnlinePatrolQa(4000));
 });

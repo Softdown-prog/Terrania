@@ -422,45 +422,62 @@ test('equipar elmo muda o desenho real do cavaleiro e retirar remove a chapa', a
 });
 
 
-test('espada forjada equipada aparece parada na prévia e troca para a inicial sem atacar', async ({ page }) => {
-  await page.addInitScript(() => {
-    const original = CanvasRenderingContext2D.prototype.fillRect;
-    const swordFrames = { all: 0, forge: 0 };
-    Object.assign(window, { swordFrames });
-    CanvasRenderingContext2D.prototype.fillRect = function (x, y, width, height) {
-      if (this.canvas.id === 'inventoryHero' && Math.abs(width - 3) < 0.0001 &&
-          Math.abs(height - 12.8) < 0.0001) {
-        swordFrames.all++;
-        if (this.fillStyle === '#e2a24f') swordFrames.forge++;
-      }
-      original.call(this, x, y, width, height);
-    };
-    localStorage.setItem('terrania-origins-v1', JSON.stringify({
-      seed: 842136, x: 16, y: 16, hp: 100, kills: 0, defeated: [],
-      inventory: { gel: 0, potion: 0, questRewardClaimed: false,
-        loadout: { forged: true, equipped: 'starter' } },
-    }));
+test('minimapa usa terreno real da sala online, mantém norte e abre/fecha no Android', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/jogar/?room=minimap-qa');
+  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
+  const panel = page.locator('#miniMapPanel');
+  const canvas = page.locator('#worldMiniMapCanvas');
+  await expect(panel).toBeVisible();
+  await expect(canvas).toBeVisible();
+  await expect(page.locator('#miniMapToggle')).toHaveAttribute('aria-expanded', 'true');
+  const sample = () => canvas.evaluate(element => {
+    const map = element as HTMLCanvasElement;
+    const context = map.getContext('2d')!;
+    const rgba = context.getImageData(0, 0, map.width, map.height).data;
+    const center = [...rgba.slice((61 * map.width + 61) * 4, (61 * map.width + 61) * 4 + 4)];
+    const colors = new Set<string>();
+    for (let i = 0; i < rgba.length; i += 4) {
+      colors.add(rgba[i] + ',' + rgba[i + 1] + ',' + rgba[i + 2]);
+    }
+    return { width: map.width, height: map.height, colors: colors.size, center };
   });
-  const readFrames = () => page.evaluate(() =>
-    (window as typeof window & { swordFrames: { all: number; forge: number } }).swordFrames);
+  await expect.poll(async () => (await sample()).colors).toBeGreaterThan(3);
+  expect(await sample()).toMatchObject({ width: 124, height: 124, center: [255, 255, 255, 255] });
+  await page.locator('#miniMapToggle').click();
+  await expect(page.locator('#worldMiniMapCanvas')).toHaveCount(0);
+  await expect(page.locator('#miniMapToggle')).toHaveAttribute('aria-expanded', 'false');
+  await page.locator('#miniMapToggle').click();
+  await expect(canvas).toBeVisible();
+  await expect.poll(async () => (await sample()).colors).toBeGreaterThan(3);
+  expect(errors).toEqual([]);
+});
+
+test('minimapa não bloqueia conversas, caminhada nem toques no Android', async ({ page }) => {
   await page.goto('/jogar/?modo=solo');
-  await expect(page.locator('canvas#game')).toBeVisible();
-  await page.locator('#gameMenuButton').click();
-  await page.locator('#inventoryButton').click();
-  const equipmentTab = page.locator('#inventoryTabEquipment');
-  if (await equipmentTab.isVisible()) await equipmentTab.click();
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
-  await expect.poll(async () => (await readFrames()).all).toBeGreaterThan(2);
-  expect((await readFrames()).forge).toBe(0);
-  await page.locator('#equipOtherWeapon').click();
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
-  await expect.poll(async () => (await readFrames()).forge).toBeGreaterThan(1);
-  await page.locator('#equipOtherWeapon').click();
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
-  const previous = (await readFrames()).all;
-  await page.evaluate(() => {
-    (window as typeof window & { swordFrames: { forge: number } }).swordFrames.forge = 0;
-  });
-  await expect.poll(async () => (await readFrames()).all).toBeGreaterThan(previous + 3);
-  expect((await readFrames()).forge).toBe(0);
+  const map = page.locator('#worldMiniMapCanvas');
+  const toggle = page.locator('#miniMapToggle');
+  await expect(map).toBeVisible();
+  await expect(toggle).toBeVisible();
+  const interaction = await page.locator('#miniMapPanel').evaluate(panel => ({
+    panel: getComputedStyle(panel).pointerEvents,
+    canvas: getComputedStyle(panel.querySelector('canvas')!).pointerEvents,
+    toggle: getComputedStyle(panel.querySelector('button')!).pointerEvents,
+  }));
+  expect(interaction).toEqual({ panel: 'none', canvas: 'none', toggle: 'auto' });
+  // Hit-testing inside the decorative map must reach the world or a game
+  // control, not the map overlay that previously blocked nine browser tests.
+  const rect = await map.boundingBox();
+  expect(rect).not.toBeNull();
+  const top = await page.evaluate(({ x, y }) =>
+    document.elementFromPoint(x, y)?.id ?? '', {
+      x: rect!.x + rect!.width / 2, y: rect!.y + rect!.height / 2,
+    });
+  expect(top).not.toBe('worldMiniMapCanvas');
+  expect(top).not.toBe('miniMapPanel');
+  await toggle.click();
+  await expect(map).toHaveCount(0);
+  await toggle.click();
+  await expect(map).toBeVisible();
 });

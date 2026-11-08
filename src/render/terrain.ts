@@ -8,6 +8,7 @@ import {
 } from "../world/terrain.ts";
 import { hash2, valueNoise } from "../world/random.ts";
 import { ellipse, mix, TAU } from "./draw.ts";
+import { VILLAGE_RESPAWN } from "../world/village.ts";
 
 /** Pares (sombra, luz) por tipo de solo; a mistura segue ruído contínuo. */
 const PALETTE: Record<Ground, { lo: string; hi: string }> = {
@@ -273,4 +274,54 @@ export function generateChunkCanvas(
     for (let x = 0; x < CHUNK_TILES; x++)
       drawDetails(ctx, grid, x, y, x * TILE_SIZE, y * TILE_SIZE, seed);
   return canvas;
+}
+
+
+/** Janela de 31×31 tiles do mesmo mundo procedural, norte para cima.
+ * Desenho simples e barato, independente do cache gráfico dos chunks.
+ */
+export function drawMiniMap(ctx: CanvasRenderingContext2D,
+  centerX: number, centerY: number, seed: number,
+  nearbyPlayers: readonly { readonly tileX: number; readonly tileY: number }[] = []): void {
+  const size = 31;
+  const cell = 4;
+  const startX = Math.floor(centerX) - 15;
+  const startY = Math.floor(centerY) - 15;
+  const colors: Record<Ground, string> = {
+    grass: "#789b62", forest: "#3c6647", path: "#baa780",
+    sand: "#d8c894", water: "#286e87",
+  };
+  ctx.clearRect(0, 0, size * cell, size * cell);
+  for (let y = 0; y < size; y++)
+    for (let x = 0; x < size; x++) {
+      const tile = getTile(startX + x, startY + y, seed);
+      ctx.fillStyle = colors[tile.ground];
+      ctx.fillRect(x * cell, y * cell, cell, cell);
+      if (tile.tree || tile.rock) {
+        ctx.fillStyle = tile.tree ? "#203d30" : "#5b574f";
+        ctx.fillRect(x * cell + 1, y * cell + 1, 2, 2);
+      }
+    }
+  // A Vila da Travessia é uma referência geográfica verdadeira, não um ponto inventado.
+  const villageX = Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE) - startX;
+  const villageY = Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE) - startY;
+  if (villageX >= 0 && villageX < size && villageY >= 0 && villageY < size) {
+    ctx.fillStyle = "#ffe0a1";
+    ctx.fillRect(villageX * cell, villageY * cell, cell, cell);
+  }
+  // Draw other players only within the local map. Never hide the own marker.
+  for (const hero of nearbyPlayers) {
+    const x = hero.tileX - startX, y = hero.tileY - startY;
+    if (!Number.isInteger(x) || !Number.isInteger(y) ||
+        x < 0 || x >= size || y < 0 || y >= size || (x === 15 && y === 15)) continue;
+    ctx.fillStyle = "#51376b";
+    ctx.fillRect(x * cell, y * cell, 4, 4);
+    ctx.fillStyle = "#eac5ff";
+    ctx.fillRect(x * cell + 1, y * cell + 1, 2, 2);
+  }
+  // Centro do mapa: posição real do herói, inclusive snapshots autoritativos da sala.
+  ctx.fillStyle = "#102d41";
+  ctx.fillRect(58, 58, 8, 8);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(60, 60, 4, 4);
 }

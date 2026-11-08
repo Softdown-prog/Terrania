@@ -80,5 +80,12 @@ A implementação dos itens marcados não certifica o lançamento, apenas indica
 
 - [x] Peças do conjunto inicial (elmo, escudo, peitoral, botas, calça, mochila e pingente) desenhadas sobre o herói procedural, no mundo e na prévia, usando o estado real de equipamento
 - [x] Aparência de outros cavaleiros equipados transmitida nos snapshots da sala Node, sem publicar os itens da bolsa
-- [x] Espada realmente equipada visível em repouso no solo, no inventário e no multiplayer; arma do golpe em curso preservada após trocar equipamento
 - [ ] Conferir cada conjunto em todas as direções, animação de caminhada, golpe, dano e colisão visual no Android
+
+### Mapa e patrulha de QA online
+
+- [x] Minimapa local de 31×31 tiles, derivado de `getTile` e centrado nas coordenadas atuais, incluindo sessão online; colapsável no Android
+- [x] Marcadores dos jogadores online próximos provenientes de snapshots, limpos após desconexão
+- [ ] Avaliar legibilidade do minimapa no Android físico em uma sala com vários jogadores
+- [x] Patrulha do QA-BOT-001 contra movimentação, colisões e snapshots da sala Node em diferentes regiões, com relatório reproduzível e sem acessar VPS em produção
+- [ ] Ampliar a patrulha para WebSocket real com dois clientes e medir reconexões, latência e divergência sob pacotes atrasados

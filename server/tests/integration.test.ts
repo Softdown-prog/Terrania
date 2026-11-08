@@ -5,6 +5,8 @@ import { createServer } from "node:net";
 import { once } from "node:events";
 import { setTimeout as pause } from "node:timers/promises";
 import { WebSocket } from "ws";
+import { canMoveOnSeed } from "../../src/world/collision.ts";
+import { chunkOf } from "../../src/world/terrain.ts";
 import {
   PROTOCOL_VERSION,
   type ServerMessage,
@@ -12,7 +14,7 @@ import {
 
 test(
   "two websocket clients share authoritative movement and versioned state",
-  { timeout: 20_000 },
+  { timeout: 30_000 },
   async () => {
     const probe = createServer();
     probe.listen(0, "127.0.0.1");
@@ -140,6 +142,29 @@ test(
         m.players.some(p => p.id === welcome.id && p.kills === 1 && p.experience === 10) &&
         m.inventory && m.inventory.gel + m.inventory.drops.length === 1));
       assert.ok(streams[1].every(m => m.type !== "state" || m.inventory === undefined));
+      // QA-BOT-001 usa o transporte WebSocket verdadeiro na sala isolada do teste:
+      // quatro quadrantes do mundo, sem teleporte e sem ler dados privados de terceiros.
+      const patrolRegions = new Set<string>();
+      const patrolGoals = [
+        { x: -16, y: 16 }, { x: -16, y: -16 },
+        { x: 16, y: -16 }, { x: 16, y: 16 },
+      ];
+      for (const goal of patrolGoals) {
+        const after = streams[0].length;
+        sockets[0].send(JSON.stringify({ type: "walk", target: goal }));
+        await until(() => streams[0].slice(after).some(state => {
+          if (state.type !== "state") return false;
+          const hero = state.players.find(p => p.id === welcome.id);
+          if (!hero) return false;
+          patrolRegions.add(chunkOf(hero.x) + "," + chunkOf(hero.y));
+          assert.ok(canMoveOnSeed(hero.x, hero.y, 842136),
+            "snapshot QA em tile de colisão");
+          return Math.hypot(hero.x - goal.x, hero.y - goal.y) <= 1.5;
+        }), 6_000);
+      }
+      assert.ok(patrolRegions.size >= 3, "QA bot percorreu regiões distintas pela rede");
+      assert.ok(streams[1].every(m => m.type !== "state" || m.inventory === undefined),
+        "informações privadas nunca chegam ao observador");
       sockets[1].terminate();
       let count = await presence();
       for (let i = 0; i < 40 && count.online !== 1; i++) { await pause(20); count = await presence(); }
@@ -148,6 +173,42 @@ test(
       for (let i = 0; i < 40 && count.online !== 0; i++) { await pause(20); count = await presence(); }
       assert.equal(count.online, 0);
       assert.equal(count.rooms, 0);
+      // Reconnecting after the last guest has left starts a fresh room session;
+      // it must never inherit a previous guest's movement, loot or identity.
+      const resumed: ServerMessage[] = [];
+      const rejoined = new WebSocket(
+        "ws://127.0.0.1:" + port +
+          "/ws?room=origins&movement=tiles&combat=target&progression=xp&inventory=loot&equipment=forge&gear=slots",
+        { origin: "http://localhost:5173" },
+      );
+      sockets.push(rejoined);
+      rejoined.on("message", data =>
+        resumed.push(JSON.parse(data.toString()) as ServerMessage));
+      await once(rejoined, "open");
+      await until(() => resumed.some(m => m.type === "welcome") &&
+        resumed.some(m => m.type === "state"));
+      const newWelcome = resumed.find(m => m.type === "welcome");
+      assert.ok(newWelcome?.type === "welcome");
+      assert.notEqual(newWelcome.id, welcome.id);
+      assert.equal(newWelcome.seed, welcome.seed);
+      const fresh = resumed.find(m => m.type === "state");
+      assert.ok(fresh?.type === "state");
+      const newHero = fresh.players.find(hero => hero.id === newWelcome.id);
+      assert.ok(newHero);
+      assert.deepEqual({ x: newHero.x, y: newHero.y, kills: newHero.kills, experience: newHero.experience },
+        { x: 16, y: 16, kills: 0, experience: 0 });
+      assert.equal(fresh.walkTarget, null);
+      assert.equal(fresh.inventory?.gel, 0);
+      assert.equal(fresh.inventory?.loadout?.equipped, "starter");
+      assert.equal((await presence()).online, 1);
+      rejoined.terminate();
+      let emptied = await presence();
+      for (let i = 0; i < 40 && emptied.online !== 0; i++) {
+        await pause(20);
+        emptied = await presence();
+      }
+      assert.equal(emptied.online, 0);
+      assert.equal(emptied.rooms, 0);
     } finally {
       for (const ws of sockets) ws.terminate();
       child.kill("SIGTERM");

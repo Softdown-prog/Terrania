@@ -128,8 +128,25 @@ test('toque para caminhar online transmite movimento autoritativo observado pelo
     await expect(page.locator('#coords')).toHaveText('X 2 · Y 0');
     expect(sentWalks).toHaveLength(1);
     await expect(page.locator('#multiplayerStatus')).toContainText('Online');
-  } finally {
+    // Own tile X=2; visitor tile X=0: lilac inner dot at canvas pixel (53,61).
+    const remotePixel = () => page.locator('#worldMiniMapCanvas').evaluate(canvas => {
+      const rgba = (canvas as HTMLCanvasElement).getContext('2d')!.getImageData(53, 61, 1, 1).data;
+      return [rgba[0], rgba[1], rgba[2]].join(',');
+    });
+    await expect.poll(remotePixel).toBe('234,197,255');
     await visitor.close();
+    await expect.poll(remotePixel).not.toBe('234,197,255');
+    const returning = await context.newPage();
+    try {
+      await returning.goto('/jogar/?room=tap-online');
+      await expect(returning.locator('#multiplayerStatus')).toContainText('Online');
+      await expect.poll(remotePixel).toBe('234,197,255');
+    } finally {
+      await returning.close();
+    }
+    await expect.poll(remotePixel).not.toBe('234,197,255');
+  } finally {
+    if (!visitor.isClosed()) await visitor.close();
   }
 });
 

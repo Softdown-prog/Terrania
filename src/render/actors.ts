@@ -101,7 +101,7 @@ function renderTrail(ctx: CanvasRenderingContext2D, player: HeroVisual, forge: b
 
 function renderWeapon(ctx: CanvasRenderingContext2D, frame: WeaponFrame, player: HeroVisual,
   tone: (c: string) => string, impact: number): void {
-  // An active swing keeps its committed blade; idle uses the equipped weapon.
+  // During a committed strike render the striking sword; when idle use the loadout.
   const forge = frame.attacking ? player.attackWeapon === "forge" :
     (player.equippedWeapon ?? player.attackWeapon) === "forge";
   const len = frame.attacking ? 45 : 33;

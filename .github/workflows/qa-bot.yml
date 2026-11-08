@@ -30,7 +30,7 @@ jobs:
             import fs from "node:fs";
             const r = JSON.parse(fs.readFileSync("qa-bot-report.json", "utf8"));
             const lines = [
-              "### QA-BOT-001 (offline only)",
+              "### QA-BOT-001 (offline gameplay + local authoritative Room patrol)",
               "Seed: " + r.seed + " | Overall status: " + r.status,
               "Exploration: " + r.exploration.totals.passed + " passed, " +
                 r.exploration.totals.failed + " failed, " +
@@ -46,6 +46,12 @@ jobs:
               "Natural: " + r.natural.status +
                 " | Spawned: " + r.natural.monstersDiscovered +
                 " | Killed: " + r.natural.kills + " | Gel: " + r.natural.gel,
+              "Online Room patrol (in memory, NOT websocket): " + r.onlinePatrol.status +
+                " | Regions: " + r.onlinePatrol.regionsVisited.length +
+                " | Distance: " + r.onlinePatrol.walkedUnits +
+                " | Blocked ticks: " + r.onlinePatrol.blockedTicks +
+                " | Route failures: " + r.onlinePatrol.routeFailures +
+                " | Snapshot checks: " + r.onlinePatrol.snapshotsChecked,
               "Expedition: " + r.expedition.status +
                 " | Kills: " + r.expedition.kills +
                 " | Gel: " + r.expedition.gelCollected +
@@ -54,8 +60,8 @@ jobs:
                 " | Blocked steps: " + r.expedition.blockedSteps +
                 " | Deaths: " + r.expedition.deaths,
               "",
-              "Natural encounters offline; multiplayer, " +
-                "browser, XP and VPS not tested."
+              "QA patrol verifies the authoritative Node Room locally. WebSocket, " +
+                "browser and production VPS are NOT tested by this bot run."
             ];
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
           '

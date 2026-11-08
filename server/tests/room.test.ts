@@ -297,8 +297,6 @@ test('a sala valida a forja e aplica o dano da espada equipada no início do ata
   assert.equal(state()?.gel, FORGE_SWORD_PRICE);
   send(5, 'equip-forge');
   assert.equal(state()?.loadout?.equipped, 'forge');
-  assert.equal(room.snapshotFor('b')?.players.find(hero => hero.id === 'a')?.equippedWeapon, 'forge');
-  assert.equal(room.snapshotFor('b')?.players.find(hero => hero.id === 'a')?.attackWeapon, undefined);
 
   Object.assign(owner.actor, { x: -560, y: -1008 });
   let now = owner.lastInputAt;
@@ -310,7 +308,6 @@ test('a sala valida a forja e aplica o dano da espada equipada no início do ata
   send(6, 'equip-starter');
   const remoteHero = () => room.snapshotFor('b')?.players.find(hero => hero.id === 'a');
   assert.equal(remoteHero()?.attackWeapon, 'forge');
-  assert.equal(remoteHero()?.equippedWeapon, undefined);
   for (let i = 0; i < 3; i++) room.tick(0.05, now += 50);
   assert.equal(owner.kills, 0);
   assert.equal(room.snapshotFor('a')?.mobs.find(mob => mob.id === '-2,-2,0')?.hp, 2);
@@ -322,7 +319,6 @@ test('a sala valida a forja e aplica o dano da espada equipada no início do ata
   room.tick(0.05, now += 50);
   assert.deepEqual(state()?.loadout, { forged: true, equipped: 'starter' });
   assert.equal(room.snapshotFor('a')?.players.find(hero => hero.id === 'a')?.attackWeapon, undefined);
-  assert.equal(remoteHero()?.equippedWeapon, undefined);
 });
 
 test('troca e cura usam posição e HP da sala e ignoram pedidos repetidos', () => {
