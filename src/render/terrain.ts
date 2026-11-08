@@ -281,7 +281,8 @@ export function generateChunkCanvas(
  * Desenho simples e barato, independente do cache gráfico dos chunks.
  */
 export function drawMiniMap(ctx: CanvasRenderingContext2D,
-  centerX: number, centerY: number, seed: number): void {
+  centerX: number, centerY: number, seed: number,
+  nearbyPlayers: readonly { readonly tileX: number; readonly tileY: number }[] = []): void {
   const size = 31;
   const cell = 4;
   const startX = Math.floor(centerX) - 15;
@@ -307,6 +308,16 @@ export function drawMiniMap(ctx: CanvasRenderingContext2D,
   if (villageX >= 0 && villageX < size && villageY >= 0 && villageY < size) {
     ctx.fillStyle = "#ffe0a1";
     ctx.fillRect(villageX * cell, villageY * cell, cell, cell);
+  }
+  // Draw other players only within the local map. Never hide the own marker.
+  for (const hero of nearbyPlayers) {
+    const x = hero.tileX - startX, y = hero.tileY - startY;
+    if (!Number.isInteger(x) || !Number.isInteger(y) ||
+        x < 0 || x >= size || y < 0 || y >= size || (x === 15 && y === 15)) continue;
+    ctx.fillStyle = "#51376b";
+    ctx.fillRect(x * cell, y * cell, 4, 4);
+    ctx.fillStyle = "#eac5ff";
+    ctx.fillRect(x * cell + 1, y * cell + 1, 2, 2);
   }
   // Centro do mapa: posição real do herói, inclusive snapshots autoritativos da sala.
   ctx.fillStyle = "#102d41";

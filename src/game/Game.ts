@@ -170,6 +170,13 @@ export class Game {
       online && this.multiplayer?.inventoryPending === true, inventory?.food ?? emptyFoodCounts());
     this.hud.updateLoadout(inventory?.loadout ?? null);
     this.hud.updateGear(inventory?.gear ?? null);
+    // Remote positions are visual only, already filtered by the online room.
+    this.hud.setMapPlayers(online && this.multiplayer?.connected
+      ? this.multiplayer.players
+        .filter(other => other.id !== this.multiplayer?.id && other.hp > 0)
+        .map(other => ({ id: other.id, tileX: Math.floor(other.x / TILE_SIZE),
+          tileY: Math.floor(other.y / TILE_SIZE) }))
+      : []);
   }
   /** Battle entries are derived from the same camera/viewport as the canvas. */
   private battleCreatures() {

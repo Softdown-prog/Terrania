@@ -40,7 +40,7 @@ export class GamePageComponent implements AfterViewInit {
       if (!this.miniMapOpen()) return;
       const canvas = this.miniMapCanvas()?.nativeElement;
       const ctx = canvas?.getContext('2d');
-      if (ctx) drawMiniMap(ctx, x, y, seed);
+      if (ctx) drawMiniMap(ctx, x, y, seed, this.hud.mapPlayers());
     });
     effect(() => {
       const awaitingRespawn = this.hud.awaitingRespawn();

@@ -11,6 +11,8 @@ export interface Preferences {
   cameraMotion: boolean;
 }
 
+export interface MapPlayer { readonly id: string; readonly tileX: number; readonly tileY: number; }
+
 export interface HeroHudState {
   readonly hp: number;
   readonly maxHp: number;
@@ -53,6 +55,8 @@ export interface GameUi {
   onBattleSelect(callback: (id: string) => void): void;
   setBattleCreatures(creatures: readonly BattleCreature[], targetId: string | null): void;
   setSeed(seed: number): void;
+  /** Only positions supplied by the interest-filtered server snapshots. */
+  setMapPlayers(players: readonly MapPlayer[]): void;
   setPlayerCount(count: number, online: boolean): void;
   setNearbyAction(action: NearbyAction | null): void;
   showNpcDialogue(name: string, role: string, lines: readonly string[], offer?: NpcOffer): void;

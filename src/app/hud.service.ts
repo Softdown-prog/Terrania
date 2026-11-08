@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import type { GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
+import type { GameUi, HeroHudState, MapPlayer, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
 import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
@@ -54,6 +54,9 @@ export class HudService implements GameUi {
   readonly questPercent = signal(0);
   readonly coords = signal('X 0 · Y 0');
   readonly mapTile = signal({ x: 0, y: 0 }, { equal: (a, b) => a.x === b.x && a.y === b.y });
+  readonly mapPlayers = signal<readonly MapPlayer[]>([], { equal: (a, b) =>
+    a.length === b.length && a.every((p, i) => p.id === b[i]?.id &&
+      p.tileX === b[i]?.tileX && p.tileY === b[i]?.tileY) });
   readonly seed = signal(842136);
   readonly gel = signal(0);
   readonly potions = signal(0);
@@ -264,6 +267,7 @@ export class HudService implements GameUi {
   setCombatTarget(label: string | null): void { this.combatTarget.set(label); }
   setOnline(online: boolean): void {
     this.online.set(online);
+    this.mapPlayers.set([]);
     this.inventoryFeedback.set('');
     this.quickPotionFeedback.set('');
     this.npcTradeFeedback.set('');
@@ -274,6 +278,7 @@ export class HudService implements GameUi {
     this.bagFilter.set('all');
   }
   setSeed(seed: number): void { this.seed.set(seed); }
+  setMapPlayers(players: readonly MapPlayer[]): void { this.mapPlayers.set(players); }
   setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }
   setNearbyAction(action: NearbyAction | null): void {
     this.talkVisible.set(action !== null);
