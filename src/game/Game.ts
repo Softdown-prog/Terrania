@@ -417,7 +417,7 @@ export class Game {
       if (!paused && dt > 0) {
         const focused = this.classicCombat.targetId;
         const classicStrike = this.classicCombat.tick(dt,cave.player,cave.monsters,
-          cave.collision,this.sim.inventory.weapon.interval);
+          cave.collision,this.sim.inventory.weapon.interval,this.sim.inventory.loadout.equipped);
         const follow = this.classicAutoFollow && !manualActive && this.navigator.target === null;
         const caveMovement = follow
           ? this.classicPursuit.direction(dt,cave.player,focused,cave.monsters,cave.collision)
@@ -484,7 +484,7 @@ export class Game {
         const before = this.sim.player;
         const damageCount = before.damageCount;
         const classicStrike = this.classicCombat.tick(1 / 60, before, this.sim.slimes, this.sim.collision,
-          this.sim.inventory.weapon.interval);
+          this.sim.inventory.weapon.interval,this.sim.inventory.loadout.equipped);
         const follow = !manualActive && !tileRoute && this.classicAutoFollow;
         if (follow) this.classicPursuit.direction(1 / 60, before, this.classicCombat.targetId,
           this.sim.slimes, this.sim.collision, true, this.tileWalker.destination);
