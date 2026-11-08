@@ -3,6 +3,8 @@
  * Todo desenhador novo (`render*` ou `draw*` exportado em src/render) DEVE entrar aqui, com sua categoria.
  * Os pisos abaixo são ~80 % do pior caso das peças boas que já existem: mínimo de acabamento, não meta.
  */
+import { renderRegionalCreature } from "../../src/render/regionalCreatures.ts";
+import { REGIONAL_CREATURE_KINDS, CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
 import { renderHero, renderSlime } from "../../src/render/actors.ts";
 import { renderNpc } from "../../src/render/npcs.ts";
 import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
@@ -36,6 +38,8 @@ export const ASSETS: ArtAsset[] = [
   { id: "hero", tier: "character", fn: "renderHero", draw: c => renderHero(c, hero, 0, 0, 1) },
   { id: "hero com conjunto", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, gear: kit }, 0, 0, 1) },
   { id: "slime", tier: "creature", fn: "renderSlime", draw: c => renderSlime(c, { hp: 3, bounce: 0.2, id: "s1" }, 0, 0, {}) },
+  ...REGIONAL_CREATURE_KINDS.map<ArtAsset>(kind => ({id:"monstro "+kind,tier:"creature",fn:"renderRegionalCreature",
+    draw:c=>renderRegionalCreature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"art-"+kind},0,0,1)})),
   ...NPCS.filter(n => n.kind !== "sign" && n.kind !== "door").map<ArtAsset>(npc =>
     ({ id: "npc " + npc.id, tier: "character", fn: "renderNpc", draw: c => renderNpc(c, npc, 0, 0, false, 1) })),
   ...(["tree", "fire", "house", "arch"] as const).map<ArtAsset>(kind => ({ id: "cenário " + kind, tier: "structure",
