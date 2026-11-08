@@ -10,13 +10,13 @@ import { Player } from "../src/actors/Player.ts";
 const themes = ["basalt","marsh","desert","glacial","coastal"] as const satisfies readonly CaveTheme[];
 
 test("bestiário: dez espécies com ficha completa e loot válido", () => {
-  assert.equal(REGIONAL_CREATURE_KINDS.length,10);
+  assert.equal(REGIONAL_CREATURE_KINDS.length,20);
   assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,10);
   for (const kind of REGIONAL_CREATURE_KINDS) {
     const def=CREATURE_CATALOG[kind];
     assert.ok(def.name.length>8);
-    assert.ok(def.maxHp>=130 && def.maxHp<=380);
-    assert.ok(def.contactDamage>=19 && def.contactDamage<=38);
+    assert.ok(def.maxHp>=130 && def.maxHp<=450);
+    assert.ok(def.contactDamage>=19 && def.contactDamage<=40);
     assert.ok(def.experience>0);
     assert.ok(def.loot.length>=1);
     assert.ok(def.caveThemes.length>0);
@@ -30,7 +30,7 @@ test("bestiário: dez espécies com ficha completa e loot válido", () => {
 });
 
 test("geografia: cinco habitats subterrâneos recebem só suas espécies", () => {
-  const expected: Record<typeof themes[number],number>={basalt:2,marsh:1,desert:2,glacial:3,coastal:2};
+  const expected: Record<typeof themes[number],number>={basalt:4,marsh:3,desert:3,glacial:6,coastal:4};
   for(const theme of themes){
     const kinds=caveMonsterKinds(theme);
     assert.equal(kinds.length,expected[theme],theme);
