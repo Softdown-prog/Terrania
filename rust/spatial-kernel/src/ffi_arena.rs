@@ -218,6 +218,8 @@ pub unsafe extern "C" fn terrania_arena_len(arena: *const EntityArena) -> i32 {
 }
 
 #[cfg(test)]
+// Estes testes comparam valores devolvidos sem arredondar: igualdade exata é a intenção.
+#[allow(clippy::float_cmp)]
 mod tests {
     use super::*;
     use crate::entity_arena::EntityKind;

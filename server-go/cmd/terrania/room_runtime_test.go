@@ -75,3 +75,27 @@ func TestSlowRoomDoesNotStallOtherRooms(t *testing.T) {
 	default: t.Fatal("slow room ticker wasn't stopped after last disconnect")
 	}
 }
+
+// A panic in one room's simulation must retire that room only; before the guard it killed the process.
+func TestRoomPanicRetiresOnlyThatRoom(t *testing.T) {
+	s:=newGameServer([]string{"http://localhost:5173"},"")
+	healthy:=newRoomSession("healthy")
+	broken:=&roomSession{id:"broken",room:nil,clients:make(map[*client]struct{}),stop:make(chan struct{})} // nil engine: Tick panics
+	s.rooms["healthy"]=healthy
+	s.rooms["broken"]=broken
+	ctx,cancel:=context.WithCancel(context.Background())
+	defer cancel()
+	done:=make(chan struct{})
+	go func(){ s.runRoom(ctx,broken); close(done) }()
+	select {
+	case <-done:
+	case <-time.After(2*time.Second):
+		t.Fatal("runRoom did not return after the room panicked")
+	}
+	s.mu.Lock()
+	_,brokenLeft:=s.rooms["broken"]
+	_,healthyLeft:=s.rooms["healthy"]
+	s.mu.Unlock()
+	if brokenLeft { t.Fatal("room that panicked must be removed from the registry") }
+	if !healthyLeft { t.Fatal("unrelated room must stay registered") }
+}

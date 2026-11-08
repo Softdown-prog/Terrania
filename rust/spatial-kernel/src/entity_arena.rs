@@ -274,6 +274,8 @@ impl EntityArena {
 }
 
 #[cfg(test)]
+// Estes testes comparam valores devolvidos sem arredondar: igualdade exata é a intenção.
+#[allow(clippy::float_cmp)]
 mod tests {
     use super::*;
 
