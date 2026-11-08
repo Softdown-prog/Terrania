@@ -148,13 +148,29 @@ export class RegionalMonster extends Slime {
   }
   get iceSpeedBoost(): boolean { return this.frozenFloor; }
 }
+/** Weighted draw is deterministic and never changes a creature's own loot probabilities. */
+export function selectRegionalSpecies(kinds: readonly RegionalCreatureKind[], roll: number): RegionalCreatureKind | null {
+  if (!kinds.length || !Number.isFinite(roll)) return null;
+  const weights = kinds.map(kind => Math.max(1, CREATURE_CATALOG[kind].spawnWeight ?? 1));
+  const total = weights.reduce((a,b)=>a+b,0);
+  let pointer = Math.max(0,Math.min(.999999999,roll))*total;
+  for(let i=0;i<kinds.length;i++){
+    pointer -= weights[i]!;
+    if(pointer < 0)return kinds[i]!;
+  }
+  return kinds[kinds.length-1]!;
+}
 /** Seed e células determinam espécies, sem alocação para o mundo inteiro. */
 export function regionalSurfaceSpawns(cx: number, cy: number, seed: number): RegionalMonster[] {
   const tx = cx * CHUNK_TILES + Math.floor(CHUNK_TILES / 2);
   const ty = cy * CHUNK_TILES + Math.floor(CHUNK_TILES / 2);
-  if (getWorldRegion(tx,ty) === "center" || hash2(cx,cy,seed+441) > .42) return [];
+  const southern = getWorldRegion(tx,ty) === "south";
+  if (getWorldRegion(tx,ty) === "center" ||
+      hash2(cx,cy,seed+441) > (southern ? .86 : .42)) return [];
   const monsters: RegionalMonster[] = [];
-  for (let n = 0; n < (hash2(cx, cy, seed + 453) > .81 ? 2 : 1); n++) {
+  const capacity = southern ? (hash2(cx,cy,seed+453) > .42 ? 3 : 2) :
+    (hash2(cx,cy,seed+453) > .81 ? 2 : 1);
+  for (let n = 0; n < capacity; n++) {
     const sx = cx * CHUNK_TILES + Math.floor(hash2(cx + n * 13, cy, seed + 469) * CHUNK_TILES);
     const sy = cy * CHUNK_TILES + Math.floor(hash2(cx, cy + n * 17, seed + 479) * CHUNK_TILES);
     const region=getWorldRegion(sx,sy);
@@ -169,7 +185,8 @@ export function regionalSurfaceSpawns(cx: number, cy: number, seed: number): Reg
         !def.caveThemes.includes("marsh");
     });
     if (!candidates.length) continue;
-    const kind=candidates[Math.floor(hash2(cx+n*13,cy+n*17,seed+449)*candidates.length)]!;
+    const kind=selectRegionalSpecies(candidates,hash2(cx+n*13,cy+n*17,seed+449));
+    if (!kind) continue;
     // Habitat and collision are verified at the actual spawn tile, not the chunk center.
     const x = (sx + .5) * TILE_SIZE, y = (sy + .5) * TILE_SIZE;
     monsters.push(new RegionalMonster("regional:" + seed + ":" + cx + ":" + cy + ":" + n,
