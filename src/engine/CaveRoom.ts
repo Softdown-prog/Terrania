@@ -1,3 +1,4 @@
+import { SOUTH_COMMON_KINDS } from "../actors/CreatureCatalog.ts";
 import { RegionalMonster, caveMonsterKinds } from "../actors/RegionalMonster.ts";
 import { canStrike, faceTarget } from "./combat.ts";
 import type { WeaponId } from "./Weapons.ts";
@@ -110,7 +111,9 @@ export class CaveRoom {
           Math.hypot(x-this.player.x,y-this.player.y)<170) continue;
       if (viableSpots >= 4) break;
       viableSpots++;
-      const kind=kinds[Math.floor(hash2(i,19,salt+91)*kinds.length)]!;
+      const commons=kinds.filter(kind=>SOUTH_COMMON_KINDS.some(k=>k===kind));
+      const source=commons.length && hash2(i,17,salt+109)<.76 ? commons : kinds;
+      const kind=source[Math.floor(hash2(i,19,salt+91)*source.length)]!;
       const id=this.floor.id+":mob:"+i;
       if (!this.defeated.has(id)) this.monsters.set(id,new RegionalMonster(id,kind,x,y));
     }
@@ -143,6 +146,7 @@ export class CaveRoom {
       if(monster){
         faceTarget(this.player,monster);
         monster.takeHit(this.player.x,this.player.y,this.player.strikeDamage);
+        monster.onSwordHit(this.player,weapon);
         if(monster.hp<=0){
           monster.deathBurst(this.player,this.collision,defense);
           this.monsters.delete(monster.id);
