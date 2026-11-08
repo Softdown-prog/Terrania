@@ -29,6 +29,7 @@
 - [`docs/MIGRACAO_TERRANIUM.md`](../../docs/MIGRACAO_TERRANIUM.md)
 - [`docs/MULTIPLAYER_VPS.md`](../../docs/MULTIPLAYER_VPS.md)
 - [`docs/PHASER_4_LAB.md`](../../docs/PHASER_4_LAB.md)
+- [`docs/POSTGRES-OPERACAO.md`](../../docs/POSTGRES-OPERACAO.md)
 - [`docs/QA_ANDROID.md`](../../docs/QA_ANDROID.md)
 - [`docs/QA_BOT.md`](../../docs/QA_BOT.md)
 - [`docs/QA_INVENTARIO.md`](../../docs/QA_INVENTARIO.md)

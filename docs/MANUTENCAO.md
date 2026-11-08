@@ -1,5 +1,11 @@
 # Operação, diagnóstico e recuperação — plano, não infraestrutura ativada
 
+**Atualização PostgreSQL (2026-11-08):** a base isolada `terrania`, o catálogo e os
+backups foram instalados e verificados, incluindo restauração de cópia externa.
+Consulte [POSTGRES-OPERACAO](POSTGRES-OPERACAO.md) para o estado real e seus limites.
+As metas gerais de HA, failover e capacidade abaixo permanecem planos; não são
+certificadas pela instalação do banco.
+
 ## 1. Triagem de incidentes
 
 1. Identificar **versão Git / tag / build**, ambiente (solo/Node/Go/lab), sintomas, alcance (Android, desktop, sala, região), horário e impacto em dados.
