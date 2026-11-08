@@ -33,6 +33,7 @@
 - [`docs/QA_INVENTARIO.md`](../../docs/QA_INVENTARIO.md)
 - [`docs/QA_VILA.md`](../../docs/QA_VILA.md)
 - [`docs/REGION-CLUSTER.md`](../../docs/REGION-CLUSTER.md)
+- [`docs/REVISAO_MULTIPLAYER_20261108.md`](../../docs/REVISAO_MULTIPLAYER_20261108.md)
 - [`docs/ROADMAP.md`](../../docs/ROADMAP.md)
 - [`docs/ROADMAP_ANTERIOR_20261104.md`](../../docs/ROADMAP_ANTERIOR_20261104.md)
 - [`docs/SITE_E_ALFA_03.md`](../../docs/SITE_E_ALFA_03.md)

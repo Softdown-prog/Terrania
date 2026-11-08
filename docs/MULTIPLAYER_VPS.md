@@ -11,7 +11,7 @@
 - Uma seed por sala (`?room=origins` ou `?room=amigos`).
 - Até 12 jogadores por sala, no máximo 8 salas e 48 conexões em total; valores são limites de segurança iniciais, não benchmark de carga.
 - Simulação 20 Hz, snapshots próximos cerca de 10 Hz, payload recebido limitado a 512 bytes, rate limit 35 mensagens/s.
-- Validação do header Origin, heartbeat e descarte de conexões com buffer grande.
+- Validação do header Origin, heartbeat e descarte de mensagens quando o buffer de saída passa de 64 KB (clientes lentos não são desconectados por isso; só o heartbeat remove conexões mortas). Veja a [revisão de 2026-11-08](REVISAO_MULTIPLAYER_20261108.md).
 - Modos offline e online: se backend não existir, cliente continua local.
 - Não há login, persistência multiplayer, salvamento no servidor, inventário compartilhado ou anti-cheat completo.
 
