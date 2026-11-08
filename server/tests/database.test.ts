@@ -4,12 +4,19 @@ import {createServer} from 'node:http';
 import {once} from 'node:events';
 import type {Pool} from 'pg';
 import {gameCatalog} from '../src/db/catalog.ts';
+import {WEAPON_IDS} from '../../src/engine/Weapons.ts';
 import {databasePool,databaseStatus} from '../src/db/database.ts';
 import {marketHttp} from '../src/db/http.ts';
 
-test('catalogue uses the 16 existing game items without inventing rare possessions',()=>{
- const items=gameCatalog();assert.equal(items.length,16);assert.equal(new Set(items.map(i=>i.id)).size,16);
- assert.ok(items.find(i=>i.id==='sword-forge'));assert.ok(items.find(i=>i.id==='potion'));
+test('catalogue exposes the ten actual Knight swords alongside existing game items',()=>{
+ const items=gameCatalog();assert.equal(items.length,24);
+ assert.equal(new Set(items.map(i=>i.id)).size,24);
+ const swordIds=items.filter(i=>i.category==='weapon').map(i=>i.id);
+ assert.deepEqual(swordIds, WEAPON_IDS.map(id=>'sword-'+id));
+ assert.ok(items.find(i=>i.id==='sword-forge'));
+ assert.ok(items.find(i=>i.id==='sword-astral'));
+ assert.ok(items.find(i=>i.id==='potion'));
+ assert.equal(items.some(i=>i.id==='ci-relic'),false,'no speculative collectible can enter the game catalogue');
 });
 test('database is opt-in and enabled configuration cannot silently use postgres/admin',async()=>{
  assert.equal(databasePool({}),null);assert.deepEqual(await databaseStatus(null),{enabled:false,ready:false,schemaVersion:null});
