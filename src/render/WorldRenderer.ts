@@ -6,6 +6,7 @@ import {
   getTile,
 } from "../world/terrain.ts";
 import { LANDMARKS } from "../world/landmarks.ts";
+import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { generateChunkCanvas } from "./terrain.ts";
 import type { Scenery } from "./scenery.ts";
@@ -61,6 +62,14 @@ export class WorldRenderer {
             foam.push({ x1: x0 + S - 1, y1: y0, x2: x0 + S - 1, y2: y0 + S, phase: p + 6, nx: 1, ny: 0 });
         }
       }
+    const regional = getRegionalLandmarkForCell(
+      Math.floor(cx * CHUNK_TILES / LANDMARK_CELL_TILES),
+      Math.floor(cy * CHUNK_TILES / LANDMARK_CELL_TILES), this.seed,
+    );
+    if (regional && Math.floor(regional.tileX / CHUNK_TILES) === cx &&
+        Math.floor(regional.tileY / CHUNK_TILES) === cy)
+      props.push({ kind: "regional-landmark", landmarkKind: regional.kind,
+        x: regional.x, y: regional.y, variant: regional.variant });
     const result = {
       canvas: generateChunkCanvas(cx, cy, this.seed),
       props,

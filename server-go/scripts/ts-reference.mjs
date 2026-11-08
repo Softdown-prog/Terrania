@@ -3,6 +3,7 @@ import { canMoveOnSeed, SeedCollision } from "../../src/world/collision.ts";
 import { hash2, seedFromText } from "../../src/world/random.ts";
 import { getTile } from "../../src/world/terrain.ts";
 import { slimeSpawns } from "../../src/actors/Slime.ts";
+import { getRegionalLandmarkForCell } from "../../src/world/regionalLandmarks.ts";
 import { canStrike } from "../../src/engine/combat.ts";
 
 const seed=842136;
@@ -31,6 +32,11 @@ const result={
  walkable:positions.map(([x,y])=>canMoveOnSeed(x,y,seed)),
  speeds:positions.map(([x,y])=>world.speedAt(x,y)),
  moving,
+ landmarks:[[0,-70],[0,-71],[0,70],[0,71],[70,0],[71,0],[-70,0],[-71,0]]
+  .map(([cx,cy])=>{
+    const lm=getRegionalLandmarkForCell(cx,cy,seed);
+    return lm ? [lm.kind,lm.tileX,lm.tileY,canMoveOnSeed(lm.x,lm.y,seed)] : null;
+  }),
  strike:[canStrike(attacker,{x:28,y:16},world),canStrike(attacker,{x:4,y:16},world)],
  spawns:[[-1,1],[0,1],[2,2],[-2,-1]].map(([cx,cy])=>
    slimeSpawns(cx,cy,seed).map(m=>[m.id,m.x,m.y])),
