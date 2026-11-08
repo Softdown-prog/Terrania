@@ -51,5 +51,14 @@ Antes de dados reais, verificar pg_dump/pg_restore em banco isolado e manter
 cópia externa criptografada. Reversão do código desliga a integração preservando
 banco e dados. Não usar down migration que apague contas ou inventário.
 
+`server/ops/postgres-backup.sh` exporta somente `terrania`, cifra com CMS
+AES-256-GCM para certificado público e mantém sete dias na VPS. A chave privada
+de recuperação fica fora dela. `pull-backup.py` usa chave SSH exclusiva de
+leitura, com forced-command e host fixado, para copiar snapshots criptografados
+ao computador do responsável. Agendamento externo depende desse computador
+estar ligado e com a conta do Windows conectada. Falha deve ser consultável em
+`last-pull-error.json`; cópia externa não é garantida enquanto o computador está
+desligado. Não usar a senha root nem salvar tokens de outros serviços nesses jobs.
+
 Estado de código/CI/instalação/backup deve ser confirmado pelo PR e recibo de
 implantação; presença desses arquivos não prova que a VPS foi atualizada.

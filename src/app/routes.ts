@@ -5,6 +5,7 @@ export const routes: Routes = [
  { path: 'jogar', loadComponent: () => import('./game-page.component.ts').then(m => m.GamePageComponent), title: 'Jogar · Terrania: Origins' },
  { path: 'laboratorio-phaser', redirectTo: 'jogar', pathMatch: 'full' },
  { path: '', component: SiteLayoutComponent, children: [
+  { path: 'mercado', loadComponent: () => import('./catalog-page.component.ts').then(m => m.CatalogPage), title: 'Catálogo de itens · Terrania: Origins' },
   { path: "", loadComponent: () => import('./pages.ts').then(m => m.HomePage), title: "Terrania: Origins · Há um mundo além da clareira", data: {description: "Explore Terrania: Origins, um RPG medieval 2D no navegador. Descubra um mundo procedural, enfrente criaturas e experimente a aventura solo ou salas online."} },
   { path: "mundo", loadComponent: () => import('./pages.ts').then(m => m.WorldPage), title: "O mundo · Terrania: Origins", data: {description: "Conheça a clareira, as florestas e os rios do mundo procedural de Terrania: Origins."} },
   { path: "guia", loadComponent: () => import('./pages.ts').then(m => m.GuidePage), title: "Como jogar · Terrania: Origins", data: {description: "Aprenda os controles, o combate, a missão inicial, o modo solo e as salas online de Terrania."} },

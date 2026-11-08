@@ -11,9 +11,10 @@ Páginas do site, navegação, HUD e ações de interface. Não calcula regras a
 - [`src/app/routes.ts`](../../src/app/routes.ts)
 - [`src/app/game-page.component.ts`](../../src/app/game-page.component.ts)
 
-## Todos os arquivos deste módulo (23)
+## Todos os arquivos deste módulo (24)
 
 - [`src/app/README.md`](../../src/app/README.md)
+- [`src/app/catalog-page.component.ts`](../../src/app/catalog-page.component.ts)
 - [`src/app/game-page.component.ts`](../../src/app/game-page.component.ts)
 - [`src/app/game-page.html`](../../src/app/game-page.html)
 - [`src/app/hud.service.ts`](../../src/app/hud.service.ts)

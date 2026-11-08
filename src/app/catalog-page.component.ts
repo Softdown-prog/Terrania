@@ -1,0 +1,36 @@
+import {ChangeDetectionStrategy,Component,OnDestroy,OnInit,signal} from '@angular/core';
+import {RouterLink} from '@angular/router';
+import {runtimeConfig} from './runtime-config.ts';
+import {catalogEndpoint,catalogItems,type CatalogItem} from '../net/itemCatalog.ts';
+
+@Component({selector:'app-catalog-page',imports:[RouterLink],changeDetection:ChangeDetectionStrategy.OnPush,
+ template:`<main id="conteudo" class="catalog-page">
+ <p class="eyebrow">A ARMARIA DA TRAVESSIA</p><h1>Catálogo de itens</h1>
+ <p>Conheça os equipamentos, alimentos e materiais da aventura solo.</p>
+ <p class="notice">O mercado de itens raros está em preparação. Estes itens do catálogo não são anúncios de troca.</p>
+ @if(state()==='loading'){<p role="status">Buscando os itens…</p>}
+ @if(state()==='error'){<div role="alert"><p>O catálogo está indisponível no momento. Você pode continuar sua aventura solo.</p><button class="button" (click)="load()">Tentar novamente</button></div>}
+ @if(state()==='ready'){<p role="status">{{items().length}} itens na coleção</p><ul class="catalog-grid">
+ @for(item of items();track item.id){<li><span class="item-kind">{{category(item.category)}}</span><h2>{{item.name}}</h2><p>{{item.maxStack===1?'Equipamento individual':'Até '+item.maxStack+' por pilha'}}</p></li>}
+ </ul>}
+ <a class="button" routerLink="/jogar/">Voltar à aventura</a></main>`,
+ styles:[`.catalog-page{max-width:1100px;margin:auto;padding:clamp(24px,5vw,70px) 20px}.catalog-page h1{font-size:clamp(2rem,6vw,3.8rem)}.catalog-page>p{max-width:70ch;line-height:1.7}.notice{padding:16px;border-left:3px solid #b986ff;background:#181020;color:#d4c8e6}.catalog-grid{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:16px;margin:28px 0}.catalog-grid li{min-width:0;padding:22px;border:1px solid #3a294b;border-radius:14px;background:linear-gradient(135deg,#21162b,#110d18)}.catalog-grid h2{font-size:1.15rem;margin:12px 0;overflow-wrap:anywhere}.item-kind{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:#b986ff}.catalog-grid p{color:#c1b2d0;font-size:.9rem}`]})
+export class CatalogPage implements OnInit,OnDestroy {
+ readonly items=signal<CatalogItem[]>([]);readonly state=signal<'loading'|'ready'|'error'>('loading');
+ private controller:AbortController|null=null;
+ ngOnInit(){void this.load();}
+ ngOnDestroy(){this.controller?.abort();}
+ category(value:string){return ({material:'Material',consumable:'Consumível',food:'Alimento',weapon:'Arma',equipment:'Equipamento',collectible:'Colecionável'} as Record<string,string>)[value]??'Item';}
+ async load(){
+  this.controller?.abort();const controller=new AbortController();this.controller=controller;this.state.set('loading');
+  const timer=setTimeout(()=>controller.abort(),8000);
+  try{
+   const endpoint=catalogEndpoint(runtimeConfig.multiplayerUrl,runtimeConfig.marketApiUrl);
+   if(!endpoint)throw Error('Unavailable');
+   const r=await fetch(endpoint,{signal:controller.signal,credentials:'omit',redirect:'error',headers:{Accept:'application/json'}});
+   if(!r.ok)throw Error('Unavailable');const text=await r.text();if(text.length>500000)throw Error('Large response');
+   const items=catalogItems(JSON.parse(text));if(this.controller!==controller)return;
+   this.items.set(items);this.state.set('ready');
+  }catch{if(this.controller===controller)this.state.set('error');}finally{clearTimeout(timer);}
+ }
+}
