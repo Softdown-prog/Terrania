@@ -36,7 +36,7 @@ Cada microtarefa deve identificar seu módulo no [índice de arquitetura](INDEX.
 - [ ] Avaliar o ritmo de combate jogando antes de expandir equipamentos e atributos.
 - [ ] Mana, vocações e magias quando os sistemas anteriores estiverem estáveis.
 - [ ] Exploração com NPCs, cidade inicial e pequenas missões; expandir mapas só depois do ciclo funcionar.
-- [ ] Adaptar as mecânicas consolidadas ao multiplayer, com regras autoritativas e testes de sincronização; planejar infraestrutura e escalabilidade depois de medir necessidades reais.
+- [x] **Direção definida (ADR 0010):** o jogo é solo e offline; o online serve só ao contador de jogadores e à troca de itens raros, sem chat nem jogo conjunto. Substitui a antiga etapa de multiplayer cooperativo. Implementação pendente: itens raros, contas e serviço de mercado. Veja o [ADR 0010](adr/0010-solo-offline-e-mercado-online.md).
 
 ## Fora de escopo por enquanto
 

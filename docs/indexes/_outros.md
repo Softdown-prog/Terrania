@@ -51,6 +51,7 @@
 - [`docs/adr/0007-inventario-da-sala.md`](../../docs/adr/0007-inventario-da-sala.md)
 - [`docs/adr/0008-espadas-e-recarga.md`](../../docs/adr/0008-espadas-e-recarga.md)
 - [`docs/adr/0009-espacos-de-equipamento.md`](../../docs/adr/0009-espacos-de-equipamento.md)
+- [`docs/adr/0010-solo-offline-e-mercado-online.md`](../../docs/adr/0010-solo-offline-e-mercado-online.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

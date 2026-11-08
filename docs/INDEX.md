@@ -23,6 +23,6 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Módulo Rust espacial e entidades](indexes/rust-spatial.md) | experimental | 10 | Kernel Rust e FFI opt-in; não é servidor de rede. |
 | [Scripts, automação e CI](indexes/tooling.md) | active | 24 | Build, verificação, testes automatizados, deploys e índice; operações de produção são fluxos distintos. |
 
-**Outros arquivos:** [documentos, configurações e arquivos de entrada](indexes/_outros.md) (69).
+**Outros arquivos:** [documentos, configurações e arquivos de entrada](indexes/_outros.md) (70).
 
 Para regras de alteração, veja [AGENTS.md](../AGENTS.md), [manutenção](MANUTENCAO.md) e [ADR 0001](adr/0001-catalogo-e-fronteiras.md).
