@@ -9,10 +9,17 @@ export const SECOND_WAVE_KINDS = [
   "abyssal-octopus", "tide-hunter-triton",
 ] as const;
 export type SecondWaveKind = typeof SECOND_WAVE_KINDS[number];
+/** População numerosa dos ermos do Sul: tiers comuns 21–30. */
+export const SOUTH_COMMON_KINDS = [
+  "dune-rat", "sand-goblin", "desert-orc", "clay-troll", "dune-scout",
+  "oasis-elf", "mirage-imp", "horned-viper", "carrion-vulture", "cactus-sprout",
+] as const;
+export type SouthCommonKind = typeof SOUTH_COMMON_KINDS[number];
 export const REGIONAL_CREATURE_KINDS = [
   "basalt-golem", "cliff-draconid", "mire-hydra", "dune-scorpion", "solar-scarab",
   "boreal-yeti", "glacial-wolf", "frost-spirit", "coral-crab", "storm-serpent",
   ...SECOND_WAVE_KINDS,
+  ...SOUTH_COMMON_KINDS,
 ] as const;
 export type RegionalCreatureKind = typeof REGIONAL_CREATURE_KINDS[number];
 export type CreatureKind = "slime" | RegionalCreatureKind;
@@ -21,8 +28,10 @@ export type SpecialAttack =
   "none" | "boulder" | "fire" | "acid" | "venom" | "solar-burst" |
   "snowball" | "frost-bite" | "ice-shards" | "reef-stones" | "lightning" |
   "gust" | "lava-burst" | "spore-cloud" | "tongue" | "burrow" |
-  "trample" | "spectral-ice" | "rune-bite" | "ink" | "tidal-lightning";
-export type DebuffKind = "slow" | "poison" | "freeze" | "attack-slow" | "burn" | "stun" | "blind";
+  "trample" | "spectral-ice" | "rune-bite" | "ink" | "tidal-lightning" |
+  "infected-bite" | "sand-throw" | "orc-club" | "clay-clod" | "sling" |
+  "sun-spear" | "mirage-sparks" | "weak-venom" | "carrion-dive" | "thorns";
+export type DebuffKind = "slow" | "poison" | "freeze" | "attack-slow" | "burn" | "stun" | "blind" | "infection" | "weak-venom";
 export interface LootChance { readonly item: string; readonly chance: number; }
 export interface CreatureDefinition {
   readonly name: string;
@@ -190,6 +199,78 @@ export const CREATURE_CATALOG: Readonly<Record<CreatureKind, CreatureDefinition>
     status: null, statusSeconds: 0, region: "east", caveThemes: ["coastal"],
     biomes: ["beach", "island"],
     loot: [{ item: "Escama Azulada", chance: .65 }, { item: "Coral Energizado", chance: .30 }, { item: "Tridente das Marés", chance: .04 }],
+  },
+
+  // Lote 3: frequentes e de baixo tier no Sul. Chance é por item e por morte.
+  "dune-rat": {
+    name: "Rato das Dunas", maxHp: 35, contactDamage: 6, experience: 16,
+    nature: "physical", special: "infected-bite", speed: 90, range: 24, interval: .62,
+    status: "infection", statusSeconds: 3, region: "south", caveThemes: ["desert"],
+    biomes: ["oasis", "ruins", "dunes"],
+    loot: [{ item: "Rabo de Rato", chance: .50 }, { item: "Carne Magra", chance: .40 }, { item: "Queijo Seco", chance: .10 }],
+  },
+  "sand-goblin": {
+    name: "Goblin Saqueador da Areia", maxHp: 65, contactDamage: 11, experience: 29,
+    nature: "physical", special: "sand-throw", speed: 77, range: 115, interval: 1.15,
+    status: null, statusSeconds: 0, region: "south", caveThemes: ["desert"],
+    biomes: ["dunes", "ruins"],
+    loot: [{ item: "Moedas de Cobre", chance: .85 }, { item: "Adaga Enferrujada", chance: .15 }, { item: "Retalho de Pano", chance: .60 }],
+  },
+  "desert-orc": {
+    name: "Orc Nômade do Deserto", maxHp: 110, contactDamage: 17, experience: 54,
+    nature: "physical", special: "orc-club", speed: 54, range: 28, interval: 1.35,
+    status: null, statusSeconds: 0, region: "south", caveThemes: ["desert"],
+    biomes: ["ruins", "dunes"],
+    loot: [{ item: "Osso Talhado", chance: .55 }, { item: "Bracelete de Couro", chance: .25 }, { item: "Carne Seca", chance: .50 }, { item: "Moedas de Ouro", chance: .40 }],
+  },
+  "clay-troll": {
+    name: "Troll de Barro Seco", maxHp: 145, contactDamage: 15, experience: 65,
+    nature: "physical", special: "clay-clod", speed: 30, range: 108, interval: 2.35,
+    status: null, statusSeconds: 0, region: "south", caveThemes: ["marsh", "desert"],
+    biomes: ["oasis", "ruins"],
+    loot: [{ item: "Argila Ressecada", chance: .75 }, { item: "Tora de Madeira Seca", chance: .45 }, { item: "Pedra Bruta", chance: .60 }],
+  },
+  "dune-scout": {
+    name: "Pequenino Batedor das Dunas", maxHp: 75, contactDamage: 12, experience: 34,
+    nature: "physical", special: "sling", speed: 68, range: 139, interval: 1.55,
+    status: null, statusSeconds: 0, region: "south", caveThemes: ["desert"],
+    biomes: ["oasis", "ruins", "dunes"],
+    loot: [{ item: "Bolsa de Sementes", chance: .50 }, { item: "Pedra Polida", chance: .65 }, { item: "Pão de Viagem", chance: .35 }, { item: "Moedas de Prata", chance: .50 }],
+  },
+  "oasis-elf": {
+    name: "Elfo Patrulheiro do Oásis", maxHp: 90, contactDamage: 16, experience: 45,
+    nature: "hybrid", special: "sun-spear", speed: 64, range: 29, interval: 1.25,
+    status: null, statusSeconds: 0, region: "south", caveThemes: ["desert"],
+    biomes: ["oasis", "ruins"],
+    loot: [{ item: "Tecido de Linho Fino", chance: .50 }, { item: "Tâmara do Oásis", chance: .60 }, { item: "Ponta de Lança Élfica", chance: .18 }],
+  },
+  "mirage-imp": {
+    name: "Diabrete de Miragem", maxHp: 55, contactDamage: 14, experience: 30,
+    nature: "magical", special: "mirage-sparks", speed: 58, range: 104, interval: 1.7,
+    status: "blind", statusSeconds: 1.25, region: "south", caveThemes: ["desert"],
+    biomes: ["dunes", "ruins"],
+    loot: [{ item: "Pó Cintilante", chance: .45 }],
+  },
+  "horned-viper": {
+    name: "Víbora-de-Chifre Comum", maxHp: 45, contactDamage: 10, experience: 22,
+    nature: "physical", special: "weak-venom", speed: 76, range: 23, interval: .98,
+    status: "weak-venom", statusSeconds: 4, region: "south", caveThemes: ["desert"],
+    biomes: ["dunes", "oasis", "ruins"],
+    loot: [{ item: "Presa Pequena", chance: .50 }, { item: "Couro de Cobra", chance: .40 }],
+  },
+  "carrion-vulture": {
+    name: "Abutre Carniceiro do Sul", maxHp: 50, contactDamage: 9, experience: 24,
+    nature: "physical", special: "carrion-dive", speed: 83, range: 26, interval: 1.12,
+    status: null, statusSeconds: 0, region: "south", caveThemes: ["desert"],
+    biomes: ["dunes", "ruins"],
+    loot: [{ item: "Pena Escura", chance: .70 }, { item: "Carne Fibrosa", chance: .30 }],
+  },
+  "cactus-sprout": {
+    name: "Brotinho de Cacto Animado", maxHp: 60, contactDamage: 8, experience: 25,
+    nature: "magical", special: "thorns", speed: 38, range: 25, interval: 1.55,
+    status: null, statusSeconds: 0, region: "south", caveThemes: ["desert"],
+    biomes: ["dunes", "ruins", "oasis"],
+    loot: [{ item: "Flor do Deserto", chance: .40 }, { item: "Polpa de Cacto Hidratante", chance: .65 }, { item: "Espinho Verde", chance: .55 }],
   },
 });
 
