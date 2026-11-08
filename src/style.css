@@ -1234,7 +1234,7 @@ noscript a {
   .atlas-controls button, .atlas-sectors button { transition: none; }
 }
 
-#gameNotice:has(#dismissTravelNotice) { z-index: 9; width: min(480px, calc(100% - 28px));
+#gameNotice:has(#dismissTravelNotice) { z-index: 9; pointer-events: auto; width: min(480px, calc(100% - 28px));
   padding: 9px 12px; border: 1px solid #adba9099; background: #122b29ec;
   border-radius: 7px; line-height: 1.5; }
 #dismissTravelNotice { display: inline-block; margin-left: 8px; padding: 6px 10px;
