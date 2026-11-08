@@ -32,3 +32,14 @@
 **Espada ociosa e em ataque:** `renderHero` desenha `equippedWeapon` quando o herói está parado, mas usa `attackWeapon` enquanto um golpe iniciado ainda está em execução. O render não armazena outro inventário e recebe o estado real do motor solo ou do snapshot online.
 
 **Acabamento do atlas (8/11):** o mapa reutiliza a paleta de `terrain.ts`, o mesmo ruído de cor do terreno e primitivas Canvas para uma rosa dos ventos, vinheta suave, grade cartográfica e marcadores contrastados. A camada estática amostrada é mantida em `WeakMap` por Canvas e viewport; snapshots online redesenham apenas os marcadores, evitando reamostrar dezenas de milhares de tiles a cada mudança de jogadores. Não há loop novo. Ao fechar o inventário, o Angular retorna à aba Bolsa e remove o Canvas do atlas, reparando a regressão de Playwright da main. Acabamento de molduras e legenda segue os materiais/relevo do inventário do cavaleiro. Testes observam o Canvas vivo e o ciclo fechar/reabrir no desktop e Android; validação visual em aparelho real continua necessária.
+
+**Padrão de acabamento visual (8/11):** `regionalLandmarkArt.ts` isola a
+pintura dos quatro marcos, com camadas de pedra/gelo/metal, facetas, argamassa,
+rachaduras, reflexos, desgaste, musgo e variantes determinísticas. Reutiliza
+`draw.ts`, o sprite cache 2× de `scenery.ts` e mantém o corpo colidível em
+`world/regionalLandmarks.ts`. O jogo desenha somente o cache; nenhum detalhe
+gráfico altera posição, colisão ou estado autoritativo. O teste
+`tests/regional-landmark-art.test.ts` valida a sequência de Canvas reproduzível,
+diversidade de formas e variantes; testes de navegador e inspeção visual real
+continuam necessários antes do merge. O checklist de autores fica em
+`AGENTS.md`.

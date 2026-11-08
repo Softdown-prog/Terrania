@@ -1,6 +1,6 @@
 import { hash2 } from "../world/random.ts";
 import type { RegionalLandmarkKind } from "../world/regionalLandmarks.ts";
-import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
+import { ellipse, rgba, softShadow, TAU } from "./draw.ts";
 
 /**
  * Art-only module. Regional landmark placement, collision and names stay in
