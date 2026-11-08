@@ -23,9 +23,10 @@ export class Player {
   attackCooldown = 0;
   hurtTime = 0;
   private receivedHits = 0;
-  private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0, burn: 0, stun: 0, blind: 0 };
+  private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0, burn: 0, stun: 0, blind: 0, infection: 0 };
   private poisonElapsed = 0;
   private burnElapsed = 0;
+  private infectionElapsed = 0;
   private swingNumber = 0;
   private poisonStacks = 0;
   get debuffs(): Readonly<Record<DebuffKind, number>> { return { ...this.effects }; }
@@ -44,11 +45,13 @@ export class Player {
     this.poisonElapsed = other.poisonElapsed;
     this.poisonStacks = other.poisonStacks;
     this.burnElapsed = other.burnElapsed;
+    this.infectionElapsed = other.infectionElapsed;
   }
-  applyStatus(kind: DebuffKind, seconds: number): void {
+  applyStatus(kind: DebuffKind, seconds: number, strength = 1): void {
     if (!Number.isFinite(seconds) || seconds <= 0 || this.hp <= 0) return;
     this.effects[kind] = Math.max(this.effects[kind], Math.min(12, seconds));
-    if (kind === "poison") this.poisonStacks = Math.min(3, this.poisonStacks + 1);
+    if (kind === "poison") this.poisonStacks = Math.min(3, this.poisonStacks +
+      (Number.isInteger(strength) && strength > 0 ? strength : 1));
   }
   private advanceDebuffs(dt: number): void {
     if (this.effects.poison > 0 && this.hp > 0) {
@@ -69,6 +72,15 @@ export class Player {
         this.hurtTime = Math.max(this.hurtTime, .15);
       }
     } else this.burnElapsed = 0;
+    if (this.effects.infection > 0 && this.hp > 0) {
+      this.infectionElapsed += dt;
+      while (this.infectionElapsed >= 1 && this.hp > 0) {
+        this.infectionElapsed -= 1;
+        this.hp = Math.max(0, this.hp - 1);
+        this.receivedHits++;
+        this.hurtTime = Math.max(this.hurtTime, .14);
+      }
+    } else this.infectionElapsed = 0;
     for (const kind of Object.keys(this.effects) as DebuffKind[])
       this.effects[kind] = Math.max(0, this.effects[kind] - dt);
   }
@@ -201,6 +213,13 @@ export class Player {
     const dx=this.x-x,dy=this.y-y,d=Math.hypot(dx,dy);
     if (d <= .001) return;
     moveBody(this,dx/d*pixels,dy/d*pixels,world);
+  }
+  /** Contact with cactus spines is guaranteed reflected damage, not a second enemy swing. */
+  receiveThornDamage(amount: number): void {
+    if (this.hp <= 0 || !Number.isFinite(amount) || amount <= 0) return;
+    this.hp = Math.max(0, this.hp - amount);
+    this.receivedHits++;
+    this.hurtTime = Math.max(this.hurtTime, .18);
   }
   takeDamage(amount: number, sourceX: number, sourceY: number): boolean {
     if (this.invulnerable > 0 || this.hp <= 0 || !Number.isFinite(amount) || amount <= 0 ||
