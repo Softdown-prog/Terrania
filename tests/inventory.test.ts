@@ -6,6 +6,7 @@ import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { EQUIPMENT_SLOTS, GEAR } from "../src/engine/Equipment.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../src/engine/Weapons.ts";
+import { experienceForLevel } from "../src/engine/Experience.ts";
 import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
 import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
 
@@ -104,7 +105,7 @@ test("poção restaura vida com teto e não pode ser usada com vida cheia ou mor
 });
 test("Toren vende uma única espada, exige saldo e conserva posse e equipamento no save", () => {
   const toren = { x: 538, y: 32, hp: 100 };
-  const bag = new Inventory({ gel: FORGE_SWORD_PRICE - 1, loadout: { equipped: "forge" } });
+  const bag = new Inventory({ gel: FORGE_SWORD_PRICE - 1, loadout: { equipped: "forge" } },10);
   assert.equal(bag.weapon, WEAPONS.starter);
   assert.equal(bag.equipWeapon("forge"), "not-owned");
   assert.equal(bag.buyForgeSword(toren), "insufficient-sword-gel");
@@ -118,46 +119,52 @@ test("Toren vende uma única espada, exige saldo e conserva posse e equipamento 
   assert.equal(bag.buyForgeSword(toren), "already-owned");
   assert.equal(bag.equipWeapon("forge"), "equipped");
   assert.equal(bag.equipWeapon("forge"), "already-equipped");
-  const restored = new Inventory(JSON.parse(JSON.stringify(bag.snapshot())));
+  const restored = new Inventory(JSON.parse(JSON.stringify(bag.snapshot())),10);
   assert.equal(restored.weapon, WEAPONS.forge);
   assert.equal(restored.equipWeapon("starter"), "equipped");
-  assert.equal(new Inventory(restored.snapshot()).equipWeapon("forge"), "equipped");
+  assert.equal(new Inventory(restored.snapshot(),10).equipWeapon("forge"), "equipped");
   assert.equal(new Inventory({ loadout: { forged: true, equipped: "bogus" } }).weapon, WEAPONS.starter);
 });
-test("trocar espada durante um golpe conserva o dano e o relógio já comprometidos no solo", () => {
+test("trocar espada durante o golpe preserva dano e recarga da arma comprometida", () => {
   const sim = new OfflineSimulation(seed, { seed, x: -560, y: -1008, hp: 100,
-    kills: 0, defeated: [], inventory: { gel: 0, potion: 0, questRewardClaimed: false,
+    kills: 0, experience: experienceForLevel(10), defeated: [],
+    inventory: { gel: 0, potion: 0, questRewardClaimed: false,
       loadout: { forged: true, equipped: "starter" } } });
   const combat = new ClassicCombat();
-  sim.update(0.05, still, false);
-  const slime = sim.slimes.get("-2,-2,0");
+  sim.update(0.05,still,false);
+  const slime=sim.slimes.get("-2,-2,0");
   assert.ok(slime);
-  assert.equal(combat.select(slime.id, sim.slimes), true);
-  const tick = () => sim.update(0.05, still,
-    combat.tick(0.05, sim.player, sim.slimes, sim.collision, sim.inventory.weapon.interval), combat.strikeTargetId);
-  tick();
-  assert.equal(combat.cooldown, WEAPONS.starter.interval);
-  assert.equal(sim.inventory.equipWeapon("forge"), "equipped");
-  tick(); tick();
-  assert.equal(slime.hp, 1);
-  assert.ok(combat.cooldown < WEAPONS.starter.interval);
-  slime.hp = 2;
-  for (let i = 0; i < 35 && combat.cooldown < WEAPONS.forge.interval; i++) tick();
-  assert.equal(combat.cooldown, WEAPONS.forge.interval);
-  assert.equal(sim.inventory.equipWeapon("starter"), "equipped");
-  tick(); tick();
-  assert.equal(slime.hp, 2);
-  tick(); tick();
-  assert.equal(sim.kills, 1);
-  assert.ok(combat.cooldown > WEAPONS.starter.interval);
-  sim.player.hp = 0;
-  assert.equal(sim.respawn(), true);
-  assert.deepEqual(sim.inventory.loadout, { forged: true, equipped: "starter" });
+  slime.hp=100;
+  assert.equal(combat.select(slime.id,sim.slimes),true);
+  const tick=():boolean=>{
+    const attack=combat.tick(0.05,sim.player,sim.slimes,sim.collision,sim.inventory.weapon.interval);
+    sim.update(0.05,still,attack,combat.strikeTargetId);
+    return attack;
+  };
+  assert.equal(tick(),true);
+  assert.equal(combat.cooldown,WEAPONS.starter.interval);
+  assert.equal(sim.inventory.equipWeapon("forge"),"equipped");
+  tick();tick();
+  assert.equal(slime.hp,92,"the first started wooden swing must still hit for 8");
+  let second=false;
+  for(let frame=0;frame<35;frame++){
+    if(tick()){second=true;break;}
+  }
+  assert.equal(second,true);
+  assert.equal(combat.cooldown,WEAPONS.forge.interval);
+  assert.equal(sim.inventory.equipWeapon("starter"),"equipped");
+  tick();tick();
+  assert.equal(slime.hp,76,"the second started iron swing must still hit for 16");
+  assert.ok(combat.cooldown>0,"target/equipment switching must not cancel cooldown");
+  sim.player.hp=0;
+  assert.equal(sim.respawn(),true);
+  assert.deepEqual(sim.inventory.loadout,{forged:true,equipped:"starter"});
 });
+
 test("a espada leve finaliza antes um alvo ferido e a forjada vence contra vida cheia", () => {
   function timeToKill(weapon: WeaponId, hp: number): number {
     const sim = new OfflineSimulation(seed, { seed, x: -560, y: -1008, hp: 100, kills: 0,
-      defeated: [], inventory: { gel: 0, potion: 0, questRewardClaimed: false,
+      experience: experienceForLevel(10), defeated: [], inventory: { gel: 0, potion: 0, questRewardClaimed: false,
         loadout: { forged: true, equipped: weapon } } });
     const combat = new ClassicCombat();
     const walker = new ClassicTileWalker();
@@ -175,9 +182,9 @@ test("a espada leve finaliza antes um alvo ferido e a forjada vence contra vida 
     assert.fail("o alvo sobreposto deve ser derrotado");
   }
   const wounded = { starter: timeToKill("starter", 1), forge: timeToKill("forge", 1) };
-  const healthy = { starter: timeToKill("starter", 2), forge: timeToKill("forge", 2) };
-  assert.ok(wounded.starter < 0.1 && wounded.forge >= 0.18);
-  assert.ok(healthy.starter >= 1.6 && healthy.forge < 0.2);
+  const healthy = { starter: timeToKill("starter", 12), forge: timeToKill("forge", 12) };
+  assert.ok(wounded.starter < WEAPONS.forge.windup && wounded.forge >= WEAPONS.forge.windup - 1/60);
+  assert.ok(healthy.starter >= .8 && healthy.forge < .2);
 });
 test("slime derrotado deixa gel no mundo, coleta de perto e save persistente", () => {
   const sim = new OfflineSimulation(seed);
