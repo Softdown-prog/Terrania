@@ -23,9 +23,11 @@ export class Player {
   attackCooldown = 0;
   hurtTime = 0;
   private receivedHits = 0;
-  private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0, burn: 0, stun: 0, blind: 0 };
+  private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0, burn: 0, stun: 0, blind: 0, infection: 0, "weak-venom": 0 };
   private poisonElapsed = 0;
   private burnElapsed = 0;
+  private infectionElapsed = 0;
+  private weakVenomElapsed = 0;
   private swingNumber = 0;
   private poisonStacks = 0;
   get debuffs(): Readonly<Record<DebuffKind, number>> { return { ...this.effects }; }
@@ -44,6 +46,8 @@ export class Player {
     this.poisonElapsed = other.poisonElapsed;
     this.poisonStacks = other.poisonStacks;
     this.burnElapsed = other.burnElapsed;
+    this.infectionElapsed = other.infectionElapsed;
+    this.weakVenomElapsed = other.weakVenomElapsed;
   }
   applyStatus(kind: DebuffKind, seconds: number): void {
     if (!Number.isFinite(seconds) || seconds <= 0 || this.hp <= 0) return;
@@ -69,6 +73,21 @@ export class Player {
         this.hurtTime = Math.max(this.hurtTime, .15);
       }
     } else this.burnElapsed = 0;
+    // Weak desert infections have explicit, independent fixed damage per second.
+    // They never inherit the stacks of poisonous marsh monsters.
+    const tickLight = (kind: "infection" | "weak-venom", elapsed: number, damage: number): number => {
+      if (this.effects[kind] <= 0 || this.hp <= 0) return 0;
+      elapsed += dt;
+      while (elapsed >= 1 && this.hp > 0) {
+        elapsed -= 1;
+        this.hp = Math.max(0, this.hp - damage);
+        this.receivedHits++;
+        this.hurtTime = Math.max(this.hurtTime,.15);
+      }
+      return elapsed;
+    };
+    this.infectionElapsed = tickLight("infection",this.infectionElapsed,1);
+    this.weakVenomElapsed = tickLight("weak-venom",this.weakVenomElapsed,2);
     for (const kind of Object.keys(this.effects) as DebuffKind[])
       this.effects[kind] = Math.max(0, this.effects[kind] - dt);
   }
