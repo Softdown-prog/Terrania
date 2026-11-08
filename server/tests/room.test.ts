@@ -251,6 +251,9 @@ test('a sala negocia espaços, valida o item e aplica a defesa confirmada', () =
   send(2, null);
   assert.equal(inventory()?.gear?.shield, 'willow-shield');
   assert.equal(inventory()?.receipt?.outcome, 'gear-equipped');
+  // Outros jogadores veem a aparência equipada, mas não a bolsa privada.
+  assert.equal(room.snapshotFor('b')?.players.find(hero => hero.id === 'a')?.gear?.shield, 'willow-shield');
+  assert.equal(room.snapshotFor('b')?.inventory?.gear, undefined);
   room.receiveInventory('b', { type: 'inventory', action: 'set-gear', requestId: 1, slot: 'shield', item: 'willow-shield' });
   assert.equal(room.snapshotFor('b')?.inventory?.receipt?.outcome, 'unavailable');
 

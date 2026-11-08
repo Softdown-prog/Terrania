@@ -360,3 +360,37 @@ test('inventário mobile tem mochila por toque, comparação real e cavaleiro pr
   expect(noHorizontalOverflow).toBe(true);
   expect(pageErrors).toEqual([]);
 });
+
+test('equipar elmo muda o desenho real do cavaleiro e retirar remove a chapa', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({
+      seed: 842136, x: 16, y: 16, hp: 100, kills: 0, defeated: [],
+      inventory: { gel: 0, potion: 0, questRewardClaimed: false },
+    }));
+  });
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('canvas#game')).toBeVisible();
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  if (await page.locator('#inventoryTabEquipment').isVisible()) {
+    await page.locator('#inventoryTabEquipment').click();
+  }
+  const helmPixels = () => page.locator('#inventoryHero').evaluate(canvas => {
+    const el = canvas as HTMLCanvasElement, pixels = el.getContext('2d')!.getImageData(0, 0, el.width, el.height).data;
+    let marks = 0;
+    // #e5d39e: filete dourado do elmo; tonalidade distinta da faixa antiga.
+    for (let i = 0; i < pixels.length; i += 4) {
+      if (Math.abs(pixels[i]! - 229) < 5 && Math.abs(pixels[i + 1]! - 211) < 5 &&
+          Math.abs(pixels[i + 2]! - 158) < 5 && pixels[i + 3]! > 230) marks++;
+    }
+    return marks;
+  });
+  await expect.poll(helmPixels).toBe(0);
+  await page.locator('[data-equipment-slot="head"]').click();
+  await page.getByRole('button', { name: 'Equipar Elmo de trilha' }).click();
+  await expect(page.locator('[data-equipment-slot="head"]')).toContainText('Elmo de trilha');
+  await expect.poll(helmPixels).toBeGreaterThan(8);
+  await page.getByRole('button', { name: 'Retirar Elmo de trilha' }).click();
+  await expect(page.locator('[data-equipment-slot="head"]')).toContainText('Vazio');
+  await expect.poll(helmPixels).toBe(0);
+});
