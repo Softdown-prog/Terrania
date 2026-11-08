@@ -1,6 +1,7 @@
 import type { Player } from "../actors/Player.ts";
 import type { Slime } from "../actors/Slime.ts";
 import type { GearState } from "../engine/Equipment.ts";
+import type { WeaponId } from "../engine/Weapons.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { attackBody, swingTrail, swordSwing } from "./heroPose.ts";
 import { blink, gait, slimePose, smoothTo } from "./animation.ts";
@@ -10,7 +11,8 @@ export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
-  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> & { id?: string; gear?: GearState | undefined };
+  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> &
+  { id?: string; gear?: GearState | undefined; equippedWeapon?: WeaponId | undefined };
 export type SlimeVisual = Pick<Slime, "hp" | "bounce"> & { hurtTime?: number; id?: string };
 /** Contexto opcional de apresentação; nada aqui altera regras ou dano. */
 export interface SlimeFx {
@@ -99,7 +101,9 @@ function renderTrail(ctx: CanvasRenderingContext2D, player: HeroVisual, forge: b
 
 function renderWeapon(ctx: CanvasRenderingContext2D, frame: WeaponFrame, player: HeroVisual,
   tone: (c: string) => string, impact: number): void {
-  const forge = player.attackWeapon === "forge";
+  // An active swing keeps its committed blade; idle uses the equipped weapon.
+  const forge = frame.attacking ? player.attackWeapon === "forge" :
+    (player.equippedWeapon ?? player.attackWeapon) === "forge";
   const len = frame.attacking ? 45 : 33;
   ctx.save();
   ctx.translate(frame.ox, frame.oy);

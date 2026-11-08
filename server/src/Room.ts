@@ -382,6 +382,8 @@ export class Room {
         walkTime: a.walkTime,
         attackTime: a.attackTime,
         ...(a.attackTime > 0 && a.attackWeapon === "forge" ? { attackWeapon: a.attackWeapon } : {}),
+        ...(g.inventory?.equipment && g.inventory.bag.loadout.equipped === "forge"
+          ? { equippedWeapon: "forge" as const } : {}),
         vx: a.vx,
         vy: a.vy,
         hurtTime: a.hurtTime,
