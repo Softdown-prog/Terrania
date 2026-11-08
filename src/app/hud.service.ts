@@ -53,6 +53,7 @@ export class HudService implements GameUi {
   readonly questProgress = signal('');
   readonly questPercent = signal(0);
   readonly coords = signal('X 0 · Y 0');
+  readonly mapTile = signal({ x: 0, y: 0 }, { equal: (a, b) => a.x === b.x && a.y === b.y });
   readonly seed = signal(842136);
   readonly gel = signal(0);
   readonly potions = signal(0);
@@ -310,6 +311,7 @@ export class HudService implements GameUi {
     this.quest.set(quest.completed ? 'Clareira protegida' : 'Proteja a clareira');
     this.questProgress.set(quest.completed ? 'Missão concluída ✓' : `${quest.defeated} / ${quest.goal} slimes`);
     this.questPercent.set(quest.defeated / quest.goal * 100);
+    this.mapTile.set({ x: hero.tileX, y: hero.tileY });
     this.coords.set(`X ${hero.tileX} · Y ${hero.tileY}`);
   }
 }
