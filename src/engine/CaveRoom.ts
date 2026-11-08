@@ -1,3 +1,4 @@
+import { applySwordImpact, swordHitDamage } from "./SwordCombat.ts";
 import { SOUTH_COMMON_KINDS } from "../actors/CreatureCatalog.ts";
 import { RegionalMonster, caveMonsterKinds } from "../actors/RegionalMonster.ts";
 import { canStrike, faceTarget } from "./combat.ts";
@@ -136,24 +137,37 @@ export class CaveRoom {
     dt=Math.min(dt,.1);
     this.player.update(dt,movement,this.collision);
     if(attack)this.player.startAttack(weapon);
-    for(const monster of this.monsters.values()) monster.update(dt,this.player,this.collision,defense);
+    for(const [id,monster] of this.monsters){
+      monster.update(dt,this.player,this.collision,defense);
+      if(monster.hp<=0)this.defeat(id,monster);
+    }
     if(this.player.consumeStrike()){
+      const equipped=this.player.attackWeapon;
+      const reach=equipped==="astral"?72:52,cone=equipped==="astral"?-.5:-.1;
       const targets=[...this.monsters.values()]
-        .filter(monster=>(targetId === undefined || monster.id === targetId) &&
-          canStrike(this.player,monster,this.collision))
-        .sort((a,b)=>Math.hypot(a.x-this.player.x,a.y-this.player.y)-Math.hypot(b.x-this.player.x,b.y-this.player.y));
-      const monster=targets[0];
-      if(monster){
+        .filter(monster=>(targetId===undefined || monster.id===targetId) &&
+          canStrike(this.player,monster,this.collision,reach,cone))
+        .sort((a,b)=>Math.hypot(a.x-this.player.x,a.y-this.player.y)-
+          Math.hypot(b.x-this.player.x,b.y-this.player.y))
+        .slice(0,equipped==="astral"?3:1);
+      for(const monster of targets){
+        if(monster.hp<=0)continue;
         faceTarget(this.player,monster);
-        monster.takeHit(this.player.x,this.player.y,this.player.strikeDamage);
-        monster.onSwordHit(this.player,weapon);
-        if(monster.hp<=0){
-          monster.deathBurst(this.player,this.collision,defense);
-          this.monsters.delete(monster.id);
-          this.victories.push({kind:monster.kind as RegionalCreatureKind,id:monster.id});
-        }
+        monster.takeHit(this.player.x,this.player.y,swordHitDamage(equipped,monster));
+        monster.onSwordHit(this.player,equipped);
+        const arcs=applySwordImpact(equipped,this.player,monster,
+          this.monsters.values(),this.collision).extra;
+        for(const struck of arcs)if(struck.hp<=0)this.defeat(struck.id,struck as RegionalMonster);
+        if(monster.hp<=0)this.defeat(monster.id,monster);
       }
     }
+  }
+  /** One kill event even if DOT, direct hit and chained lightning overlap. */
+  private defeat(id:string,monster:RegionalMonster):void {
+    if(!this.monsters.has(id))return;
+    monster.deathBurst(this.player,this.collision,0);
+    this.monsters.delete(id);
+    this.victories.push({kind:monster.kind,id});
   }
   get nearExit():boolean {
     return Math.hypot(this.player.x-(CAVE_EXIT.x+.5)*TILE_SIZE,
