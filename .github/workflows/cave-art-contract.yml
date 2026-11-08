@@ -36,8 +36,10 @@ jobs:
       - name: Execute procedural art and all unit regression tests
         run: npm test
       - name: Install Chromium for real Canvas captures
+        if: always()
         run: npx playwright install --with-deps chromium
       - name: Produce six-biome and registered-assets evidence
+        if: always()
         run: npm run art:preview
       - name: Upload unfiltered art evidence
         if: always()
