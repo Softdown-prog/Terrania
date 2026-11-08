@@ -89,6 +89,14 @@ test("arte: todo desenhador exportado está registrado em tests/helpers/artAsset
   assert.deepEqual(missing, [], "registre a peça em ASSETS (com categoria) ou explique em NOT_AN_ASSET");
 });
 
+// No new scene/composition may opt out just by adding a string to NOT_AN_ASSET.
+test("arte: exceções são fechadas e exigem revisão explícita de novos pintores", () => {
+  assert.deepEqual(Object.keys(NOT_AN_ASSET).sort(), [
+    "drawCaveAtlas", "drawCaveView", "drawInterior", "drawWorldAtlas",
+    "drawWorldView", "ellipse", "limb", "pill", "softShadow",
+  ].sort());
+});
+
 test("arte: a varredura acha um pintor novo com qualquer nome, mas ignora comentários", () => {
   assert.deepEqual(drawersIn("export function paintSomethingNew(c: CanvasRenderingContext2D, kind: string): void {}"), ["paintSomethingNew"]);
   assert.deepEqual(drawersIn("export function stampBanner(\n  context: CanvasRenderingContext2D,\n  x: number): void {}"), ["stampBanner"]);

@@ -3,19 +3,13 @@ import type { GearState } from "../engine/Equipment.ts";
 import type { WeaponId } from "../engine/Weapons.ts";
 import { renderHero } from "./actors.ts";
 import { ellipse, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
+import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "./caveDetails.ts";
 import { hash2, valueNoise } from "../world/random.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
-import type { CaveEntrance, CaveTheme } from "../world/caves.ts";
+import type { CaveEntrance } from "../world/caves.ts";
 import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH, type CaveFloor, type CaveRoom } from "../engine/CaveRoom.ts";
 
-const PALETTE: Record<CaveTheme, { ground: string; light: string; wall: string; rim: string; water: string; accent: string }> = {
-  verdant: { ground:"#51604a",light:"#879270",wall:"#27382e",rim:"#607555",water:"#345a51",accent:"#b1d17d" },
-  glacial: { ground:"#789da5",light:"#bcd9db",wall:"#355668",rim:"#a0ccdc",water:"#3a8396",accent:"#d9fcff" },
-  desert: { ground:"#8c7458",light:"#d6b785",wall:"#594636",rim:"#bba078",water:"#6a7a65",accent:"#ead18e" },
-  coastal: { ground:"#577b78",light:"#a4bfb0",wall:"#284e55",rim:"#74a5a0",water:"#307d90",accent:"#b0e9d9" },
-  basalt: { ground:"#505660",light:"#8d9194",wall:"#222b32",rim:"#677682",water:"#36505c",accent:"#b5c0b9" },
-  marsh: { ground:"#494f3d",light:"#89926b",wall:"#262c29",rim:"#637355",water:"#36594b",accent:"#afd887" },
-};
+const PALETTE = CAVE_PALETTE;
 
 const wallCache = new WeakMap<CaveFloor, HTMLCanvasElement>();
 const atlasCache = new WeakMap<CaveFloor, { width: number; height: number; canvas: HTMLCanvasElement }>();
@@ -57,30 +51,12 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
         ctx.quadraticCurveTo(sx + ox + 9, sy + oy + 11, sx + ox + 17, sy + oy + 19);
         ctx.stroke();
       }
-      // Only the edge facing a chamber receives rock relief and an upper-left highlight.
-      if (isOpen(x, y + 1)) {
-        const lip = ctx.createLinearGradient(0, sy + 17, 0, sy + 32);
-        lip.addColorStop(0, rgba(p.wall, 0));
-        lip.addColorStop(.55, rgba(p.rim, .48));
-        lip.addColorStop(1, rgba(OUTLINE, .95));
-        ctx.fillStyle = lip;
-        ctx.fillRect(sx, sy + 16, 32, 16);
-        ctx.strokeStyle = rgba(p.light, .57);
-        ctx.lineWidth = 1.3;
-        ctx.beginPath();
-        ctx.moveTo(sx, sy + 27 + n(x, y, 201) * 1.4);
-        ctx.quadraticCurveTo(sx + 16, sy + 26, sx + 32, sy + 28);
-        ctx.stroke();
-        ctx.fillStyle = rgba(OUTLINE, .37);
-        ctx.fillRect(sx, sy + 30, TILE_SIZE, 2);
-      }
-      if (isOpen(x + 1, y)) {
-        const side = ctx.createLinearGradient(sx + 16, 0, sx + 32, 0);
-        side.addColorStop(0, rgba(p.wall, 0));
-        side.addColorStop(1, rgba(p.rim, .35));
-        ctx.fillStyle = side;
-        ctx.fillRect(sx + 16, sy, 16, TILE_SIZE);
-      }
+      // Rock edges are physical, individually audited pieces rather than
+      // straight-line effects hiding inside this unregistered composition.
+      if (isOpen(x, y + 1))
+        drawCaveWallFace(ctx, floor.theme, sx + 16, sy + 30, "south", n(x, y, 201));
+      if (isOpen(x + 1, y))
+        drawCaveWallFace(ctx, floor.theme, sx + 30, sy + 16, "east", n(x, y, 219));
       continue;
     }
 
@@ -144,74 +120,13 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
     if (!besideWall || n(x, y, 107) < .83) continue;
     const cx = sx + 7 + n(x, y, 113) * 17;
     const cy = sy + 11 + n(x, y, 119) * 14;
-    if (floor.theme === "glacial" || floor.theme === "basalt") {
-      const crystal = ctx.createLinearGradient(cx - 6, cy - 11, cx + 7, cy + 6);
-      crystal.addColorStop(0, floor.theme === "glacial" ? GLINT : p.light);
-      crystal.addColorStop(.45, p.rim);
-      crystal.addColorStop(1, shade(p.wall, -.12));
-      ctx.fillStyle = crystal;
-      ctx.strokeStyle = OUTLINE;
-      ctx.lineWidth = .85;
-      ctx.beginPath();
-      ctx.moveTo(cx - 5, cy + 4); ctx.lineTo(cx - 2, cy - 7);
-      ctx.lineTo(cx + 3, cy - 11); ctx.lineTo(cx + 7, cy - 3);
-      ctx.lineTo(cx + 5, cy + 5); ctx.closePath();
-      ctx.fill(); ctx.stroke();
-      ctx.strokeStyle = rgba(GLINT, .48);
-      ctx.beginPath(); ctx.moveTo(cx - 2, cy - 6); ctx.lineTo(cx + 1, cy + 1); ctx.stroke();
-    } else if (floor.theme === "verdant" || floor.theme === "marsh") {
-      ctx.strokeStyle = shade(p.ground, -.5); ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(cx - 7, cy + 5);
-      ctx.quadraticCurveTo(cx + 1, cy - 11, cx + 7, cy - 3); ctx.stroke();
-      ctx.strokeStyle = rgba(p.accent, .74); ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(cx - 5, cy + 3);
-      ctx.quadraticCurveTo(cx + 1, cy - 10, cx + 6, cy - 4); ctx.stroke();
-      if (fine > .91) {
-        ellipse(ctx, cx + 4, cy + 3, 3.2, 1.9, p.accent);
-        ellipse(ctx, cx + 3, cy + 2, 1, .5, GLINT);
-      }
-    } else {
-      // Sand and sea: eroded pebbles, pale shells and striated stones.
-      softShadow(ctx, cx, cy + 5, 8, 2, .18);
-      ellipse(ctx, cx, cy + 3, 6, 3, shade(p.ground, -.4), -.14);
-      ellipse(ctx, cx - 1.2, cy + 1.4, 4.7, 2.1, p.rim, -.14);
-      ctx.strokeStyle = rgba(GLINT, .6); ctx.lineWidth = .8;
-      ctx.beginPath(); ctx.moveTo(cx - 4, cy + .7);
-      ctx.quadraticCurveTo(cx - 1, cy - .7, cx + 2, cy + .9); ctx.stroke();
-    }
+    drawCaveFormation(ctx, floor.theme, cx, cy + 3, fine);
   }
 
   // A cut-stone stairwell, with a dark recess and perspective rather than a flat circle.
   const ex = (CAVE_EXIT.x + .5) * TILE_SIZE;
   const ey = (CAVE_EXIT.y + .5) * TILE_SIZE;
-  ctx.save(); ctx.translate(ex, ey);
-  const aura = ctx.createRadialGradient(0, 0, 4, 0, 0, 49);
-  aura.addColorStop(0, rgba(p.accent, .3)); aura.addColorStop(1, rgba(p.accent, 0));
-  ctx.fillStyle = aura; ctx.fillRect(-51, -51, 102, 102);
-  softShadow(ctx, 0, 8, 29, 11, .52);
-  const well = ctx.createLinearGradient(-24, -14, 24, 13);
-  well.addColorStop(0, p.light); well.addColorStop(.34, p.rim);
-  well.addColorStop(1, shade(p.wall, -.4));
-  ellipse(ctx, 0, 0, 27, 16, well);
-  ellipse(ctx, 0, 1, 21, 10.5, OUTLINE);
-  const depth = ctx.createLinearGradient(0, -11, 0, 13);
-  depth.addColorStop(0, shade(p.wall, -.48));
-  depth.addColorStop(1, "#061316");
-  ellipse(ctx, 0, 1, 18.5, 8.3, depth);
-  for (let step = 0; step < 4; step++) {
-    const yy = -7 + step * 3.6, half = 8 + step * 2.3;
-    ctx.fillStyle = mix(p.rim, p.light, .24 + step * .15);
-    ctx.fillRect(-half, yy, half * 2, 3);
-    ctx.fillStyle = rgba(GLINT, .38);
-    ctx.fillRect(-half, yy, half * 2, .8);
-    ctx.fillStyle = rgba(OUTLINE, .5);
-    ctx.fillRect(-half, yy + 2.3, half * 2, 1.1);
-  }
-  ctx.strokeStyle = OUTLINE; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.ellipse(0, 0, 27, 16, 0, 0, TAU); ctx.stroke();
-  ctx.strokeStyle = rgba(GLINT, .72); ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.ellipse(0, -1, 24, 13, 0, Math.PI, TAU * .97); ctx.stroke();
-  ctx.restore();
+  drawCaveExitStair(ctx, floor.theme, ex, ey);
 
   return canvas;
 }

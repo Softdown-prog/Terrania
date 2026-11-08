@@ -94,3 +94,41 @@ src/render/reference/barrelReference.ts e src/render/draw.ts.
 - Entregue com a captura de `npm run art:preview` (e uma extra para estados/variantes) e uma frase por camada.
 Não diga que está pronto sem mostrar a saída do teste e a captura.
 ```
+
+## Fiscalização de peças subterrâneas (correção da brecha)
+
+`src/render/cave.ts` continua sendo uma **composição** de mundo e atlas;
+a exceção em `NOT_AN_ASSET` não cobre formas físicas desenhadas dentro dela.
+As formações rochosas, raízes, cristais e escadas agora pertencem a
+`src/render/caveDetails.ts`, onde cada tema tem dois pintores classificados
+como `prop` em `tests/helpers/artAssets.ts`. Não baixar `FLOORS.prop`.
+
+Além dos pisos normais, `tests/cave-art-contract.test.ts` exige `clip()`
+nas peças (detalhes do material recortados na silhueta), caminho com volume
+e diversidade de cores, `save/restore` balanceados e determinismo em **seis
+temas**. O mesmo teste observa as composições completas de caverna e atlas
+com o gravador, sem chamar de "prop" uma planta de 42×30 tiles. A lista de
+exceções está agora travada no teste: qualquer nova exceção pede alteração
+revisável no portão, não apenas uma string arbitrária no registro.
+
+Limitação honesta: esses testes ainda não certificam beleza, composição
+artística, direção de luz por pixel nem desempenho no aparelho físico. A
+galeria `cavernas-regionais.png` e os testes de navegador continuam sendo
+etapas obrigatórias de revisão; jamais aprovar só por métricas.
+
+### Evidência adicional do relevo
+
+A captura inicial das seis cavernas enquadra apenas a posição inicial perto
+da escada e pode esconder completamente as paredes, produzindo uma imagem
+enganosamente homogênea. `npm run art:preview` agora gera também
+`cavernas-paredes.png`: cada uma das seis regiões é fotografada junto a uma
+parede **real**, escolhida pela planta transitável da própria caverna. Não
+aprovar a qualidade ambiental usando somente o retrato perto da escada.
+
+### Faces de parede auditadas
+
+As bordas de rocha deixaram de ser apenas retângulos e linhas dentro de
+`paintFloor`. `drawCaveWallFace` fornece uma silhueta de pedra facetada,
+sombra de contato, veios recortados, fenda em três passadas e contorno
+irregular, para bordas ao sul e leste. Cada orientação de cada bioma é
+registrada como peça `prop`; os pisos do portão permanecem intactos.
