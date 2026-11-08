@@ -1,6 +1,7 @@
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { ExperienceProgress } from '../engine/Experience.ts';
+import type { FoodCounts, FoodId, NutritionState } from '../engine/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/Equipment.ts';
 
@@ -13,6 +14,7 @@ export interface Preferences {
 export interface HeroHudState {
   readonly hp: number;
   readonly maxHp: number;
+  readonly nutrition: NutritionState;
   readonly tileX: number;
   readonly tileY: number;
   readonly progression: ExperienceProgress | null;
@@ -31,11 +33,13 @@ export interface GameUi {
   onTalk(callback: () => void): void;
   onPotionTrade(callback: () => string): void;
   onPotionUse(callback: () => string): void;
+  onFoodUse(callback: (id: FoodId) => string): void;
+  onFoodTrade(callback: (id: FoodId) => string): void;
   onSwordPurchase(callback: () => string): void;
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void;
   onRespawn(callback: () => void): void;
-  updateInventory(gel: number, potions: number, available: boolean, pending: boolean): void;
+  updateInventory(gel: number, potions: number, available: boolean, pending: boolean, food: FoodCounts): void;
   updateLoadout(loadout: WeaponLoadout | null): void;
   updateGear(gear: GearState | null): void;
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void;

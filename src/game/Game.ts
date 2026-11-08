@@ -14,6 +14,7 @@ import type { GameUi, NpcOffer, Preferences } from "../ui/GameUi.ts";
 import { nearestNpc, npcDialogue } from "../world/npcs.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { POTION_GEL_PRICE, POTION_HEAL, QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
+import { FOODS, emptyFoodCounts, type FoodId } from "../engine/Food.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../engine/Weapons.ts";
 import type { GearId, GearSlot } from "../engine/Equipment.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
@@ -32,6 +33,12 @@ const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "healed": `Poção utilizada! Vida restaurada em até ${POTION_HEAL} pontos.`,
   "full-health": "Sua vida já está completa.",
   "no-potion": "Você não possui poções de cura.",
+  "ate": "Refeição feita. Sua vida será recuperada gradualmente.",
+  "no-food": "Esse alimento acabou na sua bolsa.",
+  "eat-cooldown": "Aguarde alguns segundos antes de comer novamente.",
+  "nutrition-full": "Você ainda está alimentado. Aguarde a recuperação antes de comer mais.",
+  "food-traded": "Lina colocou o alimento na sua bolsa.",
+  "food-stack-full": "A pilha desse alimento está cheia.",
   "unavailable": "Retorne à vila para continuar.",
   "too-far": "Aproxime-se de Lina perto da hospedaria para trocar.",
   "insufficient-gel": `Você precisa de ${POTION_GEL_PRICE} unidades de gel para a troca.`,
@@ -104,7 +111,7 @@ export class Game {
         (status) => this.updateConnectionStatus(status),
         ({ action, outcome }) => {
           this.updateHud(true);
-          this.hud.setInventoryFeedback(action === "trade-potion" || action === "buy-sword" ? "npc" : "bag",
+          this.hud.setInventoryFeedback(action === "trade-potion" || action === "buy-sword" || action.startsWith("buy-") ? "npc" : "bag",
             INVENTORY_FEEDBACK[outcome]);
           if (action === "use-potion") this.hud.setQuickPotionFeedback(INVENTORY_FEEDBACK[outcome]);
         },
@@ -125,6 +132,8 @@ export class Game {
     this.hud.onNewWorld(() => this.newWorld());
     this.hud.onPotionTrade(() => this.tradeGelForPotion());
     this.hud.onSwordPurchase(() => this.buySword());
+    this.hud.onFoodUse(id => this.eatFood(id));
+    this.hud.onFoodTrade(id => this.buyFood(id));
     this.hud.onWeaponEquip(weapon => this.equipWeapon(weapon));
     this.hud.onGearEquip((slot, item) => this.equipGear(slot, item));
     this.hud.onTalk(() => this.talkToNpc());
@@ -151,13 +160,14 @@ export class Game {
     this.hud.updateHero({
       hp: player.hp,
       maxHp: player.maxHp,
+      nutrition: online ? this.multiplayer?.inventory?.nutrition ?? { reserve: 0, elapsed: 0, cooldown: 0 } : player.nutrition,
       tileX: Math.floor(player.x / TILE_SIZE),
       tileY: Math.floor(player.y / TILE_SIZE),
       progression: experience === null ? null : experienceProgress(experience),
       awaitingRespawn: !online && this.sim.awaitingRespawn,
     }, aelaQuestProgress(kills));
     this.hud.updateInventory(inventory?.gel ?? 0, inventory?.potion ?? 0, !!inventory,
-      online && this.multiplayer?.inventoryPending === true);
+      online && this.multiplayer?.inventoryPending === true, inventory?.food ?? emptyFoodCounts());
     this.hud.updateLoadout(inventory?.loadout ?? null);
     this.hud.updateGear(inventory?.gear ?? null);
   }
@@ -337,6 +347,22 @@ export class Game {
       this.updateHud(false);
     }
     return INVENTORY_FEEDBACK[result];
+  }
+  private eatFood(id: FoodId): string {
+    if (this.multiplayer?.connected) return this.requestRoomInventory(`eat-${id}`);
+    if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
+    const outcome = this.sim.inventory.useFood(id, this.sim.player);
+    if (outcome === "ate") { this.save(); this.updateHud(false); }
+    return outcome === "ate" ? `${FOODS[id].name}: ${INVENTORY_FEEDBACK.ate}` : INVENTORY_FEEDBACK[outcome];
+  }
+  private buyFood(id: FoodId): string {
+    if (this.interior || !this.hud.menuOpen) return INVENTORY_FEEDBACK["too-far"];
+    if (this.multiplayer?.connected) return this.requestRoomInventory(`buy-${id}`);
+    if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
+    if (nearestNpc(this.sim.player.x, this.sim.player.y)?.id !== "lina") return INVENTORY_FEEDBACK["too-far"];
+    const outcome = this.sim.inventory.tradeGelForFood(id);
+    if (outcome === "food-traded") { this.save(); this.updateHud(false); }
+    return outcome === "food-traded" ? `Lina entregou ${FOODS[id].name}.` : INVENTORY_FEEDBACK[outcome];
   }
   private buySword(): string {
     if (this.interior || !this.hud.menuOpen) return INVENTORY_FEEDBACK["too-far-from-forge"];
