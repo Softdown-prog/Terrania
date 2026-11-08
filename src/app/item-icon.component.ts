@@ -6,7 +6,9 @@ import type { WeaponId } from '../engine/Weapons.ts';
 /** Ícones desenhados para o Terrania. Somente apresentação: não carregam regra de jogo. */
 export type ItemIconId =
   | 'gel' | 'material' | 'potion' | 'apple' | 'bread' | 'meat'
-  | 'sword-starter' | 'sword-forge'
+  | 'sword-starter' | 'sword-forge' | 'sword-bronze' | 'sword-copper'
+  | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
+  | 'sword-tempest' | 'sword-astral'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots';
 
 const SLOT_ICONS: Record<GearSlot, ItemIconId> = {
@@ -19,7 +21,7 @@ export function slotItemIcon(slot: EquipmentSlot, weapon: WeaponId): ItemIconId 
   return slot === 'weapon' ? weaponItemIcon(weapon) : SLOT_ICONS[slot];
 }
 export function weaponItemIcon(weapon: WeaponId): ItemIconId {
-  return weapon === 'forge' ? 'sword-forge' : 'sword-starter';
+  return `sword-${weapon}`;
 }
 export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]; }
 
@@ -89,6 +91,126 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
             <path d="M7.5 17.4H12.6L13 20.6H19L19.4 17.4H24.5L22.4 22.2H9.6Z" fill="#e3b647"/>
             <rect x="14.6" y="22.2" width="2.8" height="5" fill="#3d2a1c"/>
             <circle cx="16" cy="28.6" r="2.1" fill="#d8433a"/>
+          </g>
+        }
+
+        @case ('sword-bronze') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 2L19 5V17H13V5Z" fill="#c69a69"/>
+            <path d="M15 5L16 2L17 15" fill="none" stroke="#f1d7a0" stroke-width="1.5"/>
+            <path d="M9 17L13 18L19 18L23 17L21 22L11 22Z" fill="#d0a957"/>
+            <rect x="14.5" y="22" width="3" height="5" fill="#7c6048"/>
+            <circle cx="16" cy="28.5" r="2.3" fill="#d0a957"/>
+            
+            
+            
+            
+            
+          </g>
+        }
+
+        @case ('sword-copper') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 2L19 5V17H13V5Z" fill="#b86446"/>
+            <path d="M15 5L16 2L17 15" fill="none" stroke="#e59b75" stroke-width="1.5"/>
+            <path d="M9 17L13 18L19 18L23 17L21 22L11 22Z" fill="#a26746"/>
+            <rect x="14.5" y="22" width="3" height="5" fill="#523b37"/>
+            <circle cx="16" cy="28.5" r="2.3" fill="#a26746"/>
+            
+            
+            
+            
+            
+          </g>
+        }
+
+        @case ('sword-dunes') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 2L19 5V17H13V5Z" fill="#d5af65"/>
+            <path d="M15 5L16 2L17 15" fill="none" stroke="#f7db8f" stroke-width="1.5"/>
+            <path d="M9 17L13 18L19 18L23 17L21 22L11 22Z" fill="#a78b58"/>
+            <rect x="14.5" y="22" width="3" height="5" fill="#866e4b"/>
+            <circle cx="16" cy="28.5" r="2.3" fill="#a78b58"/>
+            
+            
+            
+            
+            <path d="M19 8L22 10L19 12L22 14L19 16" fill="none" stroke="#f8e4a1" stroke-width="1.2"/>
+          </g>
+        }
+
+        @case ('sword-boreal') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 2L19 5V17H13V5Z" fill="#83d9ff"/>
+            <path d="M15 5L16 2L17 15" fill="none" stroke="#ecffff" stroke-width="1.5"/>
+            <path d="M9 17L13 18L19 18L23 17L21 22L11 22Z" fill="#b4e0ef"/>
+            <rect x="14.5" y="22" width="3" height="5" fill="#45798f"/>
+            <circle cx="16" cy="28.5" r="2.3" fill="#b4e0ef"/>
+            
+            
+            
+            
+            
+          </g>
+        }
+
+        @case ('sword-obsidian') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 2L19 5V17H13V5Z" fill="#343342"/>
+            <path d="M15 5L16 2L17 15" fill="none" stroke="#fa762f" stroke-width="1.5"/>
+            <path d="M9 17L13 18L19 18L23 17L21 22L11 22Z" fill="#54363d"/>
+            <rect x="14.5" y="22" width="3" height="5" fill="#2f2f38"/>
+            <circle cx="16" cy="28.5" r="2.3" fill="#54363d"/>
+            
+            <path d="M16 6L18 10L15 12L18 16" fill="none" stroke="#ff671f" stroke-width="1.4"/>
+            
+            
+            
+          </g>
+        }
+
+        @case ('sword-marsh') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 2L19 5V17H13V5Z" fill="#69aa52"/>
+            <path d="M15 5L16 2L17 15" fill="none" stroke="#b7f66d" stroke-width="1.5"/>
+            <path d="M9 17L13 18L19 18L23 17L21 22L11 22Z" fill="#adabb1"/>
+            <rect x="14.5" y="22" width="3" height="5" fill="#7e5394"/>
+            <circle cx="16" cy="28.5" r="2.3" fill="#adabb1"/>
+            <path d="M19 8L21 12L18 11L21 15" fill="none" stroke="#9aff43" stroke-width="1.2"/>
+            
+            
+            
+            
+          </g>
+        }
+
+        @case ('sword-tempest') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 2L19 5V17H13V5Z" fill="#4d8cdb"/>
+            <path d="M15 5L16 2L17 15" fill="none" stroke="#fff07b" stroke-width="1.5"/>
+            <path d="M9 17L13 18L19 18L23 17L21 22L11 22Z" fill="#d5b45e"/>
+            <rect x="14.5" y="22" width="3" height="5" fill="#33477a"/>
+            <circle cx="16" cy="28.5" r="2.3" fill="#d5b45e"/>
+            
+            
+            <path d="M16 7L18 10L14 13L18 15" fill="none" stroke="#ffee58" stroke-width="1.4"/>
+            
+            
+          </g>
+        }
+
+        @case ('sword-astral') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 2L19 5V17H13V5Z" fill="#496bd1"/>
+            <path d="M15 5L16 2L17 15" fill="none" stroke="#ffe17e" stroke-width="1.5"/>
+            <path d="M9 17L13 18L19 18L23 17L21 22L11 22Z" fill="#e3c15f"/>
+            <rect x="14.5" y="22" width="3" height="5" fill="#38488e"/>
+            <circle cx="16" cy="28.5" r="2.3" fill="#e3c15f"/>
+            
+            
+            
+            <path d="M15 7L18 10L15 13L17 15" fill="none" stroke="#ffda52" stroke-width="1.4"/>
+            
           </g>
         }
         @case ('ring') {
