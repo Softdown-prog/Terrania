@@ -52,6 +52,7 @@ const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "too-far-from-forge": "Aproxime-se de Toren para comprar a espada.",
   "equipped": "Espada equipada.",
   "already-equipped": "Essa espada já está equipada.",
+  "level-too-low": "Seu nível ainda não permite equipar essa espada.",
   "not-owned": "Você ainda não possui essa espada.",
   "gear-equipped": "Item equipado.",
   "gear-removed": "Item guardado na bolsa.",
