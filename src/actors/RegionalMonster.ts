@@ -1,6 +1,6 @@
 import type { WeaponId } from "../engine/Weapons.ts";
 import { Slime } from "./Slime.ts";
-import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS,
+import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_COMMON_KINDS,
   type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
 import { moveBody, clearPath, canMoveOnSeed, type CollisionMap } from "../world/collision.ts";
 import { getWorldRegion } from "../world/regions.ts";
@@ -182,4 +182,35 @@ export function rollCreatureLoot(kind: RegionalCreatureKind, id: string): string
 
 function abilitySpecialIsTroll(species: CreatureDefinition): boolean {
   return species.special === "clay-clod";
+}
+
+/** Starter/intermediate South population: many cheap creatures, distinct IDs from elites.
+ * Spawns use actual tile biomes, collision and region, never a fabricated landmark.
+ * At most three attempts per chunk, independent of camera frame timing.
+ */
+export function southCommonSpawns(cx:number,cy:number,seed:number): RegionalMonster[] {
+  if(![cx,cy,seed].every(Number.isSafeInteger))return [];
+  const centerX=cx*CHUNK_TILES+Math.floor(CHUNK_TILES/2);
+  const centerY=cy*CHUNK_TILES+Math.floor(CHUNK_TILES/2);
+  if(getWorldRegion(centerX,centerY)!=="south" ||
+     hash2(cx,cy,seed+23331)>.86)return [];
+  const out:RegionalMonster[]=[];
+  const count=hash2(cx,cy,seed+23337)<.32?3:2;
+  for(let i=0;i<count;i++){
+    const tx=cx*CHUNK_TILES+Math.floor(hash2(cx*17+i*5,cy,seed+23341)*CHUNK_TILES);
+    const ty=cy*CHUNK_TILES+Math.floor(hash2(cx,cy*19+i*7,seed+23343)*CHUNK_TILES);
+    if(getWorldRegion(tx,ty)!=="south" || villageGround(tx,ty) ||
+       !canMoveOnSeed((tx+.5)*TILE_SIZE,(ty+.5)*TILE_SIZE,seed))continue;
+    const theme=caveThemeAt(tx,ty),biome=getBiomeAt(tx,ty,seed);
+    const eligible=SOUTH_COMMON_KINDS.filter(kind=>{
+      const def=CREATURE_CATALOG[kind];
+      return def.caveThemes.includes(theme) && def.biomes.includes(biome);
+    });
+    if(!eligible.length)continue;
+    const pick=Math.floor(hash2(cx*7+i*11,cy*13+i*17,seed+23347)*eligible.length);
+    const kind=eligible[pick]!;
+    out.push(new RegionalMonster("south-common:"+seed+":"+cx+":"+cy+":"+i,
+      kind,(tx+.5)*TILE_SIZE,(ty+.5)*TILE_SIZE));
+  }
+  return out;
 }
