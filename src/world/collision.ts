@@ -73,11 +73,13 @@ export class SeedCollision implements CollisionMap {
     return canMoveOnSeed(x, y, this.seed);
   }
   speedAt(x: number, y: number): number {
-    const ground = getTile(
+    const tile = getTile(
       Math.floor(x / TILE_SIZE),
       Math.floor(y / TILE_SIZE),
       this.seed,
-    ).ground;
-    return ground === "sand" ? 0.82 : ground === "forest" ? 0.94 : 1;
+    );
+    return tile.biome === "snowfield" || tile.biome === "stone-peak" ? 0.78 :
+      tile.biome === "dunes" ? 0.83 : tile.ground === "sand" ? 0.82 :
+      tile.ground === "forest" ? 0.94 : 1;
   }
 }

@@ -1,5 +1,7 @@
 import { WORLD_EDGE_PIXELS } from "./collision.ts";
 import { getTile, TILE_SIZE, type Ground } from "./terrain.ts";
+import { getWorldRegion, REGIONS, type WorldRegion } from "./regions.ts";
+import { BIOME_NAMES, type Biome } from "./biomes.ts";
 
 /** The terrain generator is coordinate-based; only movement has a technical bound. */
 export const WORLD_HALF_TILES = WORLD_EDGE_PIXELS / TILE_SIZE;
@@ -11,6 +13,9 @@ export type AtlasSector = {
   readonly centerX: number;
   readonly centerY: number;
   readonly dominant: Ground;
+  readonly region: WorldRegion;
+  readonly biome: Biome;
+  readonly regionName: string;
 };
 export interface AtlasFrame {
   readonly centerX: number;
@@ -23,6 +28,7 @@ const NAMES = [
   "Sudoeste", "Sul", "Sudeste",
 ] as const;
 const GROUNDS: readonly Ground[] = ["grass", "forest", "path", "sand", "water"];
+export { BIOME_NAMES };
 export const GROUND_NAMES: Record<Ground, string> = {
   grass: "Campos", forest: "Florestas", path: "Trilhas",
   sand: "Areias", water: "Águas",
@@ -58,7 +64,10 @@ export function surveySectors(seed: number): readonly AtlasSector[] {
       }
     const dominant = GROUNDS.reduce((best, ground) =>
       hits[ground] > hits[best] ? ground : best, "grass" as Ground);
-    return { id, name, centerX: center.x, centerY: center.y, dominant };
+    const middle = getTile(Math.floor(center.x), Math.floor(center.y), seed);
+    const region = getWorldRegion(center.x, center.y);
+    return { id, name, centerX: center.x, centerY: center.y, dominant,
+      region, biome: middle.biome, regionName: REGIONS[region].name };
   });
 }
 export function atlasFrame(scale: AtlasScale, tileX: number, tileY: number,

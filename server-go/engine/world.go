@@ -9,6 +9,7 @@ const ChunkPixels = TileSize * ChunkTiles
 
 type Tile struct {
 	Ground string
+	Biome string
 	Tree   bool
 	Rock   bool
 }
@@ -50,20 +51,57 @@ func villageGround(tx, ty int) string {
 
 func absInt(v int) int { if v < 0 { return -v }; return v }
 
-func (w World) Tile(tx, ty int) Tile {
-	detail := Hash2(tx, ty, w.Seed+31)
-	if v := villageGround(tx,ty); v != "" { return Tile{Ground:v} }
-	forest := ValueNoise(float64(tx)/15+13.7,float64(ty)/15,w.Seed+9)
-	terrain := ValueNoise(float64(tx)/32,float64(ty)/32,w.Seed+71)
-	river := math.Sin(float64(tx)*0.04+float64(w.Seed)*0.0001)*7+15
-	center := math.Hypot(float64(tx),float64(ty)) < 7
-	ground := "grass"
-	if !center && (math.Abs(float64(ty)-river)<2.1 || terrain<0.275) { ground = "water"
-	} else if !center && (math.Abs(float64(ty)-river)<3.25 || terrain<0.322) { ground = "sand"
-	} else if math.Abs(float64(ty)-math.Sin(float64(tx)*0.055)*1.35)<0.54 { ground = "path"
-	} else if !center && forest>0.52 { ground = "forest" }
-	return Tile{Ground:ground, Tree:ground=="forest"&&detail>0.80,
-		Rock:ground!="water"&&ground!="path"&&!center&&detail<0.022}
+func (w World) Tile(tx,ty int) Tile {
+    detail:=Hash2(tx,ty,w.Seed+31)
+    if v:=villageGround(tx,ty);v!="" {
+        biome:="meadow"
+        if v=="path" { biome="trail" }
+        return Tile{Ground:v,Biome:biome}
+    }
+    x,y:=float64(tx),float64(ty)
+    p:=getTerrainProfile(x,y,w.Seed)
+    biome:=classifyBiome(p)
+    forest:=ValueNoise(x/15+13.7,y/15,w.Seed+9)
+    terrain:=ValueNoise(x/32,y/32,w.Seed+71)
+    center:=math.Hypot(x,y)<7
+    river:=math.Sin(x*.04+float64(w.Seed)*.0001)*7+15
+    starterArea:=math.Hypot(x,y)<64
+    mainRoute:=!starterArea&&(math.Abs(x)<1.5||math.Abs(y)<1.5||
+        math.Abs(y-math.Sin(x/1200)*7)<1.5||
+        math.Abs(x-math.Sin(y/1200)*7)<1.5)
+    villageTrail:=math.Abs(y-math.Sin(x*.055)*1.35)<.54
+    ground:="grass"
+    switch {
+    case mainRoute||villageTrail:
+        ground="path"
+    case biome=="open-sea":
+        if terrain>.62&&p.coast<.93 { ground="sand" } else { ground="water" }
+    case p.coast>.42&&terrain+p.coast*.32>.82:
+        ground="water"
+    case p.coast>.27||biome=="beach"||biome=="island":
+        ground="sand"
+    case p.weights.north>.4&&p.temperature<.27:
+        if !center&&terrain<.22 { ground="water"
+        } else if p.humidity>.48||p.altitude>.45 { ground="sand" }
+    case p.weights.south>.4||biome=="dunes"||biome=="ruins":
+        if biome=="oasis"&&terrain>.67 { ground="grass" } else { ground="sand" }
+    case p.weights.west>.39:
+        if p.altitude>.48 { ground="sand" }
+    case !center&&p.weights.center>.3&&(math.Abs(y-river)<2.1||terrain<.275):
+        ground="water"
+    case !center&&p.weights.center>.3&&(math.Abs(y-river)<3.25||terrain<.322):
+        ground="sand"
+    case !center&&forest>.52&&(starterArea||p.humidity>.39):
+        ground="forest"
+    }
+    tree:=(ground=="forest"&&detail>.80)||(biome=="tundra"&&ground=="grass"&&detail>.987)
+    rockChance:=.022
+    if p.weights.west>.4 { rockChance=.09 }
+    rock:=ground!="water"&&ground!="path"&&!center&&detail<rockChance
+    if ground=="path" { biome="trail"
+    } else if ground=="water"&&p.temperature<.28 { biome="frozen-lake"
+    } else if ground!="water"&&biome=="open-sea" { biome="island" }
+    return Tile{Ground:ground,Biome:biome,Tree:tree,Rock:rock}
 }
 
 func (w World) Walkable(tx,ty int) bool {
@@ -114,12 +152,12 @@ func (w World) CanMove(x,y float64) bool {
 }
 
 func (w World) SpeedAt(x,y float64) float64 {
-	t:=w.Tile(int(math.Floor(x/TileSize)),int(math.Floor(y/TileSize)))
-	switch t.Ground {
-	case "sand": return .82
-	case "forest": return .94
-	}
-	return 1
+    t:=w.Tile(int(math.Floor(x/TileSize)),int(math.Floor(y/TileSize)))
+    if t.Biome=="snowfield"||t.Biome=="stone-peak" { return .78 }
+    if t.Biome=="dunes" { return .83 }
+    if t.Ground=="sand" { return .82 }
+    if t.Ground=="forest" { return .94 }
+    return 1
 }
 
 func ChunkOf(x float64) int { return int(math.Floor(x/ChunkPixels)) }

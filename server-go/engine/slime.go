@@ -49,6 +49,7 @@ func (s *Slime) TakeHit(sourceX,sourceY float64) {
 func SpawnSlimes(cx,cy int,w World) []*Slime {
 	count:=2
 	if Hash2(cx,cy,w.Seed+201)<.53 { count=1 }
+	if regionDifficulty(float64(cx*ChunkTiles)+ChunkTiles*.5,float64(cy*ChunkTiles)+ChunkTiles*.5)>=4 { count++ }
 	var result []*Slime
 	for index:=0;index<count;index++ {
 		tx:=cx*ChunkTiles+int(math.Floor(Hash2(cx*4+index,cy,w.Seed+77)*ChunkTiles))

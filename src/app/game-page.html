@@ -320,6 +320,9 @@
               </div>
               <div class="atlas-details">
                 <strong id="atlasCurrentSector">Você está no setor {{ currentAtlasSector().name }}.</strong>
+                <strong id="atlasCurrentRegion">Você está em: {{ currentWorldRegion().name }}</strong>
+                <span id="atlasBiome">Bioma local: {{ currentBiomeName() }}</span>
+                <span id="atlasDifficulty">Perigo regional: {{ currentWorldDifficulty() }} / 5</span>
                 <span id="atlasCoordinates">Sua posição: {{ hud.coords() }}</span>
                 <span id="atlasGround">Terreno atual: {{ currentAtlasGround() }}</span>
                 <span id="atlasScaleDetails">Largura da visão: {{ atlasView().spanTiles.toFixed(0) }} tiles</span>
@@ -336,7 +339,7 @@
             </div>
             <div class="atlas-region-title">
               <h3>Regiões cartográficas</h3>
-              <small>9 setores · classificação por terreno</small>
+              <small>9 setores · 5 macro-regiões · biomas reais</small>
             </div>
             <div class="atlas-sectors" role="group" aria-label="Selecionar um dos nove setores">
               @for (sector of atlasSectors(); track sector.id) {
@@ -344,11 +347,11 @@
                   [attr.aria-pressed]="atlasScale() === 'sector' && selectedSector() === sector.id"
                   (click)="showAtlasSector(sector.id)">
                   <strong>{{ sector.name }}</strong>
-                  <small>{{ groundNames[sector.dominant] }} (amostra)</small>
+                  <small>{{ sector.regionName }} · {{ groundNames[sector.dominant] }}</small>
                 </button>
               }
             </div>
-            <p class="dialog-note">Este atlas utiliza o mesmo terreno da aventura. As cores em grandes distâncias são amostras, não rotas comprovadas. Os setores são divisões geográficas para orientação, não cidades inventadas. Água, árvores e obstáculos continuam bloqueando caminhos.</p>
+            <p class="dialog-note">O atlas representa o terreno real da seed: norte gelado, sul desértico, leste costeiro, oeste montanhoso e centro temperado. Setores e biomas são amostras cartográficas, não rotas garantidas; navegação, monstros e marcos temáticos futuros ainda dependem de implementação própria.</p>
           </section>
         }
         <p id="inventoryFeedback" class="dialog-note" role="status" aria-live="polite">{{ hud.inventoryFeedback() }}</p>

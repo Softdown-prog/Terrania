@@ -96,12 +96,15 @@
       ],
       "entrypoints": [
         "src/world/terrain.ts",
+        "src/world/regions.ts",
+        "src/world/biomes.ts",
+        "src/world/regionDifficulty.ts",
         "src/world/collision.ts",
         "src/world/npcs.ts",
         "src/world/aelaQuest.ts"
       ],
       "doc": "src/world/README.md",
-      "description": "Mundo procedural determinístico, tiles, colisão, vila e marcos."
+      "description": "Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, colisão, vila e marcos."
     },
     {
       "id": "input",
@@ -190,6 +193,7 @@
       ],
       "entrypoints": [
         "server-go/engine/room.go",
+        "server-go/engine/world_regions.go",
         "server-go/engine/protocol.go"
       ],
       "doc": "server-go/README.md",

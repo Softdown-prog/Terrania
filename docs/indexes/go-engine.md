@@ -9,9 +9,10 @@ Implementação Go de regras e paridade; substituição do backend ativo requer 
 ## Pontos de entrada
 
 - [`server-go/engine/room.go`](../../server-go/engine/room.go)
+- [`server-go/engine/world_regions.go`](../../server-go/engine/world_regions.go)
 - [`server-go/engine/protocol.go`](../../server-go/engine/protocol.go)
 
-## Todos os arquivos deste módulo (20)
+## Todos os arquivos deste módulo (22)
 
 - [`server-go/engine/benchmark_test.go`](../../server-go/engine/benchmark_test.go)
 - [`server-go/engine/engine_test.go`](../../server-go/engine/engine_test.go)
@@ -33,3 +34,5 @@ Implementação Go de regras e paridade; substituição do backend ativo requer 
 - [`server-go/engine/spatial_default.go`](../../server-go/engine/spatial_default.go)
 - [`server-go/engine/spatial_rust.go`](../../server-go/engine/spatial_rust.go)
 - [`server-go/engine/world.go`](../../server-go/engine/world.go)
+- [`server-go/engine/world_regions.go`](../../server-go/engine/world_regions.go)
+- [`server-go/engine/world_regions_test.go`](../../server-go/engine/world_regions_test.go)

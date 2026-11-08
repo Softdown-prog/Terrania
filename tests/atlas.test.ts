@@ -41,6 +41,8 @@ test("tipos de terreno dos setores são amostrados da mesma seed do jogo", () =>
   ]);
   for (const sector of sectors) {
     assert.equal(typeof GROUND_NAMES[sector.dominant], "string");
+    assert.ok(sector.regionName.length > 0);
+    assert.ok(sector.biome.length > 0);
     const sample = getTile(Math.floor(sector.centerX), Math.floor(sector.centerY), 842136);
     assert.ok(["grass", "forest", "path", "sand", "water"].includes(sample.ground));
   }

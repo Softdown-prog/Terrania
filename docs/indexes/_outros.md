@@ -22,6 +22,7 @@
 - [`docs/GO_ENGINE_PHASE2.md`](../../docs/GO_ENGINE_PHASE2.md)
 - [`docs/GO_ENGINE_VPS_ACTIONS.md`](../../docs/GO_ENGINE_VPS_ACTIONS.md)
 - [`docs/GO_SCALE_1000.md`](../../docs/GO_SCALE_1000.md)
+- [`docs/MACRO_REGIONS.md`](../../docs/MACRO_REGIONS.md)
 - [`docs/MANUTENCAO.md`](../../docs/MANUTENCAO.md)
 - [`docs/MCP_NAVEGACAO.md`](../../docs/MCP_NAVEGACAO.md)
 - [`docs/MIGRACAO_ANGULAR_PHASER3.md`](../../docs/MIGRACAO_ANGULAR_PHASER3.md)
