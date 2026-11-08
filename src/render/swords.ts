@@ -42,6 +42,9 @@ export function drawKnightSword(ctx:CanvasRenderingContext2D,weapon:WeaponId,
     ctx.lineTo(6.5+i*2,2);ctx.stroke();
   }
   point(ctx,3.5,0,weapon==="bronze"?2.8:2.2,tone(s.guard));
+  point(ctx,13,-w-1,.85,tone("#f7e9c6"));
+  point(ctx,13,w+1,.85,tone("#8e8573"));
+  point(ctx,6.7,0,.7,tone("#fef9dd"));
   if(weapon==="bronze"||weapon==="astral") {
     ctx.strokeStyle=tone("#edc45e");ctx.lineWidth=1.1;
     ctx.beginPath();ctx.arc(3.5,0,1.5,0,TAU);ctx.stroke();
