@@ -1,3 +1,4 @@
+import { WEAPONS, type WeaponId } from "../engine/Weapons.ts";
 import type { Player } from "../actors/Player.ts";
 import { clamp01 } from "./draw.ts";
 
@@ -86,17 +87,34 @@ export class Effects {
     if (this.particles.length >= 220) return;
     this.particles.push({ x, y, vx, vy, life, max: life, size, color, shape, grav, drag });
   }
-  /** Leque de faíscas partindo do ponto de impacto, orientado pelo golpe. */
-  private impact(x: number, y: number, dirX: number, dirY: number, forge: boolean): void {
-    const base = Math.atan2(dirY, dirX);
-    const hot = forge ? ["#fff0bf", "#ffb066", "#ff7a35"] : ["#fffbe6", "#fff0bf", "#ffd37a"];
-    for (let i = 0; i < 9; i++) {
-      const a = base + (this.rnd() - 0.5) * 1.5, sp = 90 + this.rnd() * 110;
-      this.add(x, y, "spark", hot[i % hot.length] ?? "#fff0bf", 1.1 + this.rnd() * 0.8,
-        Math.cos(a) * sp, Math.sin(a) * sp * 0.7 - 12, 0.16 + this.rnd() * 0.16, 90, 3);
+  /** Every illustrated sword has distinct, bounded impact particles and colors. */
+  private impact(x:number,y:number,dirX:number,dirY:number,weapon:WeaponId):void {
+    const visual=WEAPONS[weapon],angle=Math.atan2(dirY,dirX);
+    const hot=[visual.trail.first,visual.trail.second,
+      weapon==="starter"?"#bc9b77":"#fff4df"];
+    const dense=weapon==="obsidian"||weapon==="tempest"||weapon==="astral";
+    const count=dense?17:weapon==="starter"?6:10;
+    for(let i=0;i<count;i++){
+      const a=angle+(this.rnd()-.5)*(dense?2.1:1.45);
+      const speed=(weapon==="starter"?30:75)+this.rnd()*105;
+      const shape:Shape=weapon==="dunes"||weapon==="boreal"?"square":
+        weapon==="marsh"?"circle":i%3?"spark":"square";
+      this.add(x,y,shape,hot[i%hot.length]??"#f5f0c9",
+        .8+this.rnd()*1.25,Math.cos(a)*speed,
+        Math.sin(a)*speed*.7-18,.16+this.rnd()*.25,88,2.2);
     }
-    this.add(x, y, "ring", forge ? "#ffc080" : "#fff3cc", 15 + (forge ? 5 : 0), 0, 0, 0.22, 0, 0);
-    this.add(x, y, "puff", "#fff8e0", 8, 0, 0, 0.12, 0, 0);
+    if(weapon!=="starter")
+      this.add(x,y,"ring",visual.trail.second,
+        weapon==="astral"?28:18,0,0,.24,0,0);
+    if(weapon==="marsh")for(let i=0;i<5;i++)
+      this.add(x,y,"circle",i%2?"#78ef22":"#a95bb6",
+        2+this.rnd()*2,(this.rnd()-.5)*50,-40-this.rnd()*40,.5,5,1.6);
+    if(weapon==="obsidian")this.add(x,y,"puff","#ff6400",16,0,-8,.28,0,0);
+    if(weapon==="astral")for(let i=0;i<7;i++){
+      const a=this.rnd()*Math.PI*2;
+      this.add(x,y,"spark",i%2?"#ffffff":"#ffd700",1.5,
+        Math.cos(a)*130,Math.sin(a)*130,.45,0,1);
+    }
   }
   private splat(x: number, y: number, count: number, size: number): void {
     for (let i = 0; i < count; i++) {
@@ -112,7 +130,8 @@ export class Effects {
   ): { hit: boolean; hurt: boolean } {
     let hit = false;
     const hurt = player.hp < this.hp;
-    const forge = player.attackWeapon === "forge";
+    const weapon=player.attackWeapon;
+    const flashColor=WEAPONS[weapon].trail.second;
     if (hurt && this.enabled) {
       for (let i = 0; i < 9; i++) {
         const a = this.rnd() * Math.PI * 2, sp = 40 + this.rnd() * 70;
@@ -148,13 +167,13 @@ export class Effects {
         if (this.enabled) {
           const dx = mob.x - player.x, dy = mob.y - player.y;
           const len = Math.hypot(dx, dy) || 1;
-          this.impact(mob.x - (dx / len) * 6, mob.y - 12, dx / len, dy / len, forge);
+          this.impact(mob.x - (dx / len) * 6, mob.y - 12, dx / len, dy / len, weapon);
           this.splat(mob.x, mob.y - 8, 5, 1.2);
           this.labels.push({
             x: mob.x,
             y: mob.y - 32,
             text: "−" + (old.hp - mob.hp),
-            color: forge ? "#ffd9a0" : "#fff0bf",
+            color: flashColor,
             life: 0.8,
             max: 0.8,
             big: old.hp - mob.hp > 1,
