@@ -220,6 +220,11 @@ test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar',
     await activate(page.locator('#gameMenuButton'));
     await activate(page.locator('#inventoryButton'));
   };
+  const openEquipment = async () => {
+    const tab = page.locator('#inventoryTabEquipment');
+    if (await tab.isVisible()) await activate(tab);
+    await expect(page.locator('.equipment-grid')).toBeVisible();
+  };
   await page.goto('/jogar/?modo=solo');
   await activate(page.getByRole('button', { name: 'Conversar (E)' }));
   const toren = page.getByRole('dialog', { name: 'Toren' });
@@ -230,12 +235,14 @@ test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar',
 
   await openBag();
   await expect(page.locator('#gelCount')).toHaveText('2 / 99');
+  await openEquipment();
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
   await activate(page.getByRole('button', { name: 'Equipar Espada da Travessia' }));
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
-  await expect(page.getByText('2 de dano · 2 s entre golpes · 180 ms até o impacto', { exact: true })).toBeVisible();
+  await expect(page.getByText('2 de dano · 2 s entre golpes · 180 ms de preparo', { exact: true })).toBeVisible();
   await page.reload();
   await openBag();
+  await openEquipment();
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
   await activate(page.getByRole('button', { name: 'Equipar Espada de viagem' }));
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
@@ -272,7 +279,7 @@ test('voltar ao painel não fica preso numa consulta cancelada da tela anterior'
   } finally { release(); }
 });
 
-test('o inventário solo mostra dez espaços e salva equipar e tirar o elmo', async ({ page }, info) => {
+test('o inventário solo mostra dez espaços e salva equipar e retirar o elmo', async ({ page }, info) => {
   const activate = (button: ReturnType<typeof page.locator>) => info.project.name === 'android' ? button.tap() : button.click();
   const openBag = async () => {
     await activate(page.locator('#gameMenuButton'));
@@ -280,8 +287,10 @@ test('o inventário solo mostra dez espaços e salva equipar e tirar o elmo', as
   };
   await page.goto('/jogar/?modo=solo');
   await openBag();
-  const slots = page.getByRole('group', { name: 'Espaços de equipamento' });
-  await expect(slots.getByRole('button')).toHaveCount(10);
+  const equipmentTab = page.locator('#inventoryTabEquipment');
+  if (await equipmentTab.isVisible()) await activate(equipmentTab);
+  const slots = page.locator('.equipment-grid');
+  await expect(slots.locator('[data-equipment-slot]')).toHaveCount(10);
   const helm = slots.locator('[data-equipment-slot="head"]');
   await expect(helm).toContainText('Vazio');
   await activate(helm);
@@ -290,9 +299,10 @@ test('o inventário solo mostra dez espaços e salva equipar e tirar o elmo', as
   await expect(page.locator('#equipmentDefense')).toHaveText('Defesa 1');
   await page.reload();
   await openBag();
+  if (await equipmentTab.isVisible()) await activate(equipmentTab);
   await expect(helm).toContainText('Elmo de trilha');
   await activate(helm);
-  await activate(page.getByRole('button', { name: 'Tirar Elmo de trilha' }));
+  await activate(page.getByRole('button', { name: 'Retirar Elmo de trilha' }));
   await expect(helm).toContainText('Vazio');
   await expect(page.locator('#equipmentDefense')).toHaveText('Defesa 0');
 });
