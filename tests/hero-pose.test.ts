@@ -20,14 +20,14 @@ test("espada cruza a direção do alvo no instante em que o golpe fica disponív
   assert.equal(hero.consumeStrike(), false);
 });
 
-test("a forjada cruza o alvo somente após o preparo de 180 ms", () => {
+test("a espada de ferro cruza o alvo somente após seu preparo próprio", () => {
   const hero = new Player();
   const still = { x: 0, y: 0 }, open = { canMove: () => true };
   hero.startAttack("forge");
-  hero.update(0.1, still, open);
+  hero.update(WEAPONS.forge.windup / 2, still, open);
   assert.equal(hero.consumeStrike(), false);
   assert.ok(swordSwing(hero.attackTime, hero.attackWeapon).angle < 0);
-  hero.update(WEAPONS.forge.windup - 0.1, still, open);
+  hero.update(WEAPONS.forge.windup / 2, still, open);
   assert.equal(hero.consumeStrike(), true);
   assert.ok(Math.abs(swordSwing(hero.attackTime, hero.attackWeapon).angle) < 1e-12);
   assert.equal(swordSwing(hero.attackTime, hero.attackWeapon).trail, true);
