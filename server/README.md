@@ -18,4 +18,6 @@
 
 **Espaços de equipamento:** sessões que pedem `gear=slots` podem equipar o conjunto inicial. A sala valida a posição do item no equipamento e aplica a defesa no contato. Veja [ADR 0009](../docs/adr/0009-espacos-de-equipamento.md).
 
+**Reconexão de teste:** a suíte WebSocket deve confirmar que a última desconexão descarta a sala e um novo jogador recebe ID, posição, bolsa e percurso próprios, enquanto o endpoint de presença volta à contagem correta. Não representa persistência de conta ou restauração de progresso.
+
 **Docker e regras compartilhadas:** o estágio de build copia `src/engine/` como diretório, em vez de manter uma lista manual de arquivos que omitia `Food.ts`. Os workflows devem acionar verificação de imagem para toda alteração em `src/engine/**`; a etapa de CI/Docker `/health` cobre a resolução de imports usados pelo servidor Node. As regras autoritativas permanecem no motor, não na UI.

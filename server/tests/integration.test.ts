@@ -14,7 +14,7 @@ import {
 
 test(
   "two websocket clients share authoritative movement and versioned state",
-  { timeout: 20_000 },
+  { timeout: 30_000 },
   async () => {
     const probe = createServer();
     probe.listen(0, "127.0.0.1");
@@ -173,6 +173,42 @@ test(
       for (let i = 0; i < 40 && count.online !== 0; i++) { await pause(20); count = await presence(); }
       assert.equal(count.online, 0);
       assert.equal(count.rooms, 0);
+      // Reconnecting after the last guest has left starts a fresh room session;
+      // it must never inherit a previous guest's movement, loot or identity.
+      const resumed: ServerMessage[] = [];
+      const rejoined = new WebSocket(
+        "ws://127.0.0.1:" + port +
+          "/ws?room=origins&movement=tiles&combat=target&progression=xp&inventory=loot",
+        { origin: "http://localhost:5173" },
+      );
+      sockets.push(rejoined);
+      rejoined.on("message", data =>
+        resumed.push(JSON.parse(data.toString()) as ServerMessage));
+      await once(rejoined, "open");
+      await until(() => resumed.some(m => m.type === "welcome") &&
+        resumed.some(m => m.type === "state"));
+      const newWelcome = resumed.find(m => m.type === "welcome");
+      assert.ok(newWelcome?.type === "welcome");
+      assert.notEqual(newWelcome.id, welcome.id);
+      assert.equal(newWelcome.seed, welcome.seed);
+      const fresh = resumed.find(m => m.type === "state");
+      assert.ok(fresh?.type === "state");
+      const newHero = fresh.players.find(hero => hero.id === newWelcome.id);
+      assert.ok(newHero);
+      assert.deepEqual({ x: newHero.x, y: newHero.y, kills: newHero.kills, experience: newHero.experience },
+        { x: 16, y: 16, kills: 0, experience: 0 });
+      assert.equal(fresh.walkTarget, null);
+      assert.equal(fresh.inventory?.gel, 0);
+      assert.equal(fresh.inventory?.loadout?.equipped, "starter");
+      assert.equal((await presence()).online, 1);
+      rejoined.terminate();
+      let emptied = await presence();
+      for (let i = 0; i < 40 && emptied.online !== 0; i++) {
+        await pause(20);
+        emptied = await presence();
+      }
+      assert.equal(emptied.online, 0);
+      assert.equal(emptied.rooms, 0);
     } finally {
       for (const ws of sockets) ws.terminate();
       child.kill("SIGTERM");
