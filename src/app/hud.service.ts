@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import type { GameUi, HeroHudState, MapPlayer, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
+import type { CaveMapState, GameUi, HeroHudState, MapPlayer, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
 import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
@@ -12,6 +12,7 @@ const ACTION_LABELS: Record<NearbyAction, string> = {
   talk: 'Conversar',
   read: 'Ler',
   enter: 'Entrar',
+  leave: 'Subir',
 };
 const KIT_IDS = Object.keys(GEAR) as GearId[];
 
@@ -60,6 +61,8 @@ export class HudService implements GameUi {
     a.length === b.length && a.every((p, i) => p.id === b[i]?.id &&
       p.tileX === b[i]?.tileX && p.tileY === b[i]?.tileY) });
   readonly seed = signal(842136);
+  readonly cave = signal<CaveMapState | null>(null, {equal:(a,b)=> a===b ||
+    (a!==null && b!==null && a.floor===b.floor && a.tileX===b.tileX && a.tileY===b.tileY)});
   readonly gel = signal(0);
   readonly potions = signal(0);
   readonly foodIds = FOOD_IDS;
@@ -286,6 +289,14 @@ export class HudService implements GameUi {
     this.bagFilter.set('all');
   }
   setSeed(seed: number): void { this.seed.set(seed); }
+  setCave(location:CaveMapState|null):void {
+    this.cave.set(location);
+    if(location) {
+      this.coords.set("Subsolo · X "+location.tileX+" · Y "+location.tileY);
+      this.quest.set(location.floor.name);
+      this.questProgress.set("Andar −1 · retorne pela escada");
+    }
+  }
   setMapPlayers(players: readonly MapPlayer[]): void { this.mapPlayers.set(players); }
   setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }
   setNearbyAction(action: NearbyAction | null): void {

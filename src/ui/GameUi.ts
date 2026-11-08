@@ -4,6 +4,7 @@ import type { ExperienceProgress } from '../engine/Experience.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/Equipment.ts';
+import type { CaveFloor } from '../engine/CaveRoom.ts';
 
 export interface Preferences {
   zoom: number;
@@ -23,7 +24,12 @@ export interface HeroHudState {
   readonly awaitingRespawn: boolean;
 }
 
-export type NearbyAction = 'talk' | 'read' | 'enter';
+export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave';
+export interface CaveMapState {
+  readonly floor: CaveFloor;
+  readonly tileX: number;
+  readonly tileY: number;
+}
 export type NpcOffer = { item: 'potion' | 'sword'; price: number };
 
 /** Data and commands exchanged between the game coordinator and the HUD. */
@@ -57,6 +63,7 @@ export interface GameUi {
   onBattleSelect(callback: (id: string) => void): void;
   setBattleCreatures(creatures: readonly BattleCreature[], targetId: string | null): void;
   setSeed(seed: number): void;
+  setCave(location: CaveMapState | null): void;
   /** Only positions supplied by the interest-filtered server snapshots. */
   setMapPlayers(players: readonly MapPlayer[]): void;
   setPlayerCount(count: number, online: boolean): void;

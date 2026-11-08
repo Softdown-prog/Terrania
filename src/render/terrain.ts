@@ -12,6 +12,7 @@ import { VILLAGE_RESPAWN } from "../world/village.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
+import { caveEntrancesInArea } from "../world/caves.ts";
 
 /** Pares (sombra, luz) por tipo de solo; a mistura segue ruído contínuo. */
 const PALETTE: Record<Ground, { lo: string; hi: string }> = {
@@ -469,6 +470,8 @@ export function drawWorldAtlas(
         const landmark = getRegionalLandmarkForCell(cx, cy, seed);
         if (landmark) mark(landmark.tileX, landmark.tileY, "#ffcb72", 5);
       }
+    for (const cave of caveEntrancesInArea(startX,startY,endX,endY,seed))
+      mark(cave.tileX,cave.tileY,"#a3f1ce",5);
   }
   mark(Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE),
     Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE), "#ffe0a1", 5);

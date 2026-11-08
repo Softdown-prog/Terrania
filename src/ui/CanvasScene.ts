@@ -10,6 +10,10 @@ import { NPCS, NPC_TALK_RANGE } from '../world/npcs.ts';
 import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
 import { drawInterior } from '../render/interior.ts';
+import { drawCaveEntrance, drawCaveView } from '../render/cave.ts';
+import { caveEntrancesInArea } from '../world/caves.ts';
+import { TILE_SIZE } from '../world/terrain.ts';
+import type { CaveRoom } from '../engine/CaveRoom.ts';
 import { ROOM_WIDTH, ROOM_HEIGHT, type InteriorRoom } from '../engine/InteriorRoom.ts';
 import type { Effects } from '../render/Effects.ts';
 import type { Camera } from '../render/Camera.ts';
@@ -74,6 +78,12 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
     const faded = (prop.kind === 'tree' || prop.kind === 'arch') &&
       Math.abs(player.x - prop.x) < (prop.kind === 'arch' ? 22 : 32) && player.y < prop.y && player.y > prop.y - 65;
     actors.push({ y: prop.y, draw: () => renderScenery(ctx, prop, prop.x - left, prop.y - top, time, faded) });
+  }
+  // Each visible cell is checked once; entrances are genuine surface positions.
+  for (const entry of caveEntrancesInArea(
+    Math.floor((cameraX-width/2-35)/TILE_SIZE), Math.floor((cameraY-height/2-35)/TILE_SIZE),
+    Math.floor((cameraX+width/2+35)/TILE_SIZE), Math.floor((cameraY+height/2+35)/TILE_SIZE), world.seed)) {
+    actors.push({y:entry.y,draw:()=>drawCaveEntrance(ctx,entry,entry.x-left,entry.y-top,time)});
   }
   for (const npc of NPCS) {
     if (Math.abs(npc.x - cameraX) > width / 2 + 40 || Math.abs(npc.y - cameraY) > height / 2 + 65) continue;
@@ -212,6 +222,19 @@ export class CanvasScene {
   worldPoint(local: Point, camera: Camera): Point | null {
     return screenToWorld(local, this.width, this.height,
       { x: camera.renderX, y: camera.renderY }, camera.zoom);
+  }
+  cavePoint(local:Point,room:CaveRoom,zoom:number):Point|null {
+    return screenToWorld(local,this.width,this.height,
+      {x:room.player.x,y:room.player.y},zoom);
+  }
+  renderCave(room:CaveRoom,zoom:number,time:number,destination:Point|null=null,
+    gear?:GearState,weapon?:WeaponId):void {
+    const scale=Math.max(1,zoom),width=this.width/scale,height=this.height/scale;
+    const left=room.player.x-width/2,top=room.player.y-height/2;
+    this.ctx.setTransform(this.dpr*scale,0,0,this.dpr*scale,0,0);
+    drawCaveView(this.ctx,room,left,top,width,height,time,gear,weapon);
+    if(destination)drawTarget(this.ctx,{x:destination.x-left,y:destination.y-top},time);
+    this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
   }
   interiorPoint(local: Point): Point | null {
     return screenToInterior(local, this.width, this.height);
