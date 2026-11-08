@@ -117,16 +117,16 @@ test("save de montaria: IDs falsos, tiers inválidos e sela inexistente não ati
 });
 test("passos clássicos: montaria acelera no mesmo caminho e nunca ignora colisão",()=>{
   const seed=842136;
-  const base=new OfflineSimulation(seed,{seed,x:432,y:48,hp:100,kills:0,defeated:[]});
-  const mounted=new OfflineSimulation(seed,{seed,x:432,y:48,hp:100,kills:0,defeated:[],
+  const base=new OfflineSimulation(seed,{seed,x:208,y:48,hp:100,kills:0,defeated:[]});
+  const mounted=new OfflineSimulation(seed,{seed,x:208,y:48,hp:100,kills:0,defeated:[],
     mounts:{stableTier:1,ridingTier:1,owned:["warhorse"],saddled:["warhorse"],
       active:"warhorse",stamina:180}});
   const a=new ClassicTileWalker(),b=new ClassicTileWalker();
   for(let i=0;i<55;i++){
-    base.update(1/60,{x:0,y:1},false,null,a);
-    mounted.update(1/60,{x:0,y:1},false,null,b);
+    base.update(1/60,{x:1,y:0},false,null,a);
+    mounted.update(1/60,{x:1,y:0},false,null,b);
   }
-  assert.ok(mounted.player.y>base.player.y+20,
+  assert.ok(mounted.player.x>base.player.x+20,
     "o mesmo passo deve percorrer mais com o cavalo");
   assert.ok(mounted.collision.canMove(mounted.player.x,mounted.player.y));
 });

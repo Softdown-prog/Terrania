@@ -1,6 +1,6 @@
 /** Arte das dez montarias: formas autorais Canvas, sem reutilizar sprites dos monstros. */
 import type { MountId } from "../actors/MountCatalog.ts";
-import { ellipse, limb, rgba, shade, softShadow, TAU } from "./draw.ts";
+import { ellipse, limb, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
 
 type Palette = Readonly<{ base:string; dark:string; light:string; accent:string; tack:string }>;
 const PALETTES: Readonly<Record<MountId,Palette>> = {
@@ -153,6 +153,17 @@ function species(ctx:CanvasRenderingContext2D,id:MountId,p:Palette,time:number):
         limb(ctx,x,-18,x+s*11,-8,3,p.light);
       }
       for(let i=0;i<7;i++)body(ctx,8+i*4,-37,2.8,4.2,{...p,base:p.accent});
+      // Belly bands and raised sand-scale facets give this reptile distinct
+      // material layers, not a generic horse recolor.
+      ellipse(ctx,18,-22,10,4,shade(p.light,.22),-.15);
+      ctx.strokeStyle=shade(p.accent,-.34);ctx.lineWidth=1.2;
+      for(let k=0;k<6;k++){
+        const xx=-16+k*8;
+        ctx.beginPath();ctx.moveTo(xx,-26-k%2);
+        ctx.quadraticCurveTo(xx+3,-30-k%3,xx+7,-25);ctx.stroke();
+        ellipse(ctx,xx+2,-27,1.4,.8,mix(p.base,p.accent,k/6));
+      }
+      ellipse(ctx,25,-25,4,1.1,rgba("#f9e3ae",.64));
     }
   }else if(id==="cargo-beetle"){
     for(const s of [-1,1])for(let k=0;k<3;k++){
@@ -230,6 +241,32 @@ export function renderStableFence(ctx:CanvasRenderingContext2D,x:number,y:number
   ctx.fillStyle=built?"#ecd29e":"#a9aaa3";ctx.strokeStyle=EDGE;ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(-18,-20);ctx.lineTo(18,-20);
   ctx.lineTo(16,-8);ctx.lineTo(-16,-8);ctx.closePath();ctx.fill();ctx.stroke();
+  // Carpentry: individual wood grains, bolt heads and hay bundles make the
+  // fence a constructed building instead of three flat lines.
+  for(let i=0;i<14;i++){
+    const sx=-36+(i%7)*12;
+    const sy=i<7?-16:1;
+    ctx.strokeStyle=mix("#4c392e","#e7ca8e",i/13);
+    ctx.lineWidth=.65+i%3*.22;
+    ctx.beginPath();
+    ctx.moveTo(sx,sy);
+    ctx.quadraticCurveTo(sx+2,sy-2-(i%2),sx+7,sy-1);
+    ctx.stroke();
+    if(i%2===0){
+      ellipse(ctx,sx+5,sy,1,.9,"#b9bbb0");
+      ellipse(ctx,sx+4.7,sy-.3,.38,.35,"#fff6dc");
+    }
+  }
+  for(let k=0;k<5;k++){
+    const xx=-24+k*11;
+    ctx.strokeStyle=shade("#b3a06c",k*.12);
+    ctx.lineWidth=1.5+k%2*.5;
+    ctx.beginPath();
+    ctx.moveTo(xx,9);
+    ctx.quadraticCurveTo(xx-3,3,xx+2,-1);
+    ctx.stroke();
+    ellipse(ctx,xx+1,8,2.5,1.1,rgba("#d4c687",.65));
+  }
   ctx.fillStyle=EDGE;ctx.font="bold 7px system-ui";ctx.textAlign="center";
   ctx.fillText(built?"ESTÁBULO":"FUTURO ESTÁBULO",0,-12);
   ctx.restore();

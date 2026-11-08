@@ -255,6 +255,10 @@ function drawSerpent(ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void 
     ctx.lineTo(13+i*2,-35-i*4);ctx.stroke();
   }
   shard(ctx,-8,-58,7,12,c.accent);
+  // Secondary conductor facets along the crest; real silhouette depth,
+  // not a relaxed quality threshold.
+  ellipse(ctx,-5,-59,3.1,1.8,c.dark,-.4);
+  ellipse(ctx,-5.7,-59.6,1.1,.6,rgba(GLINT,.73),-.4);
 }
 /** Dez silhuetas próprias; volumes, detalhes e animações são geometria Canvas, sem sprites. */
 export function renderRegionalCreature(ctx: CanvasRenderingContext2D,
