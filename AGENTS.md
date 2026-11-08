@@ -15,7 +15,7 @@ Leia primeiro [docs/INDEX.md](docs/INDEX.md), [architecture/modules.json](archit
 
 O objetivo é que Claude, ChatGPT/Codex e pessoas entreguem no mesmo padrão, sem um refazer o trabalho do outro. Regras com portão automático ficam em testes; o restante é revisão.
 
-- **Arte procedural:** siga [docs/CONTRATO_ARTE_PROCEDURAL.md](docs/CONTRATO_ARTE_PROCEDURAL.md) (nove camadas, rampa de 3 tons, peça de referência em `src/render/reference/barrelReference.ts`). Toda peça nova é registrada em `tests/helpers/artAssets.ts` e passa em `tests/art-contract.test.ts`. **Não baixe pisos nem altere as regras do contrato para passar**; melhore a peça. Entregue a captura de `npm run art:preview`. O teste verde não prova que ficou bom.
+- **Arte procedural:** siga [docs/CONTRATO_ARTE_PROCEDURAL.md](docs/CONTRATO_ARTE_PROCEDURAL.md) (nove camadas, rampa de 3 tons, peça de referência em `src/render/reference/barrelReference.ts`). Toda peça nova é registrada em `tests/helpers/artAssets.ts` e passa em `tests/art-contract.test.ts`. **Não baixe pisos nem altere as regras do contrato para passar**; melhore a peça. Entregue a captura de `npm run art:preview`. O teste verde não prova que ficou bom. O checklist qualitativo está em "Padrão obrigatório da arte procedural", abaixo; os dois valem juntos.
 - **Uma microtarefa por entrega,** com teste de regressão que **falhe sem a mudança**. Mostre a saída dos testes; não declare pronto sem ela.
 - **TypeScript:** `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes` estão ligados; não os enfraqueça. Regras de jogo ficam em `src/engine|actors|world`, sem Angular, Phaser, DOM nem rede (conferido por `architecture:check`).
 - **Go:** arquivos novos ou alterados devem passar em `gofmt`. Hoje 34 dos 44 arquivos de `cmd`, `engine` e `presence` não passam; reformatar em lote é uma tarefa separada, para não conflitar com trabalho em andamento.
@@ -31,6 +31,8 @@ O objetivo é que Claude, ChatGPT/Codex e pessoas entreguem no mesmo padrão, se
 - `docs/indexes/`: **gerados**. Não editar à mão; alterar código/registro e regenerar.
 
 ## Padrão obrigatório da arte procedural
+
+Checklist qualitativo. A parte mensurável tem portão automático em `tests/art-contract.test.ts` (contrato completo em [docs/CONTRATO_ARTE_PROCEDURAL.md](docs/CONTRATO_ARTE_PROCEDURAL.md)); a peça de referência é `src/render/reference/barrelReference.ts`.
 
 Antes de criar uma nova peça visual, inspecionar um exemplo existente da mesma categoria:
 `src/app/item-icon.component.ts` para ícones (silhueta legível, camadas e contorno),

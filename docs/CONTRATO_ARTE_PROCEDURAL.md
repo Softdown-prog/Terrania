@@ -54,7 +54,7 @@ Além dos pisos, para **toda** peça: um tom bem escuro (contorno/sombra, lumin�
 
 ## O que o portão NÃO mede
 
-Mede estrutura e esforço, **não beleza**. Dá para enganá-lo repetindo chamadas inúteis, e ele não vê cores que combinam mal, proporção errada ou uma silhueta feia. Por isso a entrega também exige revisão visual (abaixo). Não use o verde do teste como prova de que "ficou bom".
+Mede estrutura e esforço, **não beleza**. Também **não cobre os ícones SVG** do inventário (`src/app/item-icon.component.ts`): o gravador mede chamadas de Canvas, e o SVG não passa por ele; esses ícones dependem de revisão visual até existir um portão próprio. Dá para enganá-lo repetindo chamadas inúteis, e ele não vê cores que combinam mal, proporção errada ou uma silhueta feia. Por isso a entrega também exige revisão visual (abaixo). Não use o verde do teste como prova de que "ficou bom".
 
 ## Sinais de preguiça (rejeitar na revisão)
 

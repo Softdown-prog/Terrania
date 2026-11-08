@@ -7,6 +7,8 @@ import { renderHero, renderSlime } from "../../src/render/actors.ts";
 import { renderNpc } from "../../src/render/npcs.ts";
 import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
+import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
+import type { RegionalLandmarkKind } from "../../src/world/regionalLandmarks.ts";
 import { NPCS } from "../../src/world/npcs.ts";
 
 export type Tier = "character" | "creature" | "prop" | "structure";
@@ -38,11 +40,18 @@ export const ASSETS: ArtAsset[] = [
     fn: "renderScenery", draw: c => { clearSceneryCache(); renderScenery(c, { kind, x: 64, y: 64, variant: 1 }, 0, 0, 1); } })),
   ...(["rock", "sign"] as const).map<ArtAsset>(kind => ({ id: "cenário " + kind, tier: "prop",
     fn: "renderScenery", draw: c => { clearSceneryCache(); renderScenery(c, { kind, x: 64, y: 64, variant: 1 }, 0, 0, 1); } })),
+  ...(["ice-spire", "desert-obelisk", "coast-beacon", "mountain-monolith"] as const satisfies readonly RegionalLandmarkKind[])
+    .map<ArtAsset>(kind => ({ id: "marco " + kind, tier: "structure", fn: "paintRegionalLandmark",
+      draw: c => paintRegionalLandmark(c, kind, 0) })),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
 ];
 
 /** Funções `render*`/`draw*` que NÃO são peças: compõem cenas inteiras. Cada exceção precisa de motivo. */
 export const NOT_AN_ASSET: Record<string, string> = {
+  ellipse: "primitiva compartilhada de draw.ts, usada por todas as peças",
+  softShadow: "primitiva compartilhada de draw.ts, usada por todas as peças",
+  pill: "primitiva compartilhada de draw.ts, usada por todas as peças",
+  limb: "primitiva compartilhada de draw.ts, usada por todas as peças",
   drawWorldView: "compõe a cena inteira a partir das peças registradas",
   drawWorldAtlas: "cartografia do mapa, não uma peça de arte",
   drawInterior: "composição de ambiente interno; as peças dele devem ser registradas se forem extraídas",

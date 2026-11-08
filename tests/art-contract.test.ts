@@ -75,15 +75,22 @@ test("arte: o render é determinístico e 100 % procedural (sem aleatório, rel�
   assert.deepEqual(found, []);
 });
 
+/** Pelo TIPO, não pelo nome: toda função exportada cujo 1º parâmetro é um Canvas é um desenhador
+ *  (`render*`, `draw*`, `paint*` ou outro prefixo; parâmetro `ctx`, `c` ou outro). */
+const drawersIn = (code: string): string[] =>
+  [...stripComments(code).matchAll(/^export function ([A-Za-z0-9_]+)\s*\(\s*\w+\s*:\s*CanvasRenderingContext2D\b/gm)].map(m => m[1]!);
+
 test("arte: todo desenhador exportado está registrado em tests/helpers/artAssets.ts (ou justificado)", () => {
   const registered = new Set(ASSETS.map(a => a.fn));
   const missing: string[] = [];
-  for (const file of renderFiles) {
-    const code = stripComments(readFileSync(file, "utf8"));
-    for (const m of code.matchAll(/^export function ((?:render|draw)[A-Za-z0-9]*)\s*\(/gm)) {
-      const name = m[1]!;
+  for (const file of renderFiles)
+    for (const name of drawersIn(readFileSync(file, "utf8")))
       if (!registered.has(name) && !(name in NOT_AN_ASSET)) missing.push(`${file}: ${name}`);
-    }
-  }
   assert.deepEqual(missing, [], "registre a peça em ASSETS (com categoria) ou explique em NOT_AN_ASSET");
+});
+
+test("arte: a varredura acha um pintor novo com qualquer nome, mas ignora comentários", () => {
+  assert.deepEqual(drawersIn("export function paintSomethingNew(c: CanvasRenderingContext2D, kind: string): void {}"), ["paintSomethingNew"]);
+  assert.deepEqual(drawersIn("export function stampBanner(\n  context: CanvasRenderingContext2D,\n  x: number): void {}"), ["stampBanner"]);
+  assert.deepEqual(drawersIn("// export function renderFake(ctx: CanvasRenderingContext2D) {}\nexport function helper(n: number) {}"), []);
 });
