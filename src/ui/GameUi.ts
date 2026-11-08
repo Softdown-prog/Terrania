@@ -5,6 +5,7 @@ import type { FoodCounts, FoodId, NutritionState } from '../engine/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/Equipment.ts';
 import type { CaveFloor } from '../engine/CaveRoom.ts';
+import type { MountAction, MountView } from '../engine/MountStable.ts';
 
 export interface Preferences {
   zoom: number;
@@ -22,13 +23,13 @@ export interface HeroHudState {
   readonly awaitingRespawn: boolean;
 }
 
-export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave';
+export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave' | 'forage' | 'tame';
 export interface CaveMapState {
   readonly floor: CaveFloor;
   readonly tileX: number;
   readonly tileY: number;
 }
-export type NpcOffer = { item: 'potion' | 'sword'; price: number };
+export type NpcOffer = { item: 'potion' | 'sword' | 'stable'; price: number };
 
 /** Data and commands exchanged between the game coordinator and the HUD. */
 export interface GameUi {
@@ -45,6 +46,8 @@ export interface GameUi {
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void;
   onRespawn(callback: () => void): void;
+  onMountAction(callback: (action: MountAction) => string): void;
+  updateMount(view: MountView): void;
   updateInventory(gel: number, potions: number, food: FoodCounts): void;
   updateLoadout(loadout: WeaponLoadout | null): void;
   updateGear(gear: GearState | null): void;

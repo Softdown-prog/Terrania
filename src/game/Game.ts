@@ -27,6 +27,9 @@ import { ClassicCombat, nearestCombatCreature } from "../engine/ClassicCombat.ts
 import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
 import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
+import { levelForExperience } from "../engine/Experience.ts";
+import { STABLE_MASTER,WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE,
+  sampleMountCaptureLoot,type MountAction,type MountActionResult } from "../engine/MountStable.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/Experience.ts";
 
@@ -115,6 +118,7 @@ export class Game {
     this.hud.onWeaponEquip(weapon => this.equipWeapon(weapon));
     this.hud.onGearEquip((slot, item) => this.equipGear(slot, item));
     this.hud.onTalk(() => this.talkToNpc());
+    this.hud.onMountAction(action=>this.mountAction(action));
     this.hud.onRespawn(() => this.respawn());
     this.hud.onPotionUse(() => {
       if (this.sim.awaitingRespawn || this.cave?.player.hp === 0) return INVENTORY_FEEDBACK.unavailable;
@@ -142,6 +146,7 @@ export class Game {
     this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateGear(inventory.gear);
+    this.hud.updateMount(this.sim.mounts.view(kills));
   }
   /** Battle entries are derived from the same camera/viewport as the canvas. */
   private battleCreatures() {
@@ -213,6 +218,15 @@ export class Game {
       this.leaveInterior();
       return;
     }
+    const {x,y}=this.sim.player;
+    const nearby=(point:{readonly x:number;readonly y:number})=>
+      Math.hypot(x-point.x,y-point.y)<=MOUNT_INTERACT_DISTANCE;
+    if(this.sim.mounts.quest && nearby(WILD_WARHORSE)) {
+      this.hud.setTravelNotice(this.mountAction('tame'));return;
+    }
+    if(this.sim.mounts.quest && nearby(WILD_APPLES)) {
+      this.hud.setTravelNotice(this.mountAction('forage'));return;
+    }
     const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
     if (entrance) { this.enterCave(entrance); return; }
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
@@ -232,12 +246,68 @@ export class Game {
       let offer: NpcOffer | undefined;
       if (npc.id === "lina") offer = { item: "potion", price: POTION_GEL_PRICE };
       else if (npc.id === "toren") offer = { item: "sword", price: FORGE_SWORD_PRICE };
+      else if (npc.id === "stablemaster") offer = { item: "stable", price: 0 };
       const lines = npcDialogue(npc, this.sim.kills, offer?.item === "sword");
       this.hud.showNpcDialogue(npc.name, npc.role, rewarded
         ? [...lines, `Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`]
         : lines, offer);
     }
   }
+
+  /** Somente o motor confirma a compra, o domador e o inventário; a UI pede ações. */
+  private mountAction(action:MountAction):string {
+    if(this.cave||this.interior||this.sim.awaitingRespawn)return "Volte à superfície para cuidar das montarias.";
+    const {player,mounts,inventory,kills}=this.sim;
+    const lvl=levelForExperience(this.sim.experience),gel=inventory.gel;
+    const spend=(amount:number)=>inventory.spendGel(amount);
+    let result:MountActionResult;
+    switch(action){
+      case "build": case "upgrade":result=mounts.upgrade(lvl,gel,spend,player.x,player.y);break;
+      case "train":result=mounts.train(lvl,player.x,player.y);break;
+      case "start-warhorse":result=mounts.beginWarhorse(lvl,player.x,player.y);break;
+      case "make-halter":result=mounts.craftHalter(gel,spend,player.x,player.y);break;
+      case "forage":result=mounts.forage(player.x,player.y);break;
+      case "tame":
+        result=mounts.tame(lvl,kills,player.x,player.y);
+        if(result==="tamed") for(const item of sampleMountCaptureLoot("warhorse",this.sim.seed))
+          inventory.addMaterial(item);
+        break;
+      case "mount-warhorse":result=mounts.mount("warhorse",lvl,player.x,player.y);break;
+      case "dismount":result=mounts.dismount();break;
+    }
+    const message:Record<MountActionResult,string>={
+      built:"Cercado do estábulo construído. Agora você pode treinar Cavalaria I.",
+      upgraded:"Estábulo ampliado. Novas montarias podem ser abrigadas.",
+      trained:"Cavalaria elevada! Verifique suas missões de domesticação.",
+      "quest-started":"Quest O Garrano Fugitivo iniciada. Afaste 5 slimes, colha maçã e prepare um cabresto.",
+      "halter-made":"Cabresto preparado. Leve Maçã Silvestre ao cavalo fugitivo.",
+      "apple-picked":"Maçã Silvestre colhida. Ainda é necessário um cabresto e cinco slimes derrotados.",
+      tamed:"O cavalo aceitou você! Sela inicial obtida. Volte ao estábulo para montar.",
+      mounted:"Cavalo de Batalha montado. Sua energia diminui ao galopar.",
+      dismounted:"Você desmontou com segurança.",
+      "no-level":"Seu nível ainda é baixo para essa etapa de Cavalaria.",
+      "no-gel":"Gel insuficiente para construir ou fabricar.",
+      "no-stable":"O cercado precisa ser construído ou ampliado primeiro.",
+      "no-training":"É necessário Cavalaria adequada e nível suficiente.",
+      "missing-quest":"Converse com o Mestre de Estábulos para iniciar a missão.",
+      "quest-active":"Você já possui uma missão de domesticação em andamento.",
+      "already-owned":"Essa montaria já foi conquistada.",
+      "no-apple":"O cavalo está assustado. Encontre a Maçã Silvestre.",
+      "no-halter":"Você precisa fabricar um cabresto no estábulo.",
+      "slimes-needed":"Derrote cinco slimes antes de tentar acalmar o cavalo.",
+      "too-far":"Aproxime-se do estábulo ou animal para essa ação.",
+      unavailable:"Essa ação ainda não está disponível.",
+      "stamina-low":"A montaria precisa descansar.",
+    };
+    if(["mounted","dismounted"].includes(result)) {
+      this.tileWalker.reset();
+      this.navigator.cancel();
+    }
+    if(["built","upgraded","trained","quest-started","halter-made","apple-picked","tamed","mounted","dismounted"].includes(result))this.save();
+    this.updateHud();
+    return message[result];
+  }
+
   private tradeGelForPotion(): string {
     const { player, inventory } = this.sim;
     if (this.interior || !this.hud.menuOpen) return INVENTORY_FEEDBACK["too-far"];
@@ -301,6 +371,7 @@ export class Game {
     this.effects.reset();
     this.hud.setCombatTarget(null);
     this.hud.setBattleCreatures([],null);
+    this.sim.mounts.dismount();
     this.cave=new CaveRoom(entrance,this.sim.player.hp,this.sim.player.maxHp);
     this.hud.setTravelNotice("Você desceu para "+entrance.name+". O mapa agora acompanha o primeiro andar da caverna.");
   }
@@ -513,7 +584,11 @@ export class Game {
       ? focusedLabel + " · seguindo" : focusedLabel);
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
     const portal = caveEntranceNear(this.sim.player.x,this.sim.player.y,this.sim.seed);
-    this.hud.setNearbyAction(portal ? "enter" : npc ? NPC_ACTIONS[npc.kind ?? "character"] : null);
+    const q=this.sim.mounts.quest;
+    const close=(point:{readonly x:number;readonly y:number})=>
+      Math.hypot(this.sim.player.x-point.x,this.sim.player.y-point.y)<=MOUNT_INTERACT_DISTANCE;
+    this.hud.setNearbyAction(q&&close(WILD_WARHORSE)?"tame":q&&!q.apple&&close(WILD_APPLES)?"forage":
+      portal?"enter":npc?NPC_ACTIONS[npc.kind??"character"]:null);
     this.scene.render(
       this.world,
       this.camera,
