@@ -44,7 +44,9 @@ export class Player {
   /** Recuperação temporal; não aplica cura instantânea, não ultrapassa HP máximo e não revive. */
   private advanceNutrition(dt: number): void {
     const s = this.nourishment;
-    const cooldown = Math.max(0, s.cooldown - dt);
+    const remainingCooldown = s.cooldown - dt;
+    // Evita bloquear comida por erro de ponto flutuante no fim exato dos 5 segundos.
+    const cooldown = remainingCooldown < 1e-8 ? 0 : remainingCooldown;
     if (this.hp <= 0 || this.hp >= this.maxHp || s.reserve <= 0) {
       this.nourishment = { reserve: s.reserve, elapsed: 0, cooldown };
       return;
