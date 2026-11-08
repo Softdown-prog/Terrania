@@ -430,7 +430,6 @@ function paintAtlasTerrain(ctx: CanvasRenderingContext2D, seed: number,
 export function drawWorldAtlas(
   ctx: CanvasRenderingContext2D, scale: AtlasScale,
   tileX: number, tileY: number, seed: number, selectedSector: number,
-  players: readonly { readonly tileX: number; readonly tileY: number }[] = [],
 ): void {
   const { centerX, centerY, spanTiles } = atlasFrame(scale, tileX, tileY, selectedSector);
   const width = ctx.canvas.width, height = ctx.canvas.height;
@@ -472,7 +471,6 @@ export function drawWorldAtlas(
   }
   mark(Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE),
     Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE), "#ffe0a1", 5);
-  for (const other of players) mark(other.tileX, other.tileY, "#eac5ff", 4);
-  // Own position wins over an overlapping village or another nearby player.
+  // A posição do herói vence a vila quando as duas se sobrepõem.
   mark(tileX, tileY, "#ffffff", 6);
 }

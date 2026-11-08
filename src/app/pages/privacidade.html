@@ -22,28 +22,29 @@
           Sessões privadas e bloqueios de armazenamento podem impedir a
           gravação.
         </p>
-        <h2>Salas online experimentais</h2>
+        <h2>Contador de quem está jogando</h2>
         <p>
-          Quando o servidor online está configurado e a conexão é estabelecida,
-          o jogo envia comandos de movimento e ataque via WebSocket. O servidor
-          atribui um identificador e um nome anônimo ao personagem e compartilha
-          estados de personagens e criaturas com jogadores próximos da mesma
-          sala.
+          O jogo é solo: seu personagem, sua posição e seus itens ficam apenas
+          neste navegador e não são enviados ao servidor. Para mostrar quantas
+          pessoas estão jogando agora, enquanto a página do jogo está aberta e
+          visível, o navegador envia a cada 20 segundos um sinal com um
+          identificador aleatório criado ao abrir a página. Esse identificador
+          não é gravado no seu aparelho nem ligado a conta, nome ou personagem.
         </p>
         <p>
-          As salas mantêm estado temporário na memória do servidor. Esta versão
-          não oferece contas, inventário persistente ou sincronização permanente
-          do progresso. A infraestrutura que entrega o site e a conexão pode
-          processar endereço IP e informações técnicas de acesso para operar o
-          serviço.
+          O servidor guarda o identificador somente na memória, por cerca de 45
+          segundos após o último sinal, para somar a contagem. Como em qualquer
+          acesso a um site, a infraestrutura que entrega o site e responde a
+          esses sinais pode processar endereço IP e informações técnicas de
+          acesso para operar o serviço. Esta versão não oferece contas nem
+          sincronização do progresso.
         </p>
         <h2>Site de apresentação</h2>
         <p>
           O código deste site não inclui ferramentas de publicidade,
           rastreamento analítico ou formulários de cadastro. As ilustrações e
           fontes utilizadas são servidas pelo próprio site ou pelo sistema do
-          seu aparelho. O recurso de copiar convite escreve um link na área de
-          transferência apenas quando você aciona o botão.
+          seu aparelho.
         </p>
         <h2>Links externos e relatos</h2>
         <p>

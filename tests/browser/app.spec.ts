@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { BUILDINGS, SIGNS } from '../../src/world/village.ts';
 
-test('site Angular preserva páginas, menu, links de sala e carregamento direto', async ({ page }) => {
+test('site Angular preserva páginas, menu e carregamento direto, sem formulário de sala', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   for (const [route, title] of [['/', 'Há um mundo'], ['/mundo/', 'mundo'], ['/guia/', 'jogar'],
@@ -19,9 +19,11 @@ test('site Angular preserva páginas, menu, links de sala e carregamento direto'
   }
   await page.locator('#main-nav a').filter({hasText:'Comunidade'}).click();
   await expect(page).toHaveURL(/comunidade/);
-  await page.locator('#room').fill('amigos-42');
-  await page.getByRole('button', { name: /Acessar sala/ }).click();
-  await expect(page).toHaveURL(/jogar\/?\?room=amigos-42/);
+  // O jogo é solo: a página da comunidade não oferece mais salas nem convites.
+  await expect(page.locator('#room')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Acessar sala|Copiar link/ })).toHaveCount(0);
+  await page.getByRole('link', { name: /Entrar em Terrania/ }).click();
+  await expect(page).toHaveURL(/jogar/);
   await expect(page.locator('canvas#game')).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -56,10 +58,6 @@ test('Phaser 3 inicia o mundo, Angular controla ajustes/bolsa e sair libera o jo
   await expect.poll(async () => page.locator('#game').evaluate(canvas => Math.round(canvas.getBoundingClientRect().width))).toBe(780);
   await page.locator('.game-brand').click();
   await expect(page.locator('canvas#game')).toHaveCount(0);
-  await page.goto('/jogar/?room=lifecycle');
-  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
-  await page.locator('.game-brand').click();
-  await expect.poll(async () => (await (await page.request.get('http://127.0.0.1:18787/presence')).json()).online).toBe(0);
   expect(errors).toEqual([]);
 });
 
@@ -138,26 +136,23 @@ test('HUD oferece ler placa, entrar e sair conforme a interação do mundo', asy
   await expect(page.locator('#questProgress')).toHaveText('0 / 5 slimes');
 });
 
-test('painel consulta conexões reais em duas salas, atualiza 2→1→0 e não inventa zero nas falhas', async ({ page, context }) => {
-  await page.goto('/comunidade/');
-  const first = await context.newPage();
-  const second = await context.newPage();
-  try {
-    await first.goto('/jogar/?room=presence-a');
-    await expect(first.locator('#multiplayerStatus')).toContainText('Online');
-    await second.goto('/jogar/?room=presence-b');
-    await expect(second.locator('#multiplayerStatus')).toContainText('Online');
-    await expect(page.getByTestId('online-count')).toHaveText('2');
-    await second.close();
-    await expect(page.getByTestId('online-count')).toHaveText('1');
-    await first.close();
-    await expect(page.getByTestId('online-count')).toHaveText('0');
-    await page.route('**/presence', route => route.fulfill({ status: 503, body: 'unavailable' }));
-    await expect(page.getByTestId('online-count')).toHaveText('—');
-    await expect(page.getByText('Contagem indisponível')).toBeVisible();
-    await page.unroute('**/presence');
-    await expect(page.getByTestId('online-count')).toHaveText('0');
-  } finally { await first.close(); await second.close(); }
+test('abrir o jogo registra a aba no contador real e o painel nunca inventa zero nas falhas', async ({ page }) => {
+  // Servidor real (porta 18787): o sinal anônimo é o único contato do jogo solo com ele.
+  const presence = async () => (await (await page.request.get('http://127.0.0.1:18787/presence')).json()).online as number;
+  const before = await presence();
+  const heartbeat = page.waitForRequest(request => request.url().endsWith('/presence/heartbeat') && request.method() === 'POST');
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('canvas#game')).toBeVisible();
+  const body = JSON.parse((await heartbeat).postData() ?? '{}');
+  expect(body.id).toMatch(/^[0-9a-f]{32}$/);
+  expect(Object.keys(body)).toEqual(['id']);
+  await expect.poll(presence).toBe(before + 1);
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#playersButton').click();
+  await expect(page.getByTestId('online-count')).toHaveText(String(before + 1));
+  await page.route('**/presence', route => route.fulfill({ status: 503, body: 'unavailable' }));
+  await expect(page.getByTestId('online-count')).toHaveText('—', { timeout: 12_000 });
+  await expect(page.getByText('Contagem indisponível')).toBeVisible();
 });
 
 test('menu Angular mantém contador fora do cenário e só consulta presença na aba de jogadores', async ({ page }) => {
@@ -425,8 +420,8 @@ test('equipar elmo muda o desenho real do cavaleiro e retirar remove a chapa', a
 test('atlas escondido no inventário cobre todo o limite técnico com setores reais', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/jogar/?room=minimap-qa');
-  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('canvas#game')).toBeVisible();
   await expect(page.locator('#miniMapPanel')).toHaveCount(0);
   await expect(page.locator('#worldAtlasCanvas')).toHaveCount(0);
   await page.locator('#gameMenuButton').click();

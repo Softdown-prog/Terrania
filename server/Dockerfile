@@ -9,11 +9,10 @@ COPY server/src ./src
 COPY server/db ./db
 COPY src/actors /work/src/actors
 COPY src/world /work/src/world
-COPY src/shared /work/src/shared
 COPY src/engine /work/src/engine
-# smoke-test: verifica que as regras compartilhadas foram emitidas como ES Modules.
+# smoke-test: o catálogo usa as regras compartilhadas, que precisam ter sido emitidas como ES Modules.
 RUN npm run build \
-    && node --input-type=module -e "Promise.all([import('./dist/server/src/Room.js'),import('./dist/src/world/terrain.js')]).then(([r,t])=>{if(typeof r.Room!=='function'||!Number.isFinite(t.CHUNK_PIXELS))process.exit(1)})" \
+    && node --input-type=module -e "import('./dist/server/src/db/catalog.js').then(c=>{const items=c.gameCatalog();if(!Array.isArray(items)||items.length<10)process.exit(1)})" \
     && npm prune --omit=dev
 
 FROM node:22-alpine

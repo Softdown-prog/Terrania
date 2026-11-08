@@ -1,22 +1,15 @@
-# Rede cliente e contrato
+# Rede do cliente: presença e catálogo
 
-**Papel:** MultiplayerClient integra WebSocket; src/shared/protocol.ts define o contrato serializado.
+**Papel:** consultas HTTP do site. O jogo é **solo e offline** (ADR 0010 e 0011): não existe conexão de jogo, sala, sincronização nem WebSocket.
 
-**Ponto de entrada:** consulte [registro central](../../architecture/modules.json) e o índice gerado em [docs/INDEX.md](../../docs/INDEX.md). Os caminhos de código completos são listados automaticamente; não repetir listas manuais aqui.
+- `presence.ts`: lê o contador de pessoas jogando (`GET /presence`) e deriva o endereço do sinal (`POST /presence/heartbeat`). Ausência ou erro de resposta é "desconhecido", nunca um zero inventado.
+- `itemCatalog.ts`: lê o catálogo público de itens (`/market/catalog`), vindo do PostgreSQL.
+- O emissor do sinal fica em `src/app/play-presence.ts`: id aleatório por aba, só na memória, enviado a cada 20 s **somente com a aba visível**; falhas de rede são ignoradas.
 
-**Ao alterar:** Ao alterar protocolo, documentar compatibilidade e testar ambas as pontas antes de publicar.
+**Ponto de entrada:** consulte [registro central](../../architecture/modules.json) e o índice gerado em [docs/INDEX.md](../../docs/INDEX.md).
 
-**Verificação:** testes de sessões online, server e Go parity.
+**Ao alterar:** o servidor (`server/src/presence.ts`) e o cliente precisam concordar no formato; teste as duas pontas. `VITE_MULTIPLAYER_URL` continua sendo lido só para derivar o endereço do servidor (nome histórico; hoje é a base HTTP, não um WebSocket).
 
-**Limites:** Não confiar em HP ou posição enviados pelo navegador; manter versão do protocolo explícita.
+**Verificação:** `tests/presence.test.ts`, `tests/play-presence.test.ts`, `tests/item-catalog.test.ts` e `server/tests/http.test.ts`.
 
-**Apresentação por tempo:** estados Node por tiles incluem `time` e o `stepTarget` dos heróis. `SnapshotTimeline` mantém uma reserva-alvo de 180 ms e ajusta suavemente o ritmo de reprodução conforme chegam os estados. Assim, diferenças entre o relógio do navegador e o da sala não esgotam a reserva durante caminhadas longas. A posição para no último estado se faltarem pacotes. Sem timestamp, o cliente usa o interpolador anterior. O buffer é limpo na desconexão e só alimenta a apresentação. Ver [ADR 0006](../../docs/adr/0006-movimento-e-apresentacao-do-personagem.md).
-
-**Inventário online:** após negociar `inventory=loot`, o cliente consome o estado privado da bolsa e só libera outro pedido quando chega o recibo do pedido pendente. Ver [ADR 0007](../../docs/adr/0007-inventario-da-sala.md).
-
-**Alimentação online:** os comandos `buy-apple|bread|meat` e `eat-apple|bread|meat` passam por `isValidInventoryMessage` e recibos privados. A sala Node valida compra com Lina, saldo de gel, quantidade, cooldown, saciedade e HP; o navegador só mostra o resultado. `food` e `nutrition` são campos opcionais de `RoomInventoryState` para leitura compatível, mas clientes e servidores precisam ser atualizados de maneira coordenada para habilitar novos comandos.
-
-
-**Espada visual online:** `HeroState.equippedWeapon` anuncia apenas a espada forjada equipada em repouso; o campo opcional não revela inventário privado. `attackWeapon` continua sendo a arma comprometida com o golpe ativo. O buffer de snapshots mostra a seleção recente para pose ociosa, sem afetar dano ou protocolo v3.
-
-**Comandos por tiles:** o servidor consome cada amostra de direção uma única vez. Movimento contínuo exige novos comandos; um pacote neutro atrasado não pode iniciar passos extras. Clientes de movimento legado mantêm o fluxo anterior.
+**Limites:** o contador é informativo. Quem controla o navegador pode inventar ids até o limite do servidor (5.000 abas simultâneas). Nenhum dado de jogo (posição, vida, itens) sai do navegador.

@@ -30,7 +30,7 @@ test("a URL clássica legada termina o passo quando o controle é solto", async 
   expect(errors).toEqual([]);
 });
 
-test("o combate por alvo aparece no solo e na sala Node", async ({ page }) => {
+test("o combate por alvo aparece no solo", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/jogar/?modo=classico");
@@ -38,9 +38,6 @@ test("o combate por alvo aparece no solo e na sala Node", async ({ page }) => {
   await expect(page.locator("#classicTileHint")).toBeVisible();
   await page.goto("/jogar/?modo=solo");
   await expect(page.locator("canvas#game")).toBeVisible();
-  await expect(page.locator("#classicTileHint")).toBeVisible();
-  await page.goto("/jogar/?room=tile-isolation");
-  await expect(page.locator("#multiplayerStatus")).toContainText("Online");
   await expect(page.locator("#classicTileHint")).toBeVisible();
   expect(errors).toEqual([]);
 });

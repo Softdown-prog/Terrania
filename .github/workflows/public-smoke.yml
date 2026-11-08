@@ -1,0 +1,22 @@
+name: Smoke público Terrania (saúde, presença e sinal anônimo)
+on:
+  pull_request:
+    paths:
+      - "server/scripts/public-smoke.mjs"
+      - "scripts/check-published-frontend.mjs"
+      - ".github/workflows/public-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  presenca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar dependências do servidor
+        run: npm ci --prefix server --no-audit --no-fund
+      - name: Testar Pages, health e sinal de presença na VPS
+        run: node --experimental-strip-types server/scripts/public-smoke.mjs

@@ -11,7 +11,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
 
-## Todos os arquivos deste módulo (51)
+## Todos os arquivos deste módulo (50)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -28,7 +28,6 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/classic-combat.spec.ts`](../../tests/browser/classic-combat.spec.ts)
 - [`tests/browser/classic-tiles.spec.ts`](../../tests/browser/classic-tiles.spec.ts)
 - [`tests/browser/session.spec.ts`](../../tests/browser/session.spec.ts)
-- [`tests/browser/tap-online.spec.ts`](../../tests/browser/tap-online.spec.ts)
 - [`tests/classic-battle-list.test.ts`](../../tests/classic-battle-list.test.ts)
 - [`tests/classic-combat.test.ts`](../../tests/classic-combat.test.ts)
 - [`tests/classic-pursuit.test.ts`](../../tests/classic-pursuit.test.ts)
@@ -50,6 +49,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/npcs.test.ts`](../../tests/npcs.test.ts)
 - [`tests/phaser-install.test.ts`](../../tests/phaser-install.test.ts)
 - [`tests/physics.test.ts`](../../tests/physics.test.ts)
+- [`tests/play-presence.test.ts`](../../tests/play-presence.test.ts)
 - [`tests/presence.test.ts`](../../tests/presence.test.ts)
 - [`tests/published-frontend.test.ts`](../../tests/published-frontend.test.ts)
 - [`tests/qa-bot.test.ts`](../../tests/qa-bot.test.ts)
@@ -60,7 +60,6 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/regions.test.ts`](../../tests/regions.test.ts)
 - [`tests/simulation.test.ts`](../../tests/simulation.test.ts)
 - [`tests/site-theme.test.ts`](../../tests/site-theme.test.ts)
-- [`tests/snapshot-timeline.test.ts`](../../tests/snapshot-timeline.test.ts)
 - [`tests/tap-navigation.test.ts`](../../tests/tap-navigation.test.ts)
 - [`tests/village.test.ts`](../../tests/village.test.ts)
 - [`tests/world.test.ts`](../../tests/world.test.ts)

@@ -4,6 +4,8 @@ import { mountGame } from '../game/PhaserGame.ts';
 import { HudService } from './hud.service.ts';
 import { ItemIconComponent } from './item-icon.component.ts';
 import { OnlinePlayersComponent } from './online-players.component.ts';
+import { startPlayPresence } from './play-presence.ts';
+import { heartbeatEndpoint } from '../net/presence.ts';
 import { runtimeConfig } from './runtime-config.ts';
 import { renderHero } from '../render/actors.ts';
 import { drawWorldAtlas } from '../render/terrain.ts';
@@ -71,9 +73,8 @@ export class GamePageComponent implements AfterViewInit {
       const seed = this.hud.seed();
       const scale = this.atlasScale();
       const sector = this.selectedSector();
-      const players = this.hud.mapPlayers();
       const ctx = this.atlasCanvas()?.nativeElement.getContext('2d');
-      if (ctx) drawWorldAtlas(ctx, scale, x, y, seed, sector, players);
+      if (ctx) drawWorldAtlas(ctx, scale, x, y, seed, sector);
     });
     effect(() => {
       const awaitingRespawn = this.hud.awaitingRespawn();
@@ -124,7 +125,9 @@ export class GamePageComponent implements AfterViewInit {
     // An open sidebar fits a desktop; Android stays collapsed until requested.
     this.battleOpen.set(window.matchMedia('(pointer: fine) and (min-width: 651px)').matches);
     this.destroy.onDestroy(() => cancelAnimationFrame(this.previewFrame));
-    try { this.destroy.onDestroy(mountGame(this.mount().nativeElement, this.hud, runtimeConfig.multiplayerUrl)); }
+    // Só o contador de quem está jogando: anônimo, sem conta, e o jogo nunca depende da resposta.
+    this.destroy.onDestroy(startPlayPresence({ endpoint: heartbeatEndpoint(runtimeConfig.multiplayerUrl, runtimeConfig.presenceUrl) }));
+    try { this.destroy.onDestroy(mountGame(this.mount().nativeElement, this.hud)); }
     catch { this.notice.set('Não foi possível iniciar o jogo neste navegador. Recarregue a página para tentar novamente.'); }
   }
   open(dialog: HTMLDialogElement): void {

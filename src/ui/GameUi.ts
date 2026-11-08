@@ -11,8 +11,6 @@ export interface Preferences {
   cameraMotion: boolean;
 }
 
-export interface MapPlayer { readonly id: string; readonly tileX: number; readonly tileY: number; }
-
 export interface HeroHudState {
   readonly hp: number;
   readonly maxHp: number;
@@ -41,25 +39,18 @@ export interface GameUi {
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void;
   onRespawn(callback: () => void): void;
-  updateInventory(gel: number, potions: number, available: boolean, pending: boolean, food: FoodCounts): void;
+  updateInventory(gel: number, potions: number, food: FoodCounts): void;
   updateLoadout(loadout: WeaponLoadout | null): void;
   updateGear(gear: GearState | null): void;
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void;
   setQuickPotionFeedback(message: string): void;
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void;
-  setOnline(online: boolean): void;
-  setStatus(status: string): void;
-  /** Explain an authoritative death or a newly created online session. */
-  setTravelNotice(message: string): void;
   setTargetCombat(enabled: boolean): void;
   setCombatTarget(label: string | null): void;
   onStopCombat(callback: () => void): void;
   onBattleSelect(callback: (id: string) => void): void;
   setBattleCreatures(creatures: readonly BattleCreature[], targetId: string | null): void;
   setSeed(seed: number): void;
-  /** Only positions supplied by the interest-filtered server snapshots. */
-  setMapPlayers(players: readonly MapPlayer[]): void;
-  setPlayerCount(count: number, online: boolean): void;
   setNearbyAction(action: NearbyAction | null): void;
   showNpcDialogue(name: string, role: string, lines: readonly string[], offer?: NpcOffer): void;
   setInterior(name: string): void;

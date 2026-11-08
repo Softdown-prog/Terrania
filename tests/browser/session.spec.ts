@@ -1,4 +1,4 @@
-import { test, expect, type WebSocketRoute } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { PROTOCOL_VERSION } from '../../src/shared/protocol.ts';
 
 for (const layout of ['normal', 'paisagem'] as const) {
@@ -70,55 +70,6 @@ test('contador para ao sair da tela e consulta novamente ao voltar', async ({ pa
   await page.locator('#main-nav a').filter({ hasText: 'Comunidade' }).click();
   await expect.poll(() => requests, { timeout: 2000 }).toBe(before + 1);
   await expect(page.getByTestId('online-count')).toHaveText('2');
-});
-
-test('entrada online e saída da rota preservam o progresso solo recente', async ({ page }) => {
-  const save = { seed: 71234, x: 16, y: 16, hp: 79, kills: 5, defeated: ['old-slime'], experience: 50,
-    inventory: { gel: 9, potion: 2, questRewardClaimed: true }, drops: [] };
-  await page.addInitScript(value => {
-    if (!localStorage.getItem('terrania-origins-v1'))
-      localStorage.setItem('terrania-origins-v1', JSON.stringify(value));
-  }, save);
-  let socket: WebSocketRoute | undefined;
-  await page.routeWebSocket('ws://127.0.0.1:18787/ws*', ws => { socket = ws; });
-  await page.goto('/jogar/?room=solo-save');
-  await expect(page.locator('canvas#game')).toBeVisible();
-  await expect.poll(() => socket !== undefined).toBe(true);
-  const coords = await page.locator('#coords').textContent();
-  await page.keyboard.down('d');
-  await expect(page.locator('#coords')).not.toHaveText(coords!);
-  await page.keyboard.up('d');
-  await page.locator('#gameMenuButton').click();
-  await page.locator('#settingsButton').click();
-  socket!.send(JSON.stringify({ type: 'welcome', version: PROTOCOL_VERSION,
-    id: 'session-test', room: 'solo-save', seed: 842136 }));
-  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
-  await expect(page.locator('#xpText')).toHaveCount(0);
-  const checkpoint = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
-  expect(checkpoint.x).toBeGreaterThan(save.x);
-  expect(checkpoint.seed).toBe(save.seed);
-  expect(checkpoint.hp).toBe(save.hp);
-  expect(checkpoint.experience).toBe(save.experience);
-  expect(checkpoint.inventory).toEqual(save.inventory);
-  await page.locator('#settingsDialog .dialog-x').click();
-  await page.locator('.game-brand').click();
-  await expect(page.locator('canvas#game')).toHaveCount(0);
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!))).toEqual(checkpoint);
-  await page.goto('/jogar/?modo=solo');
-  await expect(page.locator('canvas#game')).toBeVisible();
-  await expect(page.locator('#seed')).toHaveText(String(save.seed));
-  await expect(page.locator('#hpText')).toHaveText('79 / 110');
-  await expect(page.locator('#xpText')).toHaveText('XP 20 / 60');
-  await page.locator('#gameMenuButton').click();
-  await page.locator('#inventoryButton').click();
-  await expect(page.locator('#gelCount')).toHaveText('9 / 99');
-  await expect(page.locator('#potionCount')).toHaveText('2 / 99');
-  await page.locator('#usePotion').click();
-  await expect(page.locator('#inventoryFeedback')).toContainText('Poção utilizada');
-  await expect(page.locator('#hpText')).toHaveText('110 / 110');
-  await expect(page.locator('#potionCount')).toHaveText('1 / 99');
-  const healed = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
-  expect(healed).toMatchObject({ hp: 110, experience: 50, inventory: { gel: 9, potion: 1, questRewardClaimed: true } });
 });
 
 test('a coleta de gel confirma a quantidade na tela e persiste na bolsa', async ({ page }, info) => {

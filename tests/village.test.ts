@@ -5,7 +5,6 @@ import { canMoveOnSeed } from "../src/world/collision.ts";
 import { NPCS, nearestNpc, npcDialogue } from "../src/world/npcs.ts";
 import { aelaQuestProgress } from "../src/world/aelaQuest.ts";
 import { BUILDINGS, SIGNS } from "../src/world/village.ts";
-import { PROTOCOL_VERSION } from "../src/shared/protocol.ts";
 
 test("praça sem água, rochas e árvores em diferentes seeds", () => {
   for (const seed of [0, 42, 842136, 4294967295])
@@ -22,7 +21,6 @@ test("colisão da fachada mantém porta acessível", () => {
     assert.equal(canMoveOnSeed(b.x, b.y + 29, 842136), true);
     assert.equal(nearestNpc(b.x, b.y + 29)?.id, b.id);
   }
-  assert.equal(PROTOCOL_VERSION, 3);
 });
 test("portas só podem ser acionadas diante da entrada, nunca pela parede lateral", () => {
   for (const building of BUILDINGS) {

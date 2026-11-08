@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { PreviewDirective } from './preview.directive.ts';
 import { OnlinePlayersComponent } from './online-players.component.ts';
 
@@ -21,19 +21,6 @@ export class NewsPage {
 
 @Component({selector: "app-page-comunidade", templateUrl: "./pages/comunidade.html", imports: [RouterLink, PreviewDirective, OnlinePlayersComponent], changeDetection: ChangeDetectionStrategy.OnPush})
 export class CommunityPage {
-  private readonly router = inject(Router);
-  readonly feedback = signal('');
-  joinRoom(event: Event, room: HTMLInputElement): void {
-    event.preventDefault();
-    if (room.reportValidity()) void this.router.navigate(['/jogar/'], { queryParams: {room:room.value} });
-  }
-  async copyRoom(room: HTMLInputElement): Promise<void> {
-    if (!room.reportValidity()) return;
-    const url = new URL('/jogar/', location.origin);
-    url.searchParams.set('room', room.value);
-    try { await navigator.clipboard.writeText(url.href); this.feedback.set('Link copiado. Envie para quem vai explorar com você.'); }
-    catch { this.feedback.set('Copie este link: ' + url.href); }
-  }
 }
 
 @Component({selector: "app-page-privacidade", templateUrl: "./pages/privacidade.html", imports: [RouterLink, PreviewDirective], changeDetection: ChangeDetectionStrategy.OnPush})

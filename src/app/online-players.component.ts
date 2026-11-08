@@ -9,7 +9,7 @@ import { PresenceService } from './presence.service.ts';
       <span>{{ compact() ? 'ONLINE AGORA' : 'JOGADORES ONLINE' }}</span>
       @if (presence.value(); as value) {
         <strong data-testid="online-count">{{ value.online }}</strong>
-        <small>{{ value.rooms }} sala(s){{ compact() ? '' : ' · conexões ativas' }}</small>
+        <small>{{ compact() ? 'jogando agora' : 'pessoas jogando agora' }}</small>
         <small class="update-details">Atualizado às {{ time(value.updatedAt) }} · a cada 5 s</small>
       } @else {
         <strong data-testid="online-count">—</strong>
