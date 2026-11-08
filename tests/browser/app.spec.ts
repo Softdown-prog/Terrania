@@ -281,3 +281,27 @@ test('SAC visual: Canvas real do Phaser desenha mundo no desktop e Android, incl
   });
   expect(errors).toEqual([]);
 });
+
+test('Cavaleiro come alimento da bolsa e recupera HP de verdade no Canvas do jogo', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('terrania-origins-v1', JSON.stringify({
+      seed: 842136, x: 16, y: 16, hp: 70, kills: 0, defeated: [],
+      inventory: { gel: 1, potion: 0, questRewardClaimed: false,
+        food: { apple: 1, bread: 0, meat: 0 } },
+    }));
+  });
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('canvas#game')).toBeVisible();
+  await expect(page.locator('#hpText')).toHaveText('70 / 100');
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  await expect(page.locator('#foodCount-apple')).toHaveText('1 / 99');
+  await page.locator('#eat-apple').click();
+  await expect(page.locator('#inventoryFeedback')).toContainText('recuperada gradualmente');
+  await expect(page.locator('#foodCount-apple')).toHaveText('0 / 99');
+  await expect(page.locator('#nutritionStatus')).toContainText('8 HP para recuperar');
+  await page.locator('#inventoryDialog .dialog-x').click();
+  await expect.poll(async () => Number((await page.locator('#hpText').innerText()).split(' / ')[0]),
+    { timeout: 10000 }).toBeGreaterThan(70);
+  await expect(page.locator('#hpText')).toHaveText(/7[1-9] \/ 100/);
+});
