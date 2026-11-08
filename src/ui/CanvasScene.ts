@@ -213,6 +213,13 @@ export class CanvasScene {
       halfWidth: this.width / (2 * zoom), halfHeight: this.height / (2 * zoom),
     };
   }
+  caveBattleViewport(room: CaveRoom, zoom: number): BattleViewport {
+    const scale = Math.max(1, zoom);
+    return {
+      centerX: room.player.x, centerY: room.player.y,
+      halfWidth: this.width / (2 * scale), halfHeight: this.height / (2 * scale),
+    };
+  }
   worldPoint(local: Point, camera: Camera): Point | null {
     return screenToWorld(local, this.width, this.height,
       { x: camera.renderX, y: camera.renderY }, camera.zoom);
