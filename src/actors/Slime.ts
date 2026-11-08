@@ -2,6 +2,7 @@ import { clearPath, moveBody, type CollisionMap } from "../world/collision.ts";
 import { hash2 } from "../world/random.ts";
 import { CHUNK_TILES, TILE_SIZE } from "../world/terrain.ts";
 import { villageGround } from "../world/village.ts";
+import { getRegionDifficulty } from "../world/regionDifficulty.ts";
 import type { Player } from "./Player.ts";
 import { CREATURE_CATALOG, type CreatureView } from "./CreatureCatalog.ts";
 
@@ -59,7 +60,8 @@ export class Slime implements CreatureView {
   }
 }
 export function slimeSpawns(cx: number, cy: number, seed: number): Slime[] {
-  const count = hash2(cx, cy, seed + 201) < 0.53 ? 1 : 2;
+  const tier = getRegionDifficulty((cx + 0.5) * CHUNK_TILES, (cy + 0.5) * CHUNK_TILES).tier;
+  const count = (hash2(cx, cy, seed + 201) < 0.53 ? 1 : 2) + (tier >= 4 ? 1 : 0);
   const result: Slime[] = [];
   for (let index = 0; index < count; index++) {
     const tx =
