@@ -22,6 +22,8 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
   else await action.click();
   await expect(page.locator("#coords")).toContainText("Subsolo");
   await expect(page.locator("#quest")).toHaveText(entrance.name);
+  await expect(page.locator(".quest .stat-heading")).toContainText("EXPLORAÇÃO · SUBSOLO");
+  await expect(page.locator("#battleSidebar")).toHaveCount(0);
   await page.locator("canvas#game").screenshot({path:test.info().outputPath("cave-scene.png")});
   await page.locator("#gameMenuButton").click();
   await page.locator("#inventoryButton").click();
@@ -62,6 +64,7 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
     await page.keyboard.up("s");
   }
   await expect(page.locator("#quest")).toHaveText("Proteja a clareira");
+  await expect(page.locator(".quest .stat-heading")).toContainText("MISSÃO DA CLAREIRA");
   await page.locator("#gameMenuButton").click();
   await page.locator("#inventoryButton").click();
   await page.locator("#inventoryTabMap").click();

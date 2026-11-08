@@ -40,4 +40,56 @@ try {
   const file = join(out, 'pecas.png');
   writeFileSync(file, Buffer.from(sheet.split(',')[1], 'base64'));
   console.log('Capturas das peças registradas: ' + file);
+
+  // Comparative six-region sheet: representative *real* CaveRoom floors, not concept art.
+  const caveBundle = await build({
+    stdin: { contents: [
+      "import { CaveRoom } from './src/engine/CaveRoom.ts';",
+      "import { drawCaveView, drawCaveAtlas } from './src/render/cave.ts';",
+      "globalThis.CAVES = { CaveRoom, drawCaveView, drawCaveAtlas };",
+    ].join("\n"), resolveDir: root, loader: 'ts' },
+    bundle: true, format: 'iife', write: false, logLevel: 'error',
+  });
+  await page.addScriptTag({ content: caveBundle.outputFiles[0].text });
+  const caves = await page.evaluate(() => {
+    const themes = [
+      ['verdant', 'Gruta das Raízes'], ['glacial', 'Gruta das Geadas'],
+      ['desert', 'Cripta das Dunas'], ['coastal', 'Caverna das Marés'],
+      ['basalt', 'Galeria das Montanhas'], ['marsh', 'Masmorra do Brejo'],
+    ];
+    const sheet = document.createElement('canvas');
+    sheet.width = 1410; sheet.height = 740;
+    const ctx = sheet.getContext('2d');
+    ctx.fillStyle = '#11211e'; ctx.fillRect(0, 0, sheet.width, sheet.height);
+    themes.forEach(([theme,name],i) => {
+      const col = i % 3, row = Math.floor(i / 3);
+      const bx = col * 470, by = row * 370;
+      const room = new globalThis.CAVES.CaveRoom({
+        id: 'cave-preview:' + theme, name, theme, kind: 'stairs',
+        x: 0, y: 0, tileX: 34 + i, tileY: -78 - i, seed: 842136,
+      });
+      ctx.save();
+      ctx.translate(bx + 16, by + 41);
+      ctx.beginPath(); ctx.rect(0, 0, 280, 264); ctx.clip();
+      ctx.scale(1.4, 1.4);
+      globalThis.CAVES.drawCaveView(ctx, room,
+        room.player.x - 100, room.player.y - 94, 200, 189, 1);
+      ctx.restore();
+      const atlas = document.createElement('canvas');
+      atlas.width = 256; atlas.height = 256;
+      globalThis.CAVES.drawCaveAtlas(atlas.getContext('2d'), room.floor,
+        Math.floor(room.player.x / 32), Math.floor(room.player.y / 32));
+      ctx.drawImage(atlas, bx + 299, by + 48, 155, 155);
+      ctx.fillStyle = '#fff6dc'; ctx.font = 'bold 17px system-ui';
+      ctx.textAlign = 'left'; ctx.fillText(name, bx + 16, by + 29);
+      ctx.fillStyle = '#b4c8ba'; ctx.font = '12px system-ui';
+      ctx.fillText('Cena 2D', bx + 16, by + 325);
+      ctx.fillText('Mapa interno', bx + 300, by + 225);
+    });
+    return sheet.toDataURL('image/png');
+  });
+  const caveFile = join(out, 'cavernas-regionais.png');
+  writeFileSync(caveFile, Buffer.from(caves.split(',')[1], 'base64'));
+  console.log('Comparação real de seis cavernas e seus mapas: ' + caveFile);
+
 } finally { await browser.close(); }

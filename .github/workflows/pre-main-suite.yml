@@ -185,7 +185,7 @@ jobs:
         with:
           name: terrania-pre-main-cave-and-art-previews
           path: |
-            test-results/art-preview/pecas.png
+            test-results/art-preview/*.png
             test-results/**/cave-*.png
           if-no-files-found: warn
           retention-days: 14
