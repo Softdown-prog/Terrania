@@ -6,6 +6,7 @@ COPY server/package*.json ./
 RUN npm ci --no-audit --no-fund
 COPY server/tsconfig.json ./
 COPY server/src ./src
+COPY server/db ./db
 COPY src/actors /work/src/actors
 COPY src/world /work/src/world
 COPY src/shared /work/src/shared
@@ -22,6 +23,7 @@ RUN chown node:node /app
 COPY --from=build --chown=node:node /work/server/dist ./dist
 COPY --from=build --chown=node:node /work/server/node_modules ./node_modules
 COPY --from=build --chown=node:node /work/server/package.json ./package.json
+COPY --from=build --chown=node:node /work/server/db ./db
 USER node
 EXPOSE 8787
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD node -e "fetch('http://127.0.0.1:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"

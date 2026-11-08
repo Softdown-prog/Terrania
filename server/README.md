@@ -1,4 +1,4 @@
-# Servidor Node multiplayer
+# Servidor Node e base de dados do Terrânia
 
 **Papel:** Servidor WebSocket e salas autoritativas do backend atual.
 
@@ -9,6 +9,11 @@
 **Verificação:** npm test --prefix server; build/typecheck; Docker /health.
 
 **Limites:** Não misturar protótipo Go shadow com rota de produção sem migração aprovada.
+
+**Base solo/mercado (ADR 0010/0011):** [PostgreSQL](db/README.md) contém migração,
+catálogo derivado dos 16 itens existentes e prontidão real. A API de catálogo é
+somente leitura; contas, cofre e trocas aguardam identidade/autorização antes de
+expor escrita. O banco não recebe o save solo e não muda as regras do jogo.
 
 **Movimento e snapshots por tiles:** a sala compartilha o controlador de passos sem perda de tempo nos centros; uma direção curta recebida enquanto parado sobrevive até o tick seguinte. `time` e `stepTarget` são dados opcionais de apresentação para sessões com tiles. O servidor segue responsável por posição, colisões, alvo e impacto. O contrato v3 e o fallback dos clientes anteriores estão descritos no [ADR 0006](../docs/adr/0006-movimento-e-apresentacao-do-personagem.md).
 

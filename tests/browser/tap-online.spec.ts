@@ -128,30 +128,30 @@ test('toque para caminhar online transmite movimento autoritativo observado pelo
     await expect(page.locator('#coords')).toHaveText('X 2 · Y 0');
     expect(sentWalks).toHaveLength(1);
     await expect(page.locator('#multiplayerStatus')).toContainText('Online');
-    // The only authoritative map lives inside the inventory, not over gameplay.
-    // Nearby view: 256px / 128 tiles = 2px per tile. Player at tile (2,0),
-    // visitor at (0,0); the visitor's 4px lilac marker covers pixel (122,128), clear of the hero halo.
+    // The map now exists only in the inventory. Nearby scale keeps the visitor
+    // separate from the self marker; no dependency on the removed mini-map.
+    await page.locator('#gameMenuButton').click();
     await page.locator('#inventoryButton').click();
     await page.locator('#inventoryTabMap').click();
     await page.locator('#mapScaleNearby').click();
-    const atlas = page.locator('#worldAtlasCanvas');
-    await expect(atlas).toBeVisible();
-    const remotePixel = () => atlas.evaluate(canvas => {
-      const rgba = (canvas as HTMLCanvasElement).getContext('2d')!.getImageData(122, 128, 1, 1).data;
-      return [rgba[0], rgba[1], rgba[2]].join(',');
+    const remotePixels = () => page.locator('#worldAtlasCanvas').evaluate(canvas => {
+      const c=canvas as HTMLCanvasElement;
+      const rgba=c.getContext('2d')!.getImageData(0,0,c.width,c.height).data;
+      let count=0;for(let i=0;i<rgba.length;i+=4)if(rgba[i]===234&&rgba[i+1]===197&&rgba[i+2]===255)count++;
+      return count;
     });
-    await expect.poll(remotePixel).toBe('234,197,255');
+    await expect.poll(remotePixels).toBeGreaterThan(0);
     await visitor.close();
-    await expect.poll(remotePixel).not.toBe('234,197,255');
+    await expect.poll(remotePixels).toBe(0);
     const returning = await context.newPage();
     try {
       await returning.goto('/jogar/?room=tap-online');
       await expect(returning.locator('#multiplayerStatus')).toContainText('Online');
-      await expect.poll(remotePixel).toBe('234,197,255');
+      await expect.poll(remotePixels).toBeGreaterThan(0);
     } finally {
       await returning.close();
     }
-    await expect.poll(remotePixel).not.toBe('234,197,255');
+    await expect.poll(remotePixels).toBe(0);
   } finally {
     if (!visitor.isClosed()) await visitor.close();
   }

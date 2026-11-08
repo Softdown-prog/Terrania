@@ -8,4 +8,12 @@ O deploy confirma label OCI SHA, saúde Docker e `/health` HTTPS com a mesma rev
 
 O resultado JSON fica nos artifacts e resumo do Actions. Secrets exclusivos: `VPS_OPERATIONS_SSH_KEY` (forced-command, sem shell livre) e `VPS_OPERATIONS_KNOWN_HOSTS`. GHCR usa token efêmero do próprio job. O código do cliente central é fixado por SHA, e o broker é root-owned e instalado separadamente na VPS. PR não recebe esse acesso.
 
+**PostgreSQL (ADR 0011):** publicação também depende do workflow reutilizável
+`postgres-market.yml`, com PostgreSQL 18 descartável e testes de transação,
+concorrência e permissões. O broker preserva o Compose efetivo instalado: rede
+privada e montagem do arquivo de senha devem entrar nesse Compose, sem editar
+somente o exemplo do repositório. A migração é uma operação separada com usuário
+dedicado; o HTTP tem acesso somente ao catálogo e versão. Backups e instalação
+real precisam de validação própria; conferir [operação](../server/db/README.md).
+
 Não declarar instalado porque o CI passou: registrar run, commit, digest, saúde e resposta HTTPS depois da publicação real. O workflow Worker tem suas próprias credenciais Cloudflare; sucesso deste backend não comprova atualização do site estático.

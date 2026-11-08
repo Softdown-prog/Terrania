@@ -55,7 +55,7 @@ test(
         200,
       );
       assert.deepEqual(await (await fetch("http://127.0.0.1:" + port + "/health?deploy=verified")).json(),
-        { status: "ok", revision: "a".repeat(40) });
+        { status: "ok", revision: "a".repeat(40), database: { enabled: false, ready: false, schemaVersion: null } });
       const presenceUrl = "http://127.0.0.1:" + port + "/presence";
       const presence = async () => (await (await fetch(presenceUrl)).json()) as { online: number; rooms: number; scope: string; updatedAt: string };
       assert.equal((await presence()).online, 0);
