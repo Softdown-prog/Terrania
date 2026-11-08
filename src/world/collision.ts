@@ -50,7 +50,7 @@ export function canMoveOnSeed(x: number, y: number, seed: number): boolean {
   )
     return false;
   const radius = 7;
-  if (landmarkBlocks(x, y, radius) || villageBlocks(x, y, radius)) return false;
+  if (landmarkBlocks(x, y, radius, seed) || villageBlocks(x, y, radius)) return false;
   return ([
     [-radius, -radius],
     [radius, -radius],

@@ -11,6 +11,7 @@ import { ellipse, mix, TAU } from "./draw.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 import type { Biome } from "../world/biomes.ts";
+import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
 
 /** Pares (sombra, luz) por tipo de solo; a mistura segue ruído contínuo. */
 const PALETTE: Record<Ground, { lo: string; hi: string }> = {
@@ -460,6 +461,15 @@ export function drawWorldAtlas(
     ctx.fillStyle = color;
     ctx.fillRect(Math.round(px - size / 2), Math.round(py - size / 2), size, size);
   };
+  // Nearby atlas only: sampling all regional landmark cells in world view is unbounded.
+  if (scale === "nearby") {
+    const endX = startX + spanTiles, endY = startY + spanTiles;
+    for (let cy = Math.floor(startY / LANDMARK_CELL_TILES); cy <= Math.floor(endY / LANDMARK_CELL_TILES); cy++)
+      for (let cx = Math.floor(startX / LANDMARK_CELL_TILES); cx <= Math.floor(endX / LANDMARK_CELL_TILES); cx++) {
+        const landmark = getRegionalLandmarkForCell(cx, cy, seed);
+        if (landmark) mark(landmark.tileX, landmark.tileY, "#ffcb72", 5);
+      }
+  }
   mark(Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE),
     Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE), "#ffe0a1", 5);
   for (const other of players) mark(other.tileX, other.tileY, "#eac5ff", 4);

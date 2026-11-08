@@ -1,8 +1,10 @@
 import { hash2 } from "../world/random.ts";
+import type { RegionalLandmarkKind } from "../world/regionalLandmarks.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
 
 export interface Scenery {
-  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house";
+  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark";
+  landmarkKind?: RegionalLandmarkKind;
   x: number;
   y: number;
   variant: number;
@@ -40,6 +42,57 @@ function blit(ctx: CanvasRenderingContext2D, s: Sprite): void {
 }
 /** Libera os canvases (troca de qualidade/contexto). */
 export function clearSceneryCache(): void { sprites.clear(); }
+
+/** Silhuetas únicas e legíveis em mobile; mesma área física usada na colisão. */
+function paintRegionalLandmark(c: CanvasRenderingContext2D, kind: RegionalLandmarkKind): void {
+  c.fillStyle = "rgba(20,24,28,.36)";
+  c.beginPath(); c.ellipse(3, -2, 24, 8, 0, 0, TAU); c.fill();
+  if (kind === "ice-spire") {
+    c.fillStyle = "#638d9d";
+    c.beginPath(); c.moveTo(-19, -5); c.lineTo(-13, -61); c.lineTo(0, -91);
+    c.lineTo(15, -60); c.lineTo(18, -5); c.closePath(); c.fill();
+    c.fillStyle = "#c6eaf3";
+    c.beginPath(); c.moveTo(-13, -61); c.lineTo(0, -91); c.lineTo(1, -6);
+    c.lineTo(-19, -5); c.closePath(); c.fill();
+    c.strokeStyle = "#ecfbff"; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(0, -91); c.lineTo(15, -60); c.stroke();
+  } else if (kind === "desert-obelisk") {
+    c.fillStyle = "#7f664e";
+    c.fillRect(-17, -9, 34, 9);
+    c.fillStyle = "#c4a16a";
+    c.beginPath(); c.moveTo(-12, -10); c.lineTo(-10, -66); c.lineTo(0, -83);
+    c.lineTo(12, -65); c.lineTo(13, -10); c.closePath(); c.fill();
+    c.fillStyle = "#e9cc8c";
+    c.beginPath(); c.moveTo(0, -83); c.lineTo(0, -10); c.lineTo(-12, -10); c.lineTo(-10, -66);
+    c.closePath(); c.fill();
+    c.strokeStyle = "#775e47"; c.lineWidth = 2;
+    for (let i = 0; i < 3; i++) {
+      c.beginPath(); c.moveTo(-4, -49 + i * 10); c.lineTo(5, -49 + i * 10); c.stroke();
+    }
+  } else if (kind === "coast-beacon") {
+    c.fillStyle = "#c0b7a4";
+    c.beginPath(); c.moveTo(-14, -5); c.lineTo(-9, -60); c.lineTo(9, -60); c.lineTo(15, -5);
+    c.closePath(); c.fill();
+    c.fillStyle = "#807e7a";
+    c.fillRect(-18, -12, 36, 8);
+    c.fillStyle = "#3a6677";
+    c.fillRect(-15, -74, 30, 17);
+    c.fillStyle = "#fff0b4";
+    c.fillRect(-7, -70, 14, 10);
+    c.fillStyle = "#785849";
+    c.beginPath(); c.moveTo(-19, -74); c.lineTo(0, -85); c.lineTo(19, -74); c.closePath(); c.fill();
+  } else {
+    c.fillStyle = "#454e56";
+    c.beginPath(); c.moveTo(-21, -4); c.lineTo(-13, -67); c.lineTo(4, -83);
+    c.lineTo(20, -57); c.lineTo(17, -5); c.closePath(); c.fill();
+    c.fillStyle = "#78848a";
+    c.beginPath(); c.moveTo(-21, -4); c.lineTo(-13, -67); c.lineTo(4, -83);
+    c.lineTo(-1, -4); c.closePath(); c.fill();
+    c.strokeStyle = "#b2bfc3"; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-6, -52); c.lineTo(8, -44); c.lineTo(-4, -33); c.stroke();
+  }
+}
+
 
 const bucket = (v: number, n: number): number => Math.min(n - 1, Math.max(0, Math.floor(v * n)));
 
@@ -418,6 +471,11 @@ export function renderScenery(
     const sc = 0.82 + ((prop.variant * 37) % 1) * 0.5;
     ctx.scale(sc * flip, sc);
     if (s) blit(ctx, s); else paintRock(ctx, b);
+  } else if (prop.kind === "regional-landmark" && prop.landmarkKind) {
+    const kind = prop.landmarkKind;
+    const s = sprite("regional-" + kind, 96, 112, 48, 94,
+      (c) => paintRegionalLandmark(c, kind));
+    if (s) blit(ctx, s); else paintRegionalLandmark(ctx, kind);
   } else if (prop.kind === "arch") {
     const s = sprite("arch", 120, 100, 60, 82, paintArch);
     if (s) blit(ctx, s); else paintArch(ctx);
