@@ -142,9 +142,9 @@ export class Game {
       tileX: Math.floor(player.x / TILE_SIZE),
       tileY: Math.floor(player.y / TILE_SIZE),
       progression: experienceProgress(this.sim.experience),
-      awaitingRespawn: this.sim.awaitingRespawn,
+      awaitingRespawn: player.hp <= 0,
     }, aelaQuestProgress(kills));
-    this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food);
+    this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateGear(inventory.gear);
     this.hud.updateMount(this.sim.mounts.view(kills));
@@ -155,7 +155,8 @@ export class Game {
   }
   private hudBattleRows() {
     return visibleBattleCreatures(
-      this.battleCreatures(), this.sim.player, this.scene.battleViewport(this.camera),
+      this.battleCreatures(), this.cave?.player ?? this.sim.player,
+      this.cave ? this.scene.caveBattleViewport(this.cave,this.camera.zoom) : this.scene.battleViewport(this.camera),
     );
   }
   private selectBattleTarget(id: string): void {
@@ -331,7 +332,7 @@ export class Game {
   }
   private eatFood(id: FoodId): string {
     if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
-    const outcome = this.sim.inventory.useFood(id, this.sim.player);
+    const outcome = this.sim.inventory.useFood(id, this.cave?.player ?? this.sim.player);
     if (outcome === "ate") { this.save(); this.updateHud(); }
     return outcome === "ate" ? `${FOODS[id].name}: ${INVENTORY_FEEDBACK.ate}` : INVENTORY_FEEDBACK[outcome];
   }
@@ -381,12 +382,17 @@ export class Game {
     this.hud.setCombatTarget(null);
     this.hud.setBattleCreatures([],null);
     this.sim.mounts.dismount();
-    this.cave=new CaveRoom(entrance,this.sim.player.hp,this.sim.player.maxHp);
+    this.cave=new CaveRoom(entrance,this.sim.player.hp,this.sim.player.maxHp,this.sim.defeated);
+    this.cave.player.syncAdventureStateFrom(this.sim.player);
     this.hud.setTravelNotice("Você desceu para "+entrance.name+". O mapa agora acompanha o primeiro andar da caverna.");
   }
   private leaveCave():void {
-    if(this.cave) this.sim.player.hp=this.cave.player.hp;
+    if(this.cave) this.sim.player.syncAdventureStateFrom(this.cave.player);
     this.cave=null;
+    this.classicCombat.reset();
+    this.classicAutoFollow=false;
+    this.hud.setCombatTarget(null);
+    this.hud.setBattleCreatures([],null);
     this.hud.setCave(null);
     this.input.clear();
     this.navigator.cancel();
@@ -395,6 +401,7 @@ export class Game {
     this.accumulator=0;
     this.camera.snap(this.sim.player.x,this.sim.player.y);
     this.hud.setTravelNotice("Você retornou à superfície pela mesma entrada.");
+    this.save();
     this.updateHud();
   }
   private leaveInterior(): void {
@@ -425,6 +432,9 @@ export class Game {
     this.updateHud();
   }
   private save(): void {
+    // Reloading in a dungeon resumes at its entrance, with the actual earned
+    // health/nutrition/status outcome, never a stale pre-dungeon copy.
+    if (this.cave) this.sim.player.syncAdventureStateFrom(this.cave.player);
     saveLocal(this.sim.snapshot());
   }
   /** Called exclusively by the Phaser Scene; there is no second animation loop. */
@@ -440,9 +450,10 @@ export class Game {
     const attack = !paused && this.input.consumeAttack(false);
     const stopTarget = this.input.consumeCancelTarget();
     if (stopTarget) this.cancelTarget();
-    if (attack && !stopTarget && !this.interior && !this.cave) {
+    if (attack && !stopTarget && !this.interior) {
       if (!this.classicCombat.targetId)
-        this.classicCombat.selectNearest(this.sim.player, this.sim.slimes.values());
+        this.classicCombat.selectNearest(this.cave?.player ?? this.sim.player,
+          this.cave?.monsters.values() ?? this.sim.slimes.values());
       if (this.classicCombat.targetId) {
         this.classicAutoFollow = true;
         this.navigator.cancel();
@@ -483,14 +494,25 @@ export class Game {
       const cave=this.cave;
       this.accumulator=0;
       if (!paused && dt > 0) {
-        cave.update(dt,movement,attack,this.sim.inventory.loadout.equipped,this.sim.inventory.defense);
+        const focused = this.classicCombat.targetId;
+        const classicStrike = this.classicCombat.tick(dt,cave.player,cave.monsters,
+          cave.collision,this.sim.inventory.weapon.interval);
+        const follow = this.classicAutoFollow && !manualActive && this.navigator.target === null;
+        const caveMovement = follow
+          ? this.classicPursuit.direction(dt,cave.player,focused,cave.monsters,cave.collision)
+          : movement;
+        cave.update(dt,caveMovement,attack || classicStrike,
+          this.sim.inventory.loadout.equipped,this.sim.inventory.defense,
+          classicStrike ? this.classicCombat.strikeTargetId : undefined);
         this.input.acknowledgeMovement();
         let changed=false;
         for(const victory of cave.drainVictories()){
-          this.sim.experience=grantExperience(this.sim.experience,CREATURE_CATALOG[victory.kind].experience,cave.player);
-          this.sim.player.maxHp=cave.player.maxHp;
+          if(this.sim.defeated.has(victory.id))continue;
+          this.sim.defeated.add(victory.id);
+          this.sim.experience=grantExperience(this.sim.experience,
+            CREATURE_CATALOG[victory.kind].experience,cave.player);
           for(const item of rollCreatureLoot(victory.kind,victory.id))
-            changed=this.sim.inventory.addMaterial(item)||changed;
+            this.sim.inventory.addMaterial(item);
           changed=true;
         }
         if(changed)this.save();
@@ -498,14 +520,22 @@ export class Game {
       if(cave.player.hp<=0){
         this.leaveCave();
         this.sim.player.hp=0;
+        this.save();
         this.hud.setTravelNotice("Você tombou na caverna. Renasça para continuar.");
-      } else if(cave.reachedExit)this.leaveCave();
-      else {
+      } else if(cave.reachedExit){
+        this.leaveCave();
+      } else {
+        this.saveClock += dt;
+        if(this.saveClock>12){this.saveClock=0;this.save();}
         this.updateHud();
         this.hud.setCave({floor:cave.floor,
           tileX:Math.floor(cave.player.x/TILE_SIZE),tileY:Math.floor(cave.player.y/TILE_SIZE)});
         this.hud.setNearbyAction(cave.nearExit?"leave":null);
-        this.hud.setBattleCreatures([],null);
+        if(this.battleClock>=0.2){
+          this.battleClock=0;
+          this.hud.setBattleCreatures(this.hudBattleRows(),this.classicCombat.targetId);
+          this.hud.setCombatTarget(this.classicCombat.label(cave.monsters));
+        }
         this.scene.renderCave(cave,this.camera.zoom,this.clock,this.navigator.target,
           this.sim.inventory.gear,this.sim.inventory.loadout.equipped);
         return;

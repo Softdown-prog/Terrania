@@ -69,5 +69,18 @@ agora gera `cavernas-regionais.png` com as **seis** áreas e seus mapas
 reais para revisão comparativa (além de `pecas.png`); os screenshots
 de desktop e Android continuam exigidos antes do merge.
 
+**Peças do subsolo auditadas:** `caveDetails.ts` contém formações (gelo,
+basalto, raízes, brejo, pedra costeira e deserto) e a escada do andar −1.
+Não são exceções de cena: ambas entram em `ASSETS` para cada região, com
+validação de material recortado, gradiente, contorno, detalhes de profundidade,
+contraste e determinismo. A composição `cave.ts` continua em cache por
+`CaveFloor` e tem teste específico de seis temas/atlas para fechar a
+lacuna anterior sem criar renderizador ou motor paralelo.
+
+**Prévia de cavernas com parede à vista:** além da planta e da imagem da
+câmara inicial, `art:preview` produz `cavernas-paredes.png`, escolhendo
+para cada seed uma célula transitável com rocha adjacente. Assim a revisão
+enxerga relevo, material e formas regionais, não apenas o piso plano da saída.
+
 ### Arte das montarias
 `mounts.ts` contém silhuetas procedurais diferentes para as dez montarias, além do cercado da vila. `renderMount` e `renderStableFence` estão em `tests/helpers/artAssets.ts` como `creature` e `structure`; sem imagens externas ou novas exceções ao contrato.

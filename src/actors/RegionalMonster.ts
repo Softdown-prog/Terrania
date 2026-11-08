@@ -1,10 +1,11 @@
+import type { WeaponId } from "../engine/Weapons.ts";
 import { Slime } from "./Slime.ts";
-import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS,
+import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_COMMON_KINDS,
   type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
 import { moveBody, clearPath, canMoveOnSeed, type CollisionMap } from "../world/collision.ts";
 import { getWorldRegion } from "../world/regions.ts";
 import { getBiomeAt } from "../world/biomes.ts";
-import { type CaveTheme } from "../world/caves.ts";
+import { caveThemeAt, type CaveTheme } from "../world/caves.ts";
 import { CHUNK_TILES, TILE_SIZE } from "../world/terrain.ts";
 import { hash2 } from "../world/random.ts";
 import type { Player } from "./Player.ts";
@@ -13,62 +14,130 @@ import { villageGround } from "../world/village.ts";
 /** Instância viva do bestiário, compatível com a Battle List e o motor solo. */
 export class RegionalMonster extends Slime {
   override readonly kind: RegionalCreatureKind;
+  override readonly kind: RegionalCreatureKind;
   readonly definition: CreatureDefinition;
   private phase = 0;
   private cooldown = 0;
   private windup = 0;
   private enraged = 0;
   private frozenFloor = false;
+  private successfulHits = 0;
+  private quietSeconds = 0;
+  private regenElapsed = 0;
+  private readonly strikeSeed: number;
 
   constructor(id: string, kind: RegionalCreatureKind, x: number, y: number) {
     super(id, x, y, kind);
     this.kind = kind;
+    this.kind = kind;
     this.definition = CREATURE_CATALOG[kind];
+    this.strikeSeed = [...id].reduce((h,ch)=>Math.imul(h^ch.charCodeAt(0),16777619),2166136261);
   }
   get casting(): number { return Math.min(1, this.windup / .42); }
+  override takeHit(sourceX: number, sourceY: number, damage = 1): void {
+    super.takeHit(sourceX,sourceY,damage);
+    this.quietSeconds=0;
+    this.regenElapsed=0;
+  }
+  /** Reflected damage is a consequence of a landed short-sword strike. */
+  onSwordHit(hero: Player, weapon: WeaponId): void {
+    if(this.definition.special==="thorns" && weapon==="starter")
+      hero.receiveThorns(2);
+  }
   /** Aviso visual do golpe à distância, respeitando linha de visão e recarga. */
   override update(dt: number, hero: Player, world: CollisionMap, defense = 0): void {
     if (this.hp <= 0 || hero.hp <= 0 || !Number.isFinite(dt) || dt <= 0) return;
     dt = Math.min(dt, .1);
     this.phase += dt;
+    this.quietSeconds += dt;
+    if(abilitySpecialIsTroll(this.definition) && this.hp < this.definition.maxHp &&
+       this.quietSeconds > 4 && Math.hypot(hero.x-this.x,hero.y-this.y)>120){
+      this.regenElapsed += dt;
+      while(this.regenElapsed >= 1 && this.hp < this.definition.maxHp){
+        this.regenElapsed -= 1;
+        this.hp += 1;
+      }
+    }
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     this.contactCooldown = Math.max(0, this.contactCooldown - dt);
     this.cooldown = Math.max(0, this.cooldown - dt);
     const dx = hero.x - this.x, dy = hero.y - this.y, d = Math.hypot(dx, dy);
     const ability = this.definition;
-    if (ability.special === "fire" && this.hp < ability.maxHp * .5) this.enraged = 1;
+    if ((ability.special === "fire" || ability.special === "lava-burst") && this.hp < ability.maxHp * .5) this.enraged = 1;
     const speedBoost = ability.special === "frost-bite" &&
       (world.speedAt?.(this.x, this.y) ?? 1) < 1 ? 1.3 : 1;
     this.frozenFloor = speedBoost > 1;
     // Não ultrapassar paredes nem caçar alvos de outras áreas do mundo.
-    if (d < 245 && d > (ability.range > 32 && ability.nature === "magical" ? 70 : 22) &&
+    const frightened=ability.special==="sand-throw" && this.hp<=ability.maxHp*.35;
+    const keepRange=ability.range > 32 && (ability.nature === "magical" ||
+      ability.special === "ink" || ability.special === "tidal-lightning" ||
+      ability.special === "spore-cloud" || ability.special === "lava-burst" ||
+      ability.special === "sling" || frightened);
+    if(frightened && d>0.001 && d<70 && this.hurtTime<=0) {
+      // Retreat while throwing grit, without bypassing the normal collision grid.
+      moveBody(this,-dx/d*ability.speed*dt,-dy/d*ability.speed*dt,world);
+    } else if (d < 245 && d > (keepRange ? 70 : 22) &&
         this.hurtTime <= 0 && d > .001) {
-      const speed = ability.speed * speedBoost * (1 + .18 * this.enraged);
+      const vultureRage=ability.special==="carrion-dive" && hero.hp < hero.maxHp*.5 ? 1.45 : 1;
+      const speed = ability.speed * speedBoost * vultureRage * (1 + .18 * this.enraged);
       moveBody(this, dx / d * speed * dt, dy / d * speed * dt, world);
     }
     const inSight = d <= ability.range && d > .001 && clearPath(this, hero, world);
     if (this.windup > 0) {
       this.windup = Math.max(0, this.windup - dt);
-      if (this.windup === 0 && inSight) this.strike(hero, defense, true);
+      if (this.windup === 0 && inSight) {
+        if (ability.special === "burrow" && d > 44) {
+          // Emerging from below: no wall crossing or collision bypass.
+          const arrivalX=hero.x-dx/d*27,arrivalY=hero.y-dy/d*27;
+          if (world.canMove(arrivalX,arrivalY) &&
+              clearPath(this,{x:arrivalX,y:arrivalY},world)) {
+            // Emerge at the last safe point in the open corridor.
+            this.x=arrivalX;
+            this.y=arrivalY;
+          }
+        }
+        // Underground bite is melee. It cannot damage the player from far away
+        // when the tunnel is obstructed or an emergence spot is unavailable.
+        if (ability.special !== "burrow" ||
+            Math.hypot(hero.x-this.x,hero.y-this.y) <= 44)
+          this.strike(hero, world, defense, true);
+      }
       return;
     }
-    const ranged = ability.range > 35 && ability.special !== "none";
+    const ranged = ability.range > 35 && ability.special !== "none" &&
+      (ability.special!=="sand-throw" || this.hp <= ability.maxHp*.35);
     if (ranged && this.cooldown === 0 && inSight && d > 36) {
       this.windup = .42;
       this.cooldown = ability.interval + .42;
     }
     if (d <= 29 && this.contactCooldown === 0 && inSight) {
-      this.strike(hero, defense, false);
-      this.contactCooldown = ability.interval;
+      this.strike(hero, world, defense, false);
+      this.contactCooldown = ability.interval * (ability.special==="carrion-dive" &&
+        hero.hp < hero.maxHp*.5 ? .72 : 1);
     }
   }
-  private strike(hero: Player, defense: number, ranged: boolean): void {
+  private strike(hero: Player, world: CollisionMap, defense: number, ranged: boolean): void {
     const d = this.definition;
     const base = d.contactDamage;
     // Rajadas especiais têm alcance, mas nunca atravessam rocha sólida.
-    const power = ranged ? Math.max(1, Math.round(base * .75)) : base;
-    if (hero.takeDamage(Math.max(1, power - defense), this.x, this.y) && d.status)
-      hero.applyStatus(d.status, d.statusSeconds);
+    const power = (ranged ? Math.max(1, Math.round(base * .75)) : base) +
+      (!ranged && d.special==="sun-spear" ? 2 : 0);
+    const hit=hero.takeDamage(Math.max(1, power - defense), this.x, this.y);
+    if (!hit) return;
+    this.successfulHits++;
+    // Infection is 10% per successful bite, rolled from monster ID and hit count.
+    if(d.special==="infected-bite"){
+      if(hash2(this.strikeSeed,this.successfulHits,73021)<.1)
+        hero.applyStatus("infection",3);
+    } else if(d.status) hero.applyStatus(d.status,d.statusSeconds);
+    if(d.special==="orc-club" && !ranged && this.successfulHits%3===0)
+      hero.pushFrom(this.x,this.y,12,world);
+    if (d.special === "gust") hero.pushFrom(this.x,this.y,32,world);
+    if (d.special === "trample" && Math.hypot(hero.x-this.x,hero.y-this.y)<54)
+      hero.applyStatus("stun",.75);
+    // Ink is a local accuracy/visibility effect; no random global RNG.
+    if (d.special === "ink") hero.applyStatus("blind",4);
+    if (d.special === "lava-burst") hero.applyStatus("burn",4);
   }
   /** O Escaravelho explode uma única vez ao morrer. */
   deathBurst(hero: Player, world: CollisionMap, defense = 0): void {
@@ -83,21 +152,25 @@ export class RegionalMonster extends Slime {
 export function regionalSurfaceSpawns(cx: number, cy: number, seed: number): RegionalMonster[] {
   const tx = cx * CHUNK_TILES + Math.floor(CHUNK_TILES / 2);
   const ty = cy * CHUNK_TILES + Math.floor(CHUNK_TILES / 2);
-  const region = getWorldRegion(tx, ty);
-  if (region === "center" || hash2(cx, cy, seed + 441) > .42) return [];
-  const biome = getBiomeAt(tx, ty, seed);
-  const candidates = REGIONAL_CREATURE_KINDS.filter(kind => {
-    const def = CREATURE_CATALOG[kind];
-    return def.region === region && def.biomes.includes(biome);
-  });
-  if (!candidates.length) return [];
-  const kind = candidates[Math.floor(hash2(cx, cy, seed + 449) * candidates.length)]!;
+  if (getWorldRegion(tx,ty) === "center" || hash2(cx,cy,seed+441) > .42) return [];
   const monsters: RegionalMonster[] = [];
   for (let n = 0; n < (hash2(cx, cy, seed + 453) > .81 ? 2 : 1); n++) {
     const sx = cx * CHUNK_TILES + Math.floor(hash2(cx + n * 13, cy, seed + 469) * CHUNK_TILES);
     const sy = cy * CHUNK_TILES + Math.floor(hash2(cx, cy + n * 17, seed + 479) * CHUNK_TILES);
-    if (villageGround(sx, sy) || !canMoveOnSeed((sx + .5) * TILE_SIZE, (sy + .5) * TILE_SIZE, seed)) continue;
-    // A colisão é verificada na fábrica, não depois de apresentar uma criatura presa.
+    const region=getWorldRegion(sx,sy);
+    if (region==="center" || villageGround(sx,sy) ||
+        !canMoveOnSeed((sx + .5) * TILE_SIZE, (sy + .5) * TILE_SIZE, seed)) continue;
+    const biome=getBiomeAt(sx,sy,seed);
+    const marsh=caveThemeAt(sx,sy)==="marsh";
+    const candidates=REGIONAL_CREATURE_KINDS.filter(kind=>{
+      const def=CREATURE_CATALOG[kind];
+      return marsh ? def.caveThemes.includes("marsh") :
+        def.region===region && def.biomes.includes(biome) &&
+        !def.caveThemes.includes("marsh");
+    });
+    if (!candidates.length) continue;
+    const kind=candidates[Math.floor(hash2(cx+n*13,cy+n*17,seed+449)*candidates.length)]!;
+    // Habitat and collision are verified at the actual spawn tile, not the chunk center.
     const x = (sx + .5) * TILE_SIZE, y = (sy + .5) * TILE_SIZE;
     monsters.push(new RegionalMonster("regional:" + seed + ":" + cx + ":" + cy + ":" + n,
       kind, x, y));
@@ -112,4 +185,39 @@ export function rollCreatureLoot(kind: RegionalCreatureKind, id: string): string
   const def = CREATURE_CATALOG[kind];
   const salt = [...id].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
   return def.loot.filter((entry, i) => hash2(salt, i, 811) < entry.chance).map(entry => entry.item);
+}
+
+function abilitySpecialIsTroll(species: CreatureDefinition): boolean {
+  return species.special === "clay-clod";
+}
+
+/** Starter/intermediate South population: many cheap creatures, distinct IDs from elites.
+ * Spawns use actual tile biomes, collision and region, never a fabricated landmark.
+ * At most three attempts per chunk, independent of camera frame timing.
+ */
+export function southCommonSpawns(cx:number,cy:number,seed:number): RegionalMonster[] {
+  if(![cx,cy,seed].every(Number.isSafeInteger))return [];
+  const centerX=cx*CHUNK_TILES+Math.floor(CHUNK_TILES/2);
+  const centerY=cy*CHUNK_TILES+Math.floor(CHUNK_TILES/2);
+  if(getWorldRegion(centerX,centerY)!=="south" ||
+     hash2(cx,cy,seed+23331)>.86)return [];
+  const out:RegionalMonster[]=[];
+  const count=hash2(cx,cy,seed+23337)<.32?3:2;
+  for(let i=0;i<count;i++){
+    const tx=cx*CHUNK_TILES+Math.floor(hash2(cx*17+i*5,cy,seed+23341)*CHUNK_TILES);
+    const ty=cy*CHUNK_TILES+Math.floor(hash2(cx,cy*19+i*7,seed+23343)*CHUNK_TILES);
+    if(getWorldRegion(tx,ty)!=="south" || villageGround(tx,ty) ||
+       !canMoveOnSeed((tx+.5)*TILE_SIZE,(ty+.5)*TILE_SIZE,seed))continue;
+    const theme=caveThemeAt(tx,ty),biome=getBiomeAt(tx,ty,seed);
+    const eligible=SOUTH_COMMON_KINDS.filter(kind=>{
+      const def=CREATURE_CATALOG[kind];
+      return def.caveThemes.includes(theme) && def.biomes.includes(biome);
+    });
+    if(!eligible.length)continue;
+    const pick=Math.floor(hash2(cx*7+i*11,cy*13+i*17,seed+23347)*eligible.length);
+    const kind=eligible[pick]!;
+    out.push(new RegionalMonster("south-common:"+seed+":"+cx+":"+cy+":"+i,
+      kind,(tx+.5)*TILE_SIZE,(ty+.5)*TILE_SIZE));
+  }
+  return out;
 }

@@ -1,3 +1,5 @@
+import { renderWave3Creature } from "../../src/render/regionalWave3.ts";
+import { renderWave2Creature } from "../../src/render/regionalWave2.ts";
 /**
  * Registro das peças de arte procedural auditadas por tests/art-contract.test.ts.
  * Todo desenhador novo (`render*` ou `draw*` exportado em src/render) DEVE entrar aqui, com sua categoria.
@@ -6,13 +8,14 @@
 import { renderRegionalCreature } from "../../src/render/regionalCreatures.ts";
 import { renderMount, renderMountTracks, renderStableFence } from "../../src/render/mounts.ts";
 import { MOUNTS, MOUNT_IDS } from "../../src/actors/MountCatalog.ts";
-import { REGIONAL_CREATURE_KINDS, CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
+import { REGIONAL_CREATURE_KINDS, SECOND_WAVE_KINDS, SOUTH_COMMON_KINDS, CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
 import { renderHero, renderSlime } from "../../src/render/actors.ts";
 import { renderNpc } from "../../src/render/npcs.ts";
 import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
 import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
+import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
 import type { RegionalLandmarkKind } from "../../src/world/regionalLandmarks.ts";
 import { NPCS } from "../../src/world/npcs.ts";
@@ -50,6 +53,14 @@ export const ASSETS: ArtAsset[] = [
     draw:c=>renderMountTracks(c,0,0)},
   ...REGIONAL_CREATURE_KINDS.map<ArtAsset>(kind => ({id:"monstro "+kind,tier:"creature",fn:"renderRegionalCreature",
     draw:c=>renderRegionalCreature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"art-"+kind},0,0,1)})),
+  ...SECOND_WAVE_KINDS.map<ArtAsset>(kind => ({
+    id:"nova espécie "+kind,tier:"creature",fn:"renderWave2Creature",
+    draw:c=>renderWave2Creature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"wave2-"+kind},0,0,1)
+  })),
+  ...SOUTH_COMMON_KINDS.map<ArtAsset>(kind=>({
+    id:"sul comum "+kind,tier:"creature",fn:"renderWave3Creature",
+    draw:c=>renderWave3Creature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"wave3-"+kind},0,0,1)
+  })),
   ...NPCS.filter(n => n.kind !== "sign" && n.kind !== "door").map<ArtAsset>(npc =>
     ({ id: "npc " + npc.id, tier: "character", fn: "renderNpc", draw: c => renderNpc(c, npc, 0, 0, false, 1) })),
   ...(["tree", "fire", "house", "arch"] as const).map<ArtAsset>(kind => ({ id: "cenário " + kind, tier: "structure",
@@ -60,6 +71,18 @@ export const ASSETS: ArtAsset[] = [
     .map<ArtAsset>(kind => ({ id: "marco " + kind, tier: "structure", fn: "paintRegionalLandmark",
       draw: c => paintRegionalLandmark(c, kind, 0) })),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
+  ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
+    .flatMap<ArtAsset>(theme => [
+      { id: "formação subterrânea " + theme, tier: "prop", fn: "drawCaveFormation",
+        draw: c => drawCaveFormation(c, theme, 0, 0, .61) },
+      { id: "escada subterrânea " + theme, tier: "prop", fn: "drawCaveExitStair",
+        draw: c => drawCaveExitStair(c, theme, 0, 0) },
+      ...(["south", "east"] as const).map<ArtAsset>(side => ({
+        id: "face rochosa " + theme + " " + side,
+        tier: "prop", fn: "drawCaveWallFace",
+        draw: c => drawCaveWallFace(c, theme, 0, 0, side, .61),
+      })),
+    ]),
   ...([
     ["verdant","hole"],["glacial","hole"],["desert","stairs"],
     ["coastal","stairs"],["basalt","ladder"],["marsh","ladder"],
@@ -82,6 +105,6 @@ export const NOT_AN_ASSET: Record<string, string> = {
   drawWorldView: "compõe a cena inteira a partir das peças registradas",
   drawWorldAtlas: "cartografia do mapa, não uma peça de arte",
   drawInterior: "composição de ambiente interno; as peças dele devem ser registradas se forem extraídas",
-  drawCaveView: "composição da cena subterrânea com tiles e herói já registrados",
-  drawCaveAtlas: "cartografia do andar interno, não uma peça de arte",
+  drawCaveView: "composição de cena com sprites já registrados; teste direto em tests/cave-art-contract.test.ts",
+  drawCaveAtlas: "cartografia do andar interno; teste direto em tests/cave-art-contract.test.ts",
 };

@@ -1,4 +1,4 @@
-import { RegionalMonster, regionalSurfaceSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
+import { RegionalMonster, regionalSurfaceSpawns, southCommonSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
 import { Player } from "../actors/Player.ts";
 import { MountStable, type MountSave } from "./MountStable.ts";
 import { Slime, slimeSpawns } from "../actors/Slime.ts";
@@ -91,7 +91,8 @@ export class OfflineSimulation {
     this.spawnedChunk = key;
     for (let cy = y0 - 2; cy <= y0 + 2; cy++)
       for (let cx = x0 - 2; cx <= x0 + 2; cx++) {
-        for (const slime of [...slimeSpawns(cx, cy, this.seed), ...regionalSurfaceSpawns(cx, cy, this.seed)]) {
+        for (const slime of [...slimeSpawns(cx, cy, this.seed), ...regionalSurfaceSpawns(cx, cy, this.seed),
+          ...southCommonSpawns(cx,cy,this.seed)]) {
           if (!this.defeated.has(slime.id) && !this.slimes.has(slime.id))
             this.slimes.set(slime.id, slime);
         }
@@ -147,6 +148,8 @@ export class OfflineSimulation {
         if ((strikeTargetId === undefined || id === strikeTargetId) &&
             canStrike(this.player, slime, this.collision)) {
           slime.takeHit(this.player.x, this.player.y, this.player.strikeDamage);
+          if(slime instanceof RegionalMonster)
+            slime.onSwordHit(this.player,this.inventory.loadout.equipped);
           if (slime.hp <= 0) {
             this.slimes.delete(id);
             this.defeated.add(id);

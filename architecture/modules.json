@@ -47,6 +47,8 @@
         "src/render/WorldRenderer.ts",
         "src/ui/CanvasScene.ts",
         "src/ui/GameUi.ts",
+        "src/render/cave.ts",
+        "src/render/caveDetails.ts",
         "src/render/mounts.ts"
       ],
       "doc": "src/render/README.md",
@@ -67,6 +69,7 @@
         "src/engine/Experience.ts",
         "src/engine/Weapons.ts",
         "src/engine/Equipment.ts",
+        "src/engine/CaveRoom.ts",
         "src/engine/MountStable.ts",
         "src/engine/MountQuestState.ts"
       ],
@@ -106,6 +109,7 @@
         "src/world/collision.ts",
         "src/world/npcs.ts",
         "src/world/aelaQuest.ts",
+        "src/world/caves.ts",
         "src/world/mountLocations.ts",
         "src/world/mountQuests.ts"
       ],
@@ -168,6 +172,7 @@
       "entrypoints": [
         "src/qa/QaBot.ts",
         "tests/classic-tile-walker.test.ts",
+        "tests/cave-art-contract.test.ts",
         "tests/mounts.test.ts",
         "tests/browser/mounts.spec.ts",
         "tests/mount-quests.test.ts"
