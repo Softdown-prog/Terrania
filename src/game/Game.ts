@@ -28,8 +28,8 @@ import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
 import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import { levelForExperience } from "../engine/Experience.ts";
-import { WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE,
-  sampleMountCaptureLoot,type MountAction,type MountActionResult } from "../engine/MountStable.ts";
+import { sampleMountCaptureLoot,type MountAction,type MountActionResult } from "../engine/MountStable.ts";
+import { WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/Experience.ts";
 
@@ -224,7 +224,7 @@ export class Game {
     if(this.sim.mounts.quest && nearby(WILD_WARHORSE)) {
       this.hud.setTravelNotice(this.mountAction('tame'));return;
     }
-    if(this.sim.mounts.quest && nearby(WILD_APPLES)) {
+    if(this.sim.mounts.quest && !this.sim.mounts.quest.apple && nearby(WILD_APPLES)) {
       this.hud.setTravelNotice(this.mountAction('forage'));return;
     }
     const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);

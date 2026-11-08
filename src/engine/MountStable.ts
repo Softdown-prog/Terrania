@@ -1,11 +1,9 @@
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL, isMountId,
   type MountId, type RidingTier } from "../actors/MountCatalog.ts";
 import { hash2 } from "../world/random.ts";
+import { STABLE_MASTER,WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
+export { STABLE_MASTER,WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
 
-export const STABLE_MASTER = { x: 384, y: 112 } as const;
-export const WILD_WARHORSE = { x: 192, y: 160 } as const;
-export const WILD_APPLES = { x: 256, y: 176 } as const;
-export const MOUNT_INTERACT_DISTANCE = 56;
 export const HALTER_GEL_COST = 3;
 export const RIDE_STAMINA_DRAIN = 9;
 export const RIDE_STAMINA_RECOVERY = 12;
@@ -159,7 +157,7 @@ export class MountStable {
   mount(id:MountId,level:number,x:number,y:number): MountActionResult {
     if(!near(x,y,STABLE_MASTER))return "too-far";
     if(this.mounted)return "unavailable";
-    if(!this.ownedSet.has(id))return "already-owned";
+    if(!this.ownedSet.has(id))return "unavailable";
     const def=MOUNTS[id];
     if(level<def.level)return "no-level";
     if(this.skill<def.tier||this.stable<def.tier)return "no-training";

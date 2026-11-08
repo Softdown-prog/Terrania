@@ -50,7 +50,9 @@ export class HudService implements GameUi {
     quest:null,questHint:'Procure o Mestre de Estábulos na vila.',
   },{equal:(a,b)=>a.stableTier===b.stableTier&&a.ridingTier===b.ridingTier&&
     a.active===b.active&&Math.round(a.stamina)===Math.round(b.stamina)&&
-    a.questHint===b.questHint&&a.owned.join(',')===b.owned.join(',')});
+    a.questHint===b.questHint&&a.quest?.id===b.quest?.id&&
+    a.quest?.apple===b.quest?.apple&&a.quest?.halter===b.quest?.halter&&
+    a.owned.join(',')===b.owned.join(',')});
   readonly mountFeedback = signal('');
   readonly travelNotice = signal('');
   private travelNoticeTimer: ReturnType<typeof setTimeout> | null = null;

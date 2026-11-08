@@ -1,6 +1,6 @@
 import { BUILDINGS, SIGNS } from "./village.ts";
 import { aelaQuestProgress } from "./aelaQuest.ts";
-import { STABLE_MASTER } from "../engine/MountStable.ts";
+import { STABLE_MASTER } from "./mountLocations.ts";
 /** Posições e diálogos dos NPCs compartilhados pelo cliente e pela sala Node. */
 export interface Npc {
   readonly id: string;

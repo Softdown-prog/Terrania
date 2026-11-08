@@ -13,7 +13,7 @@ import { WorldRenderer } from '../render/WorldRenderer.ts';
 import { drawInterior } from '../render/interior.ts';
 import { drawCaveEntrance, drawCaveView } from '../render/cave.ts';
 import { renderMount, renderStableFence } from '../render/mounts.ts';
-import { STABLE_MASTER, WILD_WARHORSE, WILD_APPLES } from '../engine/MountStable.ts';
+import { STABLE_MASTER, WILD_WARHORSE, WILD_APPLES } from '../world/mountLocations.ts';
 import type { MountId } from '../actors/MountCatalog.ts';
 import { caveEntrancesInArea } from '../world/caves.ts';
 import { TILE_SIZE } from '../world/terrain.ts';
