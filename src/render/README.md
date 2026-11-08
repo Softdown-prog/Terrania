@@ -44,6 +44,8 @@ diversidade de formas e variantes; testes de navegador e inspeção visual real
 continuam necessários antes do merge. O checklist de autores fica em
 `AGENTS.md`.
 
+**Contrato de arte procedural:** toda peça nova segue [docs/CONTRATO_ARTE_PROCEDURAL.md](../../docs/CONTRATO_ARTE_PROCEDURAL.md) e é registrada em `tests/helpers/artAssets.ts`. `src/render/reference/barrelReference.ts` é a peça de referência, não usada no jogo. `tests/art-contract.test.ts` mede cada peça com um gravador de Canvas (cores, gradientes, traços, curvas, tons escuro/claro, `save`/`restore`, determinismo) e proíbe aleatório, relógio, imagens e rede no render. `npm run art:preview` gera a captura das peças para revisão visual. Corrigido: a barra de vida do slime ferido era desenhada longe da criatura por um `save()` ausente em `renderSlime`.
+
 **Arte subterrânea:** `cave.ts` gera textura procedural e a cacheia por
 `CaveFloor` usando `WeakMap`; `CanvasScene` reutiliza Phaser e o canvas
 existentes. O render oferece rochas facetadas, fissuras, minerais, água profunda,

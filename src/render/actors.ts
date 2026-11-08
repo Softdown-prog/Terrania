@@ -557,6 +557,8 @@ export function renderSlime(
   ctx.save();
   ctx.translate(sx, sy);
   softShadow(ctx, 1, 4, 13 * size * (1 - Math.min(0.3, pose.lift * 0.05)), 4.4, 0.32);
+  // O corpo (inclinação, escala) vive em um escopo próprio; a barra de vida abaixo usa só a posição.
+  ctx.save();
   ctx.translate(lx * pose.lean * 0.6, -pose.lift);
   ctx.scale(size, size);
   ctx.translate(0, 2);

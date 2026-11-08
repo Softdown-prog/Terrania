@@ -101,6 +101,13 @@ export function drawCaveEntrance(ctx:CanvasRenderingContext2D, entry:CaveEntranc
   const p=PALETTE[entry.theme];
   ctx.save();ctx.translate(x,y);
   softShadow(ctx,1,4,23,10,.54);
+  // Readable volume and a coherent three-tone stone ramp, light from upper-left.
+  const rim=ctx.createLinearGradient(-23,-14,23,11);
+  rim.addColorStop(0,"#fff6dc");
+  rim.addColorStop(.25,mix(p.rim,p.light,.55));
+  rim.addColorStop(.64,p.ground);
+  rim.addColorStop(1,mix(p.wall,"#142a2a",.55));
+  ctx.fillStyle=rim;ctx.beginPath();ctx.ellipse(0,-1,25,11,0,0,TAU);ctx.fill();
   // Distinct rim, cut stone and deep passage.
   for(let ring=3;ring>=0;ring--){
     const rx=21+ring*2,ry=8+ring*1.6;
@@ -112,7 +119,15 @@ export function drawCaveEntrance(ctx:CanvasRenderingContext2D, entry:CaveEntranc
     const px=Math.cos(a)*rx,py=Math.sin(a)*rx*.4;
     ellipse(ctx,px,py,2.2,1.4,i%3?p.rim:p.light,a);
     ellipse(ctx,px-.4,py-.5,1,.6,rgba(p.accent,.5));
+    ctx.fillStyle=i%2===0?rgba(mix(p.light,"#fff6dc",.55),.75):
+      rgba(mix(p.wall,p.ground,.45),.72);
+    ctx.beginPath();ctx.arc(px-1,py-1.4,.85,0,TAU);ctx.fill();
   }
+  // Single dark contour plus an upper-left highlight keep it legible on every biome.
+  ctx.strokeStyle="#142a2a";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.ellipse(0,-1,25,11,0,0,TAU);ctx.stroke();
+  ctx.strokeStyle=rgba(p.light,.8);ctx.lineWidth=1;
+  ctx.beginPath();ctx.ellipse(-2,-3,21,8,0,Math.PI,TAU*1.9);ctx.stroke();
   if(entry.kind==="ladder"){
     for(const sx of [-7,7]) {
       ctx.strokeStyle="#4a3323";ctx.lineWidth=3;
@@ -132,6 +147,7 @@ export function drawCaveEntrance(ctx:CanvasRenderingContext2D, entry:CaveEntranc
     const glint=.35+Math.sin(time*2+entry.tileX)*.11;
     ellipse(ctx,-7,-6,7,2.3,rgba(p.accent,glint));
   }
+  ellipse(ctx,-13,-6,3,1.1,rgba("#fff6dc",.6));
   ctx.restore();
 }
 export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,

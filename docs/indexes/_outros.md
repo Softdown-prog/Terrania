@@ -4,6 +4,7 @@
 
 - [`.dockerignore`](../../.dockerignore)
 - [`.env.example`](../../.env.example)
+- [`.github/pull_request_template.md`](../../.github/pull_request_template.md)
 - [`.gitignore`](../../.gitignore)
 - [`.node-version`](../../.node-version)
 - [`AGENTS.md`](../../AGENTS.md)
@@ -14,6 +15,7 @@
 - [`docs/ARQUITETURA_POLICY.md`](../../docs/ARQUITETURA_POLICY.md)
 - [`docs/AUTOSCALING-ONE-VPS.md`](../../docs/AUTOSCALING-ONE-VPS.md)
 - [`docs/CAPACITY-LAB.md`](../../docs/CAPACITY-LAB.md)
+- [`docs/CONTRATO_ARTE_PROCEDURAL.md`](../../docs/CONTRATO_ARTE_PROCEDURAL.md)
 - [`docs/DEPLOY-VPS.md`](../../docs/DEPLOY-VPS.md)
 - [`docs/DEPLOY_CLOUDFLARE.md`](../../docs/DEPLOY_CLOUDFLARE.md)
 - [`docs/ESTRUTURA_E_CUSTOS.md`](../../docs/ESTRUTURA_E_CUSTOS.md)

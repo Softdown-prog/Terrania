@@ -11,7 +11,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
 
-## Todos os arquivos deste módulo (48)
+## Todos os arquivos deste módulo (51)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -19,6 +19,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`src/qa/QaNatural.ts`](../../src/qa/QaNatural.ts)
 - [`tests/README.md`](../../tests/README.md)
 - [`tests/architecture-index.test.ts`](../../tests/architecture-index.test.ts)
+- [`tests/art-contract.test.ts`](../../tests/art-contract.test.ts)
 - [`tests/atlas.test.ts`](../../tests/atlas.test.ts)
 - [`tests/browser/app.spec.ts`](../../tests/browser/app.spec.ts)
 - [`tests/browser/cave.spec.ts`](../../tests/browser/cave.spec.ts)
@@ -36,6 +37,8 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/cloudflare-deploy.test.ts`](../../tests/cloudflare-deploy.test.ts)
 - [`tests/creature-catalog.test.ts`](../../tests/creature-catalog.test.ts)
 - [`tests/experience.test.ts`](../../tests/experience.test.ts)
+- [`tests/helpers/artAssets.ts`](../../tests/helpers/artAssets.ts)
+- [`tests/helpers/recordingContext.ts`](../../tests/helpers/recordingContext.ts)
 - [`tests/hero-pose.test.ts`](../../tests/hero-pose.test.ts)
 - [`tests/interior.test.ts`](../../tests/interior.test.ts)
 - [`tests/inventory-storage.test.ts`](../../tests/inventory-storage.test.ts)
