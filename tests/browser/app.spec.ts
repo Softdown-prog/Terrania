@@ -334,7 +334,8 @@ test('inventário mobile tem mochila por toque, comparação real e cavaleiro pr
   await expect(page.locator('[data-bag-item="weapon-forge"]')).toBeVisible();
   await page.locator('[data-bag-item="weapon-forge"]').click();
   await expect(page.locator('#bagItemComparison')).toContainText('Dano da arma equipada: 8');
-  await page.locator('#equip-slot-weapon-forge').click();
+  // Backpack selection has its own control, distinct from the equipment-slot picker.
+  await page.locator('#equip-weapon-forge').click();
   await expect(page.locator('#inventoryFeedback')).toContainText('Espada equipada');
   if (await page.locator('#inventoryTabEquipment').isVisible()) {
     await page.locator('#inventoryTabEquipment').click();
