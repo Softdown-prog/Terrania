@@ -144,6 +144,11 @@ for (const cancel of ['button', 'escape'] as const) {
       JSON.stringify({seed:842136,x:-660,y:-1008,hp:100,kills:0,defeated:[]})));
     await page.setViewportSize(cancel==='escape' ? {width:600,height:390} :
       {width:info.project.name==='android' ? 390 : 1200,height:844});
+    // Freeze gameplay between real UI interactions. The wooden sword now kills
+    // a 2-HP Slime in one hit, so wall-clock tap latency cannot arbitrate cancel.
+    const start=new Date('2026-01-01T00:00:00Z');
+    await page.clock.install({time:start});
+    await page.clock.pauseAt(new Date(start.getTime()+1000));
     await page.goto('/jogar/?modo=classico');
     await expect(page.locator('canvas#game')).toBeVisible();
     const toggle=page.locator('#battleToggle');
@@ -153,24 +158,30 @@ for (const cancel of ['button', 'escape'] as const) {
     // Cancel before the player has reached the monster. No phantom attack may
     // kill the Slime while neither a target nor an attack input is active.
     if(info.project.name==='android') await row.tap(); else await row.click();
+    await page.clock.runFor(16);
     await expect(page.locator('#classicTarget')).toContainText('Slime');
     if(cancel==='button'){
       if(info.project.name==='android') await page.locator('#stopTarget').tap();
       else await page.locator('#stopTarget').click();
     }else await page.keyboard.press('Escape');
+    await page.clock.runFor(16);
     await expect(page.locator('#classicTarget')).toHaveCount(0);
     await expect(row).toHaveAttribute('aria-pressed','false');
-    await page.waitForTimeout(950);
+    await page.clock.runFor(950);
     await expect(row).toHaveAttribute('aria-label','Selecionar Slime, vida 2 de 2');
     const untouched=await page.evaluate(id=>JSON.parse(localStorage.getItem('terrania-origins-v1')??'null')
       ?.defeated?.includes(id)===true,mobId);
     expect(untouched).toBe(false);
     if(info.project.name==='android') await row.tap(); else await row.click();
+    await page.clock.runFor(16);
     await expect(row).toHaveAttribute('aria-pressed','true');
-    await expect.poll(()=>page.evaluate(id=>{
-      const saved=JSON.parse(localStorage.getItem('terrania-origins-v1')??'null');
-      return saved?.defeated?.includes(id)===true;
-    },mobId),{timeout:15000}).toBe(true);
+    await expect.poll(async ()=>{
+      await page.clock.runFor(80);
+      return page.evaluate(id=>{
+        const saved=JSON.parse(localStorage.getItem('terrania-origins-v1')??'null');
+        return saved?.defeated?.includes(id)===true;
+      },mobId);
+    },{timeout:15000}).toBe(true);
     await expect(row).toHaveCount(0);
     expect(errors).toEqual([]);
   });
