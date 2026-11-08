@@ -243,7 +243,7 @@ function paintMountain(c: CanvasRenderingContext2D, v: number): void {
 
 export function paintRegionalLandmark(c: CanvasRenderingContext2D,
   kind: RegionalLandmarkKind, variation = 0): void {
-  const v = landmarkArtVariant(variation / 4);
+  const v = Number.isFinite(variation) ? Math.max(0, Math.min(3, Math.floor(variation))) : 0;
   c.save();
   softShadow(c,2,2,30,9,.44);
   if(kind==="ice-spire") paintIce(c,v);
