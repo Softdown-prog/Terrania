@@ -12,7 +12,7 @@ Implementação Go de regras e paridade; substituição do backend ativo requer 
 - [`server-go/engine/world_regions.go`](../../server-go/engine/world_regions.go)
 - [`server-go/engine/protocol.go`](../../server-go/engine/protocol.go)
 
-## Todos os arquivos deste módulo (22)
+## Todos os arquivos deste módulo (23)
 
 - [`server-go/engine/benchmark_test.go`](../../server-go/engine/benchmark_test.go)
 - [`server-go/engine/engine_test.go`](../../server-go/engine/engine_test.go)
@@ -25,6 +25,7 @@ Implementação Go de regras e paridade; substituição do backend ativo requer 
 - [`server-go/engine/monsters_rust_test.go`](../../server-go/engine/monsters_rust_test.go)
 - [`server-go/engine/player.go`](../../server-go/engine/player.go)
 - [`server-go/engine/protocol.go`](../../server-go/engine/protocol.go)
+- [`server-go/engine/regional_landmarks_test.go`](../../server-go/engine/regional_landmarks_test.go)
 - [`server-go/engine/room.go`](../../server-go/engine/room.go)
 - [`server-go/engine/room_order_test.go`](../../server-go/engine/room_order_test.go)
 - [`server-go/engine/room_state.go`](../../server-go/engine/room_state.go)
