@@ -420,3 +420,36 @@ test('equipar elmo muda o desenho real do cavaleiro e retirar remove a chapa', a
   await expect(page.locator('[data-equipment-slot="head"]')).toContainText('Vazio');
   await expect.poll(helmPixels).toBe(0);
 });
+
+
+test('minimapa usa terreno real da sala online, mantém norte e abre/fecha no Android', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/jogar/?room=minimap-qa');
+  await expect(page.locator('#multiplayerStatus')).toContainText('Online');
+  const panel = page.locator('#miniMapPanel');
+  const canvas = page.locator('#worldMiniMapCanvas');
+  await expect(panel).toBeVisible();
+  await expect(canvas).toBeVisible();
+  await expect(page.locator('#miniMapToggle')).toHaveAttribute('aria-expanded', 'true');
+  const sample = () => canvas.evaluate(element => {
+    const map = element as HTMLCanvasElement;
+    const context = map.getContext('2d')!;
+    const rgba = context.getImageData(0, 0, map.width, map.height).data;
+    const center = [...rgba.slice((61 * map.width + 61) * 4, (61 * map.width + 61) * 4 + 4)];
+    const colors = new Set<string>();
+    for (let i = 0; i < rgba.length; i += 4) {
+      colors.add(rgba[i] + ',' + rgba[i + 1] + ',' + rgba[i + 2]);
+    }
+    return { width: map.width, height: map.height, colors: colors.size, center };
+  });
+  await expect.poll(async () => (await sample()).colors).toBeGreaterThan(3);
+  expect(await sample()).toMatchObject({ width: 124, height: 124, center: [255, 255, 255, 255] });
+  await page.locator('#miniMapToggle').click();
+  await expect(page.locator('#worldMiniMapCanvas')).toHaveCount(0);
+  await expect(page.locator('#miniMapToggle')).toHaveAttribute('aria-expanded', 'false');
+  await page.locator('#miniMapToggle').click();
+  await expect(canvas).toBeVisible();
+  await expect.poll(async () => (await sample()).colors).toBeGreaterThan(3);
+  expect(errors).toEqual([]);
+});

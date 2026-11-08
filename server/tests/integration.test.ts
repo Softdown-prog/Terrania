@@ -5,6 +5,8 @@ import { createServer } from "node:net";
 import { once } from "node:events";
 import { setTimeout as pause } from "node:timers/promises";
 import { WebSocket } from "ws";
+import { canMoveOnSeed } from "../../src/world/collision.ts";
+import { chunkOf } from "../../src/world/terrain.ts";
 import {
   PROTOCOL_VERSION,
   type ServerMessage,
@@ -140,6 +142,29 @@ test(
         m.players.some(p => p.id === welcome.id && p.kills === 1 && p.experience === 10) &&
         m.inventory && m.inventory.gel + m.inventory.drops.length === 1));
       assert.ok(streams[1].every(m => m.type !== "state" || m.inventory === undefined));
+      // QA-BOT-001 usa o transporte WebSocket verdadeiro na sala isolada do teste:
+      // quatro quadrantes do mundo, sem teleporte e sem ler dados privados de terceiros.
+      const patrolRegions = new Set<string>();
+      const patrolGoals = [
+        { x: -16, y: 16 }, { x: -16, y: -16 },
+        { x: 16, y: -16 }, { x: 16, y: 16 },
+      ];
+      for (const goal of patrolGoals) {
+        const after = streams[0].length;
+        sockets[0].send(JSON.stringify({ type: "walk", target: goal }));
+        await until(() => streams[0].slice(after).some(state => {
+          if (state.type !== "state") return false;
+          const hero = state.players.find(p => p.id === welcome.id);
+          if (!hero) return false;
+          patrolRegions.add(chunkOf(hero.x) + "," + chunkOf(hero.y));
+          assert.ok(canMoveOnSeed(hero.x, hero.y, 842136),
+            "snapshot QA em tile de colisão");
+          return Math.hypot(hero.x - goal.x, hero.y - goal.y) <= 1.5;
+        }), 6_000);
+      }
+      assert.ok(patrolRegions.size >= 3, "QA bot percorreu regiões distintas pela rede");
+      assert.ok(streams[1].every(m => m.type !== "state" || m.inventory === undefined),
+        "informações privadas nunca chegam ao observador");
       sockets[1].terminate();
       let count = await presence();
       for (let i = 0; i < 40 && count.online !== 1; i++) { await pause(20); count = await presence(); }
