@@ -158,3 +158,33 @@ test("miragem: status diminui acerto; saques são reproduzíveis sem drop obriga
   for(const item of CREATURE_CATALOG["dune-rat"].loot)assert.ok(inv.addMaterial(item.item));
   assert.equal(inv.materials["Rabo de Rato"],1);
 });
+
+
+test("elfo: lança solar adiciona dois de fogo ao dano de contato",()=>{
+  const hero=new Player(),elf=new RegionalMonster("sun-lance","oasis-elf",0,0);
+  hero.x=20;hero.y=0;
+  elf.update(1/60,hero,collision);
+  assert.equal(hero.hp,82);
+});
+
+test("abutre: velocidade realmente aumenta contra uma vítima abaixo da metade da vida",()=>{
+  const healthy=new Player(),weak=new Player();
+  healthy.x=weak.x=100;healthy.y=weak.y=0;weak.hp=40;
+  const calm=new RegionalMonster("vulture-a","carrion-vulture",0,0);
+  const aggressive=new RegionalMonster("vulture-b","carrion-vulture",0,0);
+  calm.update(.1,healthy,collision);
+  aggressive.update(.1,weak,collision);
+  assert.ok(aggressive.x>calm.x*1.3);
+});
+
+test("orc: terceiro golpe bem-sucedido causa um único empurrão leve",()=>{
+  const hero=new Player(500),orc=new RegionalMonster("club","desert-orc",0,0);
+  let pushed=0;
+  for(let i=0;i<49;i++){
+    hero.update(.1,{x:0,y:0},collision);
+    hero.x=25;hero.y=0;
+    orc.update(.1,hero,collision);
+    if(hero.x>25.5)pushed++;
+  }
+  assert.equal(pushed,1);
+});
