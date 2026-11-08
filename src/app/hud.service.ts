@@ -5,7 +5,7 @@ import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, ty
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/Experience.ts';
-import { FOOD_IDS, FOODS, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/Food.ts';
+import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
   talk: 'Conversar',
@@ -13,6 +13,25 @@ const ACTION_LABELS: Record<NearbyAction, string> = {
   enter: 'Entrar',
 };
 const KIT_IDS = Object.keys(GEAR) as GearId[];
+
+/** Somente a visualização da bolsa; quantidades e propriedade vêm do motor. */
+export interface BackpackItemView {
+  readonly id: string;
+  readonly kind: 'material' | 'potion' | 'food' | 'gear' | 'weapon';
+  readonly name: string;
+  readonly description: string;
+  readonly symbol: string;
+  readonly quantity: number;
+  readonly foodId?: FoodId;
+  readonly gearId?: GearId;
+  readonly weaponId?: WeaponId;
+  readonly defense?: number;
+  readonly comparedDefense?: number;
+  readonly damage?: number;
+  readonly comparedDamage?: number;
+}
+type BackpackFilter = 'all' | 'supplies' | 'gear';
+type InventoryTab = 'bag' | 'equipment';
 
 @Injectable()
 export class HudService implements GameUi {
@@ -51,6 +70,66 @@ export class HudService implements GameUi {
   readonly gear = signal<GearState | null>(null, { equal: (a, b) => a === b ||
     (a !== null && b !== null && EQUIPMENT_SLOTS.every(({ id }) => id === 'weapon' || a[id] === b[id])) });
   readonly selectedSlot = signal<EquipmentSlot>('weapon');
+  readonly inventoryTab = signal<InventoryTab>('bag');
+  readonly bagFilter = signal<BackpackFilter>('all');
+  readonly selectedBagId = signal('potion');
+  readonly backpackItems = computed<readonly BackpackItemView[]>(() => {
+    const result: BackpackItemView[] = [
+      { id: 'gel', kind: 'material', name: 'Gel de slime', symbol: '◆', quantity: this.gel(),
+        description: 'Recurso de troca com Lina e Toren na vila.' },
+      { id: 'potion', kind: 'potion', name: 'Poção de cura', symbol: '✚', quantity: this.potions(),
+        description: 'Recupera 35 HP imediatamente, sem ultrapassar a vida máxima.' },
+    ];
+    const food = this.food();
+    for (const id of FOOD_IDS) {
+      const item = FOODS[id];
+      result.push({ id: 'food-' + id, kind: 'food', name: item.name, symbol: id === 'apple' ? '●' : id === 'bread' ? '▰' : '♨',
+        quantity: food[id], foodId: id, description: 'Recupera até ' + item.healBudget + ' HP aos poucos.' });
+    }
+    const gear = this.gear();
+    if (gear !== null) {
+      for (const id of KIT_IDS) {
+        const item = GEAR[id];
+        if (gear[item.slot] === id) continue;
+        const current = gear[item.slot];
+        result.push({ id: 'gear-' + id, kind: 'gear', gearId: id, name: item.name,
+          symbol: EQUIPMENT_SLOTS.find(slot => slot.id === item.slot)?.icon ?? '◈',
+          quantity: 1, defense: item.defense, comparedDefense: current ? GEAR[current].defense : 0,
+          description: 'Conjunto inicial · ' + (item.defense > 0 ? 'Defesa +' + item.defense : 'Acessório') });
+      }
+    }
+    const loadout = this.loadout();
+    if (loadout) {
+      for (const id of ['starter', 'forge'] as const) {
+        if (id === loadout.equipped || (id === 'forge' && !loadout.forged)) continue;
+        const item = WEAPONS[id];
+        result.push({ id: 'weapon-' + id, kind: 'weapon', weaponId: id, name: item.name,
+          symbol: '⚔', quantity: 1, damage: item.damage,
+          comparedDamage: WEAPONS[loadout.equipped].damage,
+          description: item.damage + ' dano · ' + item.interval + 's entre golpes' });
+      }
+    }
+    return result;
+  });
+  readonly visibleBackpackItems = computed(() => this.backpackItems().filter(item => {
+    const filter = this.bagFilter();
+    return filter === 'all' || (filter === 'gear'
+      ? item.kind === 'gear' || item.kind === 'weapon'
+      : item.kind !== 'gear' && item.kind !== 'weapon');
+  }));
+  readonly selectedBagItem = computed(() =>
+    this.backpackItems().find(item => item.id === this.selectedBagId()) ?? null);
+  readonly canUseSelectedBagItem = computed(() => {
+    const item = this.selectedBagItem();
+    if (!item || !this.inventoryAvailable() || this.inventoryPending() || this.hp() <= 0) return false;
+    if (item.kind === 'material') return false;
+    if (item.kind === 'potion') return item.quantity > 0 && this.hp() < this.maxHp();
+    if (item.kind === 'food') {
+      return item.quantity > 0 && this.nutrition().cooldown <= 0 &&
+        this.nutrition().reserve + (item.foodId ? FOODS[item.foodId].healBudget : 0) <= MAX_NUTRITION;
+    }
+    return item.quantity > 0;
+  });
   readonly selectedGearOptions = computed(() => KIT_IDS.filter(id => GEAR[id].slot === this.selectedSlot()));
   readonly defense = computed(() => gearDefense(this.gear() ?? {}));
   readonly loadout = signal<WeaponLoadout | null>(null, { equal: (a, b) =>
@@ -138,6 +217,20 @@ export class HudService implements GameUi {
   }
   useFood(id: FoodId): void { this.inventoryFeedback.set(this.foodCallback(id)); }
   tradeFood(id: FoodId): void { this.npcTradeFeedback.set(this.foodTradeCallback(id)); }
+  selectBagItem(id: string): void { this.selectedBagId.set(id); }
+  /** O clique solicita operações existentes; a UI nunca desconta itens localmente. */
+  useSelectedBagItem(): void {
+    const item = this.selectedBagItem();
+    if (!item || !this.canUseSelectedBagItem()) return;
+    if (item.kind === 'potion') this.usePotion();
+    else if (item.kind === 'food' && item.foodId) this.useFood(item.foodId);
+    else if (item.kind === 'gear' && item.gearId) this.equipGear(item.gearId);
+    else if (item.kind === 'weapon' && item.weaponId) this.equipWeapon(item.weaponId);
+  }
+  selectEquipmentSlot(slot: EquipmentSlot): void {
+    this.selectedSlot.set(slot);
+    this.inventoryTab.set('equipment');
+  }
   buySword(): void { this.npcTradeFeedback.set(this.swordPurchaseCallback()); }
   equipWeapon(weapon: WeaponId): void { this.inventoryFeedback.set(this.weaponEquipCallback(weapon)); }
   equipGear(id: GearId): void {
@@ -174,6 +267,9 @@ export class HudService implements GameUi {
     this.npcTradeFeedback.set('');
     this.npcOffer.set(null);
     this.selectedSlot.set('weapon');
+    this.selectedBagId.set('potion');
+    this.inventoryTab.set('bag');
+    this.bagFilter.set('all');
   }
   setSeed(seed: number): void { this.seed.set(seed); }
   setPlayerCount(count: number, _online: boolean): void { this.nearby.set(count); }

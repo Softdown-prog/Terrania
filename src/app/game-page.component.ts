@@ -4,6 +4,7 @@ import { mountGame } from '../game/PhaserGame.ts';
 import { HudService } from './hud.service.ts';
 import { OnlinePlayersComponent } from './online-players.component.ts';
 import { runtimeConfig } from './runtime-config.ts';
+import { renderHero } from '../render/actors.ts';
 
 @Component({ selector: 'app-game-page', templateUrl: './game-page.html', styleUrl: '../style.css',
   imports: [RouterLink, OnlinePlayersComponent], providers: [HudService], changeDetection: ChangeDetectionStrategy.OnPush })
@@ -14,10 +15,16 @@ export class GamePageComponent implements AfterViewInit {
   readonly toolsExpanded = signal(false);
   readonly battleOpen = signal(false);
   readonly playersDialogOpen = signal(false);
+  readonly inventoryOpen = signal(false);
+  readonly previewDirection = signal(0);
+  private previewFrame = 0;
+  private previewLastDraw = 0;
   private readonly mount = viewChild.required<ElementRef<HTMLElement>>('mount');
   private readonly npcDialog = viewChild.required<ElementRef<HTMLDialogElement>>('npcDialog');
   private readonly defeatDialog = viewChild<ElementRef<HTMLDialogElement>>('defeatDialog');
   private readonly playersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('playersDialog');
+  private readonly inventoryDialog = viewChild.required<ElementRef<HTMLDialogElement>>('inventoryDialog');
+  private readonly inventoryHero = viewChild<ElementRef<HTMLCanvasElement>>('inventoryHero');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroy = inject(DestroyRef);
   constructor() {
@@ -32,9 +39,35 @@ export class GamePageComponent implements AfterViewInit {
       else dialog.close();
     });
   }
+  rotateInventoryHero(): void { this.previewDirection.update(value => (value + 1) % 4); }
+  /** Usa o mesmo personagem procedural do mundo, não uma ilustração independente. */
+  private drawInventoryHero(time: number): void {
+    if (!this.inventoryOpen()) return;
+    if (time - this.previewLastDraw >= 50) {
+      this.previewLastDraw = time;
+      const canvas = this.inventoryHero()?.nativeElement;
+      const ctx = canvas?.getContext('2d');
+      if (ctx && canvas) {
+        const directions = [{ x: 0, y: 1 }, { x: 1, y: 0 }, { x: 0, y: -1 }, { x: -1, y: 0 }] as const;
+        const face = directions[this.previewDirection()] ?? directions[0];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height * 0.81);
+        ctx.scale(2.4, 2.4);
+        renderHero(ctx, {
+          faceX: face.x, faceY: face.y, walkTime: 0, attackTime: 0,
+          attackWeapon: this.hud.loadout()?.equipped ?? 'starter',
+          vx: 0, vy: 0, id: 'inventory-preview',
+        }, 0, 0, time / 1000);
+        ctx.restore();
+      }
+    }
+    this.previewFrame = requestAnimationFrame(now => this.drawInventoryHero(now));
+  }
   ngAfterViewInit(): void {
     // An open sidebar fits a desktop; Android stays collapsed until requested.
     this.battleOpen.set(window.matchMedia('(pointer: fine) and (min-width: 651px)').matches);
+    this.destroy.onDestroy(() => cancelAnimationFrame(this.previewFrame));
     try { this.destroy.onDestroy(mountGame(this.mount().nativeElement, this.hud, runtimeConfig.multiplayerUrl)); }
     catch { this.notice.set('Não foi possível iniciar o jogo neste navegador. Recarregue a página para tentar novamente.'); }
   }
@@ -42,6 +75,11 @@ export class GamePageComponent implements AfterViewInit {
     this.toolsExpanded.set(false);
     this.hud.menuOpen = true;
     if (dialog === this.playersDialog().nativeElement) this.playersDialogOpen.set(true);
+    if (dialog === this.inventoryDialog().nativeElement && !this.inventoryOpen()) {
+      this.inventoryOpen.set(true);
+      this.previewLastDraw = 0;
+      this.previewFrame = requestAnimationFrame(now => this.drawInventoryHero(now));
+    }
     if (!dialog.open) dialog.showModal();
   }
   close(event: Event): void {
@@ -49,6 +87,11 @@ export class GamePageComponent implements AfterViewInit {
   }
   closed(): void {
     if (!this.playersDialog().nativeElement.open) this.playersDialogOpen.set(false);
+    if (!this.inventoryDialog().nativeElement.open) {
+      this.inventoryOpen.set(false);
+      cancelAnimationFrame(this.previewFrame);
+      this.previewFrame = 0;
+    }
     // close is emitted after the native open property changes (also for Escape).
     this.hud.menuOpen = !!this.host.nativeElement.querySelector('dialog[open]');
     if (!this.hud.menuOpen) document.getElementById('game')?.focus({ preventScroll: true });
