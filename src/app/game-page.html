@@ -500,6 +500,9 @@
             <section class="mount-stable-panel" aria-label="Estábulo e montarias">
               <p id="stableProgress">Estábulo {{ hud.mountView().stableTier }}/3 · Cavalaria {{ hud.mountView().ridingTier }}/3 · {{ hud.gel() }} gel · Nível {{ hud.progression()?.level ?? 1 }}</p>
               <p id="mountQuestHint">{{ hud.mountView().questHint }}</p>
+              @if (hud.mountView().quest) {
+                <p id="mountQuestGift" class="dialog-note">Item de missão: {{ hud.mountView().quest?.gift }}</p>
+              }
               @if (hud.mountView().stableTier === 0) {
                 <button id="buildStable" type="button" class="secondary-button"
                   (click)="hud.mountAction('build')">Construir cercado · 12 gel · nível 15</button>
@@ -516,9 +519,12 @@
                   @if (!hud.mountView().quest) {
                     <button id="startWarhorseQuest" class="secondary-button" type="button"
                       (click)="hud.mountAction('start-warhorse')">Começar: O Garrano Fugitivo da Vila</button>
-                  } @else if (!hud.mountView().quest?.halter) {
+                  } @else if (hud.mountView().quest?.step === 2) {
                     <button id="craftHalter" class="secondary-button" type="button"
                       (click)="hud.mountAction('make-halter')">Fabricar cabresto · 3 gel</button>
+                  } @else if (hud.mountView().quest?.step === 4) {
+                    <button id="returnWarhorse" class="secondary-button" type="button"
+                      (click)="hud.mountAction('return-warhorse')">Entregar Garrano a Eron e receber a sela</button>
                   }
                 } @else if (!hud.mountView().active) {
                   <button id="rideWarhorse" class="secondary-button" type="button"

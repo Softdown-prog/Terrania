@@ -29,7 +29,8 @@ import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import { levelForExperience } from "../engine/Experience.ts";
 import { sampleMountCaptureLoot,type MountAction,type MountActionResult } from "../engine/MountStable.ts";
-import { WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
+import { WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
+import { currentMountQuestStep } from "../engine/MountQuestState.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/Experience.ts";
 
@@ -221,11 +222,15 @@ export class Game {
     const {x,y}=this.sim.player;
     const nearby=(point:{readonly x:number;readonly y:number})=>
       Math.hypot(x-point.x,y-point.y)<=MOUNT_INTERACT_DISTANCE;
-    if(this.sim.mounts.quest && nearby(WILD_WARHORSE)) {
-      this.hud.setTravelNotice(this.mountAction('tame'));return;
+    const questStep=this.sim.mounts.quest && currentMountQuestStep(this.sim.mounts.quest)?.id;
+    if(questStep==="tracks" && nearby(WILD_HOOFPRINTS)) {
+      this.hud.setTravelNotice(this.mountAction("inspect-tracks"));return;
     }
-    if(this.sim.mounts.quest && !this.sim.mounts.quest.apple && nearby(WILD_APPLES)) {
-      this.hud.setTravelNotice(this.mountAction('forage'));return;
+    if(questStep==="calm" && nearby(WILD_WARHORSE)) {
+      this.hud.setTravelNotice(this.mountAction("tame"));return;
+    }
+    if(questStep==="return" && nearby({x:384,y:112})) {
+      this.hud.setTravelNotice(this.mountAction("return-warhorse"));return;
     }
     const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
     if (entrance) { this.enterCave(entrance); return; }
@@ -260,16 +265,18 @@ export class Game {
     const {player,mounts,inventory,kills}=this.sim;
     const lvl=levelForExperience(this.sim.experience),gel=inventory.gel;
     const spend=(amount:number)=>inventory.spendGel(amount);
+    mounts.synchronizeKills(kills);
     let result:MountActionResult;
     switch(action){
       case "build": case "upgrade":result=mounts.upgrade(lvl,gel,spend,player.x,player.y);break;
       case "train":result=mounts.train(lvl,player.x,player.y);break;
       case "start-warhorse":result=mounts.beginWarhorse(lvl,player.x,player.y,kills);break;
       case "make-halter":result=mounts.craftHalter(gel,spend,player.x,player.y);break;
-      case "forage":result=mounts.forage(player.x,player.y);break;
-      case "tame":
-        result=mounts.tame(lvl,kills,player.x,player.y);
-        if(result==="tamed") for(const item of sampleMountCaptureLoot("warhorse",this.sim.seed))
+      case "inspect-tracks":result=mounts.inspectTracks(player.x,player.y);break;
+      case "tame":result=mounts.tame(lvl,kills,player.x,player.y);break;
+      case "return-warhorse":
+        result=mounts.returnWarhorse(player.x,player.y);
+        if(result==="returned") for(const item of sampleMountCaptureLoot("warhorse",this.sim.seed))
           inventory.addMaterial(item);
         break;
       case "mount-warhorse":result=mounts.mount("warhorse",lvl,player.x,player.y);break;
@@ -279,10 +286,11 @@ export class Game {
       built:"Cercado do estábulo construído. Agora você pode treinar Cavalaria I.",
       upgraded:"Estábulo ampliado. Novas montarias podem ser abrigadas.",
       trained:"Cavalaria elevada! Verifique suas missões de domesticação.",
-      "quest-started":"Quest O Garrano Fugitivo iniciada. Afaste 5 slimes, colha maçã e prepare um cabresto.",
-      "halter-made":"Cabresto preparado. Leve Maçã Silvestre ao cavalo fugitivo.",
-      "apple-picked":"Maçã Silvestre colhida. Ainda é necessário um cabresto e cinco slimes derrotados.",
-      tamed:"O cavalo aceitou você! Sela inicial obtida. Volte ao estábulo para montar.",
+      "quest-started":"Eron entregou a Maçã Silvestre Doce. Siga as marcas de cascos a oeste da vila.",
+      "tracks-found":"Pegadas encontradas! Afaste os slimes que cercam o cavalo.",
+      "halter-made":"Cabresto fabricado. Procure o cavalo e ofereça a maçã doce.",
+      calmed:"O Garrano está calmo e vai acompanhar você. Volte ao estábulo para completar o resgate.",
+      returned:"Garrano entregue a Eron! Cavalo de Batalha e Sela de Couro Simples conquistados.",
       mounted:"Cavalo de Batalha montado. Sua energia diminui ao galopar.",
       dismounted:"Você desmontou com segurança.",
       "no-level":"Seu nível ainda é baixo para essa etapa de Cavalaria.",
@@ -292,10 +300,11 @@ export class Game {
       "missing-quest":"Converse com o Mestre de Estábulos para iniciar a missão.",
       "quest-active":"Você já possui uma missão de domesticação em andamento.",
       "already-owned":"Essa montaria já foi conquistada.",
-      "no-apple":"O cavalo está assustado. Encontre a Maçã Silvestre.",
+      "no-apple":"A Maçã Silvestre Doce da missão está ausente.",
       "no-halter":"Você precisa fabricar um cabresto no estábulo.",
-      "slimes-needed":"Derrote cinco slimes antes de tentar acalmar o cavalo.",
-      "too-far":"Aproxime-se do estábulo ou animal para essa ação.",
+      "slimes-needed":"Derrote cinco slimes após aceitar a missão e examinar as pegadas.",
+      "too-far":"Aproxime-se da pegada, do estábulo ou do animal para essa ação.",
+      "not-ready":"Conclua o objetivo atual antes de avançar a missão.",
       unavailable:"Essa ação ainda não está disponível.",
       "stamina-low":"A montaria precisa descansar.",
     };
@@ -303,7 +312,7 @@ export class Game {
       this.tileWalker.reset();
       this.navigator.cancel();
     }
-    if(["built","upgraded","trained","quest-started","halter-made","apple-picked","tamed","mounted","dismounted"].includes(result))this.save();
+    if(["built","upgraded","trained","quest-started","tracks-found","halter-made","calmed","returned","mounted","dismounted"].includes(result))this.save();
     this.updateHud();
     return message[result];
   }
@@ -587,7 +596,9 @@ export class Game {
     const q=this.sim.mounts.quest;
     const close=(point:{readonly x:number;readonly y:number})=>
       Math.hypot(this.sim.player.x-point.x,this.sim.player.y-point.y)<=MOUNT_INTERACT_DISTANCE;
-    this.hud.setNearbyAction(q&&close(WILD_WARHORSE)?"tame":q&&!q.apple&&close(WILD_APPLES)?"forage":
+    const step=q&&currentMountQuestStep(q)?.id;
+    this.hud.setNearbyAction(step==="tracks"&&close(WILD_HOOFPRINTS)?"tracks":
+      step==="calm"&&close(WILD_WARHORSE)?"tame":
       portal?"enter":npc?NPC_ACTIONS[npc.kind??"character"]:null);
     this.scene.render(
       this.world,
@@ -604,7 +615,7 @@ export class Game {
       this.sim.mounts.active,
       !this.sim.mounts.has("warhorse"),
       this.sim.mounts.stableTier>0,
-      this.sim.mounts.quest?.apple!==true && !!this.sim.mounts.quest,
+      !!this.sim.mounts.quest && currentMountQuestStep(this.sim.mounts.quest)?.id==="tracks",
     );
   }
   destroy(): void {

@@ -44,7 +44,8 @@ export function npcDialogue(npc: Npc, kills: number, forgeAvailable = false): re
   const { defeated, goal, completed } = aelaQuestProgress(kills);
   if(npc.id==="stablemaster")return [
     "Sou Eron, guardião das montarias da Travessia. Antes de montar, construa o cercado e treine sua Cavalaria.",
-    "O Garrano Fugitivo precisa de alguém que afaste os slimes, encontre Maçã Silvestre e leve um cabresto.",
+    "Slimes romperam a cerca e o cavalo da guarnição fugiu ferido ao Bosque Oeste. O carpinteiro reparou o cercado, mas precisamos de sua ajuda.",
+    "Depois de reconstruir o cercado e treinar Cavalaria I, entregarei a Maçã Silvestre Doce. Siga os cascos, afaste os slimes e traga o Garrano de volta.",
     "Cada montaria tem nível, sela e região próprios. As criaturas selvagens precisam de missões especiais.",
   ];
   if (npc.id === "mira") return completed

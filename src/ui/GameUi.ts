@@ -23,7 +23,7 @@ export interface HeroHudState {
   readonly awaitingRespawn: boolean;
 }
 
-export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave' | 'forage' | 'tame';
+export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave' | 'tracks' | 'tame';
 export interface CaveMapState {
   readonly floor: CaveFloor;
   readonly tileX: number;

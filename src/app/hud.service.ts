@@ -15,7 +15,7 @@ const ACTION_LABELS: Record<NearbyAction, string> = {
   read: 'Ler',
   enter: 'Entrar',
   leave: 'Subir',
-  forage: 'Colher maçã',
+  tracks: 'Examinar pegadas',
   tame: 'Acalmar cavalo',
 };
 const KIT_IDS = Object.keys(GEAR) as GearId[];
@@ -51,7 +51,7 @@ export class HudService implements GameUi {
   },{equal:(a,b)=>a.stableTier===b.stableTier&&a.ridingTier===b.ridingTier&&
     a.active===b.active&&Math.round(a.stamina)===Math.round(b.stamina)&&
     a.questHint===b.questHint&&a.quest?.id===b.quest?.id&&
-    a.quest?.apple===b.quest?.apple&&a.quest?.halter===b.quest?.halter&&
+    a.quest?.step===b.quest?.step&&a.quest?.count===b.quest?.count&&
     a.owned.join(',')===b.owned.join(',')});
   readonly mountFeedback = signal('');
   readonly travelNotice = signal('');
