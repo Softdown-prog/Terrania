@@ -6,7 +6,7 @@ import { ellipse, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
 import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation } from "./caveDetails.ts";
 import { hash2, valueNoise } from "../world/random.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
-import type { CaveEntrance, CaveTheme } from "../world/caves.ts";
+import type { CaveEntrance } from "../world/caves.ts";
 import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH, type CaveFloor, type CaveRoom } from "../engine/CaveRoom.ts";
 
 const PALETTE = CAVE_PALETTE;
