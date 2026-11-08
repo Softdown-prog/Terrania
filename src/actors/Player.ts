@@ -1,3 +1,4 @@
+import type { DebuffKind } from "./CreatureCatalog.ts";
 import { moveBody, type CollisionMap } from "../world/collision.ts";
 import {
   ATTACK_COOLDOWN,
@@ -22,6 +23,28 @@ export class Player {
   attackCooldown = 0;
   hurtTime = 0;
   private receivedHits = 0;
+  private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0 };
+  private poisonElapsed = 0;
+  private poisonStacks = 0;
+  get debuffs(): Readonly<Record<DebuffKind, number>> { return { ...this.effects }; }
+  applyStatus(kind: DebuffKind, seconds: number): void {
+    if (!Number.isFinite(seconds) || seconds <= 0 || this.hp <= 0) return;
+    this.effects[kind] = Math.max(this.effects[kind], Math.min(12, seconds));
+    if (kind === "poison") this.poisonStacks = Math.min(3, this.poisonStacks + 1);
+  }
+  private advanceDebuffs(dt: number): void {
+    if (this.effects.poison > 0 && this.hp > 0) {
+      this.poisonElapsed += dt;
+      while (this.poisonElapsed >= 1 && this.hp > 0) {
+        this.poisonElapsed -= 1;
+        this.hp = Math.max(0, this.hp - this.poisonStacks);
+        this.receivedHits++;
+        this.hurtTime = Math.max(this.hurtTime, .18);
+      }
+    } else { this.poisonElapsed = 0; this.poisonStacks = 0; }
+    for (const kind of Object.keys(this.effects) as DebuffKind[])
+      this.effects[kind] = Math.max(0, this.effects[kind] - dt);
+  }
   private invulnerable = 0;
   private knockX = 0;
   private knockY = 0;
@@ -92,6 +115,7 @@ export class Player {
     const terrainSpeed = world.speedAt?.(this.x, this.y) ?? 1;
     const speed =
       126 *
+      (this.effects.freeze > 0 ? 0 : this.effects.slow > 0 ? .58 : 1) *
       (Number.isFinite(terrainSpeed) ? Math.max(0, terrainSpeed) : 0) *
       (this.attackTime > 0 ? 0.72 : 1);
     const response = moving ? 18 : 25;
@@ -119,12 +143,13 @@ export class Player {
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
     this.advanceNutrition(dt);
+    this.advanceDebuffs(dt);
   }
   get strikeDamage(): number { return WEAPONS[this.attackWeapon].damage; }
   startAttack(weapon: WeaponId = "starter"): boolean {
     if (this.attackCooldown > 0 || this.hp <= 0) return false;
     this.attackTime = ATTACK_DURATION;
-    this.attackCooldown = ATTACK_COOLDOWN;
+    this.attackCooldown = ATTACK_COOLDOWN * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
     this.attackWeapon = weapon;
     this.strikePending = true;
     return true;
