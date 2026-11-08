@@ -6,6 +6,7 @@ import { Inventory } from "../src/engine/Inventory.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { Player } from "../src/actors/Player.ts";
 import { applySwordImpact, swordHitDamage } from "../src/engine/SwordCombat.ts";
+import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
 import { drawKnightSword, drawKnightTrail } from "../src/render/swords.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
 
@@ -124,4 +125,16 @@ test("arte e rastro: todos os dez modelos são determinísticos e sem imagens",(
     assert.ok(t.metrics().paintOps>2,id);
   }
   assert.equal(signatures.size,10);
+});
+
+test("battle list can begin Astral auto-attacks at extended range without bypassing walls",()=>{
+  const h=hero(),target=new Slime("long-reach",65,0);
+  const mobs=new Map([[target.id,target]]);
+  const combat=new ClassicCombat();
+  assert.equal(combat.select(target.id,mobs),true);
+  assert.equal(combat.tick(1/60,h,mobs,OPEN,WEAPONS.astral.interval,"forge"),false);
+  assert.equal(combat.tick(1/60,h,mobs,OPEN,WEAPONS.astral.interval,"astral"),true);
+  combat.reset();combat.select(target.id,mobs);
+  assert.equal(combat.tick(1/60,h,mobs,{canMove:(x:number)=>x<30},
+    WEAPONS.astral.interval,"astral"),false);
 });
