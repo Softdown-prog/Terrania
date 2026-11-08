@@ -1,5 +1,5 @@
 import { WEAPONS, type WeaponId } from "../engine/Weapons.ts";
-import { clamp01, ellipse, rgba, TAU } from "./draw.ts";
+import { clamp01, rgba, TAU } from "./draw.ts";
 
 /** Ten sword silhouettes reconstructed as code from the author's 5×2 sheet.
  * Origin is the hilt's near end and the blade points right (+x). No texture assets.
