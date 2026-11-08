@@ -1115,3 +1115,55 @@ noscript a {
   .classic-battle { top: max(58px, calc(env(safe-area-inset-top) + 54px)); }
   .battle-panel { max-height: min(76px, 21dvh); }
 }
+
+
+/* Minimap: independent read-only Canvas derived from the same getTile world generator. */
+.world-mini-map {
+  position: absolute;
+  z-index: 6;
+  bottom: max(24px, calc(env(safe-area-inset-bottom) + 18px));
+  right: max(18px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid #bfae816b;
+  border-radius: 7px;
+  background: #0d2325e9;
+  box-shadow: 0 4px 18px #06151ab8;
+  color: #f5e8be;
+  pointer-events: auto;
+}
+.world-mini-map button {
+  width: 100%;
+  min-height: 36px;
+  background: #28483c;
+  border: 1px solid #6e947b;
+  border-radius: 4px;
+  color: inherit;
+  font: 700 11px system-ui;
+  letter-spacing: .1em;
+  touch-action: manipulation;
+}
+.world-mini-map canvas {
+  display: block;
+  width: 124px;
+  height: 124px;
+  image-rendering: pixelated;
+  border: 1px solid #53725b;
+}
+.world-mini-map small { font-size: 9px; color: #dedabf; }
+@media (pointer: coarse), (max-width: 650px) {
+  .world-mini-map {
+    bottom: max(176px, calc(env(safe-area-inset-bottom) + 169px));
+    right: max(12px, env(safe-area-inset-right));
+    padding: 4px;
+  }
+  .world-mini-map canvas { width: 104px; height: 104px; }
+  .world-mini-map button { min-height: 44px; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  .world-mini-map { bottom: max(110px, calc(env(safe-area-inset-bottom) + 101px)); }
+  .world-mini-map canvas { width: 88px; height: 88px; }
+}

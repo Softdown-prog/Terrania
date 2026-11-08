@@ -96,6 +96,17 @@
         </section>
       }
 
+      <aside id="miniMapPanel" class="world-mini-map" aria-label="Minimapa do mundo procedural">
+        <button id="miniMapToggle" type="button" [attr.aria-expanded]="miniMapOpen()"
+          aria-controls="worldMiniMapCanvas" (click)="miniMapOpen.set(!miniMapOpen())">
+          MAPA <span aria-hidden="true">{{ miniMapOpen() ? '▾' : '▴' }}</span>
+        </button>
+        @if (miniMapOpen()) {
+          <canvas id="worldMiniMapCanvas" #miniMapCanvas width="124" height="124"
+            role="img" [attr.aria-label]="'Minimapa centrado no herói. ' + hud.coords() + '. Norte para cima.'"></canvas>
+          <small>● Você · <span aria-hidden="true">◆</span> Vila</small>
+        }
+      </aside>
       <div class="bottom-info">
         <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
         ><small id="saveMode">{{ hud.online() ? "Sala experimental · progresso temporário" : "Aventura local · progresso neste navegador" }}</small>

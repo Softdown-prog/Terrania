@@ -5,6 +5,7 @@ import { HudService } from './hud.service.ts';
 import { OnlinePlayersComponent } from './online-players.component.ts';
 import { runtimeConfig } from './runtime-config.ts';
 import { renderHero } from '../render/actors.ts';
+import { drawMiniMap } from '../render/terrain.ts';
 
 @Component({ selector: 'app-game-page', templateUrl: './game-page.html', styleUrl: '../style.css',
   imports: [RouterLink, OnlinePlayersComponent], providers: [HudService], changeDetection: ChangeDetectionStrategy.OnPush })
@@ -17,6 +18,7 @@ export class GamePageComponent implements AfterViewInit {
   readonly playersDialogOpen = signal(false);
   readonly inventoryOpen = signal(false);
   readonly previewDirection = signal(0);
+  readonly miniMapOpen = signal(true);
   private previewFrame = 0;
   private previewLastDraw = 0;
   private readonly mount = viewChild.required<ElementRef<HTMLElement>>('mount');
@@ -25,11 +27,20 @@ export class GamePageComponent implements AfterViewInit {
   private readonly playersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('playersDialog');
   private readonly inventoryDialog = viewChild.required<ElementRef<HTMLDialogElement>>('inventoryDialog');
   private readonly inventoryHero = viewChild<ElementRef<HTMLCanvasElement>>('inventoryHero');
+  private readonly miniMapCanvas = viewChild<ElementRef<HTMLCanvasElement>>('miniMapCanvas');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroy = inject(DestroyRef);
   constructor() {
     effect(() => {
       if (this.hud.dialogueRequested() > 0) this.open(this.npcDialog().nativeElement);
+    });
+    effect(() => {
+      const { x, y } = this.hud.mapTile();
+      const seed = this.hud.seed();
+      if (!this.miniMapOpen()) return;
+      const canvas = this.miniMapCanvas()?.nativeElement;
+      const ctx = canvas?.getContext('2d');
+      if (ctx) drawMiniMap(ctx, x, y, seed);
     });
     effect(() => {
       const awaitingRespawn = this.hud.awaitingRespawn();
