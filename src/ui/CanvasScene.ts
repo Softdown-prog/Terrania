@@ -267,6 +267,13 @@ export class CanvasScene {
       y: destination.y - (camera.renderY - height / 2) }, time);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     if (effects.enabled) drawAmbient(this.ctx, this.width, this.height, time, camera.renderX, camera.renderY, scale);
+    if(player.debuffs.blind>0){
+      const cx=this.width/2,cy=this.height/2;
+      const ink=this.ctx.createRadialGradient(cx,cy,60,cx,cy,Math.max(100,Math.min(this.width,this.height)*.43));
+      ink.addColorStop(0,"rgba(4,12,21,0)");
+      ink.addColorStop(1,"rgba(3,9,18,.87)");
+      this.ctx.fillStyle=ink;this.ctx.fillRect(0,0,this.width,this.height);
+    }
     // Gradação de cor: luz quente vinda do alto-esquerdo e sombra azulada no canto oposto.
     const grade = this.ctx.createLinearGradient(0, 0, this.width, this.height);
     grade.addColorStop(0, '#ffeeb81c'); grade.addColorStop(0.5, '#ffeeb800'); grade.addColorStop(1, '#0a284a22');
