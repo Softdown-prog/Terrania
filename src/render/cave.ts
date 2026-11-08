@@ -1,3 +1,4 @@
+import { renderRegionalCreature } from "./regionalCreatures.ts";
 import type { GearState } from "../engine/Equipment.ts";
 import type { WeaponId } from "../engine/Weapons.ts";
 import { renderHero } from "./actors.ts";
@@ -278,7 +279,15 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   if(!texture){texture=paintFloor(room.floor);wallCache.set(room.floor,texture);}
   ctx.drawImage(texture,-left,-top);
   const player=room.player;
-  renderHero(ctx,{...player,gear,equippedWeapon:weapon},player.x-left,player.y-top,time);
+  const occupants: Array<{y:number;render:()=>void}> = [];
+  for(const mob of room.monsters.values()){
+    if(Math.abs(mob.x-player.x)>width/2+65||Math.abs(mob.y-player.y)>height/2+80)continue;
+    occupants.push({y:mob.y,render:()=>renderRegionalCreature(ctx,mob,mob.x-left,mob.y-top,time)});
+  }
+  occupants.push({y:player.y,render:()=>renderHero(ctx,
+    {...player,gear,equippedWeapon:weapon},player.x-left,player.y-top,time)});
+  occupants.sort((a,b)=>a.y-b.y);
+  for(const actor of occupants)actor.render();
   // Static darkness with a local light pool following the real cave player.
   const light=ctx.createRadialGradient(player.x-left,player.y-top,24,
     player.x-left,player.y-top,Math.max(180,Math.min(width,height)*.68));
