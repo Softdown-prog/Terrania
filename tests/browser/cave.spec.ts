@@ -97,6 +97,23 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
   }
   await expect(page.locator("#quest")).toHaveText("Proteja a clareira");
   await expect(page.locator(".quest .stat-heading")).toContainText("MISSÃO DA CLAREIRA");
+  // Regression: the old CSS had pointer-events:none on the toast parent.
+  // This must exercise a real tap/click, not call the Angular method directly.
+  const dismiss=page.locator("#dismissTravelNotice");
+  await expect(dismiss).toBeVisible();
+  await expect(page.locator("#gameNotice")).toContainText("retornou à superfície");
+  if(info.project.name==="android") await dismiss.tap();
+  else await dismiss.click();
+  await expect(page.locator("#gameNotice")).toHaveCount(0);
+  // Without a combat target, the guidance must also be dismissible.
+  const combatHelp=page.locator("#dismissCombatHelp");
+  await expect(combatHelp).toBeVisible();
+  if(info.project.name==="android") await combatHelp.tap();
+  else await combatHelp.click();
+  await expect(page.locator("#classicCombat")).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator("#classicCombat")).toHaveCount(0);
+  await expect(page.locator("#gameNotice")).toHaveCount(0);
   await page.locator("#gameMenuButton").click();
   await page.locator("#inventoryButton").click();
   await page.locator("#inventoryTabMap").click();

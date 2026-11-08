@@ -23,6 +23,8 @@ export class GamePageComponent implements AfterViewInit {
   readonly fullscreenActive = signal(false);
   readonly toolsExpanded = signal(false);
   readonly battleOpen = signal(false);
+  /** Optional combat hint, independent of actual target controls. */
+  readonly combatHelpVisible = signal(true);
   readonly playersDialogOpen = signal(false);
   readonly inventoryOpen = signal(false);
   readonly previewDirection = signal(0);
@@ -129,6 +131,9 @@ export class GamePageComponent implements AfterViewInit {
     this.previewFrame = requestAnimationFrame(now => this.drawInventoryHero(now));
   }
   ngAfterViewInit(): void {
+    try {
+      this.combatHelpVisible.set(localStorage.getItem('terrania-combat-help-dismissed-v1') !== '1');
+    } catch { /* Private browsing can block storage; closing still works this session. */ }
     // An open sidebar fits a desktop; Android stays collapsed until requested.
     this.battleOpen.set(window.matchMedia('(pointer: fine) and (min-width: 651px)').matches);
     this.destroy.onDestroy(() => cancelAnimationFrame(this.previewFrame));
@@ -136,6 +141,11 @@ export class GamePageComponent implements AfterViewInit {
     this.destroy.onDestroy(startPlayPresence({ endpoint: heartbeatEndpoint(runtimeConfig.multiplayerUrl, runtimeConfig.presenceUrl) }));
     try { this.destroy.onDestroy(mountGame(this.mount().nativeElement, this.hud)); }
     catch { this.notice.set('Não foi possível iniciar o jogo neste navegador. Recarregue a página para tentar novamente.'); }
+  }
+  dismissCombatHelp(): void {
+    this.combatHelpVisible.set(false);
+    try { localStorage.setItem('terrania-combat-help-dismissed-v1', '1'); }
+    catch { /* Closing does not depend on localStorage. */ }
   }
   open(dialog: HTMLDialogElement): void {
     this.toolsExpanded.set(false);

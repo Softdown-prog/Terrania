@@ -1230,9 +1230,39 @@ noscript a {
   .atlas-controls button, .atlas-sectors button { transition: none; }
 }
 
-#gameNotice:has(#dismissTravelNotice) { z-index: 9; width: min(480px, calc(100% - 28px));
-  padding: 9px 12px; border: 1px solid #adba9099; background: #122b29ec;
-  border-radius: 7px; line-height: 1.5; }
-#dismissTravelNotice { display: inline-block; margin-left: 8px; padding: 6px 10px;
-  border: 1px solid #d9c38d; border-radius: 5px; background: #324d3d;
-  color: #fff0c5; font-size: 12px; }
+/* The original notice inherited pointer-events:none and the Fechar button
+   was visible but could not receive a tap. Only actual notices are mounted. */
+#gameNotice:has(#dismissTravelNotice) {
+  z-index: 9;
+  width: min(480px, calc(100% - 28px));
+  padding: 9px 12px;
+  border: 1px solid #adba9099;
+  background: #122b29ec;
+  border-radius: 7px;
+  line-height: 1.5;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+#dismissTravelNotice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid #d9c38d;
+  border-radius: 5px;
+  background: #324d3d;
+  color: #fff0c5;
+  font-size: 12px;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+#dismissCombatHelp { margin-top: 3px; font-size: 11px; }
+@media (max-width: 650px) {
+  #gameNotice:has(#dismissTravelNotice) { max-width: calc(100% - 24px); }
+}
