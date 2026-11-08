@@ -10,7 +10,7 @@ export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
-  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> & { id?: string; gear?: GearState };
+  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> & { id?: string; gear?: GearState | undefined };
 export type SlimeVisual = Pick<Slime, "hp" | "bounce"> & { hurtTime?: number; id?: string };
 /** Contexto opcional de apresentação; nada aqui altera regras ou dano. */
 export interface SlimeFx {
