@@ -22,6 +22,7 @@ export class RegionalMonster extends Slime {
 
   constructor(id: string, kind: RegionalCreatureKind, x: number, y: number) {
     super(id, x, y, kind);
+    this.kind = kind;
     this.definition = CREATURE_CATALOG[kind];
   }
   get casting(): number { return Math.min(1, this.windup / .42); }
