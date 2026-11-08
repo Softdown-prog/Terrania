@@ -1,4 +1,4 @@
-# Bestiário regional procedural — vinte monstros
+# Bestiário regional procedural — trinta monstros
 
 Os dois lotes nascem de folhas autorais 5×2 fornecidas pelo criador. O código não importa imagens como texturas: cada criatura é reconstruída por Canvas 2D com sombra, silhueta, volume, detalhes, contorno e brilho.
 
@@ -110,3 +110,62 @@ controlador de tiles, combate, caverna, inventário e HUD Angular.
 Regressões automatizadas em tests/bestiary-audit.test.ts.
 Validação: architecture:check, typecheck, testes unitários, build e
 Playwright desktop/Android, antes de liberar merge.
+
+## Terceiro lote — criaturas comuns do Sul (21–30)
+
+Este lote foi especificado por fichas textuais, **sem uma nova imagem de
+referência anexada**. Os desenhos são interpretações procedurais das descrições,
+e não cópias fiéis de uma terceira sprite sheet.
+
+| # | Criatura | HP | Ataque | Bioma de superfície | Cripta |
+| ---: | --- | ---: | ---: | --- | --- |
+| 21 | Rato das Dunas | 35 | 6 | Dunas, oásis, ruínas | Dunas |
+| 22 | Goblin Saqueador da Areia | 65 | 11 | Dunas e ruínas | Dunas |
+| 23 | Orc Nômade do Deserto | 110 | 17 | Dunas e ruínas | Dunas |
+| 24 | Troll de Barro Seco | 145 | 15 | Transição árida / oásis e ruínas | Dunas e Brejo |
+| 25 | Pequenino Batedor das Dunas | 75 | 12 | Rotas áridas, oásis e ruínas | Dunas |
+| 26 | Elfo Patrulheiro do Oásis | 90 | 16 | Oásis e ruínas | Dunas |
+| 27 | Diabrete de Miragem | 55 | 14 | Dunas e ruínas | Dunas |
+| 28 | Víbora-de-Chifre Comum | 45 | 10 | Dunas, oásis e ruínas | Dunas |
+| 29 | Abutre Carniceiro do Sul | 50 | 9 | Dunas e ruínas | Dunas |
+| 30 | Brotinho de Cacto Animado | 60 | 8 | Dunas, oásis e ruínas | Dunas |
+
+A codificação dos encontros usa os biomas reais **dunes, ruins e oasis**;
+nenhum acampamento, estrada de caravana, santuário ou campo de cactos foi
+inventado como entidade no mapa. Essas características ainda são ambientação
+narrativa até existir um local geográfico próprio.
+
+### Combate e economia
+
+- Rato: mordidas rápidas, com 10% de chance de infecção de 1 HP/s durante
+  3 segundos. A rolagem por golpe é determinística por ID e contador.
+- Goblin: só arremessa areia/pedras ao ficar abaixo de 35% HP.
+- Orc: empurra 12 pixels no terceiro ataque corpo a corpo bem-sucedido.
+- Troll: recupera 1 HP/s após 4 segundos sem receber dano **e**
+  longe do jogador; lança torrões após o aviso de conjuração.
+- Pequenino: alterna faca e funda, respeitando intervalo e linha de visão.
+- Elfo: lança curta imbuída causa +2 de dano no contato.
+- Diabrete: faíscas com desorientação breve (efeito temporário de mira).
+- Víbora: veneno leve separado do veneno cumulativo, 2 HP/s por 4 s.
+- Abutre: ganha velocidade e agressividade com a vítima abaixo de 50% HP.
+- Cacto: rebate 2 HP por contato de uma **espada inicial** efetiva, não
+  ao receber uma magia ou golpe que não chegou a atingir.
+- Chances de drops ficam no catálogo como probabilidades por item,
+  inclusive 45% de Pó Cintilante e 55% de nenhuma recompensa do Diabrete.
+
+### Densidade e segurança
+
+As criaturas comuns têm um gerador dedicado de 2–3 tentativas por chunk
+em 86% dos chunks de Sul, além da fauna regional anterior, sujeito a
+bioma, solo transitável e à região real do tile. Há IDs fixos por
+seed/chunk/tentativa para manter o histórico de derrotados. Nas criptas
+áridas, a seleção favorece as comuns, sem remover as espécies antigas.
+
+As espécies reutilizam a mesma bolsa, IA, mapa, sistema de caverna, save,
+combate e renderização. Não criam novo motor nem reativam multiplayer.
+
+Limitações: lugares específicos de spawn (acampamentos, santuários,
+vilarejos, rotas de caravanas) ainda não têm marcadores próprios
+no mapa. Magias e objetos arremessados são ataques com preparação e
+linha de visão, mas não têm simulação contínua de trajetórias.
+Testes em desktop e Android ainda são necessários antes de merge.
