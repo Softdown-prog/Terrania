@@ -21,9 +21,9 @@ const profiles = [
   ["tide-hunter-triton",250,36,"east","coastal"],
 ] as const;
 test("bestiário: catálogo consolida vinte espécies, sem repetir IDs, ficha e habitats",()=>{
-  assert.equal(REGIONAL_CREATURE_KINDS.length,20);
+  assert.equal(REGIONAL_CREATURE_KINDS.length,30);
   assert.equal(SECOND_WAVE_KINDS.length,10);
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,20);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,30);
   for(const [kind,hp,attack,region,cave] of profiles){
     const species=CREATURE_CATALOG[kind];
     assert.equal(species.maxHp,hp,kind);
@@ -37,11 +37,11 @@ test("bestiário: catálogo consolida vinte espécies, sem repetir IDs, ficha e 
 });
 test("bestiário: todas as espécies novas participam da cavernagem correta",()=>{
   for(const [kind,,,,cave] of profiles)assert.ok(caveMonsterKinds(cave as CaveTheme).includes(kind));
-  assert.equal(caveMonsterKinds("marsh").length,3);
+  assert.equal(caveMonsterKinds("marsh").length,4);
   assert.equal(caveMonsterKinds("glacial").length,6);
   assert.equal(caveMonsterKinds("basalt").length,4);
   assert.equal(caveMonsterKinds("coastal").length,4);
-  assert.equal(caveMonsterKinds("desert").length,3);
+  assert.equal(caveMonsterKinds("desert").length,13);
   assert.equal(caveThemeAt(19000,17000),"marsh");
 });
 test("cavernas: segunda onda participa de encontros e a entrada continua transitável",()=>{

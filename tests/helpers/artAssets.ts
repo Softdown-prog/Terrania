@@ -1,3 +1,4 @@
+import { renderWave3Creature } from "../../src/render/regionalWave3.ts";
 import { renderWave2Creature } from "../../src/render/regionalWave2.ts";
 /**
  * Registro das peças de arte procedural auditadas por tests/art-contract.test.ts.
@@ -5,7 +6,7 @@ import { renderWave2Creature } from "../../src/render/regionalWave2.ts";
  * Os pisos abaixo são ~80 % do pior caso das peças boas que já existem: mínimo de acabamento, não meta.
  */
 import { renderRegionalCreature } from "../../src/render/regionalCreatures.ts";
-import { REGIONAL_CREATURE_KINDS, SECOND_WAVE_KINDS, CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
+import { REGIONAL_CREATURE_KINDS, SECOND_WAVE_KINDS, SOUTH_COMMON_KINDS, CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
 import { renderHero, renderSlime } from "../../src/render/actors.ts";
 import { renderNpc } from "../../src/render/npcs.ts";
 import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
@@ -44,6 +45,10 @@ export const ASSETS: ArtAsset[] = [
   ...SECOND_WAVE_KINDS.map<ArtAsset>(kind => ({
     id:"nova espécie "+kind,tier:"creature",fn:"renderWave2Creature",
     draw:c=>renderWave2Creature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"wave2-"+kind},0,0,1)
+  })),
+  ...SOUTH_COMMON_KINDS.map<ArtAsset>(kind=>({
+    id:"sul comum "+kind,tier:"creature",fn:"renderWave3Creature",
+    draw:c=>renderWave3Creature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"wave3-"+kind},0,0,1)
   })),
   ...NPCS.filter(n => n.kind !== "sign" && n.kind !== "door").map<ArtAsset>(npc =>
     ({ id: "npc " + npc.id, tier: "character", fn: "renderNpc", draw: c => renderNpc(c, npc, 0, 0, false, 1) })),
