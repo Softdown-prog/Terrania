@@ -278,9 +278,112 @@ export function generateChunkCanvas(
 }
 
 
-/** Atlas no inventário: usa getTile, como o mundo real. Visões amplas são
- * amostradas e não representam passagens garantidas em cada pixel.
- * A renderização só é chamada com a aba Mapa aberta, nunca no loop Phaser.
+/** Atlas stays within the inventory's own Canvas. Terrain is drawn once
+ * for each viewport; live markers can change without re-sampling 65k tiles.
+ * The palette and noise are shared with the game's procedural terrain art.
+ */
+const atlasTextures = new WeakMap<HTMLCanvasElement, { key: string; surface: HTMLCanvasElement }>();
+
+function paintAtlasTerrain(ctx: CanvasRenderingContext2D, seed: number,
+  scale: AtlasScale, centerX: number, centerY: number, spanTiles: number): void {
+  const width = ctx.canvas.width, height = ctx.canvas.height;
+  const cells = 128, cellWidth = width / cells, cellHeight = height / cells;
+  const startX = centerX - spanTiles / 2, startY = centerY - spanTiles / 2;
+  const sampleOffsets = scale === "nearby" ? [0] : [-0.22, 0.22];
+  const grounds: readonly Ground[] = ["grass", "forest", "path", "sand", "water"];
+
+  ctx.clearRect(0, 0, width, height);
+  for (let cy = 0; cy < cells; cy++) for (let cx = 0; cx < cells; cx++) {
+    const tx = startX + (cx + 0.5) / cells * spanTiles;
+    const ty = startY + (cy + 0.5) / cells * spanTiles;
+    if (Math.abs(tx) >= WORLD_HALF_TILES || Math.abs(ty) >= WORLD_HALF_TILES) {
+      // Collision safety bound is not a physical coast; don't draw water here.
+      ctx.fillStyle = "#182727";
+    } else {
+      const tally: Record<Ground, number> = { grass: 0, forest: 0, path: 0, sand: 0, water: 0 };
+      let obstacle = false;
+      for (const oy of sampleOffsets) for (const ox of sampleOffsets) {
+        const tile = getTile(
+          Math.floor(tx + ox * spanTiles / cells),
+          Math.floor(ty + oy * spanTiles / cells), seed,
+        );
+        tally[tile.ground]++;
+        if (scale === "nearby" && (tile.tree || tile.rock)) obstacle = true;
+      }
+      const ground = grounds.reduce((best, candidate) =>
+        tally[candidate] > tally[best] ? candidate : best, "grass" as Ground);
+      const hue = valueNoise(tx / (spanTiles / 12), ty / (spanTiles / 12), seed + 17);
+      ctx.fillStyle = obstacle ? "#263f32" : mix(
+        PALETTE[ground].lo, PALETTE[ground].hi, 0.2 + hue * 0.7,
+      );
+    }
+    ctx.fillRect(cx * cellWidth, cy * cellHeight, cellWidth, cellHeight);
+  }
+
+  // Soft old-map shading draws over real ground without inventing elevation.
+  const patina = ctx.createRadialGradient(width / 2, height / 2, 18,
+    width / 2, height / 2, width * 0.73);
+  patina.addColorStop(0, "rgba(14,27,25,0)");
+  patina.addColorStop(1, "rgba(10,22,21,.23)");
+  ctx.fillStyle = patina;
+  ctx.fillRect(0, 0, width, height);
+
+  if (scale === "world") {
+    ctx.strokeStyle = "#fff0c78a";
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 2; i++) {
+      const px = Math.round(i * width / 3) + 0.5;
+      const py = Math.round(i * height / 3) + 0.5;
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(width, py); ctx.stroke();
+    }
+    const abbreviations = ["NO", "N", "NE", "O", "C", "L", "SO", "S", "SE"];
+    ctx.font = "bold 10px Georgia, serif";
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#132822";
+    for (let i = 0; i < abbreviations.length; i++)
+      ctx.fillText(abbreviations[i] ?? "", (i % 3) * width / 3 + 4.5,
+        Math.floor(i / 3) * height / 3 + 14.5);
+    ctx.fillStyle = "#ffedc5";
+    for (let i = 0; i < abbreviations.length; i++)
+      ctx.fillText(abbreviations[i] ?? "", (i % 3) * width / 3 + 4,
+        Math.floor(i / 3) * height / 3 + 14);
+  }
+
+  // Compass rose: same procedural Canvas primitives as character ornaments.
+  const cx = width - 18, cy = 21;
+  ctx.fillStyle = "#142d2cbb";
+  ctx.beginPath(); ctx.arc(cx, cy, 14, 0, TAU); ctx.fill();
+  ctx.strokeStyle = "#e4cb93";
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(cx, cy, 12.5, 0, TAU); ctx.stroke();
+  ctx.fillStyle = "#f6e3b4";
+  ctx.beginPath(); ctx.moveTo(cx, cy - 10); ctx.lineTo(cx + 4, cy + 6);
+  ctx.lineTo(cx, cy + 3); ctx.lineTo(cx - 4, cy + 6); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#7e5640";
+  ctx.beginPath(); ctx.moveTo(cx, cy + 3); ctx.lineTo(cx + 4, cy + 6);
+  ctx.lineTo(cx, cy - 10); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#fff6da";
+  ctx.font = "bold 8px Georgia, serif";
+  ctx.textAlign = "center";
+  ctx.fillText("N", cx, cy - 15);
+
+  // Engraved map edge and cardinal ticks.
+  ctx.strokeStyle = "#dfc995a3";
+  ctx.strokeRect(1.5, 1.5, width - 3, height - 3);
+  for (let i = 1; i < 8; i++) {
+    const p = i * width / 8;
+    ctx.beginPath();
+    ctx.moveTo(p, 2); ctx.lineTo(p, 6);
+    ctx.moveTo(p, height - 2); ctx.lineTo(p, height - 6);
+    ctx.moveTo(2, p); ctx.lineTo(6, p);
+    ctx.moveTo(width - 2, p); ctx.lineTo(width - 6, p);
+    ctx.stroke();
+  }
+}
+
+/** Show the actual seed's world and authoritative nearby positions; sampled
+ * wide views communicate geography, not guaranteed paths between pixels.
  */
 export function drawWorldAtlas(
   ctx: CanvasRenderingContext2D, scale: AtlasScale,
@@ -289,62 +392,36 @@ export function drawWorldAtlas(
 ): void {
   const { centerX, centerY, spanTiles } = atlasFrame(scale, tileX, tileY, selectedSector);
   const width = ctx.canvas.width, height = ctx.canvas.height;
-  const cells = 128, cellWidth = width / cells, cellHeight = height / cells;
-  const originX = centerX - spanTiles / 2, originY = centerY - spanTiles / 2;
-  const palette: Record<Ground, string> = {
-    grass: "#789b62", forest: "#3c6647", path: "#baa780",
-    sand: "#d8c894", water: "#286e87",
-  };
+  const key = [seed, scale, centerX, centerY, spanTiles, width, height].join(":");
+  let texture = atlasTextures.get(ctx.canvas);
+  if (!texture || texture.key !== key) {
+    const surface = texture?.surface ?? document.createElement("canvas");
+    surface.width = width;
+    surface.height = height;
+    const surfaceContext = surface.getContext("2d");
+    if (!surfaceContext) return;
+    paintAtlasTerrain(surfaceContext, seed, scale, centerX, centerY, spanTiles);
+    texture = { key, surface };
+    atlasTextures.set(ctx.canvas, texture);
+  }
   ctx.clearRect(0, 0, width, height);
-  for (let cy = 0; cy < cells; cy++) for (let cx = 0; cx < cells; cx++) {
-    const tx = originX + (cx + 0.5) / cells * spanTiles;
-    const ty = originY + (cy + 0.5) / cells * spanTiles;
-    if (Math.abs(tx) >= WORLD_HALF_TILES || Math.abs(ty) >= WORLD_HALF_TILES) {
-      ctx.fillStyle = "#182727"; // movement safety limit, not water or invented coastline
-    } else {
-      // Sample multiple real terrain points in large views; local view preserves detail.
-      const offsets = scale === "nearby" ? [0] : [-0.22, 0.22];
-      const tally: Record<Ground, number> = { grass: 0, forest: 0, path: 0, sand: 0, water: 0 };
-      let blocking = false;
-      for (const oy of offsets) for (const ox of offsets) {
-        const sampled = getTile(Math.floor(tx + ox * spanTiles / cells),
-          Math.floor(ty + oy * spanTiles / cells), seed);
-        tally[sampled.ground]++;
-        if (scale === "nearby" && (sampled.tree || sampled.rock)) blocking = true;
-      }
-      const dominant = (Object.keys(tally) as Ground[]).reduce((a, b) =>
-        tally[a] >= tally[b] ? a : b);
-      ctx.fillStyle = blocking ? "#233a2f" : palette[dominant];
-    }
-    ctx.fillRect(cx * cellWidth, cy * cellHeight, cellWidth, cellHeight);
-  }
-  if (scale === "world") {
-    ctx.strokeStyle = "#f8ecc170";
-    ctx.lineWidth = 1;
-    for (let i = 1; i <= 2; i++) {
-      const pos = i * width / 3;
-      ctx.beginPath(); ctx.moveTo(pos, 0); ctx.lineTo(pos, height); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, i * height / 3); ctx.lineTo(width, i * height / 3); ctx.stroke();
-    }
-    const labels = ["NO", "N", "NE", "O", "C", "L", "SO", "S", "SE"];
-    ctx.font = "bold 11px system-ui"; ctx.textAlign = "left";
-    ctx.fillStyle = "#fff5d8";
-    for (let i = 0; i < labels.length; i++)
-      ctx.fillText(labels[i] ?? "", (i % 3) * width / 3 + 4,
-        Math.floor(i / 3) * height / 3 + 14);
-  }
+  ctx.drawImage(texture.surface, 0, 0);
+  const startX = centerX - spanTiles / 2, startY = centerY - spanTiles / 2;
   const mark = (x: number, y: number, color: string, size: number): void => {
-    const px = (x - originX) / spanTiles * width;
-    const py = (y - originY) / spanTiles * height;
+    const px = (x - startX) / spanTiles * width;
+    const py = (y - startY) / spanTiles * height;
     if (px < 0 || px > width || py < 0 || py > height) return;
-    ctx.fillStyle = "#14201d";
-    ctx.fillRect(px - size / 2 - 2, py - size / 2 - 2, size + 4, size + 4);
+    ctx.fillStyle = "#142922";
+    ctx.beginPath(); ctx.arc(px, py, size / 2 + 2, 0, TAU); ctx.fill();
+    ctx.strokeStyle = "#f1e6bb";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(px, py, size / 2 + 1, 0, TAU); ctx.stroke();
     ctx.fillStyle = color;
-    ctx.fillRect(px - size / 2, py - size / 2, size, size);
+    ctx.fillRect(Math.round(px - size / 2), Math.round(py - size / 2), size, size);
   };
   mark(Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE),
     Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE), "#ffe0a1", 5);
   for (const other of players) mark(other.tileX, other.tileY, "#eac5ff", 4);
-  // Self marker is always painted last and is driven by the server in online rooms.
+  // Own position wins over an overlapping village or another nearby player.
   mark(tileX, tileY, "#ffffff", 6);
 }
