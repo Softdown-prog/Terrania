@@ -66,10 +66,15 @@ export class RegionalMonster extends Slime {
       (world.speedAt?.(this.x, this.y) ?? 1) < 1 ? 1.3 : 1;
     this.frozenFloor = speedBoost > 1;
     // Não ultrapassar paredes nem caçar alvos de outras áreas do mundo.
+    const frightened=ability.special==="sand-throw" && this.hp<=ability.maxHp*.35;
     const keepRange=ability.range > 32 && (ability.nature === "magical" ||
       ability.special === "ink" || ability.special === "tidal-lightning" ||
-      ability.special === "spore-cloud" || ability.special === "lava-burst");
-    if (d < 245 && d > (keepRange ? 70 : 22) &&
+      ability.special === "spore-cloud" || ability.special === "lava-burst" ||
+      ability.special === "sling" || frightened);
+    if(frightened && d>0.001 && d<70 && this.hurtTime<=0) {
+      // Retreat while throwing grit, without bypassing the normal collision grid.
+      moveBody(this,-dx/d*ability.speed*dt,-dy/d*ability.speed*dt,world);
+    } else if (d < 245 && d > (keepRange ? 70 : 22) &&
         this.hurtTime <= 0 && d > .001) {
       const vultureRage=ability.special==="carrion-dive" && hero.hp < hero.maxHp*.5 ? 1.45 : 1;
       const speed = ability.speed * speedBoost * vultureRage * (1 + .18 * this.enraged);
