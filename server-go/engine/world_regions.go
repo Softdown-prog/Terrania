@@ -89,3 +89,54 @@ func classifyBiome(p terrainProfile) string {
     if p.humidity>.54 { return "woodland" }
     return "meadow"
 }
+
+
+// RegionalLandmark is a physical, non-interactive world object shared with client collision.
+type RegionalLandmark struct {
+	Kind string
+	TileX, TileY int
+	X, Y float64
+}
+
+const landmarkCellTiles = 256
+
+func regionalLandmarkCandidate(cellX, cellY int, seed uint32) (int, int, bool) {
+	if Hash2(cellX, cellY, seed+1703) >= 0.38 { return 0, 0, false }
+	tx := cellX*landmarkCellTiles + 40 + int(math.Floor(Hash2(cellX*3, cellY, seed+1711)*176))
+	ty := cellY*landmarkCellTiles + 40 + int(math.Floor(Hash2(cellX, cellY*3, seed+1733)*176))
+	return tx, ty, true
+}
+
+// RegionalLandmarkForCell mirrors src/world/regionalLandmarks.ts without UI imports.
+func (w World) RegionalLandmarkForCell(cellX, cellY int) (RegionalLandmark, bool) {
+	tx, ty, ok := regionalLandmarkCandidate(cellX, cellY, w.Seed)
+	if !ok { return RegionalLandmark{}, false }
+	region := worldRegion(getRegionWeights(float64(tx), float64(ty)))
+	kind := ""
+	switch region {
+	case "north": kind="ice-spire"
+	case "south": kind="desert-obelisk"
+	case "east": kind="coast-beacon"
+	case "west": kind="mountain-monolith"
+	default: return RegionalLandmark{}, false
+	}
+	for dy:=-1;dy<=1;dy++ {
+		for dx:=-1;dx<=1;dx++ {
+			if !w.Walkable(tx+dx, ty+dy) { return RegionalLandmark{}, false }
+		}
+	}
+	return RegionalLandmark{Kind:kind, TileX:tx, TileY:ty,
+		X:(float64(tx)+0.5)*TileSize, Y:(float64(ty)+0.5)*TileSize}, true
+}
+
+// The 40-tile cell margin makes this O(1) and avoids neighboring cell probes.
+func (w World) regionalLandmarkBlocks(x,y,r float64) bool {
+	cellX:=int(math.Floor(math.Floor(x/TileSize)/landmarkCellTiles))
+	cellY:=int(math.Floor(math.Floor(y/TileSize)/landmarkCellTiles))
+	tx,ty,ok:=regionalLandmarkCandidate(cellX,cellY,w.Seed)
+	if !ok { return false }
+	px,py:=(float64(tx)+.5)*TileSize,(float64(ty)+.5)*TileSize
+	if math.Abs(x-px)>=r+16||math.Abs(y-py)>=r+16 { return false }
+	landmark,exists:=w.RegionalLandmarkForCell(cellX,cellY)
+	return exists&&math.Hypot(x-landmark.X,y-landmark.Y)<r+14
+}
