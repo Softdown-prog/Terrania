@@ -20,7 +20,8 @@ export function getTile(tx: number, ty: number, seed: number): Tile {
   const center = Math.hypot(tx, ty) < 7;
   const river = Math.sin(tx * 0.04 + seed * 0.0001) * 7 + 15;
   // Duas vias principais de exploração atravessam os quadrantes. Sem árvore/rocha/água.
-  const mainRoute = Math.abs(ty - Math.sin(tx / 1200) * 7) < 1.5 ||
+  const mainRoute = Math.abs(tx) < 1.5 || Math.abs(ty) < 1.5 ||
+    Math.abs(ty - Math.sin(tx / 1200) * 7) < 1.5 ||
     Math.abs(tx - Math.sin(ty / 1200) * 7) < 1.5;
   const villageTrail = Math.abs(ty - Math.sin(tx * 0.055) * 1.35) < 0.54;
   let ground: Ground = 'grass';
@@ -42,7 +43,8 @@ export function getTile(tx: number, ty: number, seed: number): Tile {
   else if (!center && p.weights.center > 0.3 &&
       (Math.abs(ty - river) < 3.25 || terrain < 0.322)) ground = 'sand';
   else if (!center && forest > 0.52 && p.humidity > 0.39) ground = 'forest';
-  const tree = ground === 'forest' && detail > 0.80;
+  const tree = (ground === 'forest' && detail > 0.80) ||
+    (biome === 'tundra' && ground === 'grass' && detail > 0.987);
   const rock = ground !== 'water' && ground !== 'path' && !center &&
     detail < (p.weights.west > 0.4 ? 0.09 : 0.022);
   return { ground, biome: ground === 'path' ? 'trail' :

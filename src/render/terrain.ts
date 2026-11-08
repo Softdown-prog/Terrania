@@ -10,6 +10,7 @@ import { hash2, valueNoise } from "../world/random.ts";
 import { ellipse, mix, TAU } from "./draw.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
+import type { Biome } from "../world/biomes.ts";
 
 /** Pares (sombra, luz) por tipo de solo; a mistura segue ruído contínuo. */
 const PALETTE: Record<Ground, { lo: string; hi: string }> = {
@@ -18,6 +19,21 @@ const PALETTE: Record<Ground, { lo: string; hi: string }> = {
   path: { lo: "#a48f69", hi: "#c3af86" },
   sand: { lo: "#b4a97e", hi: "#cfc59a" },
   water: { lo: "#2c6068", hi: "#3d7e83" },
+};
+/** Same biome key produced by the shared engine; only color belongs to render. */
+const BIOME_PALETTE: Partial<Record<Biome, { lo: string; hi: string }>> = {
+  tundra: { lo: "#889d91", hi: "#b3c7c0" },
+  snowfield: { lo: "#cadce2", hi: "#f0f3ec" },
+  "frozen-lake": { lo: "#7db4c7", hi: "#b8d9e4" },
+  dunes: { lo: "#cfac63", hi: "#eed28a" },
+  ruins: { lo: "#a99577", hi: "#c7b38b" },
+  oasis: { lo: "#668c60", hi: "#96ae7b" },
+  beach: { lo: "#d9bd8f", hi: "#edd9b0" },
+  island: { lo: "#b8b98d", hi: "#d9d4a8" },
+  "open-sea": { lo: "#1d526d", hi: "#327d9b" },
+  highlands: { lo: "#6a736f", hi: "#9a9b86" },
+  "stone-peak": { lo: "#686d77", hi: "#a5a8aa" },
+  volcanic: { lo: "#4e4d50", hi: "#78625e" },
 };
 const WATER_DEEP = "#265867", WATER_MID = "#337279", WATER_SHALLOW = "#4f9a96";
 const PAD = 2;
@@ -53,13 +69,14 @@ class Grid {
 function drawGround(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number, x: number, y: number, seed: number): void {
   const tile = grid.at(lx, ly);
   const [tx, ty] = grid.global(lx, ly);
-  const p = PALETTE[tile.ground];
+  const p = BIOME_PALETTE[tile.biome] ?? PALETTE[tile.ground];
   // Ruído em duas escalas: manchas largas e variação fina.
   const n = valueNoise(tx / 6, ty / 6, seed + 17) * 0.65 + valueNoise(tx / 1.8, ty / 1.8, seed + 23) * 0.35;
   let color = mix(p.lo, p.hi, n);
   if (tile.ground === "water") {
     const d = grid.shore(lx, ly);
-    color = mix(d === 1 ? WATER_SHALLOW : d === 2 ? WATER_MID : WATER_DEEP, mix(p.lo, p.hi, n), 0.35);
+    color = tile.biome === "frozen-lake" || tile.biome === "open-sea" ? mix(p.lo, p.hi, n) :
+      mix(d === 1 ? WATER_SHALLOW : d === 2 ? WATER_MID : WATER_DEEP, mix(p.lo, p.hi, n), 0.35);
   }
   ctx.fillStyle = color;
   ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
@@ -150,6 +167,23 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
       ctx.fillRect(bx + 3.2, by - 15, 1.8, 5);
     }
   });
+
+  if (tile.biome === "snowfield" || tile.biome === "tundra") {
+    ctx.fillStyle = "rgba(252,255,255,.48)";
+    for (let i = 0; i < 5; i++)
+      ctx.fillRect(x + r(300 + i) * 28 + 2, y + r(310 + i) * 28 + 2, 1.4, 1.4);
+  } else if (tile.biome === "dunes") {
+    ctx.strokeStyle = "rgba(255,234,180,.35)";
+    ctx.beginPath();
+    ctx.moveTo(x + 2, y + 12 + r(315) * 4);
+    ctx.quadraticCurveTo(x + 16, y + 5 + r(316) * 6, x + 30, y + 12 + r(317) * 4);
+    ctx.stroke();
+  } else if (tile.biome === "stone-peak" || tile.biome === "volcanic") {
+    ctx.strokeStyle = "rgba(28,34,43,.3)";
+    ctx.beginPath();
+    ctx.moveTo(x + 3, y + 27); ctx.lineTo(x + 15, y + 7);
+    ctx.lineTo(x + 20, y + 17); ctx.lineTo(x + 29, y + 4); ctx.stroke();
+  }
 
   if (tile.ground === "grass" || tile.ground === "forest") {
     const forest = tile.ground === "forest";
@@ -302,19 +336,26 @@ function paintAtlasTerrain(ctx: CanvasRenderingContext2D, seed: number,
     } else {
       const tally: Record<Ground, number> = { grass: 0, forest: 0, path: 0, sand: 0, water: 0 };
       let obstacle = false;
+      let chosenBiome: Biome = "meadow";
+      let bestBiomeVotes = 0;
+      const biomeVotes: Partial<Record<Biome, number>> = {};
       for (const oy of sampleOffsets) for (const ox of sampleOffsets) {
         const tile = getTile(
           Math.floor(tx + ox * spanTiles / cells),
           Math.floor(ty + oy * spanTiles / cells), seed,
         );
         tally[tile.ground]++;
+        const votes = (biomeVotes[tile.biome] ?? 0) + 1;
+        biomeVotes[tile.biome] = votes;
+        if (votes > bestBiomeVotes) { bestBiomeVotes = votes; chosenBiome = tile.biome; }
         if (scale === "nearby" && (tile.tree || tile.rock)) obstacle = true;
       }
       const ground = grounds.reduce((best, candidate) =>
         tally[candidate] > tally[best] ? candidate : best, "grass" as Ground);
       const hue = valueNoise(tx / (spanTiles / 12), ty / (spanTiles / 12), seed + 17);
+      const palette = BIOME_PALETTE[chosenBiome] ?? PALETTE[ground];
       ctx.fillStyle = obstacle ? "#263f32" : mix(
-        PALETTE[ground].lo, PALETTE[ground].hi, 0.2 + hue * 0.7,
+        palette.lo, palette.hi, 0.2 + hue * 0.7,
       );
     }
     ctx.fillRect(cx * cellWidth, cy * cellHeight, cellWidth, cellHeight);

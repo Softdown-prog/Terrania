@@ -7,7 +7,9 @@ import { OnlinePlayersComponent } from './online-players.component.ts';
 import { runtimeConfig } from './runtime-config.ts';
 import { renderHero } from '../render/actors.ts';
 import { drawWorldAtlas } from '../render/terrain.ts';
-import { atlasFrame, GROUND_NAMES, sectorIndex, surveySectors, type AtlasScale } from '../world/atlas.ts';
+import { atlasFrame, GROUND_NAMES, BIOME_NAMES, sectorIndex, surveySectors, type AtlasScale } from '../world/atlas.ts';
+import { REGIONS, getWorldRegion } from '../world/regions.ts';
+import { getRegionDifficulty } from '../world/regionDifficulty.ts';
 import { getTile } from '../world/terrain.ts';
 
 @Component({ selector: 'app-game-page', templateUrl: './game-page.html', styleUrl: '../style.css',
@@ -27,6 +29,18 @@ export class GamePageComponent implements AfterViewInit {
   readonly atlasSectors = computed(() => surveySectors(this.hud.seed()));
   readonly currentAtlasSector = computed(() =>
     this.atlasSectors()[sectorIndex(this.hud.mapTile().x, this.hud.mapTile().y)]!);
+  readonly currentWorldRegion = computed(() => {
+    const { x, y } = this.hud.mapTile();
+    return REGIONS[getWorldRegion(x, y)];
+  });
+  readonly currentWorldDifficulty = computed(() => {
+    const { x, y } = this.hud.mapTile();
+    return getRegionDifficulty(x, y).tier;
+  });
+  readonly currentBiomeName = computed(() => {
+    const { x, y } = this.hud.mapTile();
+    return BIOME_NAMES[getTile(x, y, this.hud.seed()).biome];
+  });
   readonly currentAtlasGround = computed(() => {
     const { x, y } = this.hud.mapTile();
     return GROUND_NAMES[getTile(x, y, this.hud.seed()).ground];
