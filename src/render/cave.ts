@@ -1,8 +1,8 @@
 import type { GearState } from "../engine/Equipment.ts";
 import type { WeaponId } from "../engine/Weapons.ts";
 import { renderHero } from "./actors.ts";
-import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
-import { hash2 } from "../world/random.ts";
+import { ellipse, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
+import { hash2, valueNoise } from "../world/random.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { CaveEntrance, CaveTheme } from "../world/caves.ts";
 import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH, type CaveFloor, type CaveRoom } from "../engine/CaveRoom.ts";
@@ -15,86 +15,206 @@ const PALETTE: Record<CaveTheme, { ground: string; light: string; wall: string; 
   basalt: { ground:"#505660",light:"#8d9194",wall:"#222b32",rim:"#677682",water:"#36505c",accent:"#b5c0b9" },
   marsh: { ground:"#494f3d",light:"#89926b",wall:"#262c29",rim:"#637355",water:"#36594b",accent:"#afd887" },
 };
-const wallCache = new WeakMap<CaveFloor,HTMLCanvasElement>();
 
-function paintFloor(floor:CaveFloor):HTMLCanvasElement {
-  const source=document.createElement("canvas");
-  source.width=CAVE_WIDTH*TILE_SIZE;
-  source.height=CAVE_HEIGHT*TILE_SIZE;
-  const c=source.getContext("2d");
-  if(!c)return source;
-  const p=PALETTE[floor.theme];
-  const seed=floor.entrance.seed ^ floor.entrance.tileX ^ Math.imul(floor.entrance.tileY,29);
-  for(let y=0;y<CAVE_HEIGHT;y++)for(let x=0;x<CAVE_WIDTH;x++){
-    const tile=floor.at(x,y),px=x*TILE_SIZE,py=y*TILE_SIZE;
-    const n=hash2(x,y,seed+43),detail=hash2(x,y,seed+83);
-    if(tile===0){
-      c.fillStyle=mix(p.wall,p.ground,n*.36);
-      c.fillRect(px,py,32,32);
-      // Rock relief: beveled walls, fissures and corner shadow.
-      const bevel=c.createLinearGradient(px,py,px+28,py+30);
-      bevel.addColorStop(0,rgba(p.rim,.38));bevel.addColorStop(.4,rgba(p.wall,.12));
-      bevel.addColorStop(1,rgba("#071317",.7));
-      c.fillStyle=bevel;c.fillRect(px,py,32,32);
-      c.strokeStyle=rgba(p.rim,.24+n*.2);c.lineWidth=1.1;
-      c.beginPath();c.moveTo(px+3,py+12+n*7);c.lineTo(px+13,py+5);
-      c.lineTo(px+22,py+10);c.lineTo(px+27,py+3);c.stroke();
-      c.strokeStyle=rgba("#0c1517",.5);c.beginPath();
-      c.moveTo(px+9,py+30);c.lineTo(px+16,py+20);c.lineTo(px+30,py+23);c.stroke();
-      if(floor.at(x,y+1)===1||floor.at(x,y+1)===2){
-        c.fillStyle=p.rim;c.fillRect(px,py+28,32,3);
-        c.fillStyle=rgba("#071317",.5);c.fillRect(px,py+31,32,1);
+const wallCache = new WeakMap<CaveFloor, HTMLCanvasElement>();
+const atlasCache = new WeakMap<CaveFloor, { width: number; height: number; canvas: HTMLCanvasElement }>();
+const OUTLINE = "#142a2a";
+const GLINT = "#fff6dc";
+
+/** A cave is rock first, a tile grid second: the light/noise must continue across tile edges. */
+function paintFloor(floor: CaveFloor): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = CAVE_WIDTH * TILE_SIZE;
+  canvas.height = CAVE_HEIGHT * TILE_SIZE;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return canvas;
+  const p = PALETTE[floor.theme];
+  const seed = floor.entrance.seed ^ Math.imul(floor.entrance.tileX, 313) ^
+    Math.imul(floor.entrance.tileY, 971);
+  const n = (x: number, y: number, salt: number): number => hash2(x, y, seed + salt);
+  const isOpen = (x: number, y: number): boolean => floor.at(x, y) !== 0;
+
+  ctx.fillStyle = p.wall;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let y = 0; y < CAVE_HEIGHT; y++) for (let x = 0; x < CAVE_WIDTH; x++) {
+    const tile = floor.at(x, y), sx = x * TILE_SIZE, sy = y * TILE_SIZE;
+    const fine = n(x, y, 37);
+    // The same low-frequency noise continues through adjacent tiles; no checkerboard.
+    const wide = valueNoise((x + .5) / 7, (y + .5) / 7, seed + 51);
+    if (tile === 0) {
+      ctx.fillStyle = mix(p.wall, p.ground, .02 + wide * .15);
+      ctx.fillRect(sx, sy, TILE_SIZE, TILE_SIZE);
+      // Large mineral seams are uncommon, not stamped identically on every block.
+      if (fine > .88) {
+        const ox = 4 + n(x, y, 72) * 13, oy = 4 + n(x, y, 76) * 14;
+        ctx.strokeStyle = rgba(shade(p.rim, -.36), .5);
+        ctx.lineWidth = 1.1 + n(x, y, 82);
+        ctx.beginPath();
+        ctx.moveTo(sx + ox, sy + oy);
+        ctx.quadraticCurveTo(sx + ox + 11, sy + oy - 4, sx + ox + 10, sy + oy + 8);
+        ctx.quadraticCurveTo(sx + ox + 9, sy + oy + 11, sx + ox + 17, sy + oy + 19);
+        ctx.stroke();
       }
-      if(floor.at(x+1,y)===1) {
-        c.fillStyle=rgba(p.rim,.55);c.fillRect(px+29,py,3,32);
+      // Only the edge facing a chamber receives rock relief and an upper-left highlight.
+      if (isOpen(x, y + 1)) {
+        const lip = ctx.createLinearGradient(0, sy + 17, 0, sy + 32);
+        lip.addColorStop(0, rgba(p.wall, 0));
+        lip.addColorStop(.55, rgba(p.rim, .48));
+        lip.addColorStop(1, rgba(OUTLINE, .95));
+        ctx.fillStyle = lip;
+        ctx.fillRect(sx, sy + 16, 32, 16);
+        ctx.strokeStyle = rgba(p.light, .57);
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy + 27 + n(x, y, 201) * 1.4);
+        ctx.quadraticCurveTo(sx + 16, sy + 26, sx + 32, sy + 28);
+        ctx.stroke();
+        ctx.fillStyle = rgba(OUTLINE, .37);
+        ctx.fillRect(sx, sy + 30, TILE_SIZE, 2);
       }
-    }else if(tile===2){
-      const w=c.createLinearGradient(px,py,px+32,py+32);
-      w.addColorStop(0,mix(p.water,p.light,n*.27));w.addColorStop(1,mix(p.wall,p.water,.58));
-      c.fillStyle=w;c.fillRect(px,py,32,32);
-      c.strokeStyle=rgba(p.accent,.35);
-      c.beginPath();c.ellipse(px+15,py+17,9+detail*4,3,0,0,TAU);c.stroke();
-      ellipse(c,px+7,py+9,2,1,rgba("#ffffff",.2));
-    }else{
-      const col=mix(p.ground,p.light,.12+n*.52);
-      c.fillStyle=col;c.fillRect(px,py,32,32);
-      c.strokeStyle=rgba(p.wall,.22);c.lineWidth=.85;
-      c.beginPath();c.moveTo(px+3,py+22+detail*4);c.lineTo(px+10,py+18);
-      c.lineTo(px+17,py+20);c.stroke();
-      // Regional particles: frost, dune dust, wet lichen, mineral grains.
-      const frost=floor.theme==="glacial",wet=floor.theme==="marsh",sand=floor.theme==="desert";
-      for(let j=0;j<5;j++){
-        const gx=px+3+hash2(x*9+j,y,seed+211)*26;
-        const gy=py+3+hash2(x,y*7+j,seed+223)*26;
-        ellipse(c,gx,gy,1+hash2(j,x+y,seed+233)*1.1,.5,
-          rgba(frost?"#e9ffff":wet?"#a8c782":sand?"#f3e0ad":p.accent,.15+(j%3)*.12));
+      if (isOpen(x + 1, y)) {
+        const side = ctx.createLinearGradient(sx + 16, 0, sx + 32, 0);
+        side.addColorStop(0, rgba(p.wall, 0));
+        side.addColorStop(1, rgba(p.rim, .35));
+        ctx.fillStyle = side;
+        ctx.fillRect(sx + 16, sy, 16, TILE_SIZE);
       }
-      if(frost&&n>.79){
-        c.strokeStyle=rgba("#eafaff",.42);c.lineWidth=1;
-        c.beginPath();c.moveTo(px+5,py+6);c.lineTo(px+18,py+16);c.lineTo(px+27,py+12);c.stroke();
+      continue;
+    }
+
+    if (tile === 2) {
+      const water = ctx.createLinearGradient(sx, sy, sx + 32, sy + 32);
+      water.addColorStop(0, mix(p.water, p.light, .18 + wide * .13));
+      water.addColorStop(1, shade(p.water, -.27));
+      ctx.fillStyle = water;
+      ctx.fillRect(sx, sy, TILE_SIZE, TILE_SIZE);
+      if (fine > .44) {
+        const offset = n(x, y, 64) * 11;
+        ctx.strokeStyle = rgba(p.accent, .24 + fine * .17);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx + 3 + offset, sy + 15);
+        ctx.quadraticCurveTo(sx + 12 + offset, sy + 12, sx + 25, sy + 17);
+        ctx.stroke();
       }
-      if(wet&&detail>.82){
-        for(let j=0;j<3;j++){
-          c.strokeStyle=rgba("#a5ce83",.45);c.beginPath();
-          c.moveTo(px+10+j*5,py+26);c.lineTo(px+7+j*6,py+15);c.stroke();
-        }
+      continue;
+    }
+
+    // Floor is a shared expanse: one continuous shade field and sparse local texture.
+    ctx.fillStyle = mix(p.ground, p.light, .11 + wide * .15);
+    ctx.fillRect(sx, sy, TILE_SIZE, TILE_SIZE);
+    if (fine > .77) {
+      const px = sx + 5 + n(x, y, 73) * 19, py = sy + 5 + n(x, y, 79) * 19;
+      ellipse(ctx, px + 1, py + 1, 5, 2.5, rgba(shade(p.ground, -.38), .21));
+      ellipse(ctx, px, py, 3.5, 1.8, rgba(mix(p.light, p.ground, .5), .62));
+      ellipse(ctx, px - 1, py - .7, 1.1, .55, rgba(GLINT, .19));
+    }
+    // A few cracks connect through irregular stone; never repeat a generic chevron.
+    if (fine > .94) {
+      const ox = 3 + n(x, y, 91) * 10, oy = 7 + n(x, y, 95) * 12;
+      ctx.strokeStyle = rgba(OUTLINE, .17);
+      ctx.lineWidth = .8;
+      ctx.beginPath();
+      ctx.moveTo(sx + ox, sy + oy);
+      ctx.quadraticCurveTo(sx + ox + 10, sy + oy - 2, sx + ox + 12, sy + oy + 7);
+      ctx.lineTo(sx + ox + 18, sy + oy + 9);
+      ctx.stroke();
+    }
+
+    // Contact shadows exist only next to physical wall, not at every 32px seam.
+    if (!isOpen(x, y - 1)) {
+      const shadeEdge = ctx.createLinearGradient(0, sy, 0, sy + 19);
+      shadeEdge.addColorStop(0, rgba(OUTLINE, .52));
+      shadeEdge.addColorStop(1, rgba(OUTLINE, 0));
+      ctx.fillStyle = shadeEdge;
+      ctx.fillRect(sx, sy, TILE_SIZE, 19);
+    }
+    if (!isOpen(x - 1, y)) {
+      const shadeEdge = ctx.createLinearGradient(sx, 0, sx + 14, 0);
+      shadeEdge.addColorStop(0, rgba(OUTLINE, .28));
+      shadeEdge.addColorStop(1, rgba(OUTLINE, 0));
+      ctx.fillStyle = shadeEdge;
+      ctx.fillRect(sx, sy, 14, TILE_SIZE);
+    }
+
+    // Theme-specific formations live at wall edges and do not change walkability.
+    const besideWall = !isOpen(x, y + 1) || !isOpen(x - 1, y) || !isOpen(x + 1, y);
+    if (!besideWall || n(x, y, 107) < .83) continue;
+    const cx = sx + 7 + n(x, y, 113) * 17;
+    const cy = sy + 11 + n(x, y, 119) * 14;
+    if (floor.theme === "glacial" || floor.theme === "basalt") {
+      const crystal = ctx.createLinearGradient(cx - 6, cy - 11, cx + 7, cy + 6);
+      crystal.addColorStop(0, floor.theme === "glacial" ? GLINT : p.light);
+      crystal.addColorStop(.45, p.rim);
+      crystal.addColorStop(1, shade(p.wall, -.12));
+      ctx.fillStyle = crystal;
+      ctx.strokeStyle = OUTLINE;
+      ctx.lineWidth = .85;
+      ctx.beginPath();
+      ctx.moveTo(cx - 5, cy + 4); ctx.lineTo(cx - 2, cy - 7);
+      ctx.lineTo(cx + 3, cy - 11); ctx.lineTo(cx + 7, cy - 3);
+      ctx.lineTo(cx + 5, cy + 5); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = rgba(GLINT, .48);
+      ctx.beginPath(); ctx.moveTo(cx - 2, cy - 6); ctx.lineTo(cx + 1, cy + 1); ctx.stroke();
+    } else if (floor.theme === "verdant" || floor.theme === "marsh") {
+      ctx.strokeStyle = shade(p.ground, -.5); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx - 7, cy + 5);
+      ctx.quadraticCurveTo(cx + 1, cy - 11, cx + 7, cy - 3); ctx.stroke();
+      ctx.strokeStyle = rgba(p.accent, .74); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(cx - 5, cy + 3);
+      ctx.quadraticCurveTo(cx + 1, cy - 10, cx + 6, cy - 4); ctx.stroke();
+      if (fine > .91) {
+        ellipse(ctx, cx + 4, cy + 3, 3.2, 1.9, p.accent);
+        ellipse(ctx, cx + 3, cy + 2, 1, .5, GLINT);
       }
+    } else {
+      // Sand and sea: eroded pebbles, pale shells and striated stones.
+      softShadow(ctx, cx, cy + 5, 8, 2, .18);
+      ellipse(ctx, cx, cy + 3, 6, 3, shade(p.ground, -.4), -.14);
+      ellipse(ctx, cx - 1.2, cy + 1.4, 4.7, 2.1, p.rim, -.14);
+      ctx.strokeStyle = rgba(GLINT, .6); ctx.lineWidth = .8;
+      ctx.beginPath(); ctx.moveTo(cx - 4, cy + .7);
+      ctx.quadraticCurveTo(cx - 1, cy - .7, cx + 2, cy + .9); ctx.stroke();
     }
   }
-  // Torchlight at the only return staircase: no invented floor transition.
-  const exitX=(CAVE_EXIT.x+.5)*32, exitY=(CAVE_EXIT.y+.5)*32;
-  softShadow(c,exitX,exitY+5,24,8,.55);
-  const stair=c.createRadialGradient(exitX,exitY,2,exitX,exitY,31);
-  stair.addColorStop(0,"#070d10");stair.addColorStop(.7,p.wall);stair.addColorStop(1,rgba(p.rim,.35));
-  c.fillStyle=stair;c.beginPath();c.ellipse(exitX,exitY,23,12,0,0,TAU);c.fill();
-  for(let j=0;j<4;j++){
-    c.fillStyle=mix(p.rim,p.accent,.18+j*.18);
-    c.fillRect(exitX-14+j*2,exitY-8+j*3,28-j*4,2.5);
+
+  // A cut-stone stairwell, with a dark recess and perspective rather than a flat circle.
+  const ex = (CAVE_EXIT.x + .5) * TILE_SIZE;
+  const ey = (CAVE_EXIT.y + .5) * TILE_SIZE;
+  ctx.save(); ctx.translate(ex, ey);
+  const aura = ctx.createRadialGradient(0, 0, 4, 0, 0, 49);
+  aura.addColorStop(0, rgba(p.accent, .3)); aura.addColorStop(1, rgba(p.accent, 0));
+  ctx.fillStyle = aura; ctx.fillRect(-51, -51, 102, 102);
+  softShadow(ctx, 0, 8, 29, 11, .52);
+  const well = ctx.createLinearGradient(-24, -14, 24, 13);
+  well.addColorStop(0, p.light); well.addColorStop(.34, p.rim);
+  well.addColorStop(1, shade(p.wall, -.4));
+  ellipse(ctx, 0, 0, 27, 16, well);
+  ellipse(ctx, 0, 1, 21, 10.5, OUTLINE);
+  const depth = ctx.createLinearGradient(0, -11, 0, 13);
+  depth.addColorStop(0, shade(p.wall, -.48));
+  depth.addColorStop(1, "#061316");
+  ellipse(ctx, 0, 1, 18.5, 8.3, depth);
+  for (let step = 0; step < 4; step++) {
+    const yy = -7 + step * 3.6, half = 8 + step * 2.3;
+    ctx.fillStyle = mix(p.rim, p.light, .24 + step * .15);
+    ctx.fillRect(-half, yy, half * 2, 3);
+    ctx.fillStyle = rgba(GLINT, .38);
+    ctx.fillRect(-half, yy, half * 2, .8);
+    ctx.fillStyle = rgba(OUTLINE, .5);
+    ctx.fillRect(-half, yy + 2.3, half * 2, 1.1);
   }
-  c.strokeStyle=p.accent;c.lineWidth=1.5;
-  c.beginPath();c.ellipse(exitX,exitY,24,13,0,0,TAU);c.stroke();
-  return source;
+  ctx.strokeStyle = OUTLINE; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(0, 0, 27, 16, 0, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = rgba(GLINT, .72); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.ellipse(0, -1, 24, 13, 0, Math.PI, TAU * .97); ctx.stroke();
+  ctx.restore();
+
+  return canvas;
 }
+
 /** High-fidelity but strictly decoration: entrances don't alter terrain collision. */
 export function drawCaveEntrance(ctx:CanvasRenderingContext2D, entry:CaveEntrance,
   x:number,y:number,time:number):void {
@@ -167,23 +287,119 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   light.addColorStop(1,"rgba(3,8,12,.66)");
   ctx.fillStyle=light;ctx.fillRect(0,0,width,height);
 }
-export function drawCaveAtlas(ctx:CanvasRenderingContext2D, floor:CaveFloor,
-  tileX:number,tileY:number):void {
-  const w=ctx.canvas.width,h=ctx.canvas.height,p=PALETTE[floor.theme];
-  ctx.clearRect(0,0,w,h);ctx.fillStyle="#111b1c";ctx.fillRect(0,0,w,h);
-  const size=Math.floor(Math.min((w-24)/CAVE_WIDTH,(h-24)/CAVE_HEIGHT));
-  const ox=Math.floor((w-CAVE_WIDTH*size)/2),oy=Math.floor((h-CAVE_HEIGHT*size)/2);
-  for(let y=0;y<CAVE_HEIGHT;y++)for(let x=0;x<CAVE_WIDTH;x++){
-    const t=floor.at(x,y);
-    ctx.fillStyle=t===0?p.wall:t===2?p.water:mix(p.ground,p.light,.2+hash2(x,y,floor.entrance.seed)*.5);
-    ctx.fillRect(ox+x*size,oy+y*size,size,size);
+
+/** Readable cartography, not the same terrain screenshot shrunk to a few pixels. */
+function paintCaveAtlasBackground(ctx: CanvasRenderingContext2D, floor: CaveFloor): void {
+  const w = ctx.canvas.width, h = ctx.canvas.height, p = PALETTE[floor.theme];
+  ctx.save();
+  ctx.clearRect(0, 0, w, h);
+  const paper = ctx.createLinearGradient(0, 0, w, h);
+  paper.addColorStop(0, shade(p.wall, -.52));
+  paper.addColorStop(.55, shade(p.wall, -.3));
+  paper.addColorStop(1, "#0b1b20");
+  ctx.fillStyle = paper; ctx.fillRect(0, 0, w, h);
+
+  // Spatial chart grid in the void: distinguish unknown rock from rooms.
+  ctx.strokeStyle = rgba(p.rim, .1); ctx.lineWidth = .7;
+  for (let i = 16; i < w; i += 32) {
+    ctx.beginPath(); ctx.moveTo(i, 10); ctx.lineTo(i, h - 10); ctx.stroke();
   }
-  const marker=(x:number,y:number,color:string):void=>{
-    ctx.fillStyle="#102021";ctx.fillRect(ox+x*size-2,oy+y*size-2,size+4,size+4);
-    ctx.fillStyle=color;ctx.fillRect(ox+x*size-1,oy+y*size-1,size+2,size+2);
-  };
-  marker(CAVE_EXIT.x,CAVE_EXIT.y,"#f6d18e");
-  marker(tileX,tileY,"#ffffff");
-  ctx.strokeStyle=rgba(p.accent,.8);ctx.lineWidth=2;
-  ctx.strokeRect(ox-2,oy-2,CAVE_WIDTH*size+4,CAVE_HEIGHT*size+4);
+  for (let i = 16; i < h; i += 32) {
+    ctx.beginPath(); ctx.moveTo(10, i); ctx.lineTo(w - 10, i); ctx.stroke();
+  }
+  const tileSize = Math.min((w - 26) / CAVE_WIDTH, (h - 48) / CAVE_HEIGHT);
+  const ox = (w - CAVE_WIDTH * tileSize) / 2;
+  const oy = (h - CAVE_HEIGHT * tileSize) / 2 + 5;
+  ctx.save();
+  ctx.translate(ox, oy);
+
+  // The map has *one* color field for passages, independent of tile-to-tile random colors.
+  for (let y = 0; y < CAVE_HEIGHT; y++) for (let x = 0; x < CAVE_WIDTH; x++) {
+    const tile = floor.at(x, y);
+    if (tile === 0) continue;
+    const n = valueNoise(x / 8, y / 8, floor.entrance.seed + 171);
+    ctx.fillStyle = tile === 2 ? mix(p.water, p.rim, .16 + n * .15)
+      : mix(p.ground, p.light, .45 + n * .14);
+    ctx.fillRect(x * tileSize, y * tileSize, tileSize + .25, tileSize + .25);
+    if (tile === 2 && hash2(x, y, floor.entrance.seed + 181) > .52) {
+      ctx.strokeStyle = rgba(p.accent, .55); ctx.lineWidth = .65;
+      ctx.beginPath(); ctx.moveTo(x * tileSize + 1, (y + .5) * tileSize);
+      ctx.lineTo((x + .65) * tileSize, (y + .5) * tileSize); ctx.stroke();
+    }
+  }
+  // Join wall boundaries into a single continuous illuminated outline.
+  ctx.beginPath();
+  for (let y = 0; y < CAVE_HEIGHT; y++) for (let x = 0; x < CAVE_WIDTH; x++) {
+    if (floor.at(x, y) === 0) continue;
+    const sx = x * tileSize, sy = y * tileSize;
+    if (floor.at(x, y - 1) === 0) { ctx.moveTo(sx, sy); ctx.lineTo(sx + tileSize, sy); }
+    if (floor.at(x + 1, y) === 0) { ctx.moveTo(sx + tileSize, sy); ctx.lineTo(sx + tileSize, sy + tileSize); }
+    if (floor.at(x, y + 1) === 0) { ctx.moveTo(sx + tileSize, sy + tileSize); ctx.lineTo(sx, sy + tileSize); }
+    if (floor.at(x - 1, y) === 0) { ctx.moveTo(sx, sy + tileSize); ctx.lineTo(sx, sy); }
+  }
+  ctx.strokeStyle = rgba(OUTLINE, .85); ctx.lineWidth = 2.8; ctx.stroke();
+  ctx.strokeStyle = rgba(p.light, .79); ctx.lineWidth = 1; ctx.stroke();
+  ctx.restore();
+
+  // Frame and north indicator are part of the chart, not interior floor texture.
+  ctx.strokeStyle = rgba(p.rim, .8); ctx.lineWidth = 1.4;
+  ctx.strokeRect(10.5, 10.5, w - 21, h - 21);
+  ctx.strokeStyle = rgba(GLINT, .32); ctx.lineWidth = .7;
+  ctx.strokeRect(13.5, 13.5, w - 27, h - 27);
+  ctx.fillStyle = rgba(GLINT, .84); ctx.textAlign = "left"; ctx.font = "bold 9px system-ui";
+  ctx.fillText("ANDAR -1", 20, 24);
+  ctx.fillStyle = p.accent; ctx.textAlign = "right";
+  ctx.fillText("N ↑", w - 20, 24);
+  ctx.fillStyle = rgba(GLINT, .52); ctx.textAlign = "center"; ctx.font = "8px system-ui";
+  ctx.fillText("SOLO TRANSITÁVEL  ·  ROCHA MACIÇA  ·  ÁGUA", w / 2, h - 17);
+  ctx.restore();
+}
+
+/** Map background is frozen per floor; moving the marker never regenerates 1260 tiles. */
+export function drawCaveAtlas(ctx: CanvasRenderingContext2D, floor: CaveFloor,
+  tileX: number, tileY: number): void {
+  const w = ctx.canvas.width, h = ctx.canvas.height, p = PALETTE[floor.theme];
+  let cached = atlasCache.get(floor);
+  if (!cached || cached.width !== w || cached.height !== h) {
+    const surface = document.createElement("canvas");
+    surface.width = w; surface.height = h;
+    const base = surface.getContext("2d");
+    if (!base) return;
+    paintCaveAtlasBackground(base, floor);
+    cached = { width: w, height: h, canvas: surface };
+    atlasCache.set(floor, cached);
+  }
+  ctx.save();
+  ctx.clearRect(0, 0, w, h);
+  ctx.drawImage(cached.canvas, 0, 0);
+  const size = Math.min((w - 26) / CAVE_WIDTH, (h - 48) / CAVE_HEIGHT);
+  const ox = (w - CAVE_WIDTH * size) / 2;
+  const oy = (h - CAVE_HEIGHT * size) / 2 + 5;
+  const markX = (x: number): number => ox + (x + .5) * size;
+  const markY = (y: number): number => oy + (y + .5) * size;
+  const exitX = markX(CAVE_EXIT.x), exitY = markY(CAVE_EXIT.y);
+  // Gold diamond = return staircase.
+  softShadow(ctx, exitX, exitY + 2, 8, 4, .55);
+  ctx.fillStyle = OUTLINE;
+  ctx.beginPath(); ctx.moveTo(exitX, exitY - 6); ctx.lineTo(exitX + 6, exitY);
+  ctx.lineTo(exitX, exitY + 6); ctx.lineTo(exitX - 6, exitY); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#f6d18e";
+  ctx.beginPath(); ctx.moveTo(exitX, exitY - 4.5); ctx.lineTo(exitX + 4.5, exitY);
+  ctx.lineTo(exitX, exitY + 4.5); ctx.lineTo(exitX - 4.5, exitY); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = GLINT; ctx.fillRect(exitX - .7, exitY - 1, 1.4, 3);
+  // White triangular arrow points north. Dark ring prevents it disappearing on ice.
+  const px = markX(tileX), py = markY(tileY);
+  ctx.fillStyle = rgba(p.accent, .18);
+  ctx.beginPath(); ctx.arc(px, py, 10, 0, TAU); ctx.fill();
+  ctx.strokeStyle = OUTLINE; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(px, py, 7.4, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = rgba(GLINT, .82); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(px, py, 7.4, 0, TAU); ctx.stroke();
+  ctx.fillStyle = OUTLINE;
+  ctx.beginPath(); ctx.moveTo(px, py - 7.3); ctx.lineTo(px + 6, py + 5.4);
+  ctx.lineTo(px, py + 2.6); ctx.lineTo(px - 6, py + 5.4); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = GLINT;
+  ctx.beginPath(); ctx.moveTo(px, py - 6); ctx.lineTo(px + 4.4, py + 3.9);
+  ctx.lineTo(px, py + 1.5); ctx.lineTo(px - 4.4, py + 3.9); ctx.closePath(); ctx.fill();
+  ctx.restore();
 }
