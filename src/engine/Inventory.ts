@@ -1,3 +1,4 @@
+import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../actors/CreatureCatalog.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import type { Player } from "../actors/Player.ts";
 import { FOODS, emptyFoodCounts, normalizeFoodCounts, type FoodCounts, type FoodId,
@@ -25,8 +26,18 @@ export interface InventoryState {
   food?: FoodCounts;
   loadout?: WeaponLoadout;
   gear?: GearState;
+  materials?: Record<string, number>;
 }
 
+const KNOWN_MATERIALS = new Set(REGIONAL_CREATURE_KINDS.flatMap(kind => CREATURE_CATALOG[kind].loot.map(item => item.item)));
+export function normalizeMaterials(value: unknown): Record<string, number> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const out: Record<string, number> = {};
+  for (const [id, quantity] of Object.entries(value))
+    if (KNOWN_MATERIALS.has(id) && typeof quantity === "number" &&
+        Number.isSafeInteger(quantity) && quantity > 0) out[id] = Math.min(99, quantity);
+  return out;
+}
 const count = (value: unknown): number =>
   typeof value === "number" && Number.isSafeInteger(value) && value >= 0
     ? Math.min(MAX_STACK, value) : 0;
@@ -49,11 +60,13 @@ export function normalizeInventory(value: unknown): InventoryState {
     ...(Object.values(food).some(v => v > 0) ? { food } : {}),
     ...(loadout ? { loadout } : {}),
     ...(Object.keys(gear).length ? { gear } : {}),
+    ...(Object.keys(normalizeMaterials(state.materials)).length ? { materials: normalizeMaterials(state.materials) } : {}),
   };
 }
 
 export class Inventory {
   private gelCount = 0;
+  private materialCounts: Record<string, number> = {};
   private potionCount = 0;
   private foods: FoodCounts = emptyFoodCounts();
   private claimed = false;
@@ -63,6 +76,7 @@ export class Inventory {
   constructor(value?: unknown) {
     const state = normalizeInventory(value);
     this.gelCount = state.gel;
+    this.materialCounts = normalizeMaterials(state.materials);
     this.potionCount = state.potion;
     this.foods = normalizeFoodCounts(state.food);
     this.claimed = state.questRewardClaimed;
@@ -71,6 +85,12 @@ export class Inventory {
   }
 
   get gel(): number { return this.gelCount; }
+  get materials(): Readonly<Record<string, number>> { return { ...this.materialCounts }; }
+  addMaterial(id: string): boolean {
+    if (!KNOWN_MATERIALS.has(id) || (this.materialCounts[id] ?? 0) >= MAX_STACK) return false;
+    this.materialCounts[id] = (this.materialCounts[id] ?? 0) + 1;
+    return true;
+  }
   get potion(): number { return this.potionCount; }
   get food(): FoodCounts { return { ...this.foods }; }
   get questRewardClaimed(): boolean { return this.claimed; }
@@ -159,6 +179,7 @@ export class Inventory {
       ...(Object.values(this.foods).some(v => v > 0) ? { food: { ...this.foods } } : {}),
       ...(this.weapons.forged ? { loadout: this.weapons } : {}),
       ...(Object.keys(this.equippedGear).length ? { gear: this.equippedGear } : {}),
+      ...(Object.keys(this.materialCounts).length ? { materials: { ...this.materialCounts } } : {}),
     };
   }
 }
