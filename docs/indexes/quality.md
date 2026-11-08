@@ -11,7 +11,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
 
-## Todos os arquivos deste módulo (55)
+## Todos os arquivos deste módulo (56)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -62,6 +62,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/regional-creatures.test.ts`](../../tests/regional-creatures.test.ts)
 - [`tests/regional-landmark-art.test.ts`](../../tests/regional-landmark-art.test.ts)
 - [`tests/regional-wave2.test.ts`](../../tests/regional-wave2.test.ts)
+- [`tests/south-common-bestiary.test.ts`](../../tests/south-common-bestiary.test.ts)
 - [`tests/regions.test.ts`](../../tests/regions.test.ts)
 - [`tests/simulation.test.ts`](../../tests/simulation.test.ts)
 - [`tests/site-theme.test.ts`](../../tests/site-theme.test.ts)
