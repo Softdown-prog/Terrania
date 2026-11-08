@@ -50,8 +50,13 @@ export class Player {
   applyStatus(kind: DebuffKind, seconds: number, strength = 1): void {
     if (!Number.isFinite(seconds) || seconds <= 0 || this.hp <= 0) return;
     this.effects[kind] = Math.max(this.effects[kind], Math.min(12, seconds));
-    if (kind === "poison") this.poisonStacks = Math.min(3, this.poisonStacks +
-      (Number.isInteger(strength) && strength > 0 ? strength : 1));
+    if (kind === "poison") {
+      // Viper venom refreshes a fixed 2 HP/s dose; other poisons keep
+      // their existing stacking mechanic (max 3 HP/s).
+      this.poisonStacks = strength > 1
+        ? Math.max(this.poisonStacks, Math.min(3, Math.floor(strength)))
+        : Math.min(3, this.poisonStacks + 1);
+    }
   }
   private advanceDebuffs(dt: number): void {
     if (this.effects.poison > 0 && this.hp > 0) {
