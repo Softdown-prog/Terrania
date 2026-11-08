@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
-import { MOUNTS, MOUNT_IDS } from '../actors/MountCatalog.ts';
+import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL } from '../actors/MountCatalog.ts';
 import type { MountAction, MountView } from '../engine/MountStable.ts';
 import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
@@ -42,6 +42,8 @@ type InventoryTab = 'bag' | 'equipment' | 'map';
 @Injectable()
 export class HudService implements GameUi {
   readonly mountCatalog = MOUNTS;
+  readonly ridingLevelRequirement = RIDING_LEVEL;
+  readonly stableUpgradeCost = STABLE_UPGRADE_GEL;
   readonly mountIds = MOUNT_IDS;
   readonly mountView = signal<MountView>({
     stableTier:0,ridingTier:0,owned:[],active:null,stamina:0,maxStamina:0,

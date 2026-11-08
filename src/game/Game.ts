@@ -28,7 +28,7 @@ import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
 import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import { levelForExperience } from "../engine/Experience.ts";
-import { STABLE_MASTER,WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE,
+import { WILD_WARHORSE,WILD_APPLES,MOUNT_INTERACT_DISTANCE,
   sampleMountCaptureLoot,type MountAction,type MountActionResult } from "../engine/MountStable.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/Experience.ts";
