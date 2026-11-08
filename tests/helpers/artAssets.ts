@@ -4,6 +4,8 @@
  * Os pisos abaixo são ~80 % do pior caso das peças boas que já existem: mínimo de acabamento, não meta.
  */
 import { renderRegionalCreature } from "../../src/render/regionalCreatures.ts";
+import { renderMount, renderStableFence } from "../../src/render/mounts.ts";
+import { MOUNTS, MOUNT_IDS } from "../../src/actors/MountCatalog.ts";
 import { REGIONAL_CREATURE_KINDS, CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
 import { renderHero, renderSlime } from "../../src/render/actors.ts";
 import { renderNpc } from "../../src/render/npcs.ts";
@@ -38,6 +40,12 @@ export const ASSETS: ArtAsset[] = [
   { id: "hero", tier: "character", fn: "renderHero", draw: c => renderHero(c, hero, 0, 0, 1) },
   { id: "hero com conjunto", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, gear: kit }, 0, 0, 1) },
   { id: "slime", tier: "creature", fn: "renderSlime", draw: c => renderSlime(c, { hp: 3, bounce: 0.2, id: "s1" }, 0, 0, {}) },
+  ...MOUNT_IDS.map<ArtAsset>(id => ({
+    id:"montaria "+id,tier:"creature",fn:"renderMount",
+    draw:c=>renderMount(c,id,0,0,1),
+  })),
+  {id:"cercado de estábulo",tier:"structure",fn:"renderStableFence",
+    draw:c=>renderStableFence(c,0,0,true)},
   ...REGIONAL_CREATURE_KINDS.map<ArtAsset>(kind => ({id:"monstro "+kind,tier:"creature",fn:"renderRegionalCreature",
     draw:c=>renderRegionalCreature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"art-"+kind},0,0,1)})),
   ...NPCS.filter(n => n.kind !== "sign" && n.kind !== "door").map<ArtAsset>(npc =>

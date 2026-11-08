@@ -12,6 +12,9 @@ import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
 import { drawInterior } from '../render/interior.ts';
 import { drawCaveEntrance, drawCaveView } from '../render/cave.ts';
+import { renderMount, renderStableFence } from '../render/mounts.ts';
+import { STABLE_MASTER, WILD_WARHORSE, WILD_APPLES } from '../engine/MountStable.ts';
+import type { MountId } from '../actors/MountCatalog.ts';
 import { caveEntrancesInArea } from '../world/caves.ts';
 import { TILE_SIZE } from '../world/terrain.ts';
 import type { CaveRoom } from '../engine/CaveRoom.ts';
@@ -69,7 +72,8 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   player: HeroVisual & { x: number; y: number }, mobs: ReadonlyArray<Slime>,
   time = 0, animated = false,
   drops: ReadonlyArray<LootDrop> = [], effects?: Effects,
-  playerGear?: GearState, playerWeapon?: WeaponId): void {
+  playerGear?: GearState, playerWeapon?: WeaponId,
+  mount: MountId | null = null, wildHorse=true, stableBuilt=false, appleVisible=false): void {
   ctx.fillStyle = '#506f50'; ctx.fillRect(0, 0, width, height);
   world.render(ctx, cameraX, cameraY, width, height, time, animated);
   const left = cameraX - width / 2, top = cameraY - height / 2;
@@ -86,6 +90,25 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
     Math.floor((cameraX+width/2+35)/TILE_SIZE), Math.floor((cameraY+height/2+35)/TILE_SIZE), world.seed)) {
     actors.push({y:entry.y,draw:()=>drawCaveEntrance(ctx,entry,entry.x-left,entry.y-top,time)});
   }
+  if (Math.abs(STABLE_MASTER.x-cameraX)<width/2+65 &&
+      Math.abs(STABLE_MASTER.y-cameraY)<height/2+65)
+    actors.push({y:STABLE_MASTER.y+30,draw:()=>renderStableFence(ctx,
+      STABLE_MASTER.x-left,STABLE_MASTER.y-top+30,stableBuilt)});
+  if(wildHorse && Math.abs(WILD_WARHORSE.x-cameraX)<width/2+70 &&
+      Math.abs(WILD_WARHORSE.y-cameraY)<height/2+80)
+    actors.push({y:WILD_WARHORSE.y,draw:()=>renderMount(ctx,"warhorse",
+      WILD_WARHORSE.x-left,WILD_WARHORSE.y-top,time)});
+  if(appleVisible && Math.abs(WILD_APPLES.x-cameraX)<width/2+90 &&
+      Math.abs(WILD_APPLES.y-cameraY)<height/2+90)
+    actors.push({y:WILD_APPLES.y,draw:()=>{
+      const sx=WILD_APPLES.x-left,sy=WILD_APPLES.y-top;
+      renderScenery(ctx,{kind:"tree",x:WILD_APPLES.x,y:WILD_APPLES.y,variant:1},sx,sy,time);
+      ctx.fillStyle="#c84335";ctx.strokeStyle="#fff6dc";ctx.lineWidth=1;
+      for(const offset of [-13,7,18]){
+        ctx.beginPath();ctx.arc(sx+offset,sy-29+(offset%3)*3,3,0,Math.PI*2);
+        ctx.fill();ctx.stroke();
+      }
+    }});
   for (const npc of NPCS) {
     if (Math.abs(npc.x - cameraX) > width / 2 + 40 || Math.abs(npc.y - cameraY) > height / 2 + 65) continue;
     actors.push({ y: npc.y, draw: () =>
@@ -110,8 +133,12 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
     actors.push({ y: drop.y, draw: () =>
       renderGel(ctx, drop.x - left, drop.y - top, time) });
   }
-  actors.push({ y: player.y, draw: () => renderHero(ctx,
-    { ...player, gear: playerGear, equippedWeapon: playerWeapon }, player.x - left, player.y - top, time) });
+  actors.push({ y: player.y, draw: () => {
+    if(mount)renderMount(ctx,mount,player.x-left,player.y-top,time);
+    renderHero(ctx,
+      { ...player, gear: playerGear, equippedWeapon: playerWeapon },
+      player.x-left,player.y-top-(mount?19:0),time);
+  } });
   actors.sort((a, b) => a.y - b.y);
   for (const actor of actors) actor.draw();
 }
@@ -249,10 +276,12 @@ export class CanvasScene {
     time: number, effects: Effects,
     destination: Point | null = null, drops: ReadonlyArray<LootDrop> = [],
     combatTargetId: string | null = null, playerGear?: GearState,
-    playerWeapon?: WeaponId): void {
+    playerWeapon?: WeaponId,
+    mount: MountId | null = null, wildHorse=true, stableBuilt=false, appleVisible=false): void {
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale, 0, 0);
-    drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, time, effects.enabled, drops, effects, playerGear, playerWeapon);
+    drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, time, effects.enabled, drops, effects, playerGear, playerWeapon,
+      mount,wildHorse,stableBuilt,appleVisible);
     // Original Terrania visual: um anel dourado procedural, nunca arte copiada.
     if (combatTargetId) {
       const target = mobs.find(mob => mob.id === combatTargetId);

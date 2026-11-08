@@ -601,6 +601,10 @@ export class Game {
       targetId,
       this.sim.inventory.gear,
       this.sim.inventory.loadout.equipped,
+      this.sim.mounts.active,
+      !this.sim.mounts.has("warhorse"),
+      this.sim.mounts.stableTier>0,
+      this.sim.mounts.quest?.apple!==true && !!this.sim.mounts.quest,
     );
   }
   destroy(): void {
