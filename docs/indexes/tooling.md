@@ -12,7 +12,7 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 - [`scripts/mcp/server.mjs`](../../scripts/mcp/server.mjs)
 
-## Todos os arquivos deste módulo (24)
+## Todos os arquivos deste módulo (25)
 
 - [`.github/workflows/autoscale-lab.yml`](../../.github/workflows/autoscale-lab.yml)
 - [`.github/workflows/capacity-lab.yml`](../../.github/workflows/capacity-lab.yml)
@@ -22,6 +22,7 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`.github/workflows/deploy-vps.yml`](../../.github/workflows/deploy-vps.yml)
 - [`.github/workflows/go-engine.yml`](../../.github/workflows/go-engine.yml)
 - [`.github/workflows/online-smoke.yml`](../../.github/workflows/online-smoke.yml)
+- [`.github/workflows/postgres-market.yml`](../../.github/workflows/postgres-market.yml)
 - [`.github/workflows/pre-main-suite.yml`](../../.github/workflows/pre-main-suite.yml)
 - [`.github/workflows/qa-bot.yml`](../../.github/workflows/qa-bot.yml)
 - [`.github/workflows/region-cluster.yml`](../../.github/workflows/region-cluster.yml)
