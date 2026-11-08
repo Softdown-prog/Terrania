@@ -113,9 +113,28 @@ Playwright desktop/Android, antes de liberar merge.
 
 ## Terceiro lote — criaturas comuns do Sul (21–30)
 
-Este lote foi especificado por fichas textuais, **sem uma nova imagem de
-referência anexada**. Os desenhos são interpretações procedurais das descrições,
-e não cópias fiéis de uma terceira sprite sheet.
+O criador forneceu a ficha completa e, em seguida, a imagem autoral
+da terceira sprite sheet 5×2, numerada 21–30. A referência visual é usada
+para preservar proporções, trajes, postura, paleta e anatomia; **não é importada
+como textura em produção**. Os dez desenhos são reconstruídos com geometria
+Canvas 2D em src/render/regionalWave3.ts.
+
+### Diretrizes visuais fundamentadas na folha autoral
+
+- 21: rato grande, pardo e peludo, cauda rosada longa, patas curtas e bigodes.
+- 22: goblin verde com turbante claro, adaga curva e bolsa de saqueador.
+- 23: orc corpulento de armadura tribal, clava com ponta de osso.
+- 24: troll alto e cor de barro, membros longos, textura de argila seca.
+- 25: pequeno viajante de capuz areia, bolsa e funda de pedrinhas.
+- 26: patrulheiro com robes brancos/bege e lança longa, não armadura verde.
+- 27: espírito de fogo dourado flutuante; **não tem asas de morcego**.
+- 28: víbora ocre enrolada, cabeça erguida, chifres e manchas romboidais.
+- 29: abutre com asas recolhidas, cabeça rosada e bico escuro, pousado em galho.
+- 30: cacto antropomorfo verde, braços ramificados, espinhos e flor rosa/dourada.
+
+Não confundir verificação automática de complexidade da arte com equivalência
+pixel a pixel: contraste, volume e silhueta continuam sujeitos a revisão visual
+de screenshots em desktop e Android.
 
 | # | Criatura | HP | Ataque | Bioma de superfície | Cripta |
 | ---: | --- | ---: | ---: | --- | --- |
