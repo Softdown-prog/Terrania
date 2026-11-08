@@ -11,7 +11,7 @@ import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
 import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
-import { drawCaveExitStair, drawCaveFormation } from "../../src/render/caveDetails.ts";
+import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
 import type { RegionalLandmarkKind } from "../../src/world/regionalLandmarks.ts";
 import { NPCS } from "../../src/world/npcs.ts";
@@ -57,6 +57,11 @@ export const ASSETS: ArtAsset[] = [
         draw: c => drawCaveFormation(c, theme, 0, 0, .61) },
       { id: "escada subterrânea " + theme, tier: "prop", fn: "drawCaveExitStair",
         draw: c => drawCaveExitStair(c, theme, 0, 0) },
+      ...(["south", "east"] as const).map<ArtAsset>(side => ({
+        id: "face rochosa " + theme + " " + side,
+        tier: "prop", fn: "drawCaveWallFace",
+        draw: c => drawCaveWallFace(c, theme, 0, 0, side, .61),
+      })),
     ]),
   ...([
     ["verdant","hole"],["glacial","hole"],["desert","stairs"],

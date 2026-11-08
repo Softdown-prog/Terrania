@@ -198,3 +198,88 @@ export function drawCaveExitStair(ctx: CanvasRenderingContext2D, theme: CaveThem
   ellipse(ctx, -17, -9, 2, .75, rgba(GLINT, .48));
   ctx.restore();
 }
+
+
+/**
+ * A face de rocha é uma peça de 32px que acompanha a borda do terreno.
+ * A silhueta se conecta nas pontas, mas é irregular no meio; não desenha
+ * grade nem modifica passabilidade. Orientação leste gira o mesmo relevo.
+ */
+export function drawCaveWallFace(ctx: CanvasRenderingContext2D, theme: CaveTheme,
+  sx: number, sy: number, side: "south" | "east" = "south", variation = .5): void {
+  const p = CAVE_PALETTE[theme];
+  const v = Math.max(0, Math.min(1, Number.isFinite(variation) ? variation : .5));
+  const outline = (): void => {
+    const ripple = (v - .5) * 3;
+    ctx.beginPath();
+    ctx.moveTo(-16.5, -4);
+    ctx.quadraticCurveTo(-13, -8 + ripple, -8, -6);
+    ctx.quadraticCurveTo(-3, -9 - ripple, 1, -7 + ripple);
+    ctx.quadraticCurveTo(7, -4 - ripple, 10, -6);
+    ctx.quadraticCurveTo(14, -6 + ripple, 16.5, -4);
+    ctx.lineTo(16.5, 2);
+    ctx.quadraticCurveTo(5, 2.8, -2, 1.6);
+    ctx.quadraticCurveTo(-10, 2.4, -16.5, 2);
+    ctx.closePath();
+  };
+  ctx.save();
+  ctx.translate(sx, sy);
+  if (side === "east") ctx.rotate(-Math.PI / 2);
+  // 1. Contato e oclusão projetados do lado transitável.
+  softShadow(ctx, 0, 1, 18, 3.8, .24);
+  // 2. Silhueta de basalto/terra talhada em curva, não um retângulo com borda reta.
+  // 3. Faceta de volume em três tons com luz superior esquerda.
+  const stone = ctx.createLinearGradient(-11, -9, 9, 3);
+  stone.addColorStop(0, mix(p.light, GLINT, .18));
+  stone.addColorStop(.4, p.rim);
+  stone.addColorStop(1, shade(p.wall, -.24));
+  outline();
+  ctx.fillStyle = stone;
+  ctx.fill();
+  // 4. Material recortado pela borda irregular.
+  ctx.save();
+  outline();
+  ctx.clip();
+  for (let i = 0; i < 4; i++) {
+    const x = -14 + i * 9 + v * 2;
+    ctx.strokeStyle = rgba(shade(p.ground, -.32 + i * .12), .55);
+    ctx.lineWidth = .65 + i * .12;
+    ctx.beginPath();
+    ctx.moveTo(x - 3, -8);
+    ctx.quadraticCurveTo(x + 1, -1, x + 5, 5);
+    ctx.stroke();
+  }
+  const cut = ctx.createLinearGradient(0, -7, 0, 3);
+  cut.addColorStop(0, rgba(p.light, .35));
+  cut.addColorStop(1, rgba(p.wall, .52));
+  ctx.fillStyle = cut;
+  ctx.beginPath();
+  ctx.moveTo(-5, -5);
+  ctx.quadraticCurveTo(3, -8 + v * 2, 9, -3);
+  ctx.lineTo(6, 1);
+  ctx.quadraticCurveTo(2, -2, -5, -5);
+  ctx.fill();
+  ctx.restore();
+  // 5. Fenda mineral com 3 passadas, seguindo a mesma curvatura.
+  for (const [width, color] of [[2.7, OUTLINE], [1.65, p.ground], [.65, p.light]] as const) {
+    ctx.lineWidth = width; ctx.strokeStyle = color;
+    ctx.beginPath(); ctx.moveTo(-14, -1);
+    ctx.quadraticCurveTo(-4, 1.4 + v, 6, -1);
+    ctx.quadraticCurveTo(11, -2.4, 14, -1);
+    ctx.stroke();
+  }
+  // 6. Oclusão ambiente entre a rocha e o espaço aberto.
+  ctx.strokeStyle = rgba(OUTLINE, .52); ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(-15, 2); ctx.quadraticCurveTo(1, 3, 15, 2); ctx.stroke();
+  // 7. Contorno externo escuro separa rocha e piso.
+  outline(); ctx.strokeStyle = OUTLINE; ctx.lineWidth = 1.05; ctx.stroke();
+  // 8. Lascas internas tornam a parede espessa, não uma linha sintética.
+  ellipse(ctx, -8 + v * 3, -3, 2.2, .9, rgba(p.accent, .36));
+  ellipse(ctx, 6, -4, 2.9, .85, rgba(shade(p.rim, -.17), .42));
+  // 9. Reflexos discretos somente no bordo esquerdo superior.
+  ctx.strokeStyle = rgba(GLINT, .59); ctx.lineWidth = .8;
+  ctx.beginPath(); ctx.moveTo(-15, -4.7);
+  ctx.quadraticCurveTo(-12, -8 + v, -8, -6.7); ctx.stroke();
+  ellipse(ctx, -10, -6.1, 1.3, .55, rgba(GLINT, .47));
+  ctx.restore();
+}

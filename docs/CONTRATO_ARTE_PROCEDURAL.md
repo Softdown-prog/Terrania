@@ -124,3 +124,11 @@ enganosamente homogênea. `npm run art:preview` agora gera também
 `cavernas-paredes.png`: cada uma das seis regiões é fotografada junto a uma
 parede **real**, escolhida pela planta transitável da própria caverna. Não
 aprovar a qualidade ambiental usando somente o retrato perto da escada.
+
+### Faces de parede auditadas
+
+As bordas de rocha deixaram de ser apenas retângulos e linhas dentro de
+`paintFloor`. `drawCaveWallFace` fornece uma silhueta de pedra facetada,
+sombra de contato, veios recortados, fenda em três passadas e contorno
+irregular, para bordas ao sul e leste. Cada orientação de cada bioma é
+registrada como peça `prop`; os pisos do portão permanecem intactos.

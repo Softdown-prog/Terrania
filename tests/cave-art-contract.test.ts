@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { CaveRoom, CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH } from "../src/engine/CaveRoom.ts";
 import { drawCaveAtlas, drawCaveView } from "../src/render/cave.ts";
-import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation } from "../src/render/caveDetails.ts";
+import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../src/render/caveDetails.ts";
 import type { CaveEntrance, CaveTheme } from "../src/world/caves.ts";
 import { Recorder, withFakeDocument } from "./helpers/recordingContext.ts";
 import { ASSETS, FLOORS, NOT_AN_ASSET } from "./helpers/artAssets.ts";
@@ -33,13 +33,17 @@ test("arte de cavernas: formações e escadas estão realmente registradas nos s
   for (const theme of THEMES) {
     const formation = ASSETS.find(a => a.id === "formação subterrânea " + theme);
     const stair = ASSETS.find(a => a.id === "escada subterrânea " + theme);
+    const walls = (["south", "east"] as const)
+      .map(side => ASSETS.find(a => a.id === "face rochosa " + theme + " " + side));
+    assert.ok(walls.every(Boolean), "cada tema exige duas faces de rocha auditadas");
     assert.equal(formation?.tier, "prop");
     assert.equal(formation.fn, "drawCaveFormation");
     assert.equal(stair?.tier, "prop");
     assert.equal(stair.fn, "drawCaveExitStair");
     assert.ok(!(formation.fn in NOT_AN_ASSET));
     assert.ok(!(stair.fn in NOT_AN_ASSET));
-    for (const item of [formation, stair]) {
+    for (const item of [formation, stair, ...walls]) {
+      assert.ok(item, "peça ausente no registro");
       const m = record(item.draw);
       assert.ok(m.clips >= 1, item.id + ": material deve ser recortado com clip()");
       assert.ok(m.gradients >= FLOORS.prop.gradients, item.id + ": sem volume");
@@ -53,6 +57,7 @@ test("arte de cavernas: formações e escadas estão realmente registradas nos s
   const src = readFileSync("src/render/cave.ts", "utf8");
   assert.match(src, /drawCaveFormation\s*\(\s*ctx\s*,/, "o piso deve usar a formação auditada, não uma cópia simplificada");
   assert.match(src, /drawCaveExitStair\s*\(\s*ctx\s*,/, "a saída deve usar a escada auditada");
+  assert.match(src, /drawCaveWallFace\s*\(\s*ctx\s*,/, "paredes devem usar as faces auditadas");
 });
 
 test("arte de cavernas: temas têm materiais próprios e contraste de luz", () => {

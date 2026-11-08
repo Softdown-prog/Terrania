@@ -3,7 +3,7 @@ import type { GearState } from "../engine/Equipment.ts";
 import type { WeaponId } from "../engine/Weapons.ts";
 import { renderHero } from "./actors.ts";
 import { ellipse, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
-import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation } from "./caveDetails.ts";
+import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "./caveDetails.ts";
 import { hash2, valueNoise } from "../world/random.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { CaveEntrance } from "../world/caves.ts";
@@ -51,30 +51,12 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
         ctx.quadraticCurveTo(sx + ox + 9, sy + oy + 11, sx + ox + 17, sy + oy + 19);
         ctx.stroke();
       }
-      // Only the edge facing a chamber receives rock relief and an upper-left highlight.
-      if (isOpen(x, y + 1)) {
-        const lip = ctx.createLinearGradient(0, sy + 17, 0, sy + 32);
-        lip.addColorStop(0, rgba(p.wall, 0));
-        lip.addColorStop(.55, rgba(p.rim, .48));
-        lip.addColorStop(1, rgba(OUTLINE, .95));
-        ctx.fillStyle = lip;
-        ctx.fillRect(sx, sy + 16, 32, 16);
-        ctx.strokeStyle = rgba(p.light, .57);
-        ctx.lineWidth = 1.3;
-        ctx.beginPath();
-        ctx.moveTo(sx, sy + 27 + n(x, y, 201) * 1.4);
-        ctx.quadraticCurveTo(sx + 16, sy + 26, sx + 32, sy + 28);
-        ctx.stroke();
-        ctx.fillStyle = rgba(OUTLINE, .37);
-        ctx.fillRect(sx, sy + 30, TILE_SIZE, 2);
-      }
-      if (isOpen(x + 1, y)) {
-        const side = ctx.createLinearGradient(sx + 16, 0, sx + 32, 0);
-        side.addColorStop(0, rgba(p.wall, 0));
-        side.addColorStop(1, rgba(p.rim, .35));
-        ctx.fillStyle = side;
-        ctx.fillRect(sx + 16, sy, 16, TILE_SIZE);
-      }
+      // Rock edges are physical, individually audited pieces rather than
+      // straight-line effects hiding inside this unregistered composition.
+      if (isOpen(x, y + 1))
+        drawCaveWallFace(ctx, floor.theme, sx + 16, sy + 30, "south", n(x, y, 201));
+      if (isOpen(x + 1, y))
+        drawCaveWallFace(ctx, floor.theme, sx + 30, sy + 16, "east", n(x, y, 219));
       continue;
     }
 
