@@ -49,9 +49,16 @@ func main() {
 		}
 		spawns=append(spawns,objects)
 	}
+	landmarks:=make([]any,0,8)
+	for _,c:=range []point{{0,-70},{0,-71},{0,70},{0,71},{70,0},{71,0},{-70,0},{-71,0}} {
+		lm,ok:=w.RegionalLandmarkForCell(c.x,c.y)
+		if !ok { landmarks=append(landmarks,nil) } else {
+			landmarks=append(landmarks,[]any{lm.Kind,lm.TileX,lm.TileY,w.CanMove(lm.X,lm.Y)})
+		}
+	}
 	result:=map[string]any{
 		"seed":engine.SeedFromRoom("area-1"),
-		"hashes":hashes,"tiles":tiles,"walkable":walk,"speeds":speeds,
+		"hashes":hashes,"tiles":tiles,"walkable":walk,"speeds":speeds,"landmarks":landmarks,
 		"moving":moving,
 		"strike":[]bool{engine.CanStrike(attacker,engine.Target{X:28,Y:16},w),
 			engine.CanStrike(attacker,engine.Target{X:4,Y:16},w)},

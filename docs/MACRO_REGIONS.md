@@ -14,9 +14,19 @@
 - O mapa mundial é amostrado; não é garantia de caminhos, embarcações ou dungeons existentes.
 - Mudança da geografia para uma mesma seed é intencional nesta fase de desenvolvimento; client e servidor devem ser atualizados juntos.
 
+## Marcos físicos regionais
+`regionalLandmarks.ts` posiciona agulhas de gelo, obeliscos, faróis abandonados e monólitos a partir de células de 256 tiles e seed. Cada objeto só surge em solo alcançável com vizinhança livre; `WorldRenderer` desenha a estrutura, `collision.ts` bloqueia seu corpo e o atlas **próximo** marca suas posições em âmbar. Go experimental calcula os mesmos marcos e colisões e os compara no teste de paridade. Não há entradas de dungeon ou navegação funcional nesses objetos.
+
 ## Pendências explícitas
 - Criaturas regionais autênticas, drops, recursos, chefes, cavernas e dungeons jogáveis.
-- Landmarks físicos e navegáveis com colisão/visual próprios (por enquanto há apenas temas de conteúdo).
+- Interações narrativas e estruturas completas (entradas de cavernas/masmorras, portos funcionais). Monumentos regionais físicos já possuem colisão e posição no atlas próximo.
 - Verificação prática do atlas e do deslocamento em Android; testes de runtime de salas Go em ambientes reais.
 
 O Go experimental agora reproduz a geração regional em `server-go/engine/world_regions.go` e `world.go`; alterações devem manter a paridade TypeScript/Go.
+
+## Verificação desta etapa
+- `tests/landmarks.test.ts`: presença em quatro direções, seed, solo alcançável e corpo sólido.
+- `server-go/engine/regional_landmarks_test.go`: distribuição e colisão equivalentes.
+- `server-go/scripts/ts-reference.mjs` e `cmd/parity`: coordenadas de marcos na comparação TypeScript/Go.
+- `tests/browser/tap-online.spec.ts`: marcador remoto verificado no atlas do inventário (o minimapa sobreposto não faz parte da interface canônica).
+- CI e browser são obrigatórios antes de integrar; resultados não devem ser inferidos apenas da compilação.
