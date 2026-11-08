@@ -1,5 +1,5 @@
 import { CREATURE_CATALOG, type ThirdWaveKind } from "../actors/CreatureCatalog.ts";
-import { clamp01, ellipse, hashString, limb, mix, pill, rgba, softShadow, TAU } from "./draw.ts";
+import { clamp01, ellipse, hashString, mix, pill, rgba, softShadow, TAU } from "./draw.ts";
 
 /** Sprite-sheet 21–30 translated into original Canvas 2D geometry, never a texture. */
 export interface Wave3Visual {
@@ -81,7 +81,7 @@ function duneRat(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):void{
   for(let i=-1;i<=1;i++)stroke(ctx,[[25,-18],[31+i*4,-19+i*4]],c.light,.6);
   grain(ctx,c,seed,18,19,9,-19);
 }
-function sandGoblin(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):void{
+function sandGoblin(ctx:CanvasRenderingContext2D,c:Ramp,_t:number,seed:number):void{
   for(const s of [-1,1])stroke(ctx,[[s*7,-16],[s*10,-5],[s*13,0]],c.dark,6);
   mass(ctx,0,-28,13,17,c);
   ctx.fillStyle=c.accent;ctx.fillRect(-10,-29,20,8);
@@ -99,7 +99,7 @@ function sandGoblin(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):vo
   grain(ctx,c,seed,11,10,14,-29);
   triangle(ctx,[-9,-14,6,-17,9,-13],c.accent);
 }
-function nomadOrc(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):void{
+function nomadOrc(ctx:CanvasRenderingContext2D,c:Ramp,_t:number,seed:number):void{
   for(const s of [-1,1])stroke(ctx,[[s*11,-18],[s*13,-6],[s*15,0]],c.dark,10);
   mass(ctx,0,-31,23,24,c);
   for(const s of [-1,1]){
@@ -133,7 +133,7 @@ function clayTroll(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):voi
     -38+Math.cos(i*2.7)*15,2.8+(i%3)*1.2,2.1,c);
   grain(ctx,c,seed,19,21,14,-36);
 }
-function duneHalfling(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):void{
+function duneHalfling(ctx:CanvasRenderingContext2D,c:Ramp,_t:number,seed:number):void{
   stroke(ctx,[[-7,-16],[-10,-6],[-13,0]],c.dark,6);
   stroke(ctx,[[7,-16],[10,-6],[13,0]],c.dark,6);
   mass(ctx,0,-24,13,16,c);
@@ -152,7 +152,7 @@ function duneHalfling(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):
   stroke(ctx,[[30,-23],[33,-11]],"#7e563b",2);
   grain(ctx,c,seed,10,10,12,-25);
 }
-function oasisRanger(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):void{
+function oasisRanger(ctx:CanvasRenderingContext2D,c:Ramp,_t:number,seed:number):void{
   for(const s of [-1,1])stroke(ctx,[[s*8,-16],[s*11,-5],[s*14,0]],c.dark,6);
   ctx.fillStyle=c.light;ctx.beginPath();ctx.moveTo(-12,-45);ctx.lineTo(15,-45);
   ctx.lineTo(20,0);ctx.lineTo(-21,0);ctx.closePath();ctx.fill();
@@ -210,7 +210,7 @@ function hornedViper(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):v
   }
   grain(ctx,c,seed,16,15,10,-13);
 }
-function southernVulture(ctx:CanvasRenderingContext2D,c:Ramp,t:number,seed:number):void{
+function southernVulture(ctx:CanvasRenderingContext2D,c:Ramp,_t:number,seed:number):void{
   stroke(ctx,[[-28,1],[30,1]],"#69543d",6);
   stroke(ctx,[[5,-4],[7,-13]],c.accent,3.5);
   for(const s of [-1,1])stroke(ctx,[[s*9,-19],[s*11,-7],[s*13,0]],c.accent,4);
