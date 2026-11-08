@@ -172,7 +172,7 @@
             <button id="usePotion" [disabled]="!hud.inventoryAvailable() || hud.inventoryPending() || hud.potions() === 0" (click)="hud.usePotion()" class="primary-button" type="button">Usar poção</button>
             <h3>Alimentação do cavaleiro</h3>
             <p id="foodRegeneration" class="dialog-note">Comida recupera 1 HP a cada 2 segundos, até esgotar sua reserva. Intervalo: 5 segundos. Limite: 60 HP futuros.</p>
-            <p id="foodCooldownStatus" class="dialog-note" role="status">{{ hud.nutrition().cooldown > 0 ? "Próxima refeição em " + Math.ceil(hud.nutrition().cooldown) + "s" : "Pronto para comer" }}</p>
+            <p id="foodCooldownStatus" class="dialog-note" role="status">{{ hud.nutrition().cooldown > 0 ? "Próxima refeição em " + hud.nutrition().cooldown.toFixed(0) + "s" : "Pronto para comer" }}</p>
             @for (id of hud.foodIds; track id) {
               @let item = hud.foodCatalog[id];
               <div class="inventory-item">
