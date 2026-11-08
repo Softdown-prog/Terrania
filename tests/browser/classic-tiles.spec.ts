@@ -65,6 +65,17 @@ test("toque na parede da Casa do Conselho preserva a rota no solo normal", async
   }).toBe(1);
   await page.clock.runFor(64);
   await expect(page.locator("#coords")).toHaveText("X 7 · Y -5");
+  // The minimap's MAPA button legitimately handles taps within its bounds.
+  // Close that overlay using its real control before testing a world route
+  // that crosses the same screen position; never force a tap through the UI.
+  const miniMapToggle = page.locator("#miniMapToggle");
+  await expect(miniMapToggle).toBeVisible();
+  if (await miniMapToggle.getAttribute("aria-expanded") === "true") {
+    if (info.project.name === "android") await miniMapToggle.tap();
+    else await miniMapToggle.click();
+  }
+  await expect(miniMapToggle).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator("#worldMiniMapCanvas")).toHaveCount(0);
   const size = await canvas.boundingBox();
   expect(size).not.toBeNull();
   const tap = (x: number, y: number) => {
