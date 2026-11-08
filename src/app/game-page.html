@@ -33,7 +33,7 @@
           </div>
         </div>
         <div class="quest">
-          <span class="stat-heading">MISSÃO DA CLAREIRA</span
+          <span class="stat-heading">{{ hud.cave() ? "EXPLORAÇÃO · SUBSOLO" : "MISSÃO DA CLAREIRA" }}</span
           ><b id="quest">{{ hud.quest() }}</b>
           <div class="quest-bottom">
             <div class="quest-meter"><div id="questFill" [style.width.%]="hud.questPercent()"></div></div>
@@ -55,7 +55,7 @@
       </nav>
 
 
-      @if (hud.targetCombat()) {
+      @if (hud.targetCombat() && !hud.cave()) {
         <section id="battleSidebar" class="classic-battle" aria-label="Battle List de criaturas visíveis">
           <button id="battleToggle" class="battle-toggle" type="button"
             [attr.aria-expanded]="battleOpen()" aria-controls="battlePanel"
@@ -315,8 +315,8 @@
                   <span id="atlasGround">Região exterior: {{ cave.floor.entrance.theme }}</span>
                   <span id="atlasScaleDetails">Primeiro andar: 42 × 30 tiles</span>
                   <div class="atlas-legend" aria-label="Legenda subterrânea">
-                    <span>□ Você (branco)</span><span>□ Saída (âmbar)</span>
-                    <span>Solo escuro: paredão</span><span>Solo colorido: área transitável</span>
+                    <span>▲ Jogador (branco)</span><span>◆ Escada de retorno (dourado)</span>
+                    <span>Passagens iluminadas</span><span>Rocha escura e água intransponível</span>
                   </div>
                 </div>
               </div>

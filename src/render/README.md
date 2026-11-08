@@ -52,3 +52,17 @@ existentes. O render oferece rochas facetadas, fissuras, minerais, água profund
 musgo, gelo e areia conforme a região, além de entrada exterior por buraco,
 escada ou escadaria. O atlas desenha *somente* a planta daquele andar, com
 jogador e saída; não sobrepõe cartografia da superfície.
+
+**Revisão visual do subsolo (8/11):** o primeiro desenho dos interiores
+exibia uma grade de 32 pixels, fissuras idênticas em quase toda célula e
+um mapa pouco legível. O novo `cave.ts` suaviza a variação de cor entre
+tiles com `valueNoise` contínuo, aplica sombra de contato apenas na borda
+física das paredes, reduz as fissuras repetidas e adiciona formações
+regionalizadas. A escadaria recebe volume em perspectiva. A planta do
+subsolo tem contorno contínuo das câmaras, seta para o herói e marcador
+da saída. Textura de chão e fundo cartográfico são cacheados por
+`CaveFloor` (a posição atual só redesenha os marcadores), sem mudar
+colisões, salas, seeds ou protocolo online. `npm run art:preview`
+agora gera `cavernas-regionais.png` com as **seis** áreas e seus mapas
+reais para revisão comparativa (além de `pecas.png`); os screenshots
+de desktop e Android continuam exigidos antes do merge.
