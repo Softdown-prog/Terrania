@@ -17,12 +17,18 @@ const maxRoomClients = 12;
 const rooms = new Map<string, Room>();
 const clients = new Map<WebSocket, { id: string; room: Room; alive: boolean; count: number; windowStart: number }>();
 let guestNumber = 0;
+/** `new URL` lança para entradas como `//`; uma requisição hostil não pode derrubar o processo. */
+const parseRequestUrl = (raw: string | undefined): URL | null => {
+  try { return new URL(raw ?? '/', 'http://localhost'); } catch { return null; }
+};
 const send = (socket: WebSocket, msg: ServerMessage): void => {
   if (socket.readyState !== WebSocket.OPEN || socket.bufferedAmount > 64_000) return;
   socket.send(JSON.stringify(msg));
 };
 const server = createServer((req, res) => {
-  const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
+  const requestUrl = parseRequestUrl(req.url);
+  if (!requestUrl) { res.writeHead(400); res.end(); return; }
+  const pathname = requestUrl.pathname;
   if (pathname === '/presence') {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Vary', 'Origin');
@@ -46,9 +52,11 @@ const server = createServer((req, res) => {
 });
 const wss = new WebSocketServer({ noServer: true, maxPayload: 512, perMessageDeflate: false });
 server.on('upgrade', (req, socket, head) => {
-  const path = new URL(req.url ?? '/', 'http://localhost');
+  // O Node remove os handlers de erro do socket no upgrade; sem este, um reset de conexão derruba o processo.
+  socket.on('error', () => socket.destroy());
+  const path = parseRequestUrl(req.url);
   const origin = req.headers.origin;
-  if (path.pathname !== '/ws' || !origin || !originList.includes(origin)) {
+  if (!path || path.pathname !== '/ws' || !origin || !originList.includes(origin)) {
     socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
     socket.destroy(); return;
   }
@@ -66,9 +74,11 @@ server.on('upgrade', (req, socket, head) => {
     socket.write('HTTP/1.1 503 Service Unavailable\r\nConnection: close\r\n\r\n');
     socket.destroy(); return;
   }
-  const selectedRoom = room ?? new Room(roomId);
-  rooms.set(roomId, selectedRoom);
   wss.handleUpgrade(req, socket, head, ws => {
+    // A sala só entra no mapa quando o handshake foi aceito; uma rejeição do `ws`
+    // deixaria salas vazias ocupando maxRooms até reiniciar o servidor.
+    const selectedRoom = rooms.get(roomId) ?? new Room(roomId);
+    rooms.set(roomId, selectedRoom);
     const id = randomUUID();
     const name = 'Aventureiro ' + (++guestNumber);
     const tiles = path.searchParams.get('movement') === 'tiles';
@@ -98,34 +108,54 @@ wss.on('connection', ws => {
     let message: unknown;
     try { message = JSON.parse(data.toString('utf8')); }
     catch { ws.close(1007, 'JSON inválido'); return; }
-    if (isValidInput(message)) c.room.receiveInput(c.id, message.x, message.y, message.attack);
-    else if (c.room.guests.get(c.id)?.walking && isValidWalk(message)) c.room.receiveWalk(c.id, message.target);
-    else if (c.room.guests.get(c.id)?.targeting && isValidTarget(message)) c.room.receiveTarget(c.id, message.id);
-    else if (c.room.guests.get(c.id)?.inventory && isValidInventoryMessage(message)) c.room.receiveInventory(c.id, message);
-    else ws.close(1008, 'Comando inválido');
+    try {
+      if (isValidInput(message)) c.room.receiveInput(c.id, message.x, message.y, message.attack);
+      else if (c.room.guests.get(c.id)?.walking && isValidWalk(message)) c.room.receiveWalk(c.id, message.target);
+      else if (c.room.guests.get(c.id)?.targeting && isValidTarget(message)) c.room.receiveTarget(c.id, message.id);
+      else if (c.room.guests.get(c.id)?.inventory && isValidInventoryMessage(message)) c.room.receiveInventory(c.id, message);
+      else ws.close(1008, 'Comando inválido');
+    } catch (error) {
+      console.error('Falha ao processar comando', error);
+      ws.close(1011, 'Erro interno');
+    }
   });
   ws.on('close', () => {
     const c = clients.get(ws);
     if (!c) return;
     clients.delete(ws);
     c.room.remove(c.id);
-    if (c.room.guests.size === 0) rooms.delete(c.room.id);
+    // Compara a instância: uma sala nova com o mesmo id não pode ser removida por um close antigo.
+    if (c.room.guests.size === 0 && rooms.get(c.room.id) === c.room) rooms.delete(c.room.id);
   });
   ws.on('error', () => { /* close lida com a liberação de recursos */ });
 });
+function failRoom(room: Room, error: unknown): void {
+  console.error('Sala ' + room.id + ' encerrada por erro interno', error);
+  if (rooms.get(room.id) === room) rooms.delete(room.id);
+  for (const [ws, c] of clients) if (c.room === room) ws.close(1011, 'Erro interno da sala');
+}
 let previous = Date.now();
 let broadcastClock = 0;
 const gameLoop = setInterval(() => {
   const now = Date.now();
   const dt = Math.min(0.05, Math.max(0, (now - previous) / 1000));
   previous = now;
-  for (const room of rooms.values()) room.tick(dt, now);
+  // Uma sala com defeito é encerrada sozinha; as demais continuam jogando.
+  for (const room of [...rooms.values()]) {
+    try { room.tick(dt, now); }
+    catch (error) { failRoom(room, error); }
+  }
   broadcastClock += dt;
   if (broadcastClock < 0.10) return;
   broadcastClock = 0;
   for (const [ws, c] of clients) {
-    const snap = c.room.snapshotFor(c.id);
-    if (snap) send(ws, { type: 'state', ...snap });
+    try {
+      const snap = c.room.snapshotFor(c.id);
+      if (snap) send(ws, { type: 'state', ...snap });
+    } catch (error) {
+      console.error('Falha ao montar o snapshot', error);
+      ws.close(1011, 'Erro interno');
+    }
   }
 }, 50);
 const heartbeat = setInterval(() => {

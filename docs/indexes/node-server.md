@@ -11,7 +11,7 @@ Backend WebSocket ainda utilizado como referência funcional/produção segundo 
 - [`server/src/main.ts`](../../server/src/main.ts)
 - [`server/src/Room.ts`](../../server/src/Room.ts)
 
-## Todos os arquivos deste módulo (12)
+## Todos os arquivos deste módulo (13)
 
 - [`server/.env.example`](../../server/.env.example)
 - [`server/Dockerfile`](../../server/Dockerfile)
@@ -22,6 +22,7 @@ Backend WebSocket ainda utilizado como referência funcional/produção segundo 
 - [`server/scripts/online-smoke.mjs`](../../server/scripts/online-smoke.mjs)
 - [`server/src/Room.ts`](../../server/src/Room.ts)
 - [`server/src/main.ts`](../../server/src/main.ts)
+- [`server/tests/hardening.test.ts`](../../server/tests/hardening.test.ts)
 - [`server/tests/integration.test.ts`](../../server/tests/integration.test.ts)
 - [`server/tests/room.test.ts`](../../server/tests/room.test.ts)
 - [`server/tsconfig.json`](../../server/tsconfig.json)

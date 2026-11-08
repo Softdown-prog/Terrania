@@ -13,3 +13,6 @@ out-tsc/
 playwright-report/
 test-results/
 src/app/runtime-config.ts
+
+# Saída de build Rust e binários Go locais
+rust/spatial-kernel/target/
