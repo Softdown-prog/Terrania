@@ -1,0 +1,51 @@
+name: Cave art contract and regional preview (no deploy)
+
+on:
+  pull_request:
+    paths:
+      - "src/render/cave.ts"
+      - "src/render/caveDetails.ts"
+      - "tests/art-contract.test.ts"
+      - "tests/cave-art-contract.test.ts"
+      - "tests/helpers/artAssets.ts"
+      - "tests/helpers/recordingContext.ts"
+      - "scripts/art-preview.mjs"
+      - "architecture/modules.json"
+      - "docs/CONTRATO_ARTE_PROCEDURAL.md"
+      - ".github/workflows/cave-art-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cave-contract:
+    name: Art audit, six biomes and image evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install only test dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify module registry and generated indexes
+        run: npm run architecture:check
+      - name: Execute procedural art and all unit regression tests
+        run: npm test
+      - name: Install Chromium for real Canvas captures
+        run: npx playwright install --with-deps chromium
+      - name: Produce six-biome and registered-assets evidence
+        run: npm run art:preview
+      - name: Upload unfiltered art evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terrania-cave-art-contract
+          path: |
+            test-results/art-preview/pecas.png
+            test-results/art-preview/cavernas-regionais.png
+          if-no-files-found: warn
+          retention-days: 14
