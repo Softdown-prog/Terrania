@@ -451,8 +451,11 @@ export class Game {
         this.hud.setCave({floor:cave.floor,
           tileX:Math.floor(cave.player.x/TILE_SIZE),tileY:Math.floor(cave.player.y/TILE_SIZE)});
         this.hud.setNearbyAction(cave.nearExit?"leave":null);
-        this.hud.setBattleCreatures(this.hudBattleRows(),this.classicCombat.targetId);
-        this.hud.setCombatTarget(this.classicCombat.label(cave.monsters));
+        if(this.battleClock>=0.2){
+          this.battleClock=0;
+          this.hud.setBattleCreatures(this.hudBattleRows(),this.classicCombat.targetId);
+          this.hud.setCombatTarget(this.classicCombat.label(cave.monsters));
+        }
         this.scene.renderCave(cave,this.camera.zoom,this.clock,this.navigator.target,
           this.sim.inventory.gear,this.sim.inventory.loadout.equipped);
         return;
