@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Player } from "../src/actors/Player.ts";
-import { RegionalMonster } from "../src/actors/RegionalMonster.ts";
+import { RegionalMonster, regionalSurfaceSpawns } from "../src/actors/RegionalMonster.ts";
+import { CREATURE_CATALOG } from "../src/actors/CreatureCatalog.ts";
+import { getWorldRegion } from "../src/world/regions.ts";
+import { getBiomeAt } from "../src/world/biomes.ts";
+import { caveThemeAt } from "../src/world/caves.ts";
+import { TILE_SIZE, CHUNK_TILES } from "../src/world/terrain.ts";
 import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
 import { CaveRoom } from "../src/engine/CaveRoom.ts";
 import { Inventory } from "../src/engine/Inventory.ts";
@@ -103,4 +108,38 @@ test("materials from both bestiary waves round-trip as owned inventory objects",
   assert.deepEqual(saved.materials,{"Minério de Ferro Bruto":1,"Tridente das Marés":1});
   const reloaded=new Inventory(saved);
   assert.deepEqual(reloaded.materials,inv.materials);
+});
+
+test("surface encounters use habitat at each actual tile, including marsh transition",()=>{
+  let observed=0;
+  for(const [cx,cy] of [[-1550,0],[1550,0],[0,-1550],[0,1550],[1550,1550]]){
+    for(let offset=0;offset<50;offset++){
+      const seed=842136;
+      const x=cx+(cy===0?offset:0),y=cy+(cy!==0?offset:0);
+      for(const mob of regionalSurfaceSpawns(x,y,seed)){
+        const tx=Math.floor(mob.x/TILE_SIZE),ty=Math.floor(mob.y/TILE_SIZE);
+        assert.equal(Math.floor(tx/CHUNK_TILES),x);
+        assert.equal(Math.floor(ty/CHUNK_TILES),y);
+        const def=CREATURE_CATALOG[mob.kind];
+        if(caveThemeAt(tx,ty)==="marsh")
+          assert.ok(def.caveThemes.includes("marsh"));
+        else {
+          assert.equal(def.region,getWorldRegion(tx,ty));
+          assert.ok(def.biomes.includes(getBiomeAt(tx,ty,seed)));
+        }
+        observed++;
+      }
+    }
+  }
+  assert.ok(observed>0);
+});
+
+test("glacial dungeon slows the floor and grants ice wolves their intended speed bonus",()=>{
+  const glacial=new CaveRoom({...entry,theme:"glacial"});
+  assert.ok((glacial.collision.speedAt?.(0,0) ?? 1)<1);
+  const wolf=new RegionalMonster("wolf-ice","glacial-wolf",0,0);
+  const hero=new Player();
+  hero.x=100;hero.y=0;
+  wolf.update(1/60,hero,glacial.collision);
+  assert.equal(wolf.iceSpeedBoost,true);
 });
