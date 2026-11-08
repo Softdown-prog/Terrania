@@ -1,5 +1,6 @@
+import { renderWave3Creature } from "./regionalWave3.ts";
 import { renderWave2Creature } from "./regionalWave2.ts";
-import { CREATURE_CATALOG, SECOND_WAVE_KINDS, type SecondWaveKind, type RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
+import { CREATURE_CATALOG, SECOND_WAVE_KINDS, SOUTH_COMMON_KINDS, type SouthCommonKind, type SecondWaveKind, type RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, hashString, limb, mix, pill, rgba, shade, softShadow, TAU } from "./draw.ts";
 
 export interface RegionalCreatureVisual {
@@ -263,6 +264,10 @@ function drawSerpent(ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void 
 /** Dez silhuetas próprias; volumes, detalhes e animações são geometria Canvas, sem sprites. */
 export function renderRegionalCreature(ctx: CanvasRenderingContext2D,
   creature: RegionalCreatureVisual, sx: number, sy: number, time = 0): void {
+  if(SOUTH_COMMON_KINDS.some(kind=>kind===creature.kind)) {
+    renderWave3Creature(ctx,{...creature,kind:creature.kind as SouthCommonKind},sx,sy,time);
+    return;
+  }
   if (SECOND_WAVE_KINDS.some(kind => kind === creature.kind)) {
     renderWave2Creature(ctx, {...creature,kind:creature.kind as SecondWaveKind},sx,sy,time);
     return;
