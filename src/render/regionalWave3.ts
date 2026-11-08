@@ -14,11 +14,11 @@ const C:Readonly<Record<SouthCommonKind,Palette>>={
   "sand-goblin":{base:"#79935e",light:"#c7d19b",dark:"#4c6844",accent:"#c08b52",eye:"#ffdc6f",extra:"#805e4d"},
   "desert-orc":{base:"#718063",light:"#bec09c",dark:"#36453d",accent:"#b39362",eye:"#f1c76d",extra:"#745243"},
   "clay-troll":{base:"#ac8864",light:"#d7b88e",dark:"#6e5643",accent:"#c79972",eye:"#eac778",extra:"#857c64"},
-  "dune-scout":{base:"#b59374",light:"#ecd0a2",dark:"#6c5547",accent:"#e3ad64",eye:"#e5cc91",extra:"#718963"},
-  "oasis-elf":{base:"#5d9481",light:"#b6d7b0",dark:"#345c4e",accent:"#dcbb71",eye:"#ddf2b8",extra:"#6b9e63"},
-  "mirage-imp":{base:"#aa6fca",light:"#f3bee0",dark:"#5a4787",accent:"#ffce7c",eye:"#fff0b2",extra:"#f6a0a1"},
+  "dune-scout":{base:"#aa8e66",light:"#eed9ab",dark:"#605044",accent:"#d9bb80",eye:"#e5cc91",extra:"#87765d"},
+  "oasis-elf":{base:"#d5c4a2",light:"#f9edcf",dark:"#776451",accent:"#bd995f",eye:"#d5ebc1",extra:"#94806c"},
+  "mirage-imp":{base:"#f4ae51",light:"#fff0a5",dark:"#a85027",accent:"#ffd770",eye:"#fff5b9",extra:"#ee762b"},
   "horned-viper":{base:"#ac915c",light:"#d8c498",dark:"#635d4b",accent:"#c68e54",eye:"#efcc6c",extra:"#8a8f4a"},
-  "carrion-vulture":{base:"#81706c",light:"#c6b0a2",dark:"#3c3d48",accent:"#caaa64",eye:"#ffd777",extra:"#8f625a"},
+  "carrion-vulture":{base:"#54525c",light:"#908c91",dark:"#272933",accent:"#c69b67",eye:"#f0d68b",extra:"#cb8b92"},
   "cactus-sprout":{base:"#428f64",light:"#9ddb92",dark:"#24694f",accent:"#df99b4",eye:"#f9e2a3",extra:"#f3d47e"},
 };
 const OUTLINE="#252a2a",GLOW="#fff5d7";
@@ -142,68 +142,143 @@ function troll(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
   ellipse(ctx,0,-42,3+Math.sin(t)*.3,1.5,c.accent);
 }
 function scout(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
-  for(const s of [-1,1]){
-    line(ctx,s*4,-10,s*8,-1,c,4);
-    line(ctx,s*7,-27,s*16,-16,c,3.5);
+  const linen:Palette={...c,base:"#b5a17b",light:"#f0ddb0",dark:"#6d5d4d"};
+  for(const side of [-1,1]){
+    line(ctx,side*5,-13,side*10,-1,linen,4.1);
+    line(ctx,side*8,-30,side*15,-19,linen,3.7);
+    body(ctx,side*10,-1,5,3,linen);
   }
-  body(ctx,0,-21,10,15,{...c,base:c.extra});
-  body(ctx,0,-39,10,9,c);
-  ctx.strokeStyle=OUTLINE;ctx.lineWidth=3.5;
-  ctx.beginPath();ctx.arc(0,-43,12,Math.PI,TAU);ctx.stroke();
-  tip(ctx,0,-40,12,21,c.accent);
-  body(ctx,-12,-22,6,8,c);
-  eye(ctx,-4,-41,c,1.6);eye(ctx,4,-41,c,1.6);
-  ctx.strokeStyle=c.extra;ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(18,-18);ctx.lineTo(26,-31+Math.sin(t)*1.5);
-  ctx.lineTo(31,-18);ctx.stroke();
-  ctx.strokeStyle=c.accent;ctx.lineWidth=.9;
-  ctx.beginPath();ctx.moveTo(26,-31);ctx.lineTo(27,-18);ctx.stroke();
-  ellipse(ctx,27,-22,2,2,c.light);
-  freckles(ctx,c,15,0,-19,7,9);
+  // Soft brown cloak opening around a smaller traveler.
+  ctx.fillStyle="#796b54";ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.4;
+  ctx.beginPath();ctx.moveTo(-10,-35);ctx.quadraticCurveTo(-18,-21,-14,-7);
+  ctx.lineTo(12,-7);ctx.quadraticCurveTo(17,-25,9,-35);ctx.closePath();ctx.fill();ctx.stroke();
+  body(ctx,0,-23,8.5,14,linen);
+  body(ctx,0,-40,10,10,linen);
+  // A large sand-colored hood frames a tiny face, not a pointed wizard hat.
+  ctx.fillStyle="#b39b6f";ctx.beginPath();
+  ctx.moveTo(-12,-36);ctx.bezierCurveTo(-18,-48,-11,-58,-2,-56);
+  ctx.bezierCurveTo(8,-55,15,-46,13,-33);
+  ctx.lineTo(8,-42);ctx.quadraticCurveTo(0,-48,-8,-40);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  body(ctx,0,-40,7,7,{...c,base:"#ba9277",light:"#edb99a",dark:"#6d574a"});
+  eye(ctx,-3,-41,c,1.55);eye(ctx,4,-41,c,1.55);
+  ctx.strokeStyle="#7c5947";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(-2,-36);ctx.quadraticCurveTo(1,-34,4,-36);ctx.stroke();
+  // Crossed satchel and leather belts: practical nomadic clothing.
+  ctx.strokeStyle="#634c40";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(-9,-32);ctx.lineTo(9,-20);ctx.stroke();
+  body(ctx,-12,-18,6,7,{...linen,base:"#825c42",light:"#b58d63"});
+  ellipse(ctx,-11,-20,2,2,c.accent);
+  for(const side of [-1,1])body(ctx,side*8,-29,3.8,6,linen);
+  // U-shaped sling held on the right, taut pouch with a loaded pebble.
+  ctx.strokeStyle="#58473d";ctx.lineWidth=2.7;
+  ctx.beginPath();ctx.moveTo(17,-18);
+  ctx.quadraticCurveTo(23,-35+Math.sin(t*2)*1.2,27,-32);
+  ctx.quadraticCurveTo(32,-26,32,-16);ctx.stroke();
+  ctx.strokeStyle=c.accent;ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(27,-31);ctx.lineTo(28,-18);ctx.stroke();
+  ellipse(ctx,29,-21,3,2.2,"#8e7c66");
+  freckles(ctx,linen,13,0,-23,7,9);
 }
 function elf(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
-  for(const s of [-1,1]){
-    line(ctx,s*6,-11,s*9,-1,c,5);
-    line(ctx,s*10,-34,s*18,-17,c,4);
+  const robe:Palette={...c,base:"#d7c5a4",light:"#f4ecd6",dark:"#85715a"};
+  const leather:Palette={...c,base:"#806851",light:"#b29975",dark:"#55483d"};
+  for(const side of [-1,1]) {
+    line(ctx,side*6,-12,side*9,-1,leather,5);
+    body(ctx,side*9,-1,6,3.5,leather);
+    line(ctx,side*10,-35,side*18,-19,robe,4.4);
+    body(ctx,side*18,-19,3.7,5,robe);
   }
-  body(ctx,0,-28,12,19,c);
-  body(ctx,0,-49,10,10,c);
-  for(const s of [-1,1]){
-    tip(ctx,s*13,-50,7,8,c.light);
-    body(ctx,s*12,-36,6,4,{...c,base:c.extra});
+  // Long linen robe and windswept split lower hem.
+  ctx.fillStyle="#d4c4a8";ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-10,-35);ctx.lineTo(10,-35);
+  ctx.quadraticCurveTo(11,-20,15,-5);ctx.lineTo(3,-9);
+  ctx.lineTo(0,-1);ctx.lineTo(-4,-11);ctx.lineTo(-14,-6);
+  ctx.quadraticCurveTo(-10,-20,-10,-35);ctx.closePath();ctx.fill();ctx.stroke();
+  body(ctx,0,-31,11,15,robe);
+  ctx.strokeStyle="#9d8c73";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(-6,-33);ctx.lineTo(0,-8);ctx.lineTo(6,-33);ctx.stroke();
+  body(ctx,0,-51,10,11,{...c,base:"#c0a386",light:"#efc9a1"});
+  // Desert headdress with folded cloth; face remains visible.
+  body(ctx,0,-61,11,5,robe);
+  for(let i=0;i<4;i++){
+    ctx.strokeStyle=i%2?"#a89475":"#f7ebcd";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(-10+i,-60+i*2);
+    ctx.quadraticCurveTo(0,-64+i*1.5,11-i,-60+i*2);ctx.stroke();
   }
-  eye(ctx,-5,-51,c,1.9);eye(ctx,5,-51,c,1.9);
-  for(let i=0;i<6;i++){
-    ctx.strokeStyle=i%2?c.accent:c.extra;ctx.lineWidth=1.8;
-    ctx.beginPath();ctx.moveTo(-10+i*4,-34);
-    ctx.lineTo(-13+i*4,-16);ctx.stroke();
+  body(ctx,0,-44,9,3,robe);
+  eye(ctx,-5,-52,c,1.6);eye(ctx,5,-52,c,1.6);
+  for(const side of [-1,1]) {
+    // Small pointed elven ear beneath the headdress.
+    tip(ctx,side*11,-49,3.3,7,c.light);
+    body(ctx,side*10,-34,4,7,leather);
   }
-  line(ctx,22,-11,24,-70,{...c,base:c.extra},2.8);
-  tip(ctx,24,-64,5,17,c.accent);
-  body(ctx,0,-42,8,4,{...c,base:c.extra});
-  freckles(ctx,c,12,0,-29,9,12);
-  ellipse(ctx,24,-70,2,2,rgba(GLOW,.62+Math.sin(t*2)*.16));
+  ctx.strokeStyle="#725e4c";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(-11,-32);ctx.lineTo(10,-25);ctx.stroke();
+  body(ctx,-10,-25,4.3,5,leather);
+  // Long iron-tipped spear on the left (the iconic pose of the reference).
+  line(ctx,-26,-1,-28,-68,{...c,base:"#8a7254",light:"#d1b280"},2.8);
+  tip(ctx,-28,-64,5,16,"#d1d7d7");
+  ctx.strokeStyle="#faf7ec";ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(-28,-76);ctx.lineTo(-28,-62);ctx.stroke();
+  ellipse(ctx,-28,-74,1.2,2,rgba(GLOW,.6+Math.sin(t*2)*.12));
+  freckles(ctx,robe,12,0,-29,8,12);
+}
+function flameLick(ctx:CanvasRenderingContext2D,x:number,y:number,size:number,
+  direction:number,phase:number,outer:string,inner:string):void {
+  ctx.fillStyle=outer;ctx.strokeStyle=rgba("#8f4d29",.4);ctx.lineWidth=.8;
+  const sway=Math.sin(phase)*size*.23;
+  ctx.beginPath();ctx.moveTo(x-size*.6,y);
+  ctx.bezierCurveTo(x-size*.9,y-size*.7,x+direction*size+sway,y-size*1.2,
+    x+direction*size*.24+sway,y-size*1.85);
+  ctx.bezierCurveTo(x+size*.62,y-size*.95,x+size*.9,y-size*.42,x+size*.52,y);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=inner;
+  ctx.beginPath();ctx.moveTo(x-size*.25,y);
+  ctx.quadraticCurveTo(x+size*.2+sway,y-size*.85,x+size*.04+sway,y-size*1.35);
+  ctx.quadraticCurveTo(x+size*.65,y-size*.45,x+size*.3,y);
+  ctx.closePath();ctx.fill();
 }
 function imp(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
-  const hover=Math.sin(t*2)*2;
-  for(const s of [-1,1]){
-    ctx.fillStyle=c.dark;ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.4;
-    ctx.beginPath();ctx.moveTo(s*8,-31+hover);
-    ctx.quadraticCurveTo(s*30,-48+hover,s*24,-24+hover);
-    ctx.lineTo(s*19,-27+hover);ctx.lineTo(s*17,-16+hover);ctx.closePath();ctx.fill();ctx.stroke();
-    line(ctx,s*7,-11+hover,s*12,-7+hover,c,3);
-    tip(ctx,s*9,-40+hover,4,10,c.accent);
+  const hover=1.5*Math.sin(t*2.4), flicker=Math.sin(t*4.7);
+  ctx.save();ctx.translate(0,hover);
+  // Reference: luminous golden flame spirit, NOT a purple winged demon.
+  const halo=ctx.createRadialGradient(0,-35,1,0,-35,36);
+  halo.addColorStop(0,rgba("#ffe49a",.33));halo.addColorStop(1,rgba("#e88937",0));
+  ellipse(ctx,0,-35,33,37,halo);
+  flameLick(ctx,-11,-34,11,-1,t*2,"#dd7731","#ffe59b");
+  flameLick(ctx,10,-33,10,1,t*2.3+1,"#f0a445","#fff0ac");
+  flameLick(ctx,-4,-47,13,-1,t*3+2,"#e77c2a","#ffdb6c");
+  flameLick(ctx,6,-50,16,1,t*2.7+1,"#e99235","#fff0af");
+  // A tapering wisp replaces feet; hand, shoulders and face are human-like.
+  ctx.fillStyle="#de843a";ctx.strokeStyle="#a95c33";ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(-10,-17);
+  ctx.bezierCurveTo(-12,-7,0,-3,-1,2+flicker);
+  ctx.bezierCurveTo(7,-5,1,-11,8,-17);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  body(ctx,0,-28,11,17,c);
+  for(const side of [-1,1]){
+    line(ctx,side*9,-35,side*17,-25,c,3.7);
+    line(ctx,side*17,-25,side*22,-20+Math.sin(t*3+side)*1.5,c,2.4);
+    ellipse(ctx,side*22,-19,2.4,3,c.light);
   }
-  body(ctx,0,-25+hover,13,16,c);
-  body(ctx,0,-41+hover,10,10,c);
-  eye(ctx,-5,-42+hover,c,2.1);eye(ctx,5,-42+hover,c,2.1);
+  body(ctx,0,-45,10,11,c);
+  // Crown of flickering translucent flames.
   for(let i=0;i<7;i++){
-    const a=i*2.2+t*.8;
-    const x=Math.cos(a)*20,y=-27+Math.sin(a)*16+hover;
-    tip(ctx,x,y,3,5,i%2?c.accent:c.extra);
-    ellipse(ctx,x,y-6,1.5,1.3,rgba(GLOW,.76));
+    const x=(i-3)*3.1;
+    flameLick(ctx,x,-51,4+i%3*1.6,i%2?1:-1,t*3+i,
+      i%2?"#f2ac46":"#e77a2e","#ffe9a4");
   }
-  freckles(ctx,c,16,0,-26+hover,8,11);
+  eye(ctx,-4,-46,{...c,eye:"#fff9ce"},2.3);
+  eye(ctx,5,-46,{...c,eye:"#fff9ce"},2.3);
+  ctx.strokeStyle="#a8582e";ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(-3,-39);ctx.quadraticCurveTo(0,-37,3,-39);ctx.stroke();
+  for(let i=0;i<9;i++){
+    const x=Math.sin(i*11.9+t*.7)*22,y=-12-i*5+Math.cos(i+t)*3;
+    ellipse(ctx,x,y,1.5+i%3*.5,1.2,i%2?"#ffd876":"#ffa94c");
+  }
+  freckles(ctx,c,14,0,-30,8,13);
+  ctx.restore();
 }
 function viper(ctx:CanvasRenderingContext2D,c:Palette,t:number):void {
   ctx.strokeStyle=OUTLINE;ctx.lineWidth=15;ctx.lineCap="round";
