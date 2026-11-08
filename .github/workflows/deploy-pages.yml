@@ -37,6 +37,7 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       VITE_MULTIPLAYER_URL: ${{ vars.TERRANIA_MULTIPLAYER_URL || 'wss://api-rpg.analysepro.com/ws' }}
+      VITE_MARKET_API_URL: ${{ vars.TERRANIA_MARKET_API_URL || 'https://api-rpg.analysepro.com' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -10,6 +10,11 @@
 
 **Limites:** O Angular não é autoridade de dano, posição, loot ou XP.
 
+**Catálogo PostgreSQL:** `/mercado/` consulta os itens reais do backend público.
+Não contém credenciais, não grava posse nem altera saves. Falha/ausência de API
+aparece como indisponível. Contas e trocas continuam dependentes do fluxo
+autenticado do ADR 0010; exibir o catálogo não significa liberar negociações.
+
 O HUD recebe o progresso calculado da missão da Aela e as falas prontas para exibição. O contrato `GameUi` também recebe vida, coordenadas em tiles, contagens da bolsa e a ação próxima disponível. O Angular formata esses dados e envia comandos ao orquestrador.
 
 
