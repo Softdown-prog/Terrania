@@ -12,7 +12,6 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/ClassicCombat.ts`](../../src/engine/ClassicCombat.ts)
 - [`src/engine/ClassicTileWalker.ts`](../../src/engine/ClassicTileWalker.ts)
 - [`src/engine/Experience.ts`](../../src/engine/Experience.ts)
-- [`src/engine/Food.ts`](../../src/engine/Food.ts)
 - [`src/engine/Weapons.ts`](../../src/engine/Weapons.ts)
 - [`src/engine/Equipment.ts`](../../src/engine/Equipment.ts)
 
@@ -24,6 +23,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/ClassicTileWalker.ts`](../../src/engine/ClassicTileWalker.ts)
 - [`src/engine/Equipment.ts`](../../src/engine/Equipment.ts)
 - [`src/engine/Experience.ts`](../../src/engine/Experience.ts)
+- [`src/engine/Food.ts`](../../src/engine/Food.ts)
 - [`src/engine/InteriorRoom.ts`](../../src/engine/InteriorRoom.ts)
 - [`src/engine/Inventory.ts`](../../src/engine/Inventory.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
