@@ -22,7 +22,7 @@ export interface HeroState {
   /** Weapon committed to the displayed swing. Omission uses the starter pose. */
   attackWeapon?: WeaponId;
   /** Visual equipment snapshot for nearby heroes; never an authority for stats. */
-  gear?: GearState;
+  gear?: GearState | undefined;
   vx?: number;
   vy?: number;
   hurtTime?: number;
