@@ -54,6 +54,8 @@ export class CaveFloor {
       if(Math.min(...rooms.map(r=>Math.hypot((x-r.x)/r.rx,(y-r.y)/r.ry))) < .7)continue;
       if(hash2(x,y,salt+433)> .86)this.cells[y*CAVE_WIDTH+x]=2;
     }
+    // Preserve the same connected corridors after wet-pocket decoration.
+    for(let i=1;i<rooms.length;i++) corridor(rooms[i-1]!.x,rooms[i-1]!.y,rooms[i]!.x,rooms[i]!.y);
     for(let y=CAVE_EXIT.y-5;y<=CAVE_EXIT.y+1;y++)
       for(let x=CAVE_EXIT.x-2;x<=CAVE_EXIT.x+2;x++)carve(x,y);
     this.collision = {
@@ -63,7 +65,7 @@ export class CaveFloor {
         return ([-r,r] as const).every(dx=>([-r,r] as const).every(dy=>
           this.at(Math.floor((x+dx)/TILE_SIZE),Math.floor((y+dy)/TILE_SIZE))===1));
       },
-      speedAt: ():number => this.theme==="marsh"?.85:1,
+      speedAt: ():number => this.theme === "marsh" ? 0.85 : 1,
     };
   }
   at(tx:number,ty:number): CaveCell {

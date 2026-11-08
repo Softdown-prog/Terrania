@@ -44,6 +44,7 @@ test("cada primeiro andar tem câmaras conectadas, paredes sólidas e saída tra
       for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]])todo.push([x+dx,y+dy]);
     }
     assert.ok(seen.size>=150,"as câmaras devem permanecer conectadas");
+    assert.equal(seen.size,walkable,"toda região transitável deve estar conectada à saída");
     assert.equal(f.collision.canMove(-1,30),false);
     const room=new CaveRoom(entry);
     assert.equal(room.collision.canMove(room.player.x,room.player.y),true);

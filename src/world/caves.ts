@@ -37,8 +37,23 @@ function safeEntrance(tx: number, ty: number, seed: number): boolean {
       if (!isWalkable(tx + dx, ty + dy, seed)) return false;
   return true;
 }
+const entranceCache=new Map<string,CaveEntrance|null>();
+/** Cached because the scenery and atlas query the same cells each frame. */
 export function caveEntranceInCell(cx: number, cy: number, seed: number): CaveEntrance | null {
   if (![cx, cy, seed].every(Number.isSafeInteger) || seed < 0) return null;
+  const key=seed+":"+cx+":"+cy;
+  if(entranceCache.has(key)) {
+    const hit=entranceCache.get(key)!;
+    entranceCache.delete(key);
+    entranceCache.set(key,hit);
+    return hit;
+  }
+  const result=computeEntrance(cx,cy,seed);
+  entranceCache.set(key,result);
+  if(entranceCache.size>256)entranceCache.delete(entranceCache.keys().next().value!);
+  return result;
+}
+function computeEntrance(cx:number,cy:number,seed:number):CaveEntrance|null {
   // The first accessible cave is deliberately near, but outside, the starter village.
   const starter = cx === 0 && cy === 0;
   if (!starter && hash2(cx, cy, seed + 1889) > .32) return null;
