@@ -178,7 +178,7 @@ test(
       const resumed: ServerMessage[] = [];
       const rejoined = new WebSocket(
         "ws://127.0.0.1:" + port +
-          "/ws?room=origins&movement=tiles&combat=target&progression=xp&inventory=loot",
+          "/ws?room=origins&movement=tiles&combat=target&progression=xp&inventory=loot&equipment=forge&gear=slots",
         { origin: "http://localhost:5173" },
       );
       sockets.push(rejoined);
