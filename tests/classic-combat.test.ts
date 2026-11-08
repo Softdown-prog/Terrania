@@ -79,8 +79,8 @@ test("classic auto-strike damages only its selected slime; old manual strike sta
   normal.player.faceX=1;normal.player.faceY=0;
   normal.update(1/60,STILL,true);
   for(let i=0;i<19;i++)normal.update(1/60,STILL,false);
-  assert.equal(a.hp,0);
-  assert.equal(b.hp,2,"a single manual swing must not strike an unrelated second monster");
+  assert.equal(a.hp,2,"a manual sword strike must not deal area damage to the farther mob");
+  assert.equal(b.hp,0,"manual sword contact chooses the nearest eligible mob");
 });
 
 test("classic without a live target never turns a pending strike into area damage",()=> {
