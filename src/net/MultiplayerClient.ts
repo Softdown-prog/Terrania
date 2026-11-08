@@ -1,4 +1,5 @@
 import { SnapshotTimeline } from "./SnapshotTimeline.ts";
+import { FOOD_IDS } from "../engine/Food.ts";
 import type {
   ClientMessage,
   CombatFocus,
@@ -214,7 +215,8 @@ export class MultiplayerClient {
   private submitInventory(order: InventoryOrder): boolean {
     if (!this.roomInventory || !this.inventory || this.pendingInventoryRequest) return false;
     const { action } = order;
-    if (action !== "use-potion" && action !== "trade-potion" && !this.inventory.loadout) return false;
+    if (action !== "use-potion" && action !== "trade-potion" &&
+      !FOOD_IDS.some(id => action === `eat-${id}` || action === `buy-${id}`) && !this.inventory.loadout) return false;
     const request: InventoryMessage = { ...order, type: "inventory", requestId: ++this.inventoryRequestId };
     if (!this.send(request)) return false;
     this.pendingInventoryRequest = request;

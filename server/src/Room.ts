@@ -15,6 +15,7 @@ import { ClassicCombat } from "../../src/engine/ClassicCombat.ts";
 import { CLASSIC_FOLLOW_LIMIT, ClassicPursuit } from "../../src/engine/ClassicPursuit.ts";
 import { grantExperience, maxHpForExperience } from "../../src/engine/Experience.ts";
 import { Inventory } from "../../src/engine/Inventory.ts";
+import { FOOD_IDS, hasNutrition } from "../../src/engine/Food.ts";
 import { WEAPONS } from "../../src/engine/Weapons.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, type LootDrop } from "../../src/engine/loot.ts";
 
@@ -173,6 +174,13 @@ export class Room {
     if (action === "use-potion") {
       if (actor.hp >= actor.maxHp) return "full-health";
       return bag.usePotion(actor) ? "healed" : "no-potion";
+    }
+    const edible = FOOD_IDS.find(id => action === `eat-${id}`);
+    if (edible) return bag.useFood(edible, actor);
+    const purchase = FOOD_IDS.find(id => action === `buy-${id}`);
+    if (purchase) {
+      if (nearestNpc(actor.x, actor.y)?.id !== "lina") return "too-far";
+      return bag.tradeGelForFood(purchase);
     }
     if (!equipment) return "unavailable";
     if (action === "set-gear") return gearSlots ? bag.equipGear(message.slot, message.item) : "unavailable";
@@ -404,6 +412,8 @@ export class Room {
       ...(inventory ? { inventory: {
         gel: inventory.bag.gel,
         potion: inventory.bag.potion,
+        ...(Object.values(inventory.bag.food).some(v => v > 0) ? { food: inventory.bag.food } : {}),
+        ...(hasNutrition(me.actor.nutrition) ? { nutrition: me.actor.nutrition } : {}),
         drops: [...inventory.drops.values()].filter(drop => near(drop.x, drop.y)),
         receipt: inventory.receipt,
         ...(inventory.equipment ? { loadout: inventory.bag.loadout } : {}),
