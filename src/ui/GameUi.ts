@@ -49,6 +49,8 @@ export interface GameUi {
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void;
   setOnline(online: boolean): void;
   setStatus(status: string): void;
+  /** Explain an authoritative death or a newly created online session. */
+  setTravelNotice(message: string): void;
   setTargetCombat(enabled: boolean): void;
   setCombatTarget(label: string | null): void;
   onStopCombat(callback: () => void): void;
