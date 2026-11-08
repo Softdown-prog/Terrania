@@ -58,6 +58,7 @@ export class HudService implements GameUi {
   readonly cave = signal<CaveMapState | null>(null, {equal:(a,b)=> a===b ||
     (a!==null && b!==null && a.floor===b.floor && a.tileX===b.tileX && a.tileY===b.tileY)});
   readonly gel = signal(0);
+  readonly creatureMaterials = signal<Readonly<Record<string,number>>>({});
   readonly potions = signal(0);
   readonly foodIds = FOOD_IDS;
   readonly foodCatalog = FOODS;
@@ -81,6 +82,11 @@ export class HudService implements GameUi {
       { id: 'potion', kind: 'potion', name: 'Poção de cura', icon: 'potion', quantity: this.potions(),
         description: 'Recupera 35 HP imediatamente, sem ultrapassar a vida máxima.' },
     ];
+    for (const [name,quantity] of Object.entries(this.creatureMaterials()).sort(([a],[b])=>a.localeCompare(b))) {
+      if (quantity <= 0) continue;
+      result.push({id:'creature-material:'+name,kind:'material',name,icon:'material',
+        quantity,description:'Material obtido de uma criatura regional. Guardado na bolsa.'});
+    }
     const food = this.food();
     for (const id of FOOD_IDS) {
       const item = FOODS[id];
@@ -252,8 +258,10 @@ export class HudService implements GameUi {
     return id ? GEAR[id].name : '';
   }
   respawn(): void { this.respawnCallback(); }
-  updateInventory(gel: number, potions: number, food: FoodCounts): void {
+  updateInventory(gel: number, potions: number, food: FoodCounts,
+    materials: Readonly<Record<string,number>> = {}): void {
     this.gel.set(gel); this.potions.set(potions); this.food.set(food);
+    this.creatureMaterials.set(materials);
   }
   updateLoadout(loadout: WeaponLoadout | null): void { this.loadout.set(loadout); }
   updateGear(gear: GearState | null): void { this.gear.set(gear); }
