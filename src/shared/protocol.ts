@@ -1,6 +1,8 @@
 import type { PotionTradeResult, SwordEquipResult, SwordPurchaseResult } from "../engine/Inventory.ts";
 import type { WeaponId, WeaponLoadout } from "../engine/Weapons.ts";
 import type { LootDrop } from "../engine/loot.ts";
+import { FOOD_IDS, type FoodCounts, type FoodId, type FoodTradeResult,
+  type FoodUseResult, type NutritionState } from "../engine/Food.ts";
 import { isGearId, isGearSlot, type GearId, type GearResult, type GearSlot, type GearState } from "../engine/Equipment.ts";
 
 /** Version 3 shares village building collision with clients and the server. */
@@ -43,15 +45,18 @@ export type WalkTarget = { readonly x: number; readonly y: number };
 export type WalkMessage = { type: "walk"; target: WalkTarget | null };
 export type TargetMessage = { type: "target"; id: string | null };
 export type CombatFocus = { readonly id: string; readonly following: boolean };
-export type InventoryAction = "use-potion" | "trade-potion" | "buy-sword" | "equip-starter" | "equip-forge";
+export type InventoryAction = "use-potion" | "trade-potion" | "buy-sword" | "equip-starter" | "equip-forge" |
+  `eat-${FoodId}` | `buy-${FoodId}`;
 export type InventoryOrder = { action: InventoryAction } | { action: "set-gear"; slot: GearSlot; item: GearId | null };
 export type InventoryMessage = InventoryOrder & { type: "inventory"; requestId: number };
-export type InventoryOutcome = PotionTradeResult | SwordPurchaseResult | SwordEquipResult | GearResult |
+export type InventoryOutcome = PotionTradeResult | SwordPurchaseResult | SwordEquipResult | GearResult | FoodTradeResult | FoodUseResult |
   "healed" | "full-health" | "no-potion" | "too-far";
 export type InventoryReceipt = Pick<InventoryMessage, "requestId" | "action"> & { outcome: InventoryOutcome };
 export interface RoomInventoryState {
   gel: number;
   potion: number;
+  food?: FoodCounts;
+  nutrition?: NutritionState;
   drops: LootDrop[];
   receipt: InventoryReceipt | null;
   loadout?: WeaponLoadout;
@@ -107,7 +112,8 @@ export function isValidInventoryMessage(value: unknown): value is InventoryMessa
     return false;
   if (m.action === "set-gear") return isGearSlot(m.slot) && (m.item === null || isGearId(m.item));
   return m.action === "use-potion" || m.action === "trade-potion" || m.action === "buy-sword" ||
-    m.action === "equip-starter" || m.action === "equip-forge";
+    m.action === "equip-starter" || m.action === "equip-forge" ||
+    FOOD_IDS.some(id => m.action === `eat-${id}` || m.action === `buy-${id}`);
 }
 export function validRoom(room: string): boolean {
   return /^[a-z0-9-]{1,24}$/.test(room);

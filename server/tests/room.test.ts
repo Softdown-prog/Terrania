@@ -508,3 +508,31 @@ test('sala com planejamento disponível inicia a fuga durante o efeito de dano',
   assert.ok(guest.actor.x > -560);
   assert.deepEqual(room.snapshotFor('a')?.walkTarget, escape);
 });
+
+test('alimentação da sala é autoritativa, tem recibo idempotente e cura gradual', () => {
+  const room = new Room('origins');
+  const guest = room.add('food', 'Cavaleiro', true, true, true, true, true, true);
+  assert.ok(guest.inventory);
+  guest.inventory.bag.addGel();
+  guest.inventory.bag.addGel();
+  guest.actor.hp = 50;
+  room.receiveInventory('food', { type: 'inventory', action: 'buy-bread', requestId: 1 });
+  assert.equal(room.snapshotFor('food')?.inventory?.receipt?.outcome, 'too-far');
+  Object.assign(guest.actor, { x: 448, y: 250 });
+  room.receiveInventory('food', { type: 'inventory', action: 'buy-bread', requestId: 2 });
+  assert.equal(room.snapshotFor('food')?.inventory?.receipt?.outcome, 'food-traded');
+  room.receiveInventory('food', { type: 'inventory', action: 'buy-bread', requestId: 2 });
+  assert.equal(room.snapshotFor('food')?.inventory?.food?.bread, 1);
+  Object.assign(guest.actor, { x: 16, y: 16 });
+  room.receiveInventory('food', { type: 'inventory', action: 'eat-bread', requestId: 3 });
+  assert.equal(room.snapshotFor('food')?.inventory?.receipt?.outcome, 'ate');
+  assert.equal(guest.actor.hp, 50);
+  room.receiveInventory('food', { type: 'inventory', action: 'eat-bread', requestId: 4 });
+  assert.equal(room.snapshotFor('food')?.inventory?.receipt?.outcome, 'no-food');
+  for (let i = 0; i < 40; i++) room.tick(0.05, guest.lastInputAt + 50 * (i + 1));
+  assert.equal(guest.actor.hp, 51);
+  assert.equal(room.snapshotFor('food')?.inventory?.nutrition?.reserve, 17);
+  assert.equal(isValidInventoryMessage({ type: 'inventory', action: 'eat-bread', requestId: 5 }), true);
+  assert.equal(isValidInventoryMessage({ type: 'inventory', action: 'buy-unknown', requestId: 6 }), false);
+  assert.equal(isValidInventoryMessage({ type: 'inventory', action: 'eat-bread', requestId: 0 }), false);
+});

@@ -109,6 +109,7 @@ input:focus-visible {
   font-size: 10px;
   white-space: nowrap;
 }
+#nutritionStatus { display: block; max-width: 100%; font-size: 9px; line-height: 1.2; color: #d2dfaa; }
 #quickPotion:disabled { opacity: .55; cursor: not-allowed; }
 #quickPotionFeedback {
   font-size: 9px;

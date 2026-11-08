@@ -51,3 +51,19 @@ Os brainstormings antigos sobre **golpe forte, esquiva, salto, teia, chefes, eve
 - A pessoa responsável pelo jogo avalia se a sensação de jogar corresponde à direção desejada **antes de iniciar a próxima mecânica ou fazer merge**.
 
 > O roadmap é uma lista de hipóteses e decisões em evolução, não uma obrigação de implementar tudo. O objetivo imediato é um núcleo de RPG clássico pequeno, coerente e testado.
+
+## Marco da versão 1.0 — concluir o Cavaleiro antes das outras vocações
+
+As quatro classes planejadas são **Cavaleiro**, **Paladino/Arqueiro**, **Druida** e **Feiticeiro/Mago (Sorcerer)**. A 1.0 começa por **um Cavaleiro jogável e polido**, sem criar os outros personagens antes de concluir o primeiro. Montarias são futuras.
+
+Checklist de aceite do Cavaleiro 1.0:
+- [x] Caminhada e perseguição em tiles, orientação e combate por alvo com preparo, recarga, distância e colisão
+- [x] Herói procedural com caminhada, braços, pernas, espada, capa, rosto e efeitos de combate
+- [x] Armas existentes com dano/preparo diferentes, equipamento com defesa e progressão de HP por nível
+- [x] Primeira economia de alimentos, saciedade e cura ao longo do tempo; integração com Lina, solo e sala Node
+- [ ] Jogar e corrigir poses em todas as direções, colisões visuais, ataques, hit feedback e troca de equipamento, no desktop e Android
+- [ ] Balancear tempo de matar Slimes, dano recebido, consumo de comida/poções, custo e tempo de recuperação
+- [ ] Exercitar morte, retorno, salvamento e sincronização online em sessão real; tratar desconexão e falhas no consumo
+- [ ] Validar usabilidade e desempenho no celular e corrigir defeitos bloqueantes antes de marcar a 1.0 como concluída
+
+A implementação dos itens marcados não certifica o lançamento, apenas indica mecanismos presentes. Não adicionar vocações, montarias ou mecânicas especulativas até a avaliação do cavaleiro.

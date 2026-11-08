@@ -7,9 +7,15 @@ test('as botas continuam animadas com um relógio de sala mais lento', async ({ 
     const boots: number[] = [];
     Object.assign(window, { walkBoots: boots });
     const fillRect = CanvasRenderingContext2D.prototype.fillRect;
+    let firstBoot: number | null = null;
     CanvasRenderingContext2D.prototype.fillRect = function (x, y, width, height) {
-      // Observe the left boot in the world texture, relative to the hero's body.
-      if (this.fillStyle === '#584536' && width === 7 && height === 4 && x < 0) boots.push(x);
+      // A arte procedural atual desenha duas botas de 5,2×4 px por personagem.
+      // Medimos a menor posição X do par por quadro (sem confundir com o passo de outra bota).
+      if (this.fillStyle === '#4c3a2d' && Math.abs(width - 5.2) < 1e-6 &&
+          Math.abs(height - 4) < 1e-6) {
+        if (firstBoot === null) firstBoot = x;
+        else { boots.push(Math.min(firstBoot, x)); firstBoot = null; }
+      }
       fillRect.call(this, x, y, width, height);
     };
     localStorage.setItem('terrania-preferences-v1', JSON.stringify({ zoom: 1.65, effects: false, cameraMotion: false }));
@@ -45,7 +51,9 @@ test('as botas continuam animadas com um relógio de sala mais lento', async ({ 
   for (let packet = 55; packet < 65; packet++) await playPacket(packet);
   const boots = await readBoots();
   expect(boots.length).toBeGreaterThan(40);
-  expect(boots.filter(x => Math.abs(x + 7) > 0.1).length / boots.length).toBeGreaterThan(0.75);
+  // O período amostrado deve conter deslocamentos distintos, não uma pose estática.
+  expect(new Set(boots.map(x => x.toFixed(2))).size).toBeGreaterThan(6);
+  expect(boots.filter(x => Math.abs(x - boots[0]!) > 0.1).length / boots.length).toBeGreaterThan(0.65);
 });
 
 test('toque para caminhar online transmite movimento autoritativo observado pelo segundo jogador', async ({ page, context }, testInfo) => {

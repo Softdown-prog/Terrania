@@ -5,6 +5,7 @@ import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, ty
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/Experience.ts';
+import { FOOD_IDS, FOODS, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
   talk: 'Conversar',
@@ -36,6 +37,10 @@ export class HudService implements GameUi {
   readonly seed = signal(842136);
   readonly gel = signal(0);
   readonly potions = signal(0);
+  readonly foodIds = FOOD_IDS;
+  readonly foodCatalog = FOODS;
+  readonly food = signal<FoodCounts>(emptyFoodCounts());
+  readonly nutrition = signal<NutritionState>({ reserve: 0, elapsed: 0, cooldown: 0 });
   readonly inventoryAvailable = signal(true);
   readonly inventoryPending = signal(false);
   readonly inventoryFeedback = signal('');
@@ -69,6 +74,8 @@ export class HudService implements GameUi {
   private talkCallback: () => void = () => {};
   private potionTradeCallback: () => string = () => '';
   private potionCallback: () => string = () => '';
+  private foodCallback: (id: FoodId) => string = () => '';
+  private foodTradeCallback: (id: FoodId) => string = () => '';
   private swordPurchaseCallback: () => string = () => '';
   private weaponEquipCallback: (weapon: WeaponId) => string = () => '';
   private gearEquipCallback: (slot: GearSlot, item: GearId | null) => string = () => '';
@@ -101,6 +108,8 @@ export class HudService implements GameUi {
   onTalk(callback: () => void): void { this.talkCallback = callback; }
   onPotionTrade(callback: () => string): void { this.potionTradeCallback = callback; }
   onPotionUse(callback: () => string): void { this.potionCallback = callback; }
+  onFoodUse(callback: (id: FoodId) => string): void { this.foodCallback = callback; }
+  onFoodTrade(callback: (id: FoodId) => string): void { this.foodTradeCallback = callback; }
   onSwordPurchase(callback: () => string): void { this.swordPurchaseCallback = callback; }
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void { this.gearEquipCallback = callback; }
@@ -127,6 +136,8 @@ export class HudService implements GameUi {
     this.inventoryFeedback.set(message);
     this.quickPotionFeedback.set(message);
   }
+  useFood(id: FoodId): void { this.inventoryFeedback.set(this.foodCallback(id)); }
+  tradeFood(id: FoodId): void { this.npcTradeFeedback.set(this.foodTradeCallback(id)); }
   buySword(): void { this.npcTradeFeedback.set(this.swordPurchaseCallback()); }
   equipWeapon(weapon: WeaponId): void { this.inventoryFeedback.set(this.weaponEquipCallback(weapon)); }
   equipGear(id: GearId): void {
@@ -142,8 +153,9 @@ export class HudService implements GameUi {
     return id ? GEAR[id].name : '';
   }
   respawn(): void { this.respawnCallback(); }
-  updateInventory(gel: number, potions: number, available: boolean, pending: boolean): void {
-    this.gel.set(gel); this.potions.set(potions); this.inventoryAvailable.set(available);
+  updateInventory(gel: number, potions: number, available: boolean, pending: boolean, food: FoodCounts): void {
+    this.gel.set(gel); this.potions.set(potions); this.food.set(food);
+    this.inventoryAvailable.set(available);
     this.inventoryPending.set(pending);
   }
   updateLoadout(loadout: WeaponLoadout | null): void { this.loadout.set(loadout); }
@@ -195,6 +207,7 @@ export class HudService implements GameUi {
   }
   updateHero(hero: HeroHudState, quest: AelaQuestProgress): void {
     this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);
+    this.nutrition.set(hero.nutrition);
     this.awaitingRespawn.set(hero.awaitingRespawn);
     this.progression.set(hero.progression);
     this.quest.set(quest.completed ? 'Clareira protegida' : 'Proteja a clareira');

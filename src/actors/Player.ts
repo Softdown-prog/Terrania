@@ -5,6 +5,8 @@ import {
 } from "../engine/combat.ts";
 import { BASE_MAX_HP } from "../engine/Experience.ts";
 import { WEAPONS, type WeaponId } from "../engine/Weapons.ts";
+import { FOODS, FOOD_EAT_COOLDOWN, FOOD_HEAL_INTERVAL, MAX_NUTRITION,
+  normalizeNutrition, type FoodId, type FoodUseResult, type NutritionState } from "../engine/Food.ts";
 export class Player {
   x = 16;
   y = 16;
@@ -24,9 +26,40 @@ export class Player {
   private knockX = 0;
   private knockY = 0;
   private strikePending = false;
+  private nourishment: NutritionState = { reserve: 0, elapsed: 0, cooldown: 0 };
   constructor(maxHp = BASE_MAX_HP) {
     this.hp = maxHp;
     this.maxHp = maxHp;
+  }
+  get nutrition(): NutritionState { return { ...this.nourishment }; }
+  restoreNutrition(state: unknown): void { this.nourishment = normalizeNutrition(state); }
+  eatFood(food: FoodId): FoodUseResult {
+    if (this.hp <= 0) return "unavailable";
+    if (this.nourishment.cooldown > 0) return "eat-cooldown";
+    if (this.nourishment.reserve + FOODS[food].healBudget > MAX_NUTRITION) return "nutrition-full";
+    this.nourishment = { ...this.nourishment,
+      reserve: this.nourishment.reserve + FOODS[food].healBudget, cooldown: FOOD_EAT_COOLDOWN };
+    return "ate";
+  }
+  /** Recuperação temporal; não aplica cura instantânea, não ultrapassa HP máximo e não revive. */
+  private advanceNutrition(dt: number): void {
+    const s = this.nourishment;
+    const remainingCooldown = s.cooldown - dt;
+    // Evita bloquear comida por erro de ponto flutuante no fim exato dos 5 segundos.
+    const cooldown = remainingCooldown < 1e-8 ? 0 : remainingCooldown;
+    if (this.hp <= 0 || this.hp >= this.maxHp || s.reserve <= 0) {
+      this.nourishment = { reserve: s.reserve, elapsed: 0, cooldown };
+      return;
+    }
+    const elapsed = s.elapsed + dt;
+    const healed = Math.min(s.reserve, Math.max(0, this.maxHp - this.hp),
+      Math.floor((elapsed + 1e-9) / FOOD_HEAL_INTERVAL));
+    this.hp += healed;
+    this.nourishment = {
+      reserve: s.reserve - healed,
+      elapsed: this.hp >= this.maxHp || healed === s.reserve ? 0 : Math.max(0, elapsed - healed * FOOD_HEAL_INTERVAL),
+      cooldown,
+    };
   }
   /** Counts applied hits so movement can react to damage once per impact. */
   get damageCount(): number { return this.receivedHits; }
@@ -85,6 +118,7 @@ export class Player {
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
+    this.advanceNutrition(dt);
   }
   get strikeDamage(): number { return WEAPONS[this.attackWeapon].damage; }
   startAttack(weapon: WeaponId = "starter"): boolean {

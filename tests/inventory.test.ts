@@ -256,3 +256,57 @@ test("loot salvo inválido/duplicado é descartado e quantidade permanece limita
   });
   assert.equal(invalid.drops.size, 0);
 });
+
+test("comida custa gel, cura gradualmente e obedece cooldown", () => {
+  const sim = new OfflineSimulation(seed);
+  const bag = new Inventory({ gel: 20 });
+  const hero = sim.player;
+  hero.hp = 50;
+  assert.equal(bag.tradeGelForFood("apple"), "food-traded");
+  assert.equal(bag.tradeGelForFood("bread"), "food-traded");
+  assert.equal(bag.tradeGelForFood("meat"), "food-traded");
+  assert.equal(bag.gel, 14);
+  assert.deepEqual(bag.food, { apple: 1, bread: 1, meat: 1 });
+  assert.equal(bag.useFood("bread", hero), "ate");
+  assert.equal(hero.hp, 50);
+  assert.equal(hero.nutrition.reserve, 18);
+  assert.equal(bag.useFood("apple", hero), "eat-cooldown");
+  assert.equal(bag.food.apple, 1);
+  for (let i = 0; i < 20; i++) hero.update(0.1, still, sim.collision);
+  assert.equal(hero.hp, 51);
+  assert.equal(hero.nutrition.reserve, 17);
+  assert.equal(bag.useFood("apple", hero), "eat-cooldown");
+  for (let i = 0; i < 30; i++) hero.update(0.1, still, sim.collision);
+  assert.equal(bag.useFood("meat", hero), "ate");
+  assert.equal(bag.food.meat, 0);
+  assert.deepEqual(new Inventory(bag.snapshot()).food, bag.food);
+});
+
+test("alimentação não ressuscita, não excede HP e permanece no save", () => {
+  const sim = new OfflineSimulation(seed, {
+    seed, x: 16, y: 16, hp: 99, kills: 0, defeated: [],
+    inventory: { gel: 0, potion: 0, questRewardClaimed: false, food: { apple: 0, bread: 1, meat: 0 } },
+  });
+  assert.equal(sim.inventory.useFood("bread", sim.player), "ate");
+  for (let i = 0; i < 30; i++) sim.player.update(0.1, still, sim.collision);
+  assert.equal(sim.player.hp, 100);
+  assert.equal(sim.player.nutrition.reserve, 17);
+  const restored = new OfflineSimulation(seed, sim.snapshot());
+  assert.deepEqual(restored.player.nutrition, sim.player.nutrition);
+  restored.player.hp = 90;
+  for (let i = 0; i < 20; i++) restored.player.update(0.1, still, restored.collision);
+  assert.equal(restored.player.hp, 91);
+  restored.player.hp = 0;
+  for (let i = 0; i < 30; i++) restored.player.update(0.1, still, restored.collision);
+  assert.equal(restored.player.hp, 0);
+});
+
+test("normalização de itens e nutrição rejeita números inválidos", () => {
+  const invalid = normalizeInventory({ food: { apple: -9, bread: 999, meat: 2.5 } });
+  assert.deepEqual(invalid.food, { apple: 0, bread: 99, meat: 0 });
+  const hero = new OfflineSimulation(seed).player;
+  hero.restoreNutrition({ reserve: Infinity, elapsed: -200, cooldown: 9999 });
+  assert.deepEqual(hero.nutrition, { reserve: 0, elapsed: 0, cooldown: 5 });
+  hero.restoreNutrition({ reserve: 60, elapsed: 0, cooldown: 0 });
+  assert.equal(hero.eatFood("apple"), "nutrition-full");
+});
