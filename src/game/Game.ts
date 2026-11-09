@@ -24,7 +24,8 @@ import { applyCaveVictories } from "../engine/CaveRewards.ts";
 import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, usePotion,
   type ShopContext, type ShopResult } from "./actions/shopActions.ts";
 import { TravelState } from "./TravelState.ts";
-import type { Frame, FrameTimers } from "./modes/types.ts";
+import type { Frame, FrameTimers, ModeHost } from "./modes/types.ts";
+import { tickInterior } from "./modes/interiorMode.ts";
 import { mountQuestAction, npcOffer, questStepId, surfaceNearbyAction } from "./interactions.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
 import { currentMountQuestStep } from "../engine/MountQuestState.ts";
@@ -40,11 +41,14 @@ export class Game {
   private readonly effects = new Effects();
   private readonly travel = new TravelState();
   private readonly timers: FrameTimers = { clock: 0, battleClock: 0.25, saveClock: 0, accumulator: 0 };
+  /** A única porta pela qual os arquivos de `modes/` alcançam o jogo. */
+  private readonly host: ModeHost;
   private sim = new OfflineSimulation(842136);
   private world = new WorldRenderer(842136);
   private interior: InteriorRoom | null = null;
   private cave: CaveRoom | null = null;
   constructor(private readonly scene: CanvasScene, private readonly hud: GameUi) {
+    this.host = this.createHost();
     const saved = loadLocalSave(),
       params = new URLSearchParams(location.search);
     this.hud.setTargetCombat(true);
@@ -85,6 +89,16 @@ export class Game {
     this.hud.onRespawn(() => this.respawn());
     this.hud.onPotionUse(() => this.shop(usePotion));
     this.updateHud();
+  }
+  private createHost(): ModeHost {
+    const game = this; // `sim` e `world` são trocados a cada mundo novo: lidos sempre daqui, nunca copiados
+    return {
+      get sim() { return game.sim; }, get world() { return game.world; },
+      input: this.input, travel: this.travel, hud: this.hud, scene: this.scene,
+      camera: this.camera, effects: this.effects, timers: this.timers,
+      save: () => this.save(), updateHud: () => this.updateHud(), hudBattleRows: () => this.hudBattleRows(),
+      leaveCave: () => this.leaveCave(), leaveInterior: () => this.leaveInterior(),
+    };
   }
   private updateHud(): void {
     const { kills, inventory } = this.sim;
@@ -329,7 +343,7 @@ export class Game {
       this.travel.navigator.target ? this.travel.navigator.direction(controlled, dt) : still;
     const frame: Frame = { dt, paused, movement, attack, manualActive, tileRoute, still };
     if (this.cave && this.tickCave(this.cave, frame)) return;
-    if (this.interior && this.tickInterior(this.interior, frame)) return;
+    if (this.interior && tickInterior(this.host, this.interior, frame)) return;
     this.tickSurface(frame);
   }
   /** Um quadro na caverna: `true` = terminou aqui; `false` = o herói saiu (escada ou queda) e a superfície ainda roda NESTE quadro. */
@@ -372,22 +386,6 @@ export class Game {
       }
       this.scene.renderCave(cave,this.camera.zoom,this.timers.clock,this.travel.navigator.target,
         this.sim.inventory.gear,this.sim.inventory.loadout.equipped);
-      return true;
-    }
-    return false;
-  }
-  /** Um quadro dentro de um interior. `true` = o quadro terminou aqui; `false` = o herói saiu e a superfície segue. */
-  private tickInterior(room: InteriorRoom, frame: Frame): boolean {
-    const { dt, paused, movement } = frame;
-    this.timers.accumulator = 0;
-    if (!paused && dt > 0) { room.update(dt, movement); this.input.acknowledgeMovement(); }
-    if (room.reachedExit) this.leaveInterior();
-    if (this.interior) {
-      this.timers.saveClock += dt;
-      if (this.timers.saveClock > 12) { this.timers.saveClock = 0; this.save(); }
-      this.updateHud();
-      this.hud.setInterior(room.building.name);
-      this.scene.renderInterior(room, this.travel.navigator.target, this.timers.clock);
       return true;
     }
     return false;
