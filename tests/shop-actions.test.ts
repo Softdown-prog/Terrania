@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { POTION_GEL_PRICE } from "../src/engine/Inventory.ts";
 import { FORGE_SWORD_PRICE } from "../src/engine/Weapons.ts";
+import { experienceForLevel } from "../src/engine/Experience.ts";
 import { NPCS } from "../src/world/npcs.ts";
 import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, usePotion,
   type ShopContext } from "../src/game/actions/shopActions.ts";
@@ -56,6 +57,8 @@ test("loja: a espada de Toren só é vendida com gel suficiente, uma única vez,
   w.sim.inventory.addGel();
   assert.deepEqual(buySword(w.context()), { message: INVENTORY_FEEDBACK.purchased, changed: true });
   assert.deepEqual(buySword(w.context()), { message: INVENTORY_FEEDBACK["already-owned"], changed: false });
+  assert.deepEqual(equipWeapon(w.context(), "forge"), { message: INVENTORY_FEEDBACK["level-too-low"], changed: false });
+  w.sim.experience = experienceForLevel(10);
   assert.deepEqual(equipWeapon(w.context(), "forge"), { message: INVENTORY_FEEDBACK.equipped, changed: true });
   assert.deepEqual(equipWeapon(w.context(), "forge"), { message: INVENTORY_FEEDBACK["already-equipped"], changed: false });
 });

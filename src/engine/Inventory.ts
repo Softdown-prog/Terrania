@@ -173,6 +173,8 @@ export class Inventory {
   equipWeapon(weapon: WeaponId, level: number = this.level): SwordEquipResult {
     if (!isWeaponId(weapon)) return "not-owned";
     if (weapon === this.weapons.equipped) return "already-equipped";
+    // A espada de Toren requer compra antes de validar seu nível de uso.
+    if (weapon === "forge" && !this.weapons.forged) return "not-owned";
     if (!Number.isInteger(level) || level < WEAPONS[weapon].level) return "level-too-low";
     if (!weaponUnlocked(weapon,level,this.weapons.forged)) return "not-owned";
     this.weapons = { ...this.weapons, equipped: weapon };
