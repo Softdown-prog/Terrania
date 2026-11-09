@@ -8,9 +8,17 @@ const STILL = { x: 0, y: 0 };
 type Point = { x: number; y: number };
 
 /** Find a real, naturally generated monster rather than faking the Angular list. */
-export function browserEncounter(): { hero: Point; mob: Slime } {
+export function browserEncounter(distant = false): { hero: Point; mob: Slime } {
   const world = new SeedCollision(SEED);
-  const offsets = [
+  // Android at 1x zoom fits 180px on either side of the hero.
+  // The cancellation scenario needs the monster far enough away that a real
+  // touch on the stop button can beat the first melee strike.
+  const offsets = distant ? [
+    { x: -180, y: 0 }, { x: 180, y: 0 },
+    { x: 0, y: -180 }, { x: 0, y: 180 },
+    { x: -128, y: -128 }, { x: 128, y: 128 },
+    { x: -128, y: 128 }, { x: 128, y: -128 },
+  ] : [
     { x: -100, y: 0 }, { x: 100, y: 0 },
     { x: 0, y: -100 }, { x: 0, y: 100 },
     { x: -76, y: -76 }, { x: 76, y: 76 },

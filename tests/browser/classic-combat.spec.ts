@@ -140,11 +140,16 @@ for (const cancel of ['button', 'escape'] as const) {
     async ({page}, info) => {
     const errors: string[] = [];
     page.on('pageerror', e => errors.push(e.message));
-    const encounter = browserEncounter();
+    const encounter = browserEncounter(true);
+    expect(Math.hypot(encounter.mob.x - encounter.hero.x,
+      encounter.mob.y - encounter.hero.y)).toBeGreaterThanOrEqual(179);
     const mobId = encounter.mob.id;
-    await page.addInitScript(({seed, hero}) => localStorage.setItem('terrania-origins-v1',
-      JSON.stringify({seed, x:hero.x, y:hero.y, hp:100, kills:0, defeated:[]})),
-      {seed:SEED, hero:encounter.hero});
+    await page.addInitScript(({seed, hero}) => {
+      localStorage.setItem('terrania-origins-v1',
+        JSON.stringify({seed, x:hero.x, y:hero.y, hp:100, kills:0, defeated:[]}));
+      localStorage.setItem('terrania-preferences-v1',
+        JSON.stringify({zoom:1, effects:false, cameraMotion:false}));
+    }, {seed:SEED, hero:encounter.hero});
     await page.setViewportSize(cancel === 'escape' ? {width:600,height:390} :
       {width:info.project.name === 'android' ? 390 : 1200,height:844});
 
@@ -159,7 +164,8 @@ for (const cancel of ['button', 'escape'] as const) {
     const row = page.locator(`.battle-entry[data-creature-id="${mobId}"]`);
     await expect(row).toHaveAttribute('aria-label','Selecionar Slime, vida 2 de 2');
 
-    // Cancel an actual, selected chase before the hero reaches this distant Slime.
+    // A valid 180px encounter and 1x zoom leave room for a real mobile touch
+    // to cancel before the player can reach melee range.
     if (info.project.name === 'android') await row.tap(); else await row.click();
     await expect(page.locator('#classicTarget')).toContainText('Slime');
     if (cancel === 'button') {
