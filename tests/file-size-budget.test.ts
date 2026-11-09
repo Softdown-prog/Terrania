@@ -15,7 +15,7 @@ import { join } from "node:path";
 const DEFAULT_LIMIT = 400;
 export const LARGE_FILES: Readonly<Record<string, number>> = {
   "src/render/actors.ts": 590,
-  "src/game/Game.ts": 508,
+  "src/game/Game.ts": 449,
   "src/render/terrain.ts": 479,
   "src/render/regionalWave3.ts": 471,
   "src/render/scenery.ts": 465,

@@ -20,11 +20,11 @@ import { nearestCombatCreature } from "../engine/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { MountAction } from "../engine/MountStable.ts";
 import { runMountAction } from "../engine/MountActions.ts";
-import { applyCaveVictories } from "../engine/CaveRewards.ts";
 import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, usePotion,
   type ShopContext, type ShopResult } from "./actions/shopActions.ts";
 import { TravelState } from "./TravelState.ts";
 import type { Frame, FrameTimers, ModeHost } from "./modes/types.ts";
+import { tickCave } from "./modes/caveMode.ts";
 import { tickInterior } from "./modes/interiorMode.ts";
 import { mountQuestAction, npcOffer, questStepId, surfaceNearbyAction } from "./interactions.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
@@ -342,53 +342,9 @@ export class Game {
     const movement = paused ? still : manualActive ? manual : tileRoute ? still :
       this.travel.navigator.target ? this.travel.navigator.direction(controlled, dt) : still;
     const frame: Frame = { dt, paused, movement, attack, manualActive, tileRoute, still };
-    if (this.cave && this.tickCave(this.cave, frame)) return;
+    if (this.cave && tickCave(this.host, this.cave, frame)) return;
     if (this.interior && tickInterior(this.host, this.interior, frame)) return;
     this.tickSurface(frame);
-  }
-  /** Um quadro na caverna: `true` = terminou aqui; `false` = o herói saiu (escada ou queda) e a superfície ainda roda NESTE quadro. */
-  private tickCave(cave: CaveRoom, frame: Frame): boolean {
-    const { dt, paused, movement, attack, manualActive } = frame;
-    this.timers.accumulator=0;
-    if (!paused && dt > 0) {
-      const focused = this.travel.combat.targetId;
-      const classicStrike = this.travel.combat.tick(dt,cave.player,cave.monsters,
-        cave.collision,this.sim.inventory.weapon.interval,this.sim.inventory.loadout.equipped);
-      const follow = this.travel.autoFollow && !manualActive && this.travel.navigator.target === null;
-      const caveMovement = follow
-        ? this.travel.pursuit.direction(dt,cave.player,focused,cave.monsters,cave.collision)
-        : movement;
-      cave.update(dt,caveMovement,attack || classicStrike,
-        this.sim.inventory.loadout.equipped,this.sim.inventory.defense,
-        classicStrike ? this.travel.combat.strikeTargetId : undefined);
-      this.input.acknowledgeMovement();
-      const changed = applyCaveVictories(this.sim, cave);
-      if(changed)this.save();
-    }
-    if(cave.player.hp<=0){
-      this.leaveCave();
-      this.sim.player.hp=0;
-      this.save();
-      this.hud.setTravelNotice("Você tombou na caverna. Renasça para continuar.");
-    } else if(cave.reachedExit){
-      this.leaveCave();
-    } else {
-      this.timers.saveClock += dt;
-      if(this.timers.saveClock>12){this.timers.saveClock=0;this.save();}
-      this.updateHud();
-      this.hud.setCave({floor:cave.floor,
-        tileX:Math.floor(cave.player.x/TILE_SIZE),tileY:Math.floor(cave.player.y/TILE_SIZE)});
-      this.hud.setNearbyAction(cave.nearExit?"leave":null);
-      if(this.timers.battleClock>=0.2){
-        this.timers.battleClock=0;
-        this.hud.setBattleCreatures(this.hudBattleRows(),this.travel.combat.targetId);
-        this.hud.setCombatTarget(this.travel.combat.label(cave.monsters));
-      }
-      this.scene.renderCave(cave,this.camera.zoom,this.timers.clock,this.travel.navigator.target,
-        this.sim.inventory.gear,this.sim.inventory.loadout.equipped);
-      return true;
-    }
-    return false;
   }
   /** Um quadro na superfície: simulação a 60 Hz, efeitos, câmera, HUD e desenho do mundo. */
   private tickSurface(frame: Frame): void {
