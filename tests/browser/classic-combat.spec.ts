@@ -150,7 +150,14 @@ for (const cancel of ['button', 'escape'] as const) {
     await page.clock.install({time:start});
     await page.clock.pauseAt(new Date(start.getTime()+1000));
     await page.goto('/jogar/?modo=classico');
-    await expect(page.locator('canvas#game')).toBeVisible();
+    // Clock is paused: the Phaser canvas may need a frame to be mounted.
+    // Progress fake time while waiting instead of using a wall-clock wait.
+    const canvas = page.locator('canvas#game');
+    await expect.poll(async () => {
+      await page.clock.runFor(32);
+      return canvas.count();
+    }).toBe(1);
+    await expect(canvas).toBeVisible();
     const toggle=page.locator('#battleToggle');
     if(await toggle.getAttribute('aria-expanded')!=='true') await toggle.click();
     const row=page.locator(`.battle-entry[data-creature-id="${mobId}"]`);
