@@ -19,6 +19,7 @@ O objetivo é que Claude, ChatGPT/Codex e pessoas entreguem no mesmo padrão, se
 - **Uma microtarefa por entrega,** com teste de regressão que **falhe sem a mudança**. Mostre a saída dos testes; não declare pronto sem ela.
 - **TypeScript:** `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes` estão ligados; não os enfraqueça. Regras de jogo ficam em `src/engine|actors|world`, sem Angular, Phaser, DOM nem rede (conferido por `architecture:check`).
 - **Go:** arquivos novos ou alterados devem passar em `gofmt`. Hoje 34 dos 44 arquivos de `cmd`, `engine` e `presence` não passam; reformatar em lote é uma tarefa separada, para não conflitar com trabalho em andamento.
+- **Tamanho:** arquivo `.ts` novo em `src/` ou `server/src/` tem no máximo 400 linhas, e os já grandes (tabela em `tests/file-size-budget.test.ts`) não podem crescer. Passou do limite: divida por responsabilidade, não acrescente código. Regra de jogo vai para `src/engine/`, nunca para `src/game/Game.ts` ([ADR 0013](docs/adr/0013-decomposicao-do-game.md)).
 - **Determinismo:** sem `Math.random`/`Date.now` no render; variação por semente (`hashString`, `hash2`).
 - **Texto e docs em português;** identificadores e nomes de arquivo como o módulo já usa.
 

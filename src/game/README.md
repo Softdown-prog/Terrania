@@ -1,6 +1,6 @@
 # Phaser e coordenação do jogo
 
-**Papel:** Game.ts coordena serviços; PhaserGame.ts mantém o loop e a cena.
+**Papel:** Game.ts coordena serviços; PhaserGame.ts mantém o loop e a cena. A decomposição em andamento está no [ADR 0013](../../docs/adr/0013-decomposicao-do-game.md): leia-o antes de mexer em `Game.ts`.
 
 **Ponto de entrada:** consulte [registro central](../../architecture/modules.json) e o índice gerado em [docs/INDEX.md](../../docs/INDEX.md). Os caminhos de código completos são listados automaticamente; não repetir listas manuais aqui.
 
@@ -19,3 +19,5 @@ criar um segundo motor de gameplay; a transição limpa rotas, combate, input
 e efeitos. Caminhar até a escada ou E perto dela retorna à mesma entrada.
 Ao recarregar a página, a aventura solo retoma na superfície (fase inicial).
 No online, o servidor permanece autoritativo e não recebe estados de cave.
+
+**Estrutura (ADR 0013):** `messages/` guarda os textos (dados), `actions/shopActions.ts` as ações de loja e bolsa (devolvem `{ message, changed }`; quem chama salva e atualiza o HUD) e `interactions.ts` as decisões puras sobre o que a tecla de interação faz e o que o HUD oferece. As regras de montaria e as recompensas de caverna ficam no motor (`src/engine/MountActions.ts`, `src/engine/CaveRewards.ts`). **Não acrescente regra de jogo em `Game.ts`:** `tests/file-size-budget.test.ts` impede o arquivo de crescer.

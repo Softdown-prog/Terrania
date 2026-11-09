@@ -29,7 +29,9 @@
       ],
       "entrypoints": [
         "src/game/Game.ts",
-        "src/game/PhaserGame.ts"
+        "src/game/PhaserGame.ts",
+        "src/game/interactions.ts",
+        "src/game/actions/shopActions.ts"
       ],
       "doc": "src/game/README.md",
       "description": "Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir regras do motor para este adaptador."
@@ -71,7 +73,9 @@
         "src/engine/Equipment.ts",
         "src/engine/CaveRoom.ts",
         "src/engine/MountStable.ts",
-        "src/engine/MountQuestState.ts"
+        "src/engine/MountQuestState.ts",
+        "src/engine/MountActions.ts",
+        "src/engine/CaveRewards.ts"
       ],
       "doc": "src/engine/README.md",
       "description": "Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular."

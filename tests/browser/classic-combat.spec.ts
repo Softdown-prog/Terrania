@@ -1,4 +1,5 @@
 import {test, expect} from '@playwright/test';
+import {browserEncounter, SEED} from '../helpers/browserEncounter.ts';
 
 test('o solo normal oferece combate por alvo e ajuda',async({page})=>{
   const errors:string[]=[];
@@ -139,9 +140,12 @@ for (const cancel of ['button', 'escape'] as const) {
     async ({page},info) => {
     const errors:string[]=[];
     page.on('pageerror', e=>errors.push(e.message));
-    const mobId='-2,-2,0';
-    await page.addInitScript(() => localStorage.setItem('terrania-origins-v1',
-      JSON.stringify({seed:842136,x:-660,y:-1008,hp:100,kills:0,defeated:[]})));
+    // Reuse a real, reachable Slime on collision-tested terrain.
+    const encounter = browserEncounter();
+    const mobId = encounter.mob.id;
+    await page.addInitScript(({seed,hero}) => localStorage.setItem('terrania-origins-v1',
+      JSON.stringify({seed,x:hero.x,y:hero.y,hp:100,kills:0,defeated:[]})),
+      {seed:SEED,hero:encounter.hero});
     await page.setViewportSize(cancel==='escape' ? {width:600,height:390} :
       {width:info.project.name==='android' ? 390 : 1200,height:844});
     // Freeze gameplay between real UI interactions. The wooden sword now kills
