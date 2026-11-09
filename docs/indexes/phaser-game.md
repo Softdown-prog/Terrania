@@ -13,11 +13,12 @@ Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir reg
 - [`src/game/interactions.ts`](../../src/game/interactions.ts)
 - [`src/game/actions/shopActions.ts`](../../src/game/actions/shopActions.ts)
 
-## Todos os arquivos deste módulo (7)
+## Todos os arquivos deste módulo (8)
 
 - [`src/game/Game.ts`](../../src/game/Game.ts)
 - [`src/game/PhaserGame.ts`](../../src/game/PhaserGame.ts)
 - [`src/game/README.md`](../../src/game/README.md)
+- [`src/game/TravelState.ts`](../../src/game/TravelState.ts)
 - [`src/game/actions/shopActions.ts`](../../src/game/actions/shopActions.ts)
 - [`src/game/interactions.ts`](../../src/game/interactions.ts)
 - [`src/game/messages/inventoryFeedback.ts`](../../src/game/messages/inventoryFeedback.ts)
