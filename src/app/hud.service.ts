@@ -55,6 +55,7 @@ export class HudService implements GameUi {
     a.owned.join(',')===b.owned.join(',')});
   readonly mountFeedback = signal('');
   readonly travelNotice = signal('');
+  private travelNoticeTimer: ReturnType<typeof setTimeout> | null = null;
   readonly targetCombat = signal(false);
   readonly combatTarget = signal<string | null>(null);
   readonly battleCreatures = signal<readonly BattleCreature[]>([]);
@@ -302,8 +303,20 @@ export class HudService implements GameUi {
     (section === 'bag' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
   }
   setQuickPotionFeedback(message: string): void { this.quickPotionFeedback.set(message); }
-  setTravelNotice(message: string): void { this.travelNotice.set(message); }
-  dismissTravelNotice(): void { this.travelNotice.set(''); }
+  setTravelNotice(message: string): void {
+    this.dismissTravelNotice();
+    if (!message) return;
+    this.travelNotice.set(message);
+    this.travelNoticeTimer = setTimeout(() => {
+      this.travelNotice.set('');
+      this.travelNoticeTimer = null;
+    }, 6500);
+  }
+  dismissTravelNotice(): void {
+    if (this.travelNoticeTimer !== null) clearTimeout(this.travelNoticeTimer);
+    this.travelNoticeTimer = null;
+    this.travelNotice.set('');
+  }
   setTargetCombat(enabled: boolean): void { this.targetCombat.set(enabled); }
   setCombatTarget(label: string | null): void { this.combatTarget.set(label); }
   setSeed(seed: number): void { this.seed.set(seed); }

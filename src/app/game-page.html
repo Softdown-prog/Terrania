@@ -111,14 +111,13 @@
         ><small id="saveMode">Aventura local · progresso neste navegador</small>
       </div>
       @if (notice() || hud.travelNotice()) {
-        <p id="gameNotice" role="status">{{ notice() || hud.travelNotice() }}
-          @if (hud.travelNotice()) {
-            <button type="button" id="dismissTravelNotice" (click)="hud.dismissTravelNotice()"
-              aria-label="Fechar aviso">Fechar</button>
-          }
-        </p>
+        <div id="gameNotice" role="status" aria-live="polite">
+          <span>{{ notice() || hud.travelNotice() }}</span>
+          <button type="button" id="dismissTravelNotice" (click)="dismissNotice()"
+            aria-label="Fechar aviso">Fechar</button>
+        </div>
       }
-      @if (hud.targetCombat() && (hud.combatTarget() || combatHelpVisible())) {
+      @if (hud.targetCombat() && !hud.cave() && !hud.travelNotice() && !notice() && (hud.combatTarget() || combatHelpVisible())) {
         <aside id="classicCombat" class="classic-status" aria-label="Combate por alvo">
           <strong>COMBATE POR ALVO</strong>
           <span id="classicTileHint">PASSOS 32×32</span>
@@ -127,7 +126,7 @@
             <button id="stopTarget" type="button" (click)="hud.stopCombat()">Cancelar alvo</button>
           } @else {
             <span id="classicHint">Toque em um slime ou use ATACAR para selecionar e seguir</span>
-            <button id="dismissCombatHelp" type="button" (click)="dismissCombatHelp()" aria-label="Fechar ajuda de combate">Fechar ajuda</button>
+            <button id="dismissCombatHelp" type="button" (click)="dismissCombatHelp()" aria-label="Fechar dica de combate">Fechar dica</button>
           }
         </aside>
       }
