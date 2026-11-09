@@ -161,7 +161,13 @@ for (const cancel of ['button', 'escape'] as const) {
     const toggle=page.locator('#battleToggle');
     if(await toggle.getAttribute('aria-expanded')!=='true') await toggle.click();
     const row=page.locator(`.battle-entry[data-creature-id="${mobId}"]`);
-    await expect(row).toHaveAttribute('aria-label','Selecionar Slime, vida 2 de 2');
+    // The clock is paused: spawning and the Battle List's 0.2 s HUD refresh
+    // require simulation frames after the Canvas has mounted. Wait for a REAL
+    // creature row, not merely an empty Battle List shell.
+    await expect.poll(async () => {
+      await page.clock.runFor(100);
+      return row.getAttribute('aria-label');
+    }, {timeout:15000}).toBe('Selecionar Slime, vida 2 de 2');
     // Cancel before the player has reached the monster. No phantom attack may
     // kill the Slime while neither a target nor an attack input is active.
     if(info.project.name==='android') await row.tap(); else await row.click();
