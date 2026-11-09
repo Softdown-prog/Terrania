@@ -310,7 +310,7 @@ test('inventário mobile tem mochila por toque, comparação real e cavaleiro pr
   page.on('pageerror', error => pageErrors.push(error.message));
   await page.addInitScript(() => {
     localStorage.setItem('terrania-origins-v1', JSON.stringify({
-      seed: 842136, x: 16, y: 16, hp: 80, kills: 0, defeated: [],
+      seed: 842136, x: 16, y: 16, hp: 80, experience: 1350, kills: 0, defeated: [],
       inventory: {
         gel: 3, potion: 1, questRewardClaimed: false,
         loadout: { forged: true, equipped: 'starter' },
@@ -333,14 +333,15 @@ test('inventário mobile tem mochila por toque, comparação real e cavaleiro pr
   await page.locator('#bagFilterGear').click();
   await expect(page.locator('[data-bag-item="weapon-forge"]')).toBeVisible();
   await page.locator('[data-bag-item="weapon-forge"]').click();
-  await expect(page.locator('#bagItemComparison')).toContainText('Dano da arma equipada: 1');
+  await expect(page.locator('#bagItemComparison')).toContainText('Dano da arma equipada: 8');
+  // Backpack selection has its own control, distinct from the equipment-slot picker.
   await page.locator('#equip-weapon-forge').click();
   await expect(page.locator('#inventoryFeedback')).toContainText('Espada equipada');
   if (await page.locator('#inventoryTabEquipment').isVisible()) {
     await page.locator('#inventoryTabEquipment').click();
   }
   await expect(page.locator('[data-equipment-slot="head"]')).toContainText('Elmo');
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada Curta de Ferro Batido');
   await expect(page.locator('#inventoryHero')).toBeVisible();
   await expect.poll(async () => page.locator('#inventoryHero').evaluate(node => {
     const canvas = node as HTMLCanvasElement;
@@ -496,15 +497,23 @@ test('espada forjada equipada aparece parada na prévia e troca para a inicial s
     const swordFrames = { all: 0, forge: 0 };
     Object.assign(window, { swordFrames });
     CanvasRenderingContext2D.prototype.fillRect = function (x, y, width, height) {
-      if (this.canvas.id === 'inventoryHero' && Math.abs(width - 3) < 0.0001 &&
-          Math.abs(height - 12.8) < 0.0001) {
-        swordFrames.all++;
-        if (this.fillStyle === '#e2a24f') swordFrames.forge++;
-      }
+      // All ten authored sword meshes draw the same real wrapped hilt primitive.
+      if (this.canvas.id === 'inventoryHero' && Math.abs(x - 4) < .0001 &&
+          Math.abs(y + 2.4) < .0001 && Math.abs(width - 8.6) < .0001 &&
+          Math.abs(height - 4.8) < .0001) swordFrames.all++;
       original.call(this, x, y, width, height);
     };
+    const desc=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'fillStyle');
+    if(desc?.get && desc.set)Object.defineProperty(CanvasRenderingContext2D.prototype,'fillStyle',{
+      configurable:true,enumerable:desc.enumerable,get:desc.get,
+      set(this:CanvasRenderingContext2D,value:string|CanvasGradient|CanvasPattern){
+        // Iron has a steel-colored guard distinct from the wooden tier.
+        if(this.canvas.id==='inventoryHero' && value==='#a8aaa7')swordFrames.forge++;
+        desc.set!.call(this,value);
+      },
+    });
     localStorage.setItem('terrania-origins-v1', JSON.stringify({
-      seed: 842136, x: 16, y: 16, hp: 100, kills: 0, defeated: [],
+      seed: 842136, x: 16, y: 16, hp: 100, experience: 1350, kills: 0, defeated: [],
       inventory: { gel: 0, potion: 0, questRewardClaimed: false,
         loadout: { forged: true, equipped: 'starter' } },
     }));
@@ -517,14 +526,14 @@ test('espada forjada equipada aparece parada na prévia e troca para a inicial s
   await page.locator('#inventoryButton').click();
   const equipmentTab = page.locator('#inventoryTabEquipment');
   if (await equipmentTab.isVisible()) await equipmentTab.click();
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de Treino de Carvalho');
   await expect.poll(async () => (await readFrames()).all).toBeGreaterThan(2);
   expect((await readFrames()).forge).toBe(0);
-  await page.locator('#equipOtherWeapon').click();
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
+  await page.locator('#equip-slot-weapon-forge').click();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada Curta de Ferro Batido');
   await expect.poll(async () => (await readFrames()).forge).toBeGreaterThan(1);
-  await page.locator('#equipOtherWeapon').click();
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
+  await page.locator('#equip-slot-weapon-starter').click();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de Treino de Carvalho');
   const previous = (await readFrames()).all;
   await page.evaluate(() => {
     (window as typeof window & { swordFrames: { forge: number } }).swordFrames.forge = 0;

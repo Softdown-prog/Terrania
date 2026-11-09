@@ -23,6 +23,8 @@ export function canStrike(
   attacker: { x: number; y: number; faceX: number; faceY: number },
   target: { x: number; y: number },
   world: CollisionMap,
+  reach = ATTACK_REACH,
+  minimumFacing = -0.1,
 ): boolean {
   const dx = target.x - attacker.x,
     dy = target.y - attacker.y;
@@ -30,10 +32,10 @@ export function canStrike(
   const facingLength = Math.hypot(attacker.faceX, attacker.faceY);
   if (
     !Number.isFinite(distance) || !Number.isFinite(attacker.faceX) || !Number.isFinite(attacker.faceY) ||
-    facingLength < 0.001 || distance >= ATTACK_REACH ||
+    facingLength < 0.001 || distance >= reach ||
     (dx * attacker.faceX + dy * attacker.faceY) /
       (Math.max(1, distance) * facingLength) <
-      -0.1
+      minimumFacing
   )
     return false;
   const steps = Math.max(1, Math.ceil(distance / 6));

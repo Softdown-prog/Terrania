@@ -164,7 +164,7 @@ test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar',
   await page.addInitScript(() => {
     const key = 'terrania-origins-v1';
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ seed: 842136,
-      x: 528, y: 48, hp: 100, kills: 5, defeated: [], inventory: { gel: 7, potion: 0 } }));
+      x: 528, y: 48, hp: 100, experience: 1350, kills: 5, defeated: [], inventory: { gel: 7, potion: 0 } }));
   });
   const activate = (button: ReturnType<typeof page.locator>) => android ? button.tap() : button.click();
   const openBag = async () => {
@@ -179,7 +179,7 @@ test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar',
   await page.goto('/jogar/?modo=solo');
   await activate(page.getByRole('button', { name: 'Conversar (E)' }));
   const toren = page.getByRole('dialog', { name: 'Toren' });
-  await activate(toren.getByRole('button', { name: 'Comprar Espada da Travessia por 5 de gel' }));
+  await activate(toren.getByRole('button', { name: 'Comprar Espada Curta de Ferro Batido por 5 de gel' }));
   await expect(toren.getByRole('status')).toContainText('Toren colocou');
   await expect(toren.getByRole('button', { name: 'Espada já adquirida' })).toBeDisabled();
   await activate(toren.getByRole('button', { name: 'Fechar conversa' }));
@@ -187,17 +187,17 @@ test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar',
   await openBag();
   await expect(page.locator('#gelCount')).toHaveText('2 / 99');
   await openEquipment();
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
-  await activate(page.getByRole('button', { name: 'Equipar Espada da Travessia' }));
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
-  await expect(page.getByText('2 de dano · 2 s entre golpes · 180 ms de preparo', { exact: true })).toBeVisible();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de Treino de Carvalho');
+  await activate(page.getByRole('button', { name: 'Equipar Espada Curta de Ferro Batido' }));
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada Curta de Ferro Batido');
+  await expect(page.getByText('16 de dano · 1 s entre golpes · 90 ms de preparo', { exact: true })).toBeVisible();
   await page.reload();
   await openBag();
   await openEquipment();
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada da Travessia');
-  await activate(page.getByRole('button', { name: 'Equipar Espada de viagem' }));
-  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de viagem');
-  await expect(page.getByRole('button', { name: 'Equipar Espada da Travessia' })).toBeVisible();
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada Curta de Ferro Batido');
+  await activate(page.getByRole('button', { name: 'Equipar Espada de Treino de Carvalho' }));
+  await expect(page.locator('#equippedWeapon')).toHaveText('Espada de Treino de Carvalho');
+  await expect(page.getByRole('button', { name: 'Equipar Espada Curta de Ferro Batido' })).toBeVisible();
 });
 
 test('voltar ao painel não fica preso numa consulta cancelada da tela anterior', async ({ page }) => {

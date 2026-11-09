@@ -212,7 +212,14 @@ test("cancelar o alvo com ATACAR segurado exige um novo acionamento", async ({ p
       await page.keyboard.up("Enter");
       await page.keyboard.press("Enter");
       await page.clock.runFor(64);
-      await expect(target).toContainText("Slime");
+      // A new press may reselect the Slime, or there may be no target left:
+      // the new 8-damage wooden sword defeats a 2-HP Slime on the first hit.
+      const retargeted = await target.count() > 0;
+      if (retargeted) await expect(target).toContainText("Slime");
+      else await expect.poll(() => page.evaluate(() => {
+        const saved=JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "null");
+        return saved?.defeated?.includes("-2,-2,0") === true;
+      })).toBe(true);
     }
   } finally {
     await touch?.detach();

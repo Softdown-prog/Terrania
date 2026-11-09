@@ -1,7 +1,6 @@
 import type { DebuffKind } from "./CreatureCatalog.ts";
 import { moveBody, type CollisionMap } from "../world/collision.ts";
 import {
-  ATTACK_COOLDOWN,
   ATTACK_DURATION,
 } from "../engine/combat.ts";
 import { BASE_MAX_HP } from "../engine/Experience.ts";
@@ -194,11 +193,12 @@ export class Player {
     this.advanceNutrition(dt);
     this.advanceDebuffs(dt);
   }
+  get attackSequence(): number { return this.swingNumber; }
   get strikeDamage(): number { return WEAPONS[this.attackWeapon].damage; }
   startAttack(weapon: WeaponId = "starter"): boolean {
     if (this.attackCooldown > 0 || this.hp <= 0 || this.effects.stun > 0) return false;
     this.attackTime = ATTACK_DURATION;
-    this.attackCooldown = ATTACK_COOLDOWN * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
+    this.attackCooldown = WEAPONS[weapon].interval * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
     this.attackWeapon = weapon;
     this.strikePending = true;
     return true;

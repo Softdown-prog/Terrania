@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/MountActions.ts`](../../src/engine/MountActions.ts)
 - [`src/engine/CaveRewards.ts`](../../src/engine/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (20)
+## Todos os arquivos deste módulo (21)
 
 - [`src/engine/CaveRewards.ts`](../../src/engine/CaveRewards.ts)
 - [`src/engine/CaveRoom.ts`](../../src/engine/CaveRoom.ts)
@@ -38,6 +38,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/MountStable.ts`](../../src/engine/MountStable.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
 - [`src/engine/README.md`](../../src/engine/README.md)
+- [`src/engine/SwordCombat.ts`](../../src/engine/SwordCombat.ts)
 - [`src/engine/TapNavigator.ts`](../../src/engine/TapNavigator.ts)
 - [`src/engine/Weapons.ts`](../../src/engine/Weapons.ts)
 - [`src/engine/combat.ts`](../../src/engine/combat.ts)

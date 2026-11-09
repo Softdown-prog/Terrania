@@ -820,6 +820,10 @@ noscript a {
 .equipment-detail h3, .backpack-details h3 { margin: 0 0 7px; color: #f1e3bf; font: 18px Georgia, serif; }
 .equipment-detail > strong { color: #edf3e0; }
 .equipment-detail p { margin: 6px 0; font-size: 12px; line-height: 1.5; }
+.weapon-picker { display: grid; grid-template-columns: repeat(auto-fit,minmax(165px,1fr)); gap: 7px;
+  max-height: 192px; padding: 4px 2px; overflow-y: auto; overscroll-behavior: contain; }
+.weapon-picker .secondary-button { width: 100%; text-align: left; white-space: normal; }
+
 .backpack-filters { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
 .backpack-filters button, .inventory-mobile-tabs button { min-height: 38px; padding: 6px 9px;
   border: 1px solid #647d6d; border-radius: 6px; background: #19322c; color: #dfddc8; font: 11px system-ui; }
@@ -1230,8 +1234,6 @@ noscript a {
   .atlas-controls button, .atlas-sectors button { transition: none; }
 }
 
-/* The original notice inherited pointer-events:none and the Fechar button
-   was visible but could not receive a tap. Only actual notices are mounted. */
 #gameNotice:has(#dismissTravelNotice) {
   z-index: 9;
   width: min(480px, calc(100% - 28px));

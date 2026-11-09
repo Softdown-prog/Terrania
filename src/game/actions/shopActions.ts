@@ -4,6 +4,7 @@ import type { FoodId } from "../../engine/Food.ts";
 import type { GearId, GearSlot } from "../../engine/Equipment.ts";
 import type { WeaponId } from "../../engine/Weapons.ts";
 import { FOODS } from "../../engine/Food.ts";
+import { experienceProgress } from "../../engine/Experience.ts";
 import { nearestNpc } from "../../world/npcs.ts";
 import { INVENTORY_FEEDBACK } from "../messages/inventoryFeedback.ts";
 
@@ -68,7 +69,7 @@ export function buySword({ sim, inInterior, menuOpen }: ShopContext): ShopResult
 
 export function equipWeapon({ sim }: ShopContext, weapon: WeaponId): ShopResult {
   if (sim.awaitingRespawn) return say("unavailable");
-  const result = sim.inventory.equipWeapon(weapon);
+  const result = sim.inventory.equipWeapon(weapon, experienceProgress(sim.experience).level);
   return say(result, result === "equipped");
 }
 

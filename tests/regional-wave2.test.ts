@@ -91,7 +91,7 @@ test("efeitos de combate: queimadura 4 s e tinta prejudicam precisão, atordoame
     assert.equal(h.startAttack(),true);
     for(let i=0;i<8;i++)h.update(1/60,{x:0,y:0},world);
     attempts.push(h.consumeStrike());
-    for(let i=0;i<30;i++)h.update(1/60,{x:0,y:0},world);
+    for(let i=0;i<50;i++)h.update(1/60,{x:0,y:0},world);
   }
   assert.deepEqual(attempts,[true,true,false]);
 });

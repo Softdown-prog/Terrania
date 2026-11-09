@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {Pool} from 'pg';
 import {migrate} from '../src/db/migrate.ts';
 import {readCatalog} from '../src/db/database.ts';
+import {gameCatalog} from '../src/db/catalog.ts';
 
 const url=process.env.TERRANIA_TEST_ADMIN_URL;
 test('PostgreSQL: migration, least privilege, vault invariants and concurrent atomic trades', {skip:!url},async()=>{
@@ -24,8 +25,13 @@ test('PostgreSQL: migration, least privilege, vault invariants and concurrent at
  };
  try{
   const dir=fileURLToPath(new URL('../db/migrations',import.meta.url));
-  assert.equal((await migrate(owner,dir)).catalogItems,16);assert.equal((await migrate(owner,dir)).schemaVersion,1);
-  assert.equal((await readCatalog(app)).items.length,16);
+  const expected=gameCatalog().length;
+  assert.equal(expected,24,'ten knight sword IDs plus existing 14 items');
+  assert.equal((await migrate(owner,dir)).catalogItems,expected);
+  assert.equal((await migrate(owner,dir)).schemaVersion,1);
+  const published=(await readCatalog(app)).items;
+  assert.equal(published.length,expected);
+  assert.ok(published.some(i=>i.id==='sword-astral'),'migration must publish the level-100 sword');
   for(const sql of ['SELECT * FROM market.accounts','CREATE TABLE public.bad(id int)',
    "UPDATE market.item_catalog SET name='bad'",'SELECT market.confirm_trade(gen_random_uuid(),gen_random_uuid(),1)'])
    await assert.rejects(app.query(sql),(e:unknown)=>(e as {code:string}).code==='42501');

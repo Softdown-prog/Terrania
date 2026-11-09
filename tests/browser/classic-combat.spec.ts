@@ -1,4 +1,5 @@
 import {test, expect} from '@playwright/test';
+import {browserEncounter, SEED} from '../helpers/browserEncounter.ts';
 
 test('o solo normal oferece combate por alvo e ajuda',async({page})=>{
   const errors:string[]=[];
@@ -87,9 +88,9 @@ test('ATACAR acerta um Slime sobreposto sem deslocar o herói', async ({ page },
   if (info.project.name === 'android') await page.locator('#attack').tap();
   else await page.keyboard.press('Space');
   await page.clock.runFor(240);
-  await expect(slime).toHaveAttribute('aria-label', 'Selecionar Slime, vida 1 de 2');
-  await page.clock.runFor(1700);
+  // Starting wooden sword causes 8 damage: a 2-HP Slime dies on the FIRST hit.
   await expect(slime).toHaveCount(0);
+  await page.clock.runFor(1700);
   await expect(page.locator('#xpText')).toHaveText('XP 10 / 30');
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
   expect(save).toMatchObject({ x: -560, y: -1008, kills: 1 });
@@ -129,62 +130,67 @@ test('trocar de criatura durante a preparação descarta o golpe em andamento', 
 
   await page.clock.runFor(1500);
   await expect(first).toHaveAttribute('aria-label',fullHp);
-  await expect(second).toHaveAttribute('aria-label','Selecionar Slime, vida 1 de 2');
+  await expect(second).toHaveCount(0);
+  const save=await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1') ?? 'null'));
+  expect(save?.defeated).toContain('-8,-8,1');
 });
 
 for (const cancel of ['button', 'escape'] as const) {
-  test(`cancelar por ${cancel} não encurta a recarga ao selecionar novamente`, async ({page}, info) => {
+  test(`cancelar por ${cancel} interrompe a perseguição e exige nova seleção`,
+    async ({page}, info) => {
     const errors: string[] = [];
-    page.on('pageerror', error => errors.push(error.message));
-    const mobId = '-2,-2,0';
-    await page.addInitScript(() => localStorage.setItem('terrania-origins-v1', JSON.stringify({
-      seed: 842136, x: -660, y: -1008, hp: 100, kills: 0, defeated: [],
-    })));
+    page.on('pageerror', e => errors.push(e.message));
+    const encounter = browserEncounter(true);
+    expect(Math.hypot(encounter.mob.x - encounter.hero.x,
+      encounter.mob.y - encounter.hero.y)).toBeGreaterThanOrEqual(179);
+    const mobId = encounter.mob.id;
+    await page.addInitScript(({seed, hero}) => {
+      localStorage.setItem('terrania-origins-v1',
+        JSON.stringify({seed, x:hero.x, y:hero.y, hp:100, kills:0, defeated:[]}));
+      localStorage.setItem('terrania-preferences-v1',
+        JSON.stringify({zoom:1, effects:false, cameraMotion:false}));
+    }, {seed:SEED, hero:encounter.hero});
     await page.setViewportSize(cancel === 'escape' ? {width:600,height:390} :
       {width:info.project.name === 'android' ? 390 : 1200,height:844});
+
+    // Phaser drives both the simulation and the Angular HUD with real frames.
+    // Freezing Playwright's clock before navigation left the Battle List empty
+    // even while the same real Slime was visible in the rendered game.
+    // The separate Battle List E2E uses real time and this same encounter.
     await page.goto('/jogar/?modo=classico');
     await expect(page.locator('canvas#game')).toBeVisible();
     const toggle = page.locator('#battleToggle');
     if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
     const row = page.locator(`.battle-entry[data-creature-id="${mobId}"]`);
-    await expect(row).toBeVisible();
-    // Observe real DOM health and the game's saved defeat; do not modify the simulation clock.
-    await page.evaluate(id => {
-      const observer = new MutationObserver(() => {
-        const target = document.querySelector(`[data-creature-id="${id}"]`);
-        if (target?.getAttribute('aria-label')?.includes('vida 1 de 2') &&
-            !performance.getEntriesByName('classic-first-hit').length)
-          performance.mark('classic-first-hit');
-        const save = JSON.parse(localStorage.getItem('terrania-origins-v1') ?? 'null');
-        if (!target && save?.defeated?.includes(id) &&
-            performance.getEntriesByName('classic-first-hit').length &&
-            !performance.getEntriesByName('classic-defeated').length) {
-          performance.mark('classic-defeated');
-          observer.disconnect();
-        }
-      });
-      // The sidebar survives Angular's empty-list branch; the list can be removed.
-      observer.observe(document.querySelector('#battleSidebar')!, {
-        subtree:true,childList:true,attributes:true,attributeFilter:['aria-label'],
-      });
-    }, mobId);
+    await expect(row).toHaveAttribute('aria-label','Selecionar Slime, vida 2 de 2');
+
+    // A valid 180px encounter and 1x zoom leave room for a real mobile touch
+    // to cancel before the player can reach melee range.
     if (info.project.name === 'android') await row.tap(); else await row.click();
-    await page.waitForFunction(() => performance.getEntriesByName('classic-first-hit').length === 1);
+    await expect(page.locator('#classicTarget')).toContainText('Slime');
     if (cancel === 'button') {
       if (info.project.name === 'android') await page.locator('#stopTarget').tap();
       else await page.locator('#stopTarget').click();
     } else await page.keyboard.press('Escape');
     await expect(page.locator('#classicTarget')).toHaveCount(0);
     await expect(row).toHaveAttribute('aria-pressed','false');
+
+    // With no selected target, waiting cannot kill the original creature.
+    await page.waitForTimeout(900);
+    await expect(row).toHaveAttribute('aria-label','Selecionar Slime, vida 2 de 2');
+    const untouched = await page.evaluate(id =>
+      JSON.parse(localStorage.getItem('terrania-origins-v1') ?? 'null')
+        ?.defeated?.includes(id) === true, mobId);
+    expect(untouched).toBe(false);
+
+    // Reselecting with real input resumes the chase and credits exactly this kill.
     if (info.project.name === 'android') await row.tap(); else await row.click();
-    await expect(row).toHaveAttribute('aria-pressed','true');
-    await page.waitForFunction(() => performance.getEntriesByName('classic-defeated').length === 1,
-      undefined, {timeout:15000});
-    const elapsed = await page.evaluate(() =>
-      performance.getEntriesByName('classic-defeated')[0]!.startTime -
-      performance.getEntriesByName('classic-first-hit')[0]!.startTime);
-    // HUD refresh is 0.2s; leave margin while detecting the old ~0.42s shortcut.
-    expect(elapsed).toBeGreaterThanOrEqual(1000);
+    await expect(page.locator('#classicTarget')).toContainText('Slime');
+    await expect.poll(() => page.evaluate(id => {
+      const saved = JSON.parse(localStorage.getItem('terrania-origins-v1') ?? 'null');
+      return saved?.defeated?.includes(id) === true;
+    }, mobId), {timeout:15000}).toBe(true);
+    await expect(row).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 }

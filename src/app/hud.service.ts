@@ -2,7 +2,7 @@ import { computed, Injectable, signal } from '@angular/core';
 import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL } from '../actors/MountCatalog.ts';
 import type { MountAction, MountView } from '../engine/MountStable.ts';
-import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
+import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
@@ -88,6 +88,11 @@ export class HudService implements GameUi {
   readonly inventoryFeedback = signal('');
   readonly quickPotionFeedback = signal('');
   readonly weapons = WEAPONS;
+  readonly availableWeapons = computed<readonly WeaponId[]>(() => {
+    const level=this.progression()?.level ?? 1;
+    const forged=this.loadout()?.forged ?? false;
+    return WEAPON_IDS.filter(id=>weaponUnlocked(id,level,forged));
+  });
   readonly equipmentSlots = EQUIPMENT_SLOTS;
   readonly gearCatalog = GEAR;
   readonly gear = signal<GearState | null>(null, { equal: (a, b) => a === b ||
@@ -128,13 +133,13 @@ export class HudService implements GameUi {
     }
     const loadout = this.loadout();
     if (loadout) {
-      for (const id of ['starter', 'forge'] as const) {
-        if (id === loadout.equipped || (id === 'forge' && !loadout.forged)) continue;
+      for (const id of this.availableWeapons()) {
+        if (id === loadout.equipped) continue;
         const item = WEAPONS[id];
         result.push({ id: 'weapon-' + id, kind: 'weapon', weaponId: id, name: item.name,
           icon: weaponItemIcon(id), quantity: 1, damage: item.damage,
           comparedDamage: WEAPONS[loadout.equipped].damage,
-          description: item.damage + ' dano · ' + item.interval + 's entre golpes' });
+          description: item.damage + ' de ataque · Nível ' + item.level + ' · ' + item.interval + 's entre golpes' });
       }
     }
     return result;
@@ -298,7 +303,6 @@ export class HudService implements GameUi {
     (section === 'bag' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
   }
   setQuickPotionFeedback(message: string): void { this.quickPotionFeedback.set(message); }
-  /** Transition feedback must not become a permanent obstruction on mobile. */
   setTravelNotice(message: string): void {
     this.dismissTravelNotice();
     if (!message) return;

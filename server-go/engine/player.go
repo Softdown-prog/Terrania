@@ -4,7 +4,9 @@ import "math"
 
 const (
 	AttackDuration = 0.28
-	AttackCooldown = 0.42
+	// Keep the experimental Go parity reference aligned with the canonical
+	// Knight starter (oak) cooldown. The solo TypeScript game remains authoritative.
+	AttackCooldown = 0.8
 	AttackWindup = 0.07
 	AttackReach = 52.
 )

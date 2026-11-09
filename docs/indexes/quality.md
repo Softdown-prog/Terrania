@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (65)
+## Todos os arquivos deste módulo (67)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -47,6 +47,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/experience.test.ts`](../../tests/experience.test.ts)
 - [`tests/file-size-budget.test.ts`](../../tests/file-size-budget.test.ts)
 - [`tests/helpers/artAssets.ts`](../../tests/helpers/artAssets.ts)
+- [`tests/helpers/browserEncounter.ts`](../../tests/helpers/browserEncounter.ts)
 - [`tests/helpers/recordingContext.ts`](../../tests/helpers/recordingContext.ts)
 - [`tests/hero-pose.test.ts`](../../tests/hero-pose.test.ts)
 - [`tests/interactions.test.ts`](../../tests/interactions.test.ts)
@@ -54,6 +55,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/inventory-storage.test.ts`](../../tests/inventory-storage.test.ts)
 - [`tests/inventory.test.ts`](../../tests/inventory.test.ts)
 - [`tests/item-catalog.test.ts`](../../tests/item-catalog.test.ts)
+- [`tests/knight-swords.test.ts`](../../tests/knight-swords.test.ts)
 - [`tests/landmarks.test.ts`](../../tests/landmarks.test.ts)
 - [`tests/mcp-navigator.test.ts`](../../tests/mcp-navigator.test.ts)
 - [`tests/mobile-controls.test.ts`](../../tests/mobile-controls.test.ts)

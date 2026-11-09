@@ -1,9 +1,24 @@
-# ADR 0008 — Espadas e recarga
+# ADR 0008 — Dez espadas procedurais e recarga (atualização 08/11/2026)
 
-O herói começa com a Espada de viagem, que causa 1 de dano após 70 ms de preparo e permite iniciar um ataque a cada 1,6 s no combate por alvo. Toren vende uma Espada da Travessia por 5 géis ao herói vivo que estiver perto dele. A compra é única e entrega a espada na bolsa. A forjada causa 2 de dano após 180 ms de preparo e tem intervalo de 2 s. A espada inicial finaliza um Slime com 1 HP mais cedo. A forjada derrota um Slime com 2 HP em um só golpe. É possível voltar à arma inicial pela bolsa.
+O jogo solo passa a usar as dez espadas da sprite sheet autoral em um catálogo canônico de progressão do Cavaleiro. Nível máximo agora é **100**, sem alterar a fórmula existente de experiência. O nível inicial do herói continua sendo 1; a Espada de Treino (tier nível 0) está disponível desde o início.
 
-`Weapons.ts` define os atributos e o preço. A bolsa armazena posse e equipamento. Cada ataque fixa dano, preparo e recarga no início. Trocar de espada ou de alvo preserva a recarga vigente. O impacto continua validando alvo, alcance e colisão no primeiro tick após completar o preparo. O solo guarda posse e escolha no save. Saves antigos começam com a espada inicial. A derrota conserva a arma e a posse no solo e na conexão Node.
+| Arma | ID | Nível | Dano | Intervalo | Habilidade |
+| --- | --- | ---: | ---: | ---: | --- |
+| Espada de Treino de Carvalho | starter | 0 | 8 | 0,8 s | poeira |
+| Espada Curta de Ferro Batido | forge | 10 | 16 | 1,0 s | aço |
+| Gládio de Bronze Temperado | bronze | 20 | 26 | 0,95 s | feixe duplo |
+| Montante de Cobre Rubro | copper | 30 | 38 | 1,35 s | empurrão 12 px |
+| Lâmina Serrilhada das Dunas | dunes | 45 | 52 | 1,15 s | sangramento 15%, 3 s |
+| Espada de Cristal Boreal | boreal | 60 | 68 | 1,1 s | lentidão 20%, 2 s |
+| Lâmina Vulcânica de Obsidiana | obsidian | 70 | 84 | 1,25 s | queimadura 6 HP/s, 4 s |
+| Cutelo Peçonhento do Charco | marsh | 80 | 98 | 1,3 s | 10 HP/s, 5 s |
+| Sabre Abissal da Tempestade | tempest | 90 | 115 | 1,15 s | corrente até 2 inimigos |
+| Espada Astral de Terrania | astral | 100 | 140 | 1,4 s | arco maior e 25% penetração |
 
-O navegador pede `equipment=forge` além de `inventory=loot`, movimento por tiles e combate por alvo. A sala Node confirma o suporte ao incluir `inventory.loadout` no estado privado. Compra e trocas de arma usam as ações `buy-sword`, `equip-starter` e `equip-forge` no comando `inventory` do protocolo v3, com o mesmo recibo monotônico de [ADR 0007](0007-inventario-da-sala.md). Preço, posse, saldo, posição, dano e recarga são determinados pela sala. Uma conexão nova volta à arma inicial. Sessões sem essa capacidade usam os atributos iniciais.
+**Decisões compatíveis:** o ID legado forge identifica a espada de ferro, preservando a compra feita com Toren e os saves antigos. A compra continua a custar 5 géis, mas equipar exige nível 10. As outras armas são desbloqueadas por nível, sem inventar preços nem receitas de crafting ainda não definidos. Os intervalos não especificados originalmente são parâmetros provisórios para o balanceamento, incluindo o bronze 5% mais rápido que uma cadência-base de 1 s.
 
-Durante um golpe da forjada, o estado visual do herói carrega `attackWeapon: "forge"`, representando a arma comprometida com a animação. Em repouso, o campo opcional `equippedWeapon: "forge"` indica a espada realmente equipada, sem expor o inventário. Quando os campos são omitidos, o cliente usa a espada inicial. Trocar de arma durante o golpe não modifica o ataque iniciado: só a pose ociosa passa a usar a nova seleção. A animação dura 280 ms para ambas as espadas.
+**Efeitos reais:** SwordCombat.ts executa status, penetração, empurrão e corrente em até 2 inimigos adjacentes com colisão real. Slime.ts e RegionalMonster.ts atualizam temporizadores de sangramento, fogo, veneno e gelo. CaveRoom.ts e OfflineSimulation.ts registram mortes por dano periódico, atribuindo experiência e drops uma única vez. Sangramento usa 2 HP/s por 3 s, corrente usa 30% do dano contra dois vizinhos a até 52 px: ambos são valores provisórios. O ataque astral alcança 72 px e até três alvos no arco com checagem de linha de visão. Apenas criaturas justificadamente blindadas têm defesa especial.
+
+**Arte:** src/render/swords.ts contém dez lâminas e dez rastros Canvas 2D baseados na imagem do criador, sem usar sprite/PNG. render/actors.ts apresenta as espadas equipadas, inclusive na prévia do inventário, e Effects.ts usa partículas específicas. As diferenças estéticas finais ainda requerem screenshots reais em desktop e Android.
+
+**Limites:** efeitos elementais são ligados ao acerto, mas objetos-projéteis completos e trajetórias físicas separadas não fazem parte deste PR. Não há ainda quest de obtenção nem crafting das espadas superiores. Essa expansão não restaura o multiplayer. Testes de nível, save, cooldown, status, loot, arte e navegador devem ficar verdes antes do merge.

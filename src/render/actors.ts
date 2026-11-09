@@ -1,3 +1,4 @@
+import { drawKnightSword, drawKnightTrail } from "./swords.ts";
 import type { Player } from "../actors/Player.ts";
 import type { Slime } from "../actors/Slime.ts";
 import type { GearState } from "../engine/Equipment.ts";
@@ -38,20 +39,6 @@ const PAL = {
   outline: "#142a2a",
 };
 
-function weaponGlint(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, alpha: number): void {
-  if (alpha <= 0.01) return;
-  ctx.save();
-  ctx.globalAlpha = Math.min(1, alpha);
-  ctx.fillStyle = "#fffbe6";
-  ctx.beginPath();
-  ctx.moveTo(x, y - size); ctx.lineTo(x + size * 0.22, y - size * 0.22);
-  ctx.lineTo(x + size, y); ctx.lineTo(x + size * 0.22, y + size * 0.22);
-  ctx.lineTo(x, y + size); ctx.lineTo(x - size * 0.22, y + size * 0.22);
-  ctx.lineTo(x - size, y); ctx.lineTo(x - size * 0.22, y - size * 0.22);
-  ctx.closePath(); ctx.fill();
-  ctx.restore();
-}
-
 interface WeaponFrame { ox: number; oy: number; rot: number; attacking: boolean; hand: number }
 function weaponFrame(player: HeroVisual): WeaponFrame {
   const attacking = player.attackTime > 0;
@@ -65,85 +52,19 @@ function weaponFrame(player: HeroVisual): WeaponFrame {
 }
 
 /** Rastro em forma de crescente atrás da lâmina durante a varredura. */
-function renderTrail(ctx: CanvasRenderingContext2D, player: HeroVisual, forge: boolean): void {
-  const trail = swingTrail(player.attackTime, player.attackWeapon);
-  if (trail.alpha <= 0.02 || trail.angles.length < 2) return;
-  const facing = Math.atan2(player.faceY, player.faceX);
-  const inner = 20, outer = 44;
-  const col = forge ? "#ffb066" : "#fff3c8";
-  ctx.save();
-  ctx.translate(0, -12);
-  for (let pass = 0; pass < 2; pass++) {
-    const r1 = pass ? 32 : inner;
-    ctx.beginPath();
-    trail.angles.forEach((a, i) => {
-      const x = Math.cos(facing + a) * outer, y = Math.sin(facing + a) * outer;
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    });
-    for (let i = trail.angles.length - 1; i >= 0; i--) {
-      const a = (trail.angles[i] ?? 0) + facing;
-      ctx.lineTo(Math.cos(a) * r1, Math.sin(a) * r1);
-    }
-    ctx.closePath();
-    ctx.fillStyle = rgba(col, trail.alpha * (pass ? 0.5 : 0.22));
-    ctx.fill();
-  }
-  ctx.strokeStyle = rgba("#ffffff", trail.alpha * 0.85);
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  trail.angles.forEach((a, i) => {
-    const x = Math.cos(facing + a) * outer, y = Math.sin(facing + a) * outer;
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-  ctx.restore();
+/** The strike and weapon use exactly the equipped tier from the shared sword catalog. */
+function renderTrail(ctx: CanvasRenderingContext2D, player: HeroVisual): void {
+  const weapon = player.attackWeapon ?? "starter";
+  const trail = swingTrail(player.attackTime,weapon);
+  drawKnightTrail(ctx,weapon,Math.atan2(player.faceY,player.faceX),trail.angles,trail.alpha);
 }
 
 function renderWeapon(ctx: CanvasRenderingContext2D, frame: WeaponFrame, player: HeroVisual,
   tone: (c: string) => string, impact: number): void {
-  // During a committed strike render the striking sword; when idle use the loadout.
-  const forge = frame.attacking ? player.attackWeapon === "forge" :
-    (player.equippedWeapon ?? player.attackWeapon) === "forge";
-  const len = frame.attacking ? 45 : 33;
-  ctx.save();
-  ctx.translate(frame.ox, frame.oy);
-  ctx.rotate(frame.rot);
-  // Cabo com empunhadura trançada e pomo.
-  ctx.fillStyle = tone(PAL.leatherD);
-  ctx.fillRect(4, -2.1, 9, 4.2);
-  ctx.fillStyle = tone(PAL.leather);
-  for (let i = 0; i < 4; i++) ctx.fillRect(5 + i * 2.2, -2.1, 1.2, 4.2);
-  ellipse(ctx, 3.2, 0, 2.3, 2.5, tone(forge ? "#e2a24f" : PAL.gold));
-  // Guarda.
-  ctx.fillStyle = tone(forge ? "#e2a24f" : PAL.gold);
-  ctx.fillRect(12, -6.4, 3, 12.8);
-  ctx.fillStyle = tone(forge ? "#fff0b8" : "#f3e3a8");
-  ctx.fillRect(12, -6.4, 1, 12.8);
-  // Lâmina em duas faces com friso central.
-  const blade = ctx.createLinearGradient(15, 0, len, 0);
-  if (forge) {
-    blade.addColorStop(0, "#e4e0cf"); blade.addColorStop(0.55, "#efb26a"); blade.addColorStop(1, "#ff7c35");
-  } else {
-    blade.addColorStop(0, "#c8d2cf"); blade.addColorStop(1, "#f1f5ea");
-  }
-  ctx.fillStyle = tone(PAL.steelD);
-  ctx.beginPath();
-  ctx.moveTo(15, -3.4); ctx.lineTo(len - 7, -2.7); ctx.lineTo(len, 0);
-  ctx.lineTo(len - 7, 2.7); ctx.lineTo(15, 3.4); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = blade;
-  ctx.beginPath();
-  ctx.moveTo(15, -3.1); ctx.lineTo(len - 7, -2.4); ctx.lineTo(len, 0); ctx.lineTo(15, 0); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = rgba("#6f7f7e", 0.7);
-  ctx.lineWidth = 0.8;
-  ctx.beginPath(); ctx.moveTo(17, 0); ctx.lineTo(len - 6, 0); ctx.stroke();
-  ctx.strokeStyle = rgba("#ffffff", 0.9);
-  ctx.beginPath(); ctx.moveTo(16, -2.6); ctx.lineTo(len - 8, -2.1); ctx.stroke();
-  if (forge && frame.attacking) {
-    const glow = ctx.createRadialGradient(len - 4, 0, 1, len - 4, 0, 14);
-    glow.addColorStop(0, "rgba(255,160,70,.55)"); glow.addColorStop(1, "rgba(255,120,40,0)");
-    ctx.fillStyle = glow; ctx.fillRect(len - 18, -14, 28, 28);
-  }
-  weaponGlint(ctx, len - 12, -1, 5 * impact + 1.6 * (frame.attacking ? 1 : 0), impact);
+  const weapon=frame.attacking ? player.attackWeapon ?? "starter" :
+    player.equippedWeapon ?? player.attackWeapon ?? "starter";
+  ctx.save();ctx.translate(frame.ox,frame.oy);ctx.rotate(frame.rot);
+  drawKnightSword(ctx,weapon,impact,tone);
   ctx.restore();
 }
 
@@ -519,7 +440,7 @@ export function renderHero(
   if (back) { swordArm(); }
   if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); }
   // Rastro e brilho por cima de tudo para ler bem em qualquer direção.
-  renderTrail(ctx, player, player.attackWeapon === "forge");
+  renderTrail(ctx, player);
   ctx.restore();
 }
 

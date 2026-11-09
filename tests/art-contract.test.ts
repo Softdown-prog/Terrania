@@ -93,7 +93,7 @@ test("arte: todo desenhador exportado está registrado em tests/helpers/artAsset
 test("arte: exceções são fechadas e exigem revisão explícita de novos pintores", () => {
   assert.deepEqual(Object.keys(NOT_AN_ASSET).sort(), [
     "drawCaveAtlas", "drawCaveView", "drawInterior", "drawWorldAtlas",
-    "drawWorldView", "ellipse", "limb", "pill", "softShadow",
+    "drawWorldView", "drawKnightTrail", "ellipse", "limb", "pill", "softShadow",
   ].sort());
 });
 

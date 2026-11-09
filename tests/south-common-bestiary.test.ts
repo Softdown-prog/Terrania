@@ -136,10 +136,10 @@ test("troll: recupera um HP por segundo somente após afastar-se do combate",()=
 test("cacto: apenas espada curta provoca contra-ataque fixo de dois HP",()=>{
   const hero=new Player(),cactus=new RegionalMonster("thorns","cactus-sprout",0,0);
   cactus.onSwordHit(hero,"starter");
-  assert.equal(hero.hp,98);
+  assert.equal(hero.hp,100);
   cactus.onSwordHit(hero,"forge");
   assert.equal(hero.hp,98);
-  cactus.onSwordHit(hero,"starter");
+  cactus.onSwordHit(hero,"forge");
   assert.equal(hero.hp,96);
 });
 

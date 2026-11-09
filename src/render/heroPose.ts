@@ -7,7 +7,7 @@ const smooth = (t: number): number => t * t * (3 - 2 * t);
  * Player.consumeStrike permits the hit; follow-through cannot produce damage.
  */
 export function swordSwing(attackTime: number, weapon?: WeaponId): { angle: number; trail: boolean } {
-  const windup = WEAPONS[weapon === "forge" ? "forge" : "starter"].windup;
+  const windup = WEAPONS[weapon ?? "starter"].windup;
   const elapsed = Math.max(0, Math.min(ATTACK_DURATION, ATTACK_DURATION - attackTime));
   const beforeHit = elapsed <= windup;
   const progress = beforeHit ? elapsed / windup : (elapsed - windup) / (ATTACK_DURATION - windup);

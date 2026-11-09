@@ -16,6 +16,45 @@ export class Slime implements CreatureView {
   hurtTime = 0;
   private knockX = 0;
   private knockY = 0;
+  /** Independent elemental DOT and 20% movement slow from Knight swords. */
+  private readonly swordEffects = new Map<"bleed" | "fire" | "poison" | "ice",{
+    seconds:number; damage:number; elapsed:number
+  }>();
+  get swordSpeedMultiplier():number {
+    return this.swordEffects.has("ice") ? .8 : 1;
+  }
+  applySwordStatus(kind:"bleed" | "fire" | "poison" | "ice",
+    seconds:number, damage=0):void {
+    if(this.hp<=0 || !Number.isFinite(seconds) || seconds<=0 || seconds>10 ||
+      !Number.isFinite(damage) || damage<0 || damage>20)return;
+    const existing=this.swordEffects.get(kind);
+    this.swordEffects.set(kind,{seconds,damage,elapsed:existing?.elapsed??0});
+  }
+  /** Tick once per simulation step; deterministic, capped damage, never wall-clock based. */
+  protected tickSwordStatuses(dt:number):void {
+    if(!Number.isFinite(dt) || dt<=0)return;
+    for(const [kind,fx] of this.swordEffects){
+      const active=Math.min(dt,fx.seconds);
+      fx.seconds=Math.max(0,fx.seconds-dt);
+      fx.elapsed+=active;
+      while(fx.elapsed>=1 && this.hp>0){
+        fx.elapsed-=1;
+        this.hp=Math.max(0,this.hp-fx.damage);
+        if(fx.damage>0)this.hurtTime=Math.max(this.hurtTime,.16);
+      }
+      if(fx.seconds<=0)this.swordEffects.delete(kind);
+    }
+  }
+  /** Armor is confined to notably armored species; ordinary fauna remains unarmored. */
+  get defense():number {
+    switch(this.kind){
+      case "basalt-golem": return 20;
+      case "coral-crab": return 12;
+      case "tundra-mammoth": return 18;
+      case "clay-troll": return 8;
+      default: return 0;
+    }
+  }
   readonly id: string;
   constructor(id: string, x: number, y: number, kind: CreatureKind = "slime") {
     this.kind = kind;
@@ -25,6 +64,8 @@ export class Slime implements CreatureView {
     this.y = y;
   }
   update(dt: number, player: Player, world: CollisionMap, defense = 0): void {
+    this.tickSwordStatuses(dt);
+    if(this.hp<=0)return;
     this.pulse += dt * 5;
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     moveBody(this, this.knockX * dt, this.knockY * dt, world);
@@ -37,7 +78,7 @@ export class Slime implements CreatureView {
       dy = player.y - this.y,
       d = Math.hypot(dx, dy);
     if (d < 230 && d > 16) {
-      const speed = 38 * (0.65 + 0.35 * Math.max(0, Math.sin(this.pulse)));
+      const speed = 38 * this.swordSpeedMultiplier * (0.65 + 0.35 * Math.max(0, Math.sin(this.pulse)));
       if (this.hurtTime <= 0)
         moveBody(this, (dx / d) * speed * dt, (dy / d) * speed * dt, world);
     }

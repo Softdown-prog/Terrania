@@ -27,7 +27,7 @@ test("classic attack fires automatically on a fixed interval, not every frame",(
   assert.equal(c.tick(1/60,h,mobs,OPEN),true);
   assert.equal(c.cooldown,CLASSIC_ATTACK_INTERVAL);
   h.startAttack();
-  for(let i=0;i<50;i++){h.update(1/60,STILL,OPEN);assert.equal(c.tick(1/60,h,mobs,OPEN),false);}
+  for(let i=0;i<Math.floor(CLASSIC_ATTACK_INTERVAL*60)-2;i++){h.update(1/60,STILL,OPEN);assert.equal(c.tick(1/60,h,mobs,OPEN),false);}
   let triggered=false;
   for(let i=0;i<50;i++){
     h.update(1/60,STILL,OPEN);
@@ -70,7 +70,7 @@ test("classic auto-strike damages only its selected slime; old manual strike sta
     const attack=c.tick(1/60,sim.player,sim.slimes,sim.collision);
     sim.update(1/60,STILL,attack,c.strikeTargetId);
   }
-  assert.equal(one.hp,1);
+  assert.equal(one.hp,0);
   assert.equal(two.hp,2);
   const normal=new OfflineSimulation(842136);
   normal.update(0,STILL,false);normal.slimes.clear();
@@ -79,8 +79,8 @@ test("classic auto-strike damages only its selected slime; old manual strike sta
   normal.player.faceX=1;normal.player.faceY=0;
   normal.update(1/60,STILL,true);
   for(let i=0;i<19;i++)normal.update(1/60,STILL,false);
-  assert.equal(a.hp,1);
-  assert.equal(b.hp,1,"legacy manual attack remains unchanged outside classic mode");
+  assert.equal(a.hp,2,"a manual sword strike must not deal area damage to the farther mob");
+  assert.equal(b.hp,0,"manual sword contact chooses the nearest eligible mob");
 });
 
 test("classic without a live target never turns a pending strike into area damage",()=> {
@@ -95,9 +95,9 @@ test("classic without a live target never turns a pending strike into area damag
 });
 
 for (const [change, afterWindup, afterNextSwing] of [
-  ["switch", [2, 2], [2, 1]],
-  ["cancel and reselect", [2, 2], [1, 2]],
-  ["reselect same target", [1, 2], [0, 2]],
+  ["switch", [2, 2], [2, 0]],
+  ["cancel and reselect", [2, 2], [0, 2]],
+  ["reselect same target", [0, 2], [0, 2]],
 ] as const) {
   test(`a classic swing respects its original selection during windup: ${change}`, () => {
     const sim = new OfflineSimulation(842136);
@@ -121,7 +121,7 @@ for (const [change, afterWindup, afterNextSwing] of [
     for (let frame = 0; frame < 20; frame++) step();
 
     assert.deepEqual([first.hp, second.hp], afterWindup);
-    assert.ok(fight.cooldown > 1);
+    assert.ok(fight.cooldown > 0);
 
     for (let frame = 0; frame < 90; frame++) step();
     assert.deepEqual([first.hp, second.hp], afterNextSwing);
@@ -137,7 +137,8 @@ test("cancelar e selecionar novamente não antecipa o intervalo clássico", () =
     hero.update(1 / 60, STILL, OPEN);
     assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), false);
   }
-  assert.equal(hero.attackCooldown, 0, "a recarga do jogador já acabou, mas a clássica não");
+  assert.ok(hero.attackCooldown > 0 && hero.attackCooldown < CLASSIC_ATTACK_INTERVAL,
+    "the starter weapon keeps its own 0.8s cooldown independently of classic targeting");
   const remaining = fight.cooldown;
   fight.cancel();
   assert.equal(fight.targetId, null);
@@ -158,7 +159,7 @@ test("perder um alvo pela simulação ou pelo HUD preserva a recarga para o pró
     if (loss === "label") assert.equal(fight.label(mobs), null);
     else assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), false);
     assert.equal(fight.targetId, null);
-    assert.ok(fight.cooldown > 1.5);
+    assert.ok(fight.cooldown > CLASSIC_ATTACK_INTERVAL - 0.1);
     fight.select(next.id, mobs);
     assert.equal(fight.tick(1 / 60, hero, mobs, OPEN), false);
   }
@@ -176,7 +177,7 @@ test("cancelar repetidamente não aumenta a cadência de ataques", () => {
     }
     hero.update(1 / 60, STILL, OPEN);
   }
-  assert.equal(attacks.length, 3);
+  assert.equal(attacks.length, Math.ceil(200/60/CLASSIC_ATTACK_INTERVAL));
   for (let i = 1; i < attacks.length; i++)
     assert.ok((attacks[i]! - attacks[i - 1]!) / 60 >= CLASSIC_ATTACK_INTERVAL - 1 / 60);
 });
