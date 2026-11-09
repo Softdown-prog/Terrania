@@ -1,6 +1,3 @@
-import { rollCreatureLoot } from "../actors/RegionalMonster.ts";
-import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
-import { grantExperience } from "../engine/Experience.ts";
 import { Input } from "../input/Input.ts";
 import { WorldRenderer } from "../render/WorldRenderer.ts";
 import { Camera } from "../render/Camera.ts";
@@ -11,13 +8,10 @@ import {
 } from "../engine/OfflineSimulation.ts";
 import { loadLocalSave, saveLocal } from "../storage/localSave.ts";
 import { CanvasScene } from "../ui/CanvasScene.ts";
-import type { GameUi, NpcOffer, Preferences } from "../ui/GameUi.ts";
+import type { GameUi, Preferences } from "../ui/GameUi.ts";
 import { nearestNpc, npcDialogue } from "../world/npcs.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
-import { POTION_GEL_PRICE, POTION_HEAL, QUEST_REWARD_POTIONS, type InventoryOutcome } from "../engine/Inventory.ts";
-import { FOODS, type FoodId } from "../engine/Food.ts";
-import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../engine/Weapons.ts";
-import type { GearId, GearSlot } from "../engine/Equipment.ts";
+import { QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { CaveRoom } from "../engine/CaveRoom.ts";
 import { caveEntranceNear, type CaveEntrance } from "../world/caves.ts";
@@ -27,41 +21,17 @@ import { ClassicCombat, nearestCombatCreature } from "../engine/ClassicCombat.ts
 import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
 import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
-import { levelForExperience } from "../engine/Experience.ts";
-import { sampleMountCaptureLoot,type MountAction,type MountActionResult } from "../engine/MountStable.ts";
-import { WILD_WARHORSE,WILD_HOOFPRINTS,STABLE_MASTER,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
+import type { MountAction } from "../engine/MountStable.ts";
+import { runMountAction } from "../engine/MountActions.ts";
+import { applyCaveVictories } from "../engine/CaveRewards.ts";
+import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, usePotion,
+  type ShopContext, type ShopResult } from "./actions/shopActions.ts";
+import { mountQuestAction, npcOffer, questStepId, surfaceNearbyAction } from "./interactions.ts";
+import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
 import { currentMountQuestStep } from "../engine/MountQuestState.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/Experience.ts";
 
-const NPC_ACTIONS = { character: "talk", sign: "read", door: "enter" } as const;
-const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
-  "healed": `Poção utilizada! Vida restaurada em até ${POTION_HEAL} pontos.`,
-  "full-health": "Sua vida já está completa.",
-  "no-potion": "Você não possui poções de cura.",
-  "ate": "Refeição feita. Sua vida será recuperada gradualmente.",
-  "no-food": "Esse alimento acabou na sua bolsa.",
-  "eat-cooldown": "Aguarde alguns segundos antes de comer novamente.",
-  "nutrition-full": "Você ainda está alimentado. Aguarde a recuperação antes de comer mais.",
-  "food-traded": "Lina colocou o alimento na sua bolsa.",
-  "food-stack-full": "A pilha desse alimento está cheia.",
-  "unavailable": "Retorne à vila para continuar.",
-  "too-far": "Aproxime-se de Lina perto da hospedaria para trocar.",
-  "insufficient-gel": `Você precisa de ${POTION_GEL_PRICE} unidades de gel para a troca.`,
-  "potions-full": "A pilha de poções está cheia.",
-  "traded": "Lina colocou uma poção de cura na sua bolsa.",
-  "purchased": `Toren colocou a ${WEAPONS.forge.name} na sua bolsa.`,
-  "already-owned": "Você já possui essa espada.",
-  "insufficient-sword-gel": `Você precisa de ${FORGE_SWORD_PRICE} unidades de gel para comprar a espada.`,
-  "too-far-from-forge": "Aproxime-se de Toren para comprar a espada.",
-  "equipped": "Espada equipada.",
-  "already-equipped": "Essa espada já está equipada.",
-  "not-owned": "Você ainda não possui essa espada.",
-  "gear-equipped": "Item equipado.",
-  "gear-removed": "Item guardado na bolsa.",
-  "gear-unchanged": "O espaço já está assim.",
-  "wrong-slot": "Este item pertence a outro espaço.",
-};
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
@@ -112,24 +82,16 @@ export class Game {
       this.accumulator = 0;
     }, { signal: this.lifecycle.signal });
     this.hud.onNewWorld(() => this.newWorld());
-    this.hud.onPotionTrade(() => this.tradeGelForPotion());
-    this.hud.onSwordPurchase(() => this.buySword());
-    this.hud.onFoodUse(id => this.eatFood(id));
-    this.hud.onFoodTrade(id => this.buyFood(id));
-    this.hud.onWeaponEquip(weapon => this.equipWeapon(weapon));
-    this.hud.onGearEquip((slot, item) => this.equipGear(slot, item));
+    this.hud.onPotionTrade(() => this.shop(tradeGelForPotion));
+    this.hud.onSwordPurchase(() => this.shop(buySword));
+    this.hud.onFoodUse(id => this.shop(context => eatFood(context, id)));
+    this.hud.onFoodTrade(id => this.shop(context => buyFood(context, id)));
+    this.hud.onWeaponEquip(weapon => this.shop(context => equipWeapon(context, weapon)));
+    this.hud.onGearEquip((slot, item) => this.shop(context => equipGear(context, slot, item)));
     this.hud.onTalk(() => this.talkToNpc());
     this.hud.onMountAction(action=>this.mountAction(action));
     this.hud.onRespawn(() => this.respawn());
-    this.hud.onPotionUse(() => {
-      if (this.sim.awaitingRespawn || this.cave?.player.hp === 0) return INVENTORY_FEEDBACK.unavailable;
-      if (!this.sim.inventory.usePotion(this.cave?.player ?? this.sim.player))
-        return (this.cave?.player ?? this.sim.player).hp >= (this.cave?.player ?? this.sim.player).maxHp
-          ? INVENTORY_FEEDBACK["full-health"] : INVENTORY_FEEDBACK["no-potion"];
-      this.save();
-      this.updateHud();
-      return INVENTORY_FEEDBACK.healed;
-    });
+    this.hud.onPotionUse(() => this.shop(usePotion));
     this.updateHud();
   }
   private updateHud(): void {
@@ -220,19 +182,8 @@ export class Game {
       this.leaveInterior();
       return;
     }
-    const {x,y}=this.sim.player;
-    const nearby=(point:{readonly x:number;readonly y:number})=>
-      Math.hypot(x-point.x,y-point.y)<=MOUNT_INTERACT_DISTANCE;
-    const questStep=this.sim.mounts.quest && currentMountQuestStep(this.sim.mounts.quest)?.id;
-    if(questStep==="tracks" && nearby(WILD_HOOFPRINTS)) {
-      this.hud.setTravelNotice(this.mountAction("inspect-tracks"));return;
-    }
-    if(questStep==="calm" && nearby(WILD_WARHORSE)) {
-      this.hud.setTravelNotice(this.mountAction("tame"));return;
-    }
-    if(questStep==="return" && nearby(STABLE_MASTER)) {
-      this.hud.setTravelNotice(this.mountAction("return-warhorse"));return;
-    }
+    const mountStep = mountQuestAction(this.sim.player.x, this.sim.player.y, questStepId(this.sim.mounts.quest));
+    if (mountStep) { this.hud.setTravelNotice(this.mountAction(mountStep)); return; }
     const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
     if (entrance) { this.enterCave(entrance); return; }
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
@@ -249,10 +200,7 @@ export class Game {
     } else {
       const rewarded = npc.id === "aela" && this.sim.inventory.claimAelaReward(this.sim.kills);
       if (rewarded) this.save();
-      let offer: NpcOffer | undefined;
-      if (npc.id === "lina") offer = { item: "potion", price: POTION_GEL_PRICE };
-      else if (npc.id === "toren") offer = { item: "sword", price: FORGE_SWORD_PRICE };
-      else if (npc.id === "stablemaster") offer = { item: "stable", price: 0 };
+      const offer = npcOffer(npc.id);
       const lines = npcDialogue(npc, this.sim.kills, offer?.item === "sword");
       this.hud.showNpcDialogue(npc.name, npc.role, rewarded
         ? [...lines, `Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`]
@@ -260,116 +208,27 @@ export class Game {
     }
   }
 
-  /** Somente o motor confirma a compra, o domador e o inventário; a UI pede ações. */
-  private mountAction(action:MountAction):string {
-    if(this.cave||this.interior||this.sim.awaitingRespawn)return "Volte à superfície para cuidar das montarias.";
-    const {player,mounts,inventory,kills}=this.sim;
-    const lvl=levelForExperience(this.sim.experience),gel=inventory.gel;
-    const spend=(amount:number)=>inventory.spendGel(amount);
-    mounts.synchronizeKills(kills);
-    let result:MountActionResult;
-    switch(action){
-      case "build": case "upgrade":result=mounts.upgrade(lvl,gel,spend,player.x,player.y);break;
-      case "train":result=mounts.train(lvl,player.x,player.y);break;
-      case "start-warhorse":result=mounts.beginWarhorse(lvl,player.x,player.y,kills);break;
-      case "make-halter":result=mounts.craftHalter(gel,spend,player.x,player.y);break;
-      case "inspect-tracks":result=mounts.inspectTracks(player.x,player.y);break;
-      case "tame":result=mounts.tame(lvl,kills,player.x,player.y);break;
-      case "return-warhorse":
-        result=mounts.returnWarhorse(player.x,player.y);
-        if(result==="returned") for(const item of sampleMountCaptureLoot("warhorse",this.sim.seed))
-          inventory.addMaterial(item);
-        break;
-      case "mount-warhorse":result=mounts.mount("warhorse",lvl,player.x,player.y);break;
-      case "dismount":result=mounts.dismount();break;
-    }
-    const message:Record<MountActionResult,string>={
-      built:"Cercado do estábulo construído. Agora você pode treinar Cavalaria I.",
-      upgraded:"Estábulo ampliado. Novas montarias podem ser abrigadas.",
-      trained:"Cavalaria elevada! Verifique suas missões de domesticação.",
-      "quest-started":"Eron entregou a Maçã Silvestre Doce. Siga as marcas de cascos a oeste da vila.",
-      "tracks-found":"Pegadas encontradas! Afaste os slimes que cercam o cavalo.",
-      "halter-made":"Cabresto fabricado. Procure o cavalo e ofereça a maçã doce.",
-      calmed:"O Garrano está calmo e vai acompanhar você. Volte ao estábulo para completar o resgate.",
-      returned:"Garrano entregue a Eron! Cavalo de Batalha e Sela de Couro Simples conquistados.",
-      mounted:"Cavalo de Batalha montado. Sua energia diminui ao galopar.",
-      dismounted:"Você desmontou com segurança.",
-      "no-level":"Seu nível ainda é baixo para essa etapa de Cavalaria.",
-      "no-gel":"Gel insuficiente para construir ou fabricar.",
-      "no-stable":"O cercado precisa ser construído ou ampliado primeiro.",
-      "no-training":"É necessário Cavalaria adequada e nível suficiente.",
-      "missing-quest":"Converse com o Mestre de Estábulos para iniciar a missão.",
-      "quest-active":"Você já possui uma missão de domesticação em andamento.",
-      "already-owned":"Essa montaria já foi conquistada.",
-      "no-apple":"A Maçã Silvestre Doce da missão está ausente.",
-      "no-halter":"Você precisa fabricar um cabresto no estábulo.",
-      "slimes-needed":"Derrote cinco slimes após aceitar a missão e examinar as pegadas.",
-      "too-far":"Aproxime-se da pegada, do estábulo ou do animal para essa ação.",
-      "not-ready":"Conclua o objetivo atual antes de avançar a missão.",
-      unavailable:"Essa ação ainda não está disponível.",
-      "stamina-low":"A montaria precisa descansar.",
-    };
-    if(["mounted","dismounted"].includes(result)) {
+  /** O motor (`runMountAction`) decide e confirma; aqui só se aplicam os efeitos no jogo. */
+  private mountAction(action: MountAction): string {
+    if (this.cave || this.interior || this.sim.awaitingRespawn) return MOUNT_BLOCKED_MESSAGE;
+    const outcome = runMountAction(this.sim, action);
+    if (outcome.stopMovement) {
       this.tileWalker.reset();
       this.navigator.cancel();
     }
-    if(["built","upgraded","trained","quest-started","tracks-found","halter-made","calmed","returned","mounted","dismounted"].includes(result))this.save();
+    if (outcome.persist) this.save();
     this.updateHud();
-    return message[result];
+    return MOUNT_MESSAGES[outcome.result];
   }
 
-  private tradeGelForPotion(): string {
-    const { player, inventory } = this.sim;
-    if (this.interior || !this.hud.menuOpen) return INVENTORY_FEEDBACK["too-far"];
-    if (player.hp <= 0) return INVENTORY_FEEDBACK.unavailable;
-    if (nearestNpc(player.x, player.y)?.id !== "lina") return INVENTORY_FEEDBACK["too-far"];
-    const result = inventory.tradeGelForPotion();
-    if (result === "traded") {
-      this.save();
-      this.updateHud();
-    }
-    return INVENTORY_FEEDBACK[result];
-  }
-  private eatFood(id: FoodId): string {
-    if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
-    const outcome = this.sim.inventory.useFood(id, this.cave?.player ?? this.sim.player);
-    if (outcome === "ate") { this.save(); this.updateHud(); }
-    return outcome === "ate" ? `${FOODS[id].name}: ${INVENTORY_FEEDBACK.ate}` : INVENTORY_FEEDBACK[outcome];
-  }
-  private buyFood(id: FoodId): string {
-    if (this.interior || !this.hud.menuOpen) return INVENTORY_FEEDBACK["too-far"];
-    if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
-    if (nearestNpc(this.sim.player.x, this.sim.player.y)?.id !== "lina") return INVENTORY_FEEDBACK["too-far"];
-    const outcome = this.sim.inventory.tradeGelForFood(id);
-    if (outcome === "food-traded") { this.save(); this.updateHud(); }
-    return outcome === "food-traded" ? `Lina entregou ${FOODS[id].name}.` : INVENTORY_FEEDBACK[outcome];
-  }
-  private buySword(): string {
-    if (this.interior || !this.hud.menuOpen) return INVENTORY_FEEDBACK["too-far-from-forge"];
-    const result = this.sim.inventory.buyForgeSword(this.sim.player);
-    if (result === "purchased") {
-      this.save();
-      this.updateHud();
-    }
-    return INVENTORY_FEEDBACK[result];
-  }
-  private equipWeapon(weapon: WeaponId): string {
-    if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
-    const result = this.sim.inventory.equipWeapon(weapon);
-    if (result === "equipped") {
-      this.save();
-      this.updateHud();
-    }
-    return INVENTORY_FEEDBACK[result];
-  }
-  private equipGear(slot: GearSlot, item: GearId | null): string {
-    if (this.sim.awaitingRespawn) return INVENTORY_FEEDBACK.unavailable;
-    const result = this.sim.inventory.equipGear(slot, item);
-    if (result === "gear-equipped" || result === "gear-removed") {
-      this.save();
-      this.updateHud();
-    }
-    return INVENTORY_FEEDBACK[result];
+  /** Roda uma ação de loja ou bolsa; só quando a bolsa muda é que se salva e se atualiza o HUD. */
+  private shop(run: (context: ShopContext) => ShopResult): string {
+    const result = run({
+      sim: this.sim, hero: this.cave?.player ?? this.sim.player, inInterior: !!this.interior,
+      menuOpen: this.hud.menuOpen, caveHeroDown: this.cave?.player.hp === 0,
+    });
+    if (result.changed) { this.save(); this.updateHud(); }
+    return result.message;
   }
   private enterCave(entrance:CaveEntrance):void {
     this.navigator.cancel();
@@ -505,16 +364,7 @@ export class Game {
           this.sim.inventory.loadout.equipped,this.sim.inventory.defense,
           classicStrike ? this.classicCombat.strikeTargetId : undefined);
         this.input.acknowledgeMovement();
-        let changed=false;
-        for(const victory of cave.drainVictories()){
-          if(this.sim.defeated.has(victory.id))continue;
-          this.sim.defeated.add(victory.id);
-          this.sim.experience=grantExperience(this.sim.experience,
-            CREATURE_CATALOG[victory.kind].experience,cave.player);
-          for(const item of rollCreatureLoot(victory.kind,victory.id))
-            this.sim.inventory.addMaterial(item);
-          changed=true;
-        }
+        const changed = applyCaveVictories(this.sim, cave);
         if(changed)this.save();
       }
       if(cave.player.hp<=0){
@@ -623,13 +473,10 @@ export class Game {
       ? focusedLabel + " · seguindo" : focusedLabel);
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
     const portal = caveEntranceNear(this.sim.player.x,this.sim.player.y,this.sim.seed);
-    const q=this.sim.mounts.quest;
-    const close=(point:{readonly x:number;readonly y:number})=>
-      Math.hypot(this.sim.player.x-point.x,this.sim.player.y-point.y)<=MOUNT_INTERACT_DISTANCE;
-    const step=q&&currentMountQuestStep(q)?.id;
-    this.hud.setNearbyAction(step==="tracks"&&close(WILD_HOOFPRINTS)?"tracks":
-      step==="calm"&&close(WILD_WARHORSE)?"tame":
-      portal?"enter":npc?NPC_ACTIONS[npc.kind??"character"]:null);
+    this.hud.setNearbyAction(surfaceNearbyAction({
+      x: this.sim.player.x, y: this.sim.player.y, stepId: questStepId(this.sim.mounts.quest),
+      caveEntrance: portal !== null, npc,
+    }));
     this.scene.render(
       this.world,
       this.camera,
