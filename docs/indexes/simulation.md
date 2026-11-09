@@ -15,8 +15,10 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/Weapons.ts`](../../src/engine/Weapons.ts)
 - [`src/engine/Equipment.ts`](../../src/engine/Equipment.ts)
 - [`src/engine/CaveRoom.ts`](../../src/engine/CaveRoom.ts)
+- [`src/engine/MountStable.ts`](../../src/engine/MountStable.ts)
+- [`src/engine/MountQuestState.ts`](../../src/engine/MountQuestState.ts)
 
-## Todos os arquivos deste módulo (16)
+## Todos os arquivos deste módulo (18)
 
 - [`src/engine/CaveRoom.ts`](../../src/engine/CaveRoom.ts)
 - [`src/engine/ClassicBattleList.ts`](../../src/engine/ClassicBattleList.ts)
@@ -28,6 +30,8 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/Food.ts`](../../src/engine/Food.ts)
 - [`src/engine/InteriorRoom.ts`](../../src/engine/InteriorRoom.ts)
 - [`src/engine/Inventory.ts`](../../src/engine/Inventory.ts)
+- [`src/engine/MountQuestState.ts`](../../src/engine/MountQuestState.ts)
+- [`src/engine/MountStable.ts`](../../src/engine/MountStable.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
 - [`src/engine/README.md`](../../src/engine/README.md)
 - [`src/engine/TapNavigator.ts`](../../src/engine/TapNavigator.ts)

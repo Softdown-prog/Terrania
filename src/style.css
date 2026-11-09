@@ -1266,3 +1266,27 @@ noscript a {
 @media (max-width: 650px) {
   #gameNotice:has(#dismissTravelNotice) { max-width: calc(100% - 24px); }
 }
+
+/* Ação de montaria em área segura: não cobre joystick ou botão de ataque. */
+.mount-status {
+  position:absolute;left:50%;top:120px;transform:translateX(-50%);
+  z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  padding:7px 10px;border:1px solid #bfa97d8c;background:#102922e6;
+  color:#eee2bb;font:12px system-ui;border-radius:7px;pointer-events:auto;
+}
+.mount-status button{min-height:44px;border:1px solid #d9c38d;border-radius:5px;
+  background:#2c5040;color:#fff0c5;padding:8px 12px;touch-action:manipulation}
+.mount-stable-panel{max-height:min(45vh,420px);overflow:auto;overscroll-behavior:contain;
+  display:grid;gap:8px;padding:10px 4px;}
+.mount-stable-panel .secondary-button{min-height:44px;text-align:left}
+.mount-roster{display:grid;gap:5px;}
+.mount-roster-entry{display:grid;gap:3px;padding:8px;border:1px solid #d3bb8560;
+  background:#112c27b0;border-radius:7px;font:11px system-ui}
+.mount-roster-entry strong{font-size:13px;color:#f3e2bf}
+.mount-roster-entry small{color:#b6c9bc}
+.mount-roster-entry span{color:#e1cf9a}
+@media (max-width:650px) {
+  .mount-status{top:auto;bottom:max(245px,calc(env(safe-area-inset-bottom) + 222px));
+    max-width:calc(100% - 20px);font-size:11px;justify-content:center}
+  .mount-stable-panel{max-height:34vh}
+}

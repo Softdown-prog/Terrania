@@ -1,5 +1,5 @@
 export const BASE_MAX_HP = 100;
-export const MAX_LEVEL = 50;
+export const MAX_LEVEL = 70;
 
 export function experienceForLevel(level: number): number {
   if (!Number.isInteger(level) || level < 1 || level > MAX_LEVEL)

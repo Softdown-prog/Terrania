@@ -29,3 +29,11 @@ andares ou persistência de posição subterrânea. Não confundir com masmorras
 sincronizadas: a autoridade do multiplayer Node/Go **não** suporta transições de
 subsolo e a interação está desabilitada nas salas online.
 `tests/caves.test.ts` testa seeds, acessibilidade, conectividade e paredes.
+
+### Localizações do primeiro estábulo
+`mountLocations.ts` declara posições determinísticas de Eron, Cavalo de Batalha fugitivo e Maçã Silvestre. São dados de mundo, e não regras de quest nem lógica de interface.
+
+**Quests de montarias:** `mountQuests.ts` é o catálogo de histórias,
+desbloqueios e objetivos para as dez espécies, mas só a missão inicial está
+habilitada. `mountLocations.ts` fixa Eron, as marcas de cascos e o cavalo
+fugitivo no mapa da vila, sem criar terrenos secretos nem colisões novas.

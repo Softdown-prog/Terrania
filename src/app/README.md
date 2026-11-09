@@ -27,3 +27,6 @@ O HUD recebe o progresso calculado da missão da Aela e as falas prontas para ex
 **Mapa dentro do inventário:** a terceira aba, Mapa do mundo, substitui o antigo overlay. O Angular alterna Mundo inteiro, Meu setor e Arredores, e permite escolher um dos nove setores reais por coordenada. O renderizador Canvas é executado apenas quando esta aba está visível; navegar pela aventura, abrir mochila ou equipamento não gera trabalho do atlas. Testes desktop/Android verificam que o mapa não intercepta toques no Canvas Phaser. O HUD também explica quando a sala confirma um respawn ou inicia uma nova sessão após reconexão.
 
 **Consistência visual:** o atlas agora usa as mesmas regras de composição do inventário — moldura em relevo, destaque metálico, legendas desenhadas e tipografia compatível — sem um overlay na tela do Phaser. A aba Mapa é descartada quando o diálogo fecha, incluindo o Canvas; reabrir começa na Bolsa. O render estático é armazenado por viewport enquanto o Canvas existe, e os marcadores continuam atualizáveis a partir dos dados do HUD.
+
+### Painel de Cavalaria
+O NPC Eron apresenta o cercado e o primeiro resgate; `HudService` só envia ações ao `GameUi`. As regras de gastos, requisitos e recompensas pertencem a `MountStable`; o HUD não altera inventário sozinho. Usar toque de 44px no Android.

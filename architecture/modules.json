@@ -48,7 +48,8 @@
         "src/ui/CanvasScene.ts",
         "src/ui/GameUi.ts",
         "src/render/cave.ts",
-        "src/render/caveDetails.ts"
+        "src/render/caveDetails.ts",
+        "src/render/mounts.ts"
       ],
       "doc": "src/render/README.md",
       "description": "Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo."
@@ -68,7 +69,9 @@
         "src/engine/Experience.ts",
         "src/engine/Weapons.ts",
         "src/engine/Equipment.ts",
-        "src/engine/CaveRoom.ts"
+        "src/engine/CaveRoom.ts",
+        "src/engine/MountStable.ts",
+        "src/engine/MountQuestState.ts"
       ],
       "doc": "src/engine/README.md",
       "description": "Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular."
@@ -84,7 +87,8 @@
       "entrypoints": [
         "src/actors/Player.ts",
         "src/actors/Slime.ts",
-        "src/actors/CreatureCatalog.ts"
+        "src/actors/CreatureCatalog.ts",
+        "src/actors/MountCatalog.ts"
       ],
       "doc": "src/actors/README.md",
       "description": "Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias."
@@ -105,7 +109,9 @@
         "src/world/collision.ts",
         "src/world/npcs.ts",
         "src/world/aelaQuest.ts",
-        "src/world/caves.ts"
+        "src/world/caves.ts",
+        "src/world/mountLocations.ts",
+        "src/world/mountQuests.ts"
       ],
       "doc": "src/world/README.md",
       "description": "Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, colisão, vila e marcos."
@@ -166,7 +172,10 @@
       "entrypoints": [
         "src/qa/QaBot.ts",
         "tests/classic-tile-walker.test.ts",
-        "tests/cave-art-contract.test.ts"
+        "tests/cave-art-contract.test.ts",
+        "tests/mounts.test.ts",
+        "tests/browser/mounts.spec.ts",
+        "tests/mount-quests.test.ts"
       ],
       "doc": "tests/README.md",
       "description": "Testes unitários e navegador desktop/Android; cenários de regressão e robôs de QA."

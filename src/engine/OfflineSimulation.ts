@@ -1,5 +1,6 @@
 import { RegionalMonster, regionalSurfaceSpawns, southCommonSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
 import { Player } from "../actors/Player.ts";
+import { MountStable, type MountSave } from "./MountStable.ts";
 import { Slime, slimeSpawns } from "../actors/Slime.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { SeedCollision } from "../world/collision.ts";
@@ -26,6 +27,7 @@ export interface OfflineSave {
   drops?: LootDrop[];
   experience?: number;
   awaitingRespawn?: true;
+  mounts?: MountSave;
 }
 
 /** Motor puro: nenhuma dependência de Canvas, DOM, UI, rede ou localStorage. */
@@ -34,6 +36,7 @@ export class OfflineSimulation {
   readonly slimes = new Map<string, Slime>();
   readonly defeated = new Set<string>();
   readonly inventory: Inventory;
+  readonly mounts: MountStable;
   readonly drops = new Map<string, LootDrop>();
   readonly collision: SeedCollision;
   readonly seed: number;
@@ -45,6 +48,7 @@ export class OfflineSimulation {
     this.seed = seed;
     this.collision = new SeedCollision(seed);
     this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined);
+    this.mounts = new MountStable(saved?.seed === seed ? saved.mounts : undefined);
     if (saved && saved.seed === seed) {
       // A previous save may now overlap a newly introduced solid landmark.
       if (this.collision.canMove(saved.x, saved.y)) {
@@ -71,6 +75,7 @@ export class OfflineSimulation {
 
   respawn(): boolean {
     if (!this.awaitingRespawn) return false;
+    this.mounts.dismount();
     this.player = new Player(maxHpForExperience(this.experience));
     this.player.x = VILLAGE_RESPAWN.x;
     this.player.y = VILLAGE_RESPAWN.y;
@@ -107,8 +112,16 @@ export class OfflineSimulation {
   ): boolean {
     if (this.awaitingRespawn || !Number.isFinite(dt) || dt <= 0) return false;
     dt = Math.min(dt, 0.1);
-    if (tileWalker) tileWalker.advance(dt, direction, this.player, this.collision);
-    else this.player.update(dt, typeof direction === "function" ? direction() : direction, this.collision);
+    // Cavalaria altera somente o tempo do passo, nunca a malha de colisão.
+    const beforeX=this.player.x,beforeY=this.player.y;
+    const collision = {
+      canMove:(x:number,y:number)=>this.collision.canMove(x,y),
+      speedAt:(x:number,y:number)=>(this.collision.speedAt(x,y))*this.mounts.speedMultiplier(),
+    };
+    if (tileWalker) tileWalker.advance(dt, direction, this.player, collision);
+    else this.player.update(dt, typeof direction === "function" ? direction() : direction, collision);
+    const dx=this.player.x-beforeX,dy=this.player.y-beforeY;
+    this.mounts.update(dt,{x:dx,y:dy},Math.hypot(dx,dy)>.01);
     this.spawnNearby();
     const defense = this.inventory.defense;
     for (const [id, slime] of this.slimes) {
@@ -182,6 +195,7 @@ export class OfflineSimulation {
       ...(this.awaitingRespawn ? { awaitingRespawn: true } : {}),
       defeated: [...this.defeated].slice(-2000),
       inventory: this.inventory.snapshot(),
+      ...(Object.keys(this.mounts.snapshot()).length ? { mounts: this.mounts.snapshot() } : {}),
       ...(hasNutrition(this.player.nutrition) ? { nutrition: this.player.nutrition } : {}),
       drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),
     };

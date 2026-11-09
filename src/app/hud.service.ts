@@ -1,5 +1,7 @@
 import { computed, Injectable, signal } from '@angular/core';
 import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
+import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL } from '../actors/MountCatalog.ts';
+import type { MountAction, MountView } from '../engine/MountStable.ts';
 import { WEAPONS, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
 import type { BattleCreature } from '../engine/ClassicBattleList.ts';
@@ -13,6 +15,8 @@ const ACTION_LABELS: Record<NearbyAction, string> = {
   read: 'Ler',
   enter: 'Entrar',
   leave: 'Subir',
+  tracks: 'Examinar pegadas',
+  tame: 'Acalmar cavalo',
 };
 const KIT_IDS = Object.keys(GEAR) as GearId[];
 
@@ -37,6 +41,19 @@ type InventoryTab = 'bag' | 'equipment' | 'map';
 
 @Injectable()
 export class HudService implements GameUi {
+  readonly mountCatalog = MOUNTS;
+  readonly ridingLevelRequirement = RIDING_LEVEL;
+  readonly stableUpgradeCost = STABLE_UPGRADE_GEL;
+  readonly mountIds = MOUNT_IDS;
+  readonly mountView = signal<MountView>({
+    stableTier:0,ridingTier:0,owned:[],active:null,stamina:0,maxStamina:0,
+    quest:null,questHint:'Procure o Mestre de Estábulos na vila.',
+  },{equal:(a,b)=>a.stableTier===b.stableTier&&a.ridingTier===b.ridingTier&&
+    a.active===b.active&&Math.round(a.stamina)===Math.round(b.stamina)&&
+    a.questHint===b.questHint&&a.quest?.id===b.quest?.id&&
+    a.quest?.step===b.quest?.step&&a.quest?.count===b.quest?.count&&
+    a.owned.join(',')===b.owned.join(',')});
+  readonly mountFeedback = signal('');
   readonly travelNotice = signal('');
   private travelNoticeTimer: ReturnType<typeof setTimeout> | null = null;
   readonly targetCombat = signal(false);
@@ -171,6 +188,7 @@ export class HudService implements GameUi {
   private weaponEquipCallback: (weapon: WeaponId) => string = () => '';
   private gearEquipCallback: (slot: GearSlot, item: GearId | null) => string = () => '';
   private respawnCallback: () => void = () => {};
+  private mountActionCallback: (action: MountAction) => string = () => '';
   private stopCombatCallback: () => void = () => {};
   private battleSelectCallback: (id: string) => void = () => {};
 
@@ -205,6 +223,13 @@ export class HudService implements GameUi {
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void { this.gearEquipCallback = callback; }
   onRespawn(callback: () => void): void { this.respawnCallback = callback; }
+  onMountAction(callback:(action:MountAction)=>string):void {this.mountActionCallback=callback;}
+  updateMount(view:MountView):void {this.mountView.set(view);}
+  mountAction(action:MountAction):void {
+    const message=this.mountActionCallback(action);
+    this.mountFeedback.set(message);
+    this.npcTradeFeedback.set(message);
+  }
   onStopCombat(callback: () => void): void { this.stopCombatCallback = callback; }
   onBattleSelect(callback: (id: string) => void): void { this.battleSelectCallback = callback; }
   selectBattleCreature(id: string): void { this.battleSelectCallback(id); }

@@ -11,3 +11,8 @@
 **Verificação:** testes de simulação, colisão e combate.
 
 **Limites:** O catálogo contém somente Slime. `CreatureView` permite ler uma criatura sem depender da classe que executa sua IA. Spawn, loot, arte, saves e protocolo online continuam com seus contratos existentes.
+
+### Montarias (aventura solo)
+`MountCatalog.ts` concentra todas as dez fichas, requisitos de nível e Cavalaria, selas, iscas, drops e quests. Montarias não são monstros de combate; `Player.ts` continua sendo o avatar do jogador.
+
+**Histórias e gatilhos regionais:** o catálogo não duplica fichas narrativas. As introduções e etapas das dez quests pertencem exclusivamente a `src/world/mountQuests.ts`.
