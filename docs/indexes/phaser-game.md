@@ -12,6 +12,11 @@ Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir reg
 - [`src/game/PhaserGame.ts`](../../src/game/PhaserGame.ts)
 - [`src/game/interactions.ts`](../../src/game/interactions.ts)
 - [`src/game/actions/shopActions.ts`](../../src/game/actions/shopActions.ts)
+- [`src/game/TravelState.ts`](../../src/game/TravelState.ts)
+- [`src/game/modes/types.ts`](../../src/game/modes/types.ts)
+- [`src/game/modes/surfaceMode.ts`](../../src/game/modes/surfaceMode.ts)
+- [`src/game/modes/caveMode.ts`](../../src/game/modes/caveMode.ts)
+- [`src/game/modes/interiorMode.ts`](../../src/game/modes/interiorMode.ts)
 
 ## Todos os arquivos deste módulo (12)
 

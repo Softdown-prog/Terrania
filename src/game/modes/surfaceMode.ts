@@ -77,22 +77,23 @@ export function tickSurface(host: ModeHost, frame: Frame): void {
     x: host.sim.player.x, y: host.sim.player.y, stepId: questStepId(host.sim.mounts.quest),
     caveEntrance: portal !== null, npc,
   }));
-  host.scene.render(
-    host.world,
-    host.camera,
-    host.sim.player,
+  const quest = host.sim.mounts.quest;
+  host.scene.render({
+    world: host.world,
+    camera: host.camera,
+    player: host.sim.player,
     mobs,
-    timers.clock,
-    host.effects,
-    host.travel.navigator.target,
-    [...host.sim.drops.values()],
-    targetId,
-    host.sim.inventory.gear,
-    host.sim.inventory.loadout.equipped,
-    host.sim.mounts.active,
-    !host.sim.mounts.has("warhorse") && host.sim.mounts.quest?.step!==4,
-    host.sim.mounts.stableTier>0,
-    !!host.sim.mounts.quest && currentMountQuestStep(host.sim.mounts.quest)?.id==="tracks",
-    !!host.sim.mounts.quest && currentMountQuestStep(host.sim.mounts.quest)?.id==="return",
-  );
+    time: timers.clock,
+    effects: host.effects,
+    destination: host.travel.navigator.target,
+    drops: [...host.sim.drops.values()],
+    combatTargetId: targetId,
+    playerGear: host.sim.inventory.gear,
+    playerWeapon: host.sim.inventory.loadout.equipped,
+    mount: host.sim.mounts.active,
+    wildHorse: !host.sim.mounts.has("warhorse") && quest?.step!==4,
+    stableBuilt: host.sim.mounts.stableTier>0,
+    tracksVisible: !!quest && currentMountQuestStep(quest)?.id==="tracks",
+    leadingHorse: !!quest && currentMountQuestStep(quest)?.id==="return",
+  });
 }
