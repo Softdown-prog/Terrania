@@ -16,16 +16,14 @@ import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { CaveRoom } from "../engine/CaveRoom.ts";
 import { caveEntranceNear, type CaveEntrance } from "../world/caves.ts";
 import { BUILDINGS } from "../world/village.ts";
-import { TapNavigator } from "../engine/TapNavigator.ts";
-import { ClassicCombat, nearestCombatCreature } from "../engine/ClassicCombat.ts";
-import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
-import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
+import { nearestCombatCreature } from "../engine/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { MountAction } from "../engine/MountStable.ts";
 import { runMountAction } from "../engine/MountActions.ts";
 import { applyCaveVictories } from "../engine/CaveRewards.ts";
 import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, usePotion,
   type ShopContext, type ShopResult } from "./actions/shopActions.ts";
+import { TravelState } from "./TravelState.ts";
 import { mountQuestAction, npcOffer, questStepId, surfaceNearbyAction } from "./interactions.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
 import { currentMountQuestStep } from "../engine/MountQuestState.ts";
@@ -33,17 +31,24 @@ import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/Experience.ts";
 
 
+/** O que o início de cada quadro decidiu (entrada, pausa, direção) e todos os modos precisam saber. */
+interface Frame {
+  readonly dt: number;
+  readonly paused: boolean;
+  readonly movement: { x: number; y: number };
+  readonly attack: boolean;
+  readonly manualActive: boolean;
+  readonly tileRoute: boolean;
+  readonly still: { x: number; y: number };
+}
+
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
 export class Game {
   private readonly input = new Input();
   private readonly lifecycle = new AbortController();
   private readonly camera = new Camera();
   private readonly effects = new Effects();
-  private readonly navigator = new TapNavigator();
-  private readonly classicCombat = new ClassicCombat();
-  private readonly classicPursuit = new ClassicPursuit();
-  private readonly tileWalker = new ClassicTileWalker();
-  private classicAutoFollow = true;
+  private readonly travel = new TravelState();
   private battleClock = 0.25;
   private sim = new OfflineSimulation(842136);
   private world = new WorldRenderer(842136);
@@ -77,7 +82,7 @@ export class Game {
       if (document.hidden) {
         this.save();
         this.input.clear();
-        this.navigator.cancel();
+        this.travel.navigator.cancel();
       }
       this.accumulator = 0;
     }, { signal: this.lifecycle.signal });
@@ -127,15 +132,15 @@ export class Game {
     this.selectTarget(id);
   }
   private selectTarget(id: string): void {
-    if (!this.classicCombat.select(id, this.cave?.monsters ?? this.sim.slimes)) return;
-    this.classicAutoFollow = true;
-    this.classicPursuit.reset();
-    this.navigator.cancel();
+    if (!this.travel.combat.select(id, this.cave?.monsters ?? this.sim.slimes)) return;
+    this.travel.autoFollow = true;
+    this.travel.pursuit.reset();
+    this.travel.navigator.cancel();
     this.hud.setBattleCreatures(this.hudBattleRows(), id);
   }
   private cancelTarget(): void {
-    this.classicCombat.cancel();
-    this.classicPursuit.reset();
+    this.travel.combat.cancel();
+    this.travel.pursuit.reset();
     this.battleClock = 0.25;
     this.hud.setCombatTarget(null);
   }
@@ -152,11 +157,8 @@ export class Game {
   }
   private replaceWorld(seed: number, saved?: OfflineSave): void {
     this.input.clear();
-    this.navigator.cancel();
-    this.classicCombat.reset();
-    this.classicPursuit.reset();
-    this.tileWalker.reset();
-    this.classicAutoFollow = true;
+    this.travel.stopAll();
+    this.travel.autoFollow = true;
     this.battleClock = 0.25;
     this.hud.setBattleCreatures([], null);
     this.hud.setCombatTarget(null);
@@ -173,7 +175,7 @@ export class Game {
   }
   private talkToNpc(): void {
     if (this.hud.menuOpen || this.sim.awaitingRespawn) return;
-    this.navigator.cancel();
+    this.travel.navigator.cancel();
     if (this.cave) {
       if (this.cave.nearExit) this.leaveCave();
       return;
@@ -190,11 +192,11 @@ export class Game {
     if (!npc) return;
     this.input.clear();
     if (npc.kind === "door" && BUILDINGS.some(b => b.id === npc.id)) {
-      this.classicCombat.cancel();
-      this.classicPursuit.reset();
+      this.travel.combat.cancel();
+      this.travel.pursuit.reset();
       this.hud.setCombatTarget(null);
       this.hud.setBattleCreatures([], null);
-      this.tileWalker.reset();
+      this.travel.walker.reset();
       this.interior = new InteriorRoom(npc.id);
       this.accumulator = 0;
     } else {
@@ -212,10 +214,7 @@ export class Game {
   private mountAction(action: MountAction): string {
     if (this.cave || this.interior || this.sim.awaitingRespawn) return MOUNT_BLOCKED_MESSAGE;
     const outcome = runMountAction(this.sim, action);
-    if (outcome.stopMovement) {
-      this.tileWalker.reset();
-      this.navigator.cancel();
-    }
+    if (outcome.stopMovement) this.travel.stopSteps();
     if (outcome.persist) this.save();
     this.updateHud();
     return MOUNT_MESSAGES[outcome.result];
@@ -231,10 +230,7 @@ export class Game {
     return result.message;
   }
   private enterCave(entrance:CaveEntrance):void {
-    this.navigator.cancel();
-    this.classicCombat.reset();
-    this.classicPursuit.reset();
-    this.tileWalker.reset();
+    this.travel.stopAll();
     this.input.clear();
     this.accumulator=0;
     this.effects.reset();
@@ -248,15 +244,12 @@ export class Game {
   private leaveCave():void {
     if(this.cave) this.sim.player.syncAdventureStateFrom(this.cave.player);
     this.cave=null;
-    this.classicCombat.reset();
-    this.classicAutoFollow=false;
+    this.travel.stopAll();
+    this.travel.autoFollow=false;
     this.hud.setCombatTarget(null);
     this.hud.setBattleCreatures([],null);
     this.hud.setCave(null);
     this.input.clear();
-    this.navigator.cancel();
-    this.tileWalker.reset();
-    this.classicPursuit.reset();
     this.accumulator=0;
     this.camera.snap(this.sim.player.x,this.sim.player.y);
     this.hud.setTravelNotice("Você retornou à superfície pela mesma entrada.");
@@ -264,9 +257,7 @@ export class Game {
     this.updateHud();
   }
   private leaveInterior(): void {
-    this.tileWalker.reset();
-    this.navigator.cancel();
-    this.classicPursuit.reset();
+    this.travel.stopMotion();
     this.interior = null;
     this.input.clear();
     this.accumulator = 0;
@@ -310,20 +301,20 @@ export class Game {
     const stopTarget = this.input.consumeCancelTarget();
     if (stopTarget) this.cancelTarget();
     if (attack && !stopTarget && !this.interior) {
-      if (!this.classicCombat.targetId)
-        this.classicCombat.selectNearest(this.cave?.player ?? this.sim.player,
+      if (!this.travel.combat.targetId)
+        this.travel.combat.selectNearest(this.cave?.player ?? this.sim.player,
           this.cave?.monsters.values() ?? this.sim.slimes.values());
-      if (this.classicCombat.targetId) {
-        this.classicAutoFollow = true;
-        this.navigator.cancel();
+      if (this.travel.combat.targetId) {
+        this.travel.autoFollow = true;
+        this.travel.navigator.cancel();
       }
     }
     const manualActive = Math.hypot(manual.x, manual.y) >= 0.08;
-    if (paused || manualActive) this.navigator.cancel();
-    if (manualActive) this.classicPursuit.suspend();
+    if (paused || manualActive) this.travel.navigator.cancel();
+    if (manualActive) this.travel.pursuit.suspend();
     const tap = this.input.consumeTap();
     const walkByTiles = !this.interior && !this.cave;
-    const committedStep = walkByTiles ? this.tileWalker.destination : null;
+    const committedStep = walkByTiles ? this.travel.walker.destination : null;
     if (tap && !paused && !manualActive && !attack) {
       const destination = this.cave
         ? this.scene.cavePoint(tap,this.cave,this.camera.zoom)
@@ -336,75 +327,87 @@ export class Game {
       if (creature) {
         this.selectTarget(creature.id);
       } else if (destination) {
-        const accepted = this.navigator.go(committedStep ?? player,
+        const accepted = this.travel.navigator.go(committedStep ?? player,
           walkByTiles ? this.tileCenter(destination) : destination, collision, walkByTiles);
         // A valid walk overrides chasing until the next creature selection.
         if (accepted && walkByTiles) {
-          this.classicAutoFollow = false;
-          this.classicPursuit.reset();
+          this.travel.autoFollow = false;
+          this.travel.pursuit.reset();
         }
       }
     }
     const controlled = this.cave?.player ?? this.interior?.player ?? this.sim.player;
-    const tileRoute = walkByTiles && this.navigator.target !== null;
+    const tileRoute = walkByTiles && this.travel.navigator.target !== null;
     const movement = paused ? still : manualActive ? manual : tileRoute ? still :
-      this.navigator.target ? this.navigator.direction(controlled, dt) : still;
-    if (this.cave) {
-      const cave=this.cave;
-      this.accumulator=0;
-      if (!paused && dt > 0) {
-        const focused = this.classicCombat.targetId;
-        const classicStrike = this.classicCombat.tick(dt,cave.player,cave.monsters,
-          cave.collision,this.sim.inventory.weapon.interval,this.sim.inventory.loadout.equipped);
-        const follow = this.classicAutoFollow && !manualActive && this.navigator.target === null;
-        const caveMovement = follow
-          ? this.classicPursuit.direction(dt,cave.player,focused,cave.monsters,cave.collision)
-          : movement;
-        cave.update(dt,caveMovement,attack || classicStrike,
-          this.sim.inventory.loadout.equipped,this.sim.inventory.defense,
-          classicStrike ? this.classicCombat.strikeTargetId : undefined);
-        this.input.acknowledgeMovement();
-        const changed = applyCaveVictories(this.sim, cave);
-        if(changed)this.save();
-      }
-      if(cave.player.hp<=0){
-        this.leaveCave();
-        this.sim.player.hp=0;
-        this.save();
-        this.hud.setTravelNotice("Você tombou na caverna. Renasça para continuar.");
-      } else if(cave.reachedExit){
-        this.leaveCave();
-      } else {
-        this.saveClock += dt;
-        if(this.saveClock>12){this.saveClock=0;this.save();}
-        this.updateHud();
-        this.hud.setCave({floor:cave.floor,
-          tileX:Math.floor(cave.player.x/TILE_SIZE),tileY:Math.floor(cave.player.y/TILE_SIZE)});
-        this.hud.setNearbyAction(cave.nearExit?"leave":null);
-        if(this.battleClock>=0.2){
-          this.battleClock=0;
-          this.hud.setBattleCreatures(this.hudBattleRows(),this.classicCombat.targetId);
-          this.hud.setCombatTarget(this.classicCombat.label(cave.monsters));
-        }
-        this.scene.renderCave(cave,this.camera.zoom,this.clock,this.navigator.target,
-          this.sim.inventory.gear,this.sim.inventory.loadout.equipped);
-        return;
-      }
+      this.travel.navigator.target ? this.travel.navigator.direction(controlled, dt) : still;
+    const frame: Frame = { dt, paused, movement, attack, manualActive, tileRoute, still };
+    if (this.cave && this.tickCave(this.cave, frame)) return;
+    if (this.interior && this.tickInterior(this.interior, frame)) return;
+    this.tickSurface(frame);
+  }
+  /** Um quadro na caverna: `true` = terminou aqui; `false` = o herói saiu (escada ou queda) e a superfície ainda roda NESTE quadro. */
+  private tickCave(cave: CaveRoom, frame: Frame): boolean {
+    const { dt, paused, movement, attack, manualActive } = frame;
+    this.accumulator=0;
+    if (!paused && dt > 0) {
+      const focused = this.travel.combat.targetId;
+      const classicStrike = this.travel.combat.tick(dt,cave.player,cave.monsters,
+        cave.collision,this.sim.inventory.weapon.interval,this.sim.inventory.loadout.equipped);
+      const follow = this.travel.autoFollow && !manualActive && this.travel.navigator.target === null;
+      const caveMovement = follow
+        ? this.travel.pursuit.direction(dt,cave.player,focused,cave.monsters,cave.collision)
+        : movement;
+      cave.update(dt,caveMovement,attack || classicStrike,
+        this.sim.inventory.loadout.equipped,this.sim.inventory.defense,
+        classicStrike ? this.travel.combat.strikeTargetId : undefined);
+      this.input.acknowledgeMovement();
+      const changed = applyCaveVictories(this.sim, cave);
+      if(changed)this.save();
     }
+    if(cave.player.hp<=0){
+      this.leaveCave();
+      this.sim.player.hp=0;
+      this.save();
+      this.hud.setTravelNotice("Você tombou na caverna. Renasça para continuar.");
+    } else if(cave.reachedExit){
+      this.leaveCave();
+    } else {
+      this.saveClock += dt;
+      if(this.saveClock>12){this.saveClock=0;this.save();}
+      this.updateHud();
+      this.hud.setCave({floor:cave.floor,
+        tileX:Math.floor(cave.player.x/TILE_SIZE),tileY:Math.floor(cave.player.y/TILE_SIZE)});
+      this.hud.setNearbyAction(cave.nearExit?"leave":null);
+      if(this.battleClock>=0.2){
+        this.battleClock=0;
+        this.hud.setBattleCreatures(this.hudBattleRows(),this.travel.combat.targetId);
+        this.hud.setCombatTarget(this.travel.combat.label(cave.monsters));
+      }
+      this.scene.renderCave(cave,this.camera.zoom,this.clock,this.travel.navigator.target,
+        this.sim.inventory.gear,this.sim.inventory.loadout.equipped);
+      return true;
+    }
+    return false;
+  }
+  /** Um quadro dentro de um interior. `true` = o quadro terminou aqui; `false` = o herói saiu e a superfície segue. */
+  private tickInterior(room: InteriorRoom, frame: Frame): boolean {
+    const { dt, paused, movement } = frame;
+    this.accumulator = 0;
+    if (!paused && dt > 0) { room.update(dt, movement); this.input.acknowledgeMovement(); }
+    if (room.reachedExit) this.leaveInterior();
     if (this.interior) {
-      const room = this.interior;
-      this.accumulator = 0;
-      if (!paused && dt > 0) { room.update(dt, movement); this.input.acknowledgeMovement(); }
-      if (room.reachedExit) this.leaveInterior();
-      if (this.interior) {
-        this.saveClock += dt;
-        if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
-        this.updateHud();
-        this.hud.setInterior(room.building.name);
-        this.scene.renderInterior(room, this.navigator.target, this.clock);
-        return;
-      }
+      this.saveClock += dt;
+      if (this.saveClock > 12) { this.saveClock = 0; this.save(); }
+      this.updateHud();
+      this.hud.setInterior(room.building.name);
+      this.scene.renderInterior(room, this.travel.navigator.target, this.clock);
+      return true;
     }
+    return false;
+  }
+  /** Um quadro na superfície: simulação a 60 Hz, efeitos, câmera, HUD e desenho do mundo. */
+  private tickSurface(frame: Frame): void {
+    const { dt, paused, manualActive, tileRoute, still } = frame;
     const gelBefore = this.sim.inventory.gel;
     if (!paused) {
       this.accumulator += dt;
@@ -412,11 +415,11 @@ export class Game {
         this.accumulator -= 1 / 60;
         const before = this.sim.player;
         const damageCount = before.damageCount;
-        const classicStrike = this.classicCombat.tick(1 / 60, before, this.sim.slimes, this.sim.collision,
+        const classicStrike = this.travel.combat.tick(1 / 60, before, this.sim.slimes, this.sim.collision,
           this.sim.inventory.weapon.interval,this.sim.inventory.loadout.equipped);
-        const follow = !manualActive && !tileRoute && this.classicAutoFollow;
-        if (follow) this.classicPursuit.direction(1 / 60, before, this.classicCombat.targetId,
-          this.sim.slimes, this.sim.collision, true, this.tileWalker.destination);
+        const follow = !manualActive && !tileRoute && this.travel.autoFollow;
+        if (follow) this.travel.pursuit.direction(1 / 60, before, this.travel.combat.targetId,
+          this.sim.slimes, this.sim.collision, true, this.travel.walker.destination);
         let routeTime = 1 / 60;
         const stepDirection = () => {
           if (manualActive) {
@@ -425,26 +428,23 @@ export class Game {
             return direction;
           }
           if (tileRoute) {
-            const dir = this.navigator.direction(before, routeTime);
+            const dir = this.travel.navigator.direction(before, routeTime);
             routeTime = 0;
             return dir;
           }
-          return follow ? this.classicPursuit.direction(0, before, this.classicCombat.targetId,
+          return follow ? this.travel.pursuit.direction(0, before, this.travel.combat.targetId,
             this.sim.slimes, this.sim.collision, true) : still;
         };
         const changed = this.sim.update(1 / 60, stepDirection,
-          classicStrike, this.classicCombat.strikeTargetId, this.tileWalker);
+          classicStrike, this.travel.combat.strikeTargetId, this.travel.walker);
         if (changed) this.save();
         if (this.sim.awaitingRespawn) {
           this.input.clear();
-          this.navigator.cancel();
-          this.classicCombat.reset();
-          this.classicPursuit.reset();
-          this.tileWalker.reset();
+          this.travel.stopAll();
           this.accumulator = 0;
           break;
         }
-        if (before.damageCount !== damageCount) this.navigator.cancel();
+        if (before.damageCount !== damageCount) this.travel.navigator.cancel();
       }
     } else {
       this.accumulator = 0;
@@ -461,14 +461,14 @@ export class Game {
     if (feedback.hit) this.camera.shake(0.25);
     if (feedback.hurt) this.camera.shake(0.65);
     this.camera.update(dt, this.sim.player);
-    const focusedLabel = this.classicCombat.label(this.sim.slimes);
-    const targetId = this.classicCombat.targetId;
+    const focusedLabel = this.travel.combat.label(this.sim.slimes);
+    const targetId = this.travel.combat.targetId;
     if (this.battleClock >= 0.2) {
       this.battleClock = 0;
       this.hud.setBattleCreatures(this.hudBattleRows(), targetId);
     }
     this.updateHud();
-    const following = this.classicPursuit.destination !== null;
+    const following = this.travel.pursuit.destination !== null;
     this.hud.setCombatTarget(focusedLabel && following
       ? focusedLabel + " · seguindo" : focusedLabel);
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
@@ -484,7 +484,7 @@ export class Game {
       mobs,
       this.clock,
       this.effects,
-      this.navigator.target,
+      this.travel.navigator.target,
       [...this.sim.drops.values()],
       targetId,
       this.sim.inventory.gear,
@@ -500,9 +500,7 @@ export class Game {
     this.save();
     this.lifecycle.abort();
     this.input.destroy();
-    this.navigator.cancel();
-    this.classicPursuit.reset();
-    this.tileWalker.reset();
+    this.travel.stopMotion();
     this.hud.setBattleCreatures([], null);
     this.world.clear();
     this.effects.reset();
