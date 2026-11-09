@@ -108,7 +108,7 @@
           }
         </p>
       }
-      @if (hud.targetCombat()) {
+      @if (hud.targetCombat() && (hud.combatTarget() || combatHelpVisible())) {
         <aside id="classicCombat" class="classic-status" aria-label="Combate por alvo">
           <strong>COMBATE POR ALVO</strong>
           <span id="classicTileHint">PASSOS 32×32</span>
@@ -117,6 +117,7 @@
             <button id="stopTarget" type="button" (click)="hud.stopCombat()">Cancelar alvo</button>
           } @else {
             <span id="classicHint">Toque em um slime ou use ATACAR para selecionar e seguir</span>
+            <button id="dismissCombatHelp" type="button" (click)="dismissCombatHelp()" aria-label="Fechar ajuda de combate">Fechar ajuda</button>
           }
         </aside>
       }
