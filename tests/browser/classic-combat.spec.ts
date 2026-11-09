@@ -137,68 +137,53 @@ test('trocar de criatura durante a preparação descarta o golpe em andamento', 
 
 for (const cancel of ['button', 'escape'] as const) {
   test(`cancelar por ${cancel} interrompe a perseguição e exige nova seleção`,
-    async ({page},info) => {
-    const errors:string[]=[];
-    page.on('pageerror', e=>errors.push(e.message));
-    // Reuse a real, reachable Slime on collision-tested terrain.
+    async ({page}, info) => {
+    const errors: string[] = [];
+    page.on('pageerror', e => errors.push(e.message));
     const encounter = browserEncounter();
     const mobId = encounter.mob.id;
-    await page.addInitScript(({seed,hero}) => localStorage.setItem('terrania-origins-v1',
-      JSON.stringify({seed,x:hero.x,y:hero.y,hp:100,kills:0,defeated:[]})),
-      {seed:SEED,hero:encounter.hero});
-    await page.setViewportSize(cancel==='escape' ? {width:600,height:390} :
-      {width:info.project.name==='android' ? 390 : 1200,height:844});
-    // Freeze gameplay between real UI interactions. The wooden sword now kills
-    // a 2-HP Slime in one hit, so wall-clock tap latency cannot arbitrate cancel.
-    const start=new Date('2026-01-01T00:00:00Z');
-    await page.clock.install({time:start});
-    await page.clock.pauseAt(new Date(start.getTime()+1000));
+    await page.addInitScript(({seed, hero}) => localStorage.setItem('terrania-origins-v1',
+      JSON.stringify({seed, x:hero.x, y:hero.y, hp:100, kills:0, defeated:[]})),
+      {seed:SEED, hero:encounter.hero});
+    await page.setViewportSize(cancel === 'escape' ? {width:600,height:390} :
+      {width:info.project.name === 'android' ? 390 : 1200,height:844});
+
+    // Phaser drives both the simulation and the Angular HUD with real frames.
+    // Freezing Playwright's clock before navigation left the Battle List empty
+    // even while the same real Slime was visible in the rendered game.
+    // The separate Battle List E2E uses real time and this same encounter.
     await page.goto('/jogar/?modo=classico');
-    // Clock is paused: the Phaser canvas may need a frame to be mounted.
-    // Progress fake time while waiting instead of using a wall-clock wait.
-    const canvas = page.locator('canvas#game');
-    await expect.poll(async () => {
-      await page.clock.runFor(32);
-      return canvas.count();
-    }).toBe(1);
-    await expect(canvas).toBeVisible();
-    const toggle=page.locator('#battleToggle');
-    if(await toggle.getAttribute('aria-expanded')!=='true') await toggle.click();
-    const row=page.locator(`.battle-entry[data-creature-id="${mobId}"]`);
-    // The clock is paused: spawning and the Battle List's 0.2 s HUD refresh
-    // require simulation frames after the Canvas has mounted. Wait for a REAL
-    // creature row, not merely an empty Battle List shell.
-    await expect.poll(async () => {
-      await page.clock.runFor(100);
-      return row.getAttribute('aria-label');
-    }, {timeout:15000}).toBe('Selecionar Slime, vida 2 de 2');
-    // Cancel before the player has reached the monster. No phantom attack may
-    // kill the Slime while neither a target nor an attack input is active.
-    if(info.project.name==='android') await row.tap(); else await row.click();
-    await page.clock.runFor(16);
+    await expect(page.locator('canvas#game')).toBeVisible();
+    const toggle = page.locator('#battleToggle');
+    if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
+    const row = page.locator(`.battle-entry[data-creature-id="${mobId}"]`);
+    await expect(row).toHaveAttribute('aria-label','Selecionar Slime, vida 2 de 2');
+
+    // Cancel an actual, selected chase before the hero reaches this distant Slime.
+    if (info.project.name === 'android') await row.tap(); else await row.click();
     await expect(page.locator('#classicTarget')).toContainText('Slime');
-    if(cancel==='button'){
-      if(info.project.name==='android') await page.locator('#stopTarget').tap();
+    if (cancel === 'button') {
+      if (info.project.name === 'android') await page.locator('#stopTarget').tap();
       else await page.locator('#stopTarget').click();
-    }else await page.keyboard.press('Escape');
-    await page.clock.runFor(16);
+    } else await page.keyboard.press('Escape');
     await expect(page.locator('#classicTarget')).toHaveCount(0);
     await expect(row).toHaveAttribute('aria-pressed','false');
-    await page.clock.runFor(950);
+
+    // With no selected target, waiting cannot kill the original creature.
+    await page.waitForTimeout(900);
     await expect(row).toHaveAttribute('aria-label','Selecionar Slime, vida 2 de 2');
-    const untouched=await page.evaluate(id=>JSON.parse(localStorage.getItem('terrania-origins-v1')??'null')
-      ?.defeated?.includes(id)===true,mobId);
+    const untouched = await page.evaluate(id =>
+      JSON.parse(localStorage.getItem('terrania-origins-v1') ?? 'null')
+        ?.defeated?.includes(id) === true, mobId);
     expect(untouched).toBe(false);
-    if(info.project.name==='android') await row.tap(); else await row.click();
-    await page.clock.runFor(16);
-    await expect(row).toHaveAttribute('aria-pressed','true');
-    await expect.poll(async ()=>{
-      await page.clock.runFor(80);
-      return page.evaluate(id=>{
-        const saved=JSON.parse(localStorage.getItem('terrania-origins-v1')??'null');
-        return saved?.defeated?.includes(id)===true;
-      },mobId);
-    },{timeout:15000}).toBe(true);
+
+    // Reselecting with real input resumes the chase and credits exactly this kill.
+    if (info.project.name === 'android') await row.tap(); else await row.click();
+    await expect(page.locator('#classicTarget')).toContainText('Slime');
+    await expect.poll(() => page.evaluate(id => {
+      const saved = JSON.parse(localStorage.getItem('terrania-origins-v1') ?? 'null');
+      return saved?.defeated?.includes(id) === true;
+    }, mobId), {timeout:15000}).toBe(true);
     await expect(row).toHaveCount(0);
     expect(errors).toEqual([]);
   });
