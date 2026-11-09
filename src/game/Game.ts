@@ -25,10 +25,10 @@ import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, 
 import { TravelState } from "./TravelState.ts";
 import type { Frame, FrameTimers, ModeHost } from "./modes/types.ts";
 import { tickCave } from "./modes/caveMode.ts";
+import { tickSurface } from "./modes/surfaceMode.ts";
 import { tickInterior } from "./modes/interiorMode.ts";
-import { mountQuestAction, npcOffer, questStepId, surfaceNearbyAction } from "./interactions.ts";
+import { mountQuestAction, npcOffer, questStepId } from "./interactions.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
-import { currentMountQuestStep } from "../engine/MountQuestState.ts";
 import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/Experience.ts";
 
@@ -344,98 +344,7 @@ export class Game {
     const frame: Frame = { dt, paused, movement, attack, manualActive, tileRoute, still };
     if (this.cave && tickCave(this.host, this.cave, frame)) return;
     if (this.interior && tickInterior(this.host, this.interior, frame)) return;
-    this.tickSurface(frame);
-  }
-  /** Um quadro na superfície: simulação a 60 Hz, efeitos, câmera, HUD e desenho do mundo. */
-  private tickSurface(frame: Frame): void {
-    const { dt, paused, manualActive, tileRoute, still } = frame;
-    const gelBefore = this.sim.inventory.gel;
-    if (!paused) {
-      this.timers.accumulator += dt;
-      while (this.timers.accumulator >= 1 / 60) {
-        this.timers.accumulator -= 1 / 60;
-        const before = this.sim.player;
-        const damageCount = before.damageCount;
-        const classicStrike = this.travel.combat.tick(1 / 60, before, this.sim.slimes, this.sim.collision,
-          this.sim.inventory.weapon.interval,this.sim.inventory.loadout.equipped);
-        const follow = !manualActive && !tileRoute && this.travel.autoFollow;
-        if (follow) this.travel.pursuit.direction(1 / 60, before, this.travel.combat.targetId,
-          this.sim.slimes, this.sim.collision, true, this.travel.walker.destination);
-        let routeTime = 1 / 60;
-        const stepDirection = () => {
-          if (manualActive) {
-            const direction = this.input.movement();
-            this.input.acknowledgeMovement();
-            return direction;
-          }
-          if (tileRoute) {
-            const dir = this.travel.navigator.direction(before, routeTime);
-            routeTime = 0;
-            return dir;
-          }
-          return follow ? this.travel.pursuit.direction(0, before, this.travel.combat.targetId,
-            this.sim.slimes, this.sim.collision, true) : still;
-        };
-        const changed = this.sim.update(1 / 60, stepDirection,
-          classicStrike, this.travel.combat.strikeTargetId, this.travel.walker);
-        if (changed) this.save();
-        if (this.sim.awaitingRespawn) {
-          this.input.clear();
-          this.travel.stopAll();
-          this.timers.accumulator = 0;
-          break;
-        }
-        if (before.damageCount !== damageCount) this.travel.navigator.cancel();
-      }
-    } else {
-      this.timers.accumulator = 0;
-    }
-    const collectedGel = this.sim.inventory.gel - gelBefore;
-    if (collectedGel > 0) this.effects.showGelPickup(this.sim.player, collectedGel);
-    this.timers.saveClock += dt;
-    if (this.timers.saveClock > 12) {
-      this.timers.saveClock = 0;
-      this.save();
-    }
-    const mobs = [...this.sim.slimes.values()];
-    const feedback = this.effects.update(paused ? 0 : dt, this.sim.player, mobs);
-    if (feedback.hit) this.camera.shake(0.25);
-    if (feedback.hurt) this.camera.shake(0.65);
-    this.camera.update(dt, this.sim.player);
-    const focusedLabel = this.travel.combat.label(this.sim.slimes);
-    const targetId = this.travel.combat.targetId;
-    if (this.timers.battleClock >= 0.2) {
-      this.timers.battleClock = 0;
-      this.hud.setBattleCreatures(this.hudBattleRows(), targetId);
-    }
-    this.updateHud();
-    const following = this.travel.pursuit.destination !== null;
-    this.hud.setCombatTarget(focusedLabel && following
-      ? focusedLabel + " · seguindo" : focusedLabel);
-    const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
-    const portal = caveEntranceNear(this.sim.player.x,this.sim.player.y,this.sim.seed);
-    this.hud.setNearbyAction(surfaceNearbyAction({
-      x: this.sim.player.x, y: this.sim.player.y, stepId: questStepId(this.sim.mounts.quest),
-      caveEntrance: portal !== null, npc,
-    }));
-    this.scene.render(
-      this.world,
-      this.camera,
-      this.sim.player,
-      mobs,
-      this.timers.clock,
-      this.effects,
-      this.travel.navigator.target,
-      [...this.sim.drops.values()],
-      targetId,
-      this.sim.inventory.gear,
-      this.sim.inventory.loadout.equipped,
-      this.sim.mounts.active,
-      !this.sim.mounts.has("warhorse") && this.sim.mounts.quest?.step!==4,
-      this.sim.mounts.stableTier>0,
-      !!this.sim.mounts.quest && currentMountQuestStep(this.sim.mounts.quest)?.id==="tracks",
-      !!this.sim.mounts.quest && currentMountQuestStep(this.sim.mounts.quest)?.id==="return",
-    );
+    tickSurface(this.host, frame);
   }
   destroy(): void {
     this.save();
