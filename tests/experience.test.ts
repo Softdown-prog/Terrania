@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { Slime } from "../src/actors/Slime.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
-import { MAX_EXPERIENCE, MAX_LEVEL, experienceProgress, grantExperience,
+import { MAX_EXPERIENCE, MAX_LEVEL, maxHpForExperience, experienceProgress, grantExperience,
   levelForExperience, normalizeExperience } from "../src/engine/Experience.ts";
 
 const STILL = { x: 0, y: 0 };
@@ -17,7 +17,7 @@ test("XP tem curva cumulativa, limite e bônus de vida ao subir de nível", () =
   const hero = { hp: 73, maxHp: 100 };
   assert.equal(grantExperience(20, 10, hero), 30);
   assert.deepEqual(hero, { hp: 83, maxHp: 110 });
-  const veteran = { hp: 420, maxHp: 100 + (MAX_LEVEL - 1) * 10 };
+  const veteran = { hp: 420, maxHp: maxHpForExperience(MAX_EXPERIENCE) };
   assert.equal(grantExperience(MAX_EXPERIENCE, 10, veteran), MAX_EXPERIENCE);
   assert.equal(veteran.hp, 420);
 });

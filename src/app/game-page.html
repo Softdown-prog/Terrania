@@ -46,6 +46,9 @@
           [attr.aria-expanded]="toolsExpanded()" aria-controls="gameToolActions"
           (click)="toolsExpanded.set(!toolsExpanded())">{{ toolsExpanded() ? 'Fechar menu' : '☰ Opções' }}</button>
         <div id="gameToolActions" class="game-tool-actions" [hidden]="!toolsExpanded()">
+          @if (hud.mountView().active) {
+            <button id="dismountButton" type="button" (click)="hud.mountAction('dismount')">Desmontar</button>
+          }
           <button id="inventoryButton" (click)="open(inventoryDialog)" type="button" aria-haspopup="dialog" aria-controls="inventoryDialog">Inventário / Mapa</button>
           <button id="playersButton" (click)="open(playersDialog)" type="button" aria-haspopup="dialog" aria-controls="playersDialog">Jogadores online</button>
           <button id="helpButton" (click)="open(helpDialog)" type="button" title="Como jogar">Ajuda</button>
@@ -96,6 +99,13 @@
         </section>
       }
 
+      @if (hud.mountView().active) {
+        <div id="mountStatus" class="mount-status" aria-label="Montaria ativa">
+          <strong>{{ hud.mountCatalog[hud.mountView().active!].name }}</strong>
+          <span>Energia {{ hud.mountView().stamina.toFixed(0) }} / {{ hud.mountView().maxStamina }}</span>
+          <button type="button" (click)="hud.mountAction('dismount')" aria-label="Desmontar montaria">Desmontar</button>
+        </div>
+      }
       <div class="bottom-info">
         <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
         ><small id="saveMode">Aventura local · progresso neste navegador</small>
@@ -449,7 +459,7 @@
           </div>
           <div>
             <dt>E ou botão Conversar</dt>
-            <dd>Converse com moradores, leia placas, entre nas construções e desça por buracos, escadas e passagens para cavernas no modo solo. O mapa do inventário acompanha o andar subterrâneo; volte pela saída iluminada.</dd>
+            <dd>Converse com moradores, explore cavernas e procure Eron, Mestre de Estábulos, para começar a quest do Cavalo de Batalha. Cavalaria I exige nível 15; a montaria consome energia e o mapa continua solo.</dd>
           </div>
           <div>
             <dt>Espaço ou J</dt>
@@ -491,9 +501,59 @@
                 [disabled]="hud.gel() < item.gelPrice || hud.food()[id] >= 99"
                 (click)="hud.tradeFood(id)">Comprar {{ item.name }} · {{ item.gelPrice }} gel</button>
             }
-          } @else {
+          } @else if (offer.item === 'sword') {
             <p class="dialog-note">Gel {{ hud.gel() }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes · {{ hud.weapons.forge.windup * 1000 }} ms até o impacto</p>
             <button [disabled]="hud.loadout()?.forged" (click)="hud.buySword()" class="secondary-button" type="button">{{ hud.loadout()?.forged ? "Espada já adquirida" : "Comprar " + hud.weapons.forge.name + " por " + offer.price + " de gel" }}</button>
+          } @else {
+            <section class="mount-stable-panel" aria-label="Estábulo e montarias">
+              <p id="stableProgress">Estábulo {{ hud.mountView().stableTier }}/3 · Cavalaria {{ hud.mountView().ridingTier }}/3 · {{ hud.gel() }} gel · Nível {{ hud.progression()?.level ?? 1 }}</p>
+              <p id="mountQuestHint">{{ hud.mountView().questHint }}</p>
+              @if (hud.mountView().quest) {
+                <p id="mountQuestGift" class="dialog-note">Item de missão: {{ hud.mountView().quest?.gift }}</p>
+              }
+              @if (hud.mountView().stableTier === 0) {
+                <button id="buildStable" type="button" class="secondary-button"
+                  (click)="hud.mountAction('build')">Construir cercado · 12 gel · nível 15</button>
+              } @else {
+                @if (hud.mountView().stableTier < 3) {
+                  <button id="upgradeStable" class="secondary-button" type="button"
+                    (click)="hud.mountAction('upgrade')">Ampliar estábulo (II: 25 gel / III: 40 gel)</button>
+                }
+                @if (hud.mountView().ridingTier < hud.mountView().stableTier) {
+                  <button id="trainRiding" class="secondary-button" type="button"
+                    (click)="hud.mountAction('train')">Treinar Cavalaria (I: 15 / II: 35 / III: 55)</button>
+                }
+                @if (!hud.mountView().owned.includes('warhorse')) {
+                  @if (!hud.mountView().quest) {
+                    <button id="startWarhorseQuest" class="secondary-button" type="button"
+                      (click)="hud.mountAction('start-warhorse')">Começar: O Garrano Fugitivo da Vila</button>
+                  } @else if (hud.mountView().quest?.step === 2) {
+                    <button id="craftHalter" class="secondary-button" type="button"
+                      (click)="hud.mountAction('make-halter')">Fabricar cabresto · 3 gel</button>
+                  } @else if (hud.mountView().quest?.step === 4) {
+                    <button id="returnWarhorse" class="secondary-button" type="button"
+                      (click)="hud.mountAction('return-warhorse')">Entregar Garrano a Eron e receber a sela</button>
+                  }
+                } @else if (!hud.mountView().active) {
+                  <button id="rideWarhorse" class="secondary-button" type="button"
+                    (click)="hud.mountAction('mount-warhorse')">Selar e montar Cavalo de Batalha</button>
+                } @else {
+                  <button id="stableDismount" class="secondary-button" type="button"
+                    (click)="hud.mountAction('dismount')">Guardar montaria no estábulo</button>
+                }
+              }
+              <div class="mount-roster" aria-label="Catálogo das dez montarias">
+                @for (id of hud.mountIds; track id) {
+                  @let mount = hud.mountCatalog[id];
+                  <div class="mount-roster-entry">
+                    <strong>{{ mount.name }}</strong>
+                    <small>Tier {{ mount.tier }} · Nível {{ mount.level }} · {{ mount.saddle }} · Energia {{ mount.stamina }}</small>
+                    <span>{{ hud.mountView().owned.includes(id) ? 'Domada ✓' :
+                      id === 'warhorse' ? 'Missão inicial jogável' : 'Quest regional em desenvolvimento' }}</span>
+                  </div>
+                }
+              </div>
+            </section>
           }
           <p id="npcTradeFeedback" role="status">{{ hud.npcTradeFeedback() }}</p>
         }

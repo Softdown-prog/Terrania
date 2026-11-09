@@ -1,4 +1,5 @@
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../actors/CreatureCatalog.ts";
+import { MOUNT_IDS, MOUNTS } from "../actors/MountCatalog.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import type { Player } from "../actors/Player.ts";
 import { FOODS, emptyFoodCounts, normalizeFoodCounts, type FoodCounts, type FoodId,
@@ -29,7 +30,8 @@ export interface InventoryState {
   materials?: Record<string, number>;
 }
 
-const KNOWN_MATERIALS = new Set(REGIONAL_CREATURE_KINDS.flatMap(kind => CREATURE_CATALOG[kind].loot.map(item => item.item)));
+const KNOWN_MATERIALS = new Set([...REGIONAL_CREATURE_KINDS.flatMap(kind => CREATURE_CATALOG[kind].loot.map(item => item.item)),
+  ...MOUNT_IDS.flatMap(id => MOUNTS[id].dropsOnTame.map(item => item.item))]);
 export function normalizeMaterials(value: unknown): Record<string, number> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   const out: Record<string, number> = {};
@@ -95,6 +97,12 @@ export class Inventory {
   addMaterial(id: string): boolean {
     if (!KNOWN_MATERIALS.has(id) || (this.materialCounts[id] ?? 0) >= MAX_STACK) return false;
     this.materialCounts[id] = (this.materialCounts[id] ?? 0) + 1;
+    return true;
+  }
+  /** Consumo atômico de recursos do estábulo; nunca deixa gel negativo. */
+  spendGel(amount: number): boolean {
+    if (!Number.isSafeInteger(amount) || amount <= 0 || this.gelCount < amount) return false;
+    this.gelCount -= amount;
     return true;
   }
   get potion(): number { return this.potionCount; }
