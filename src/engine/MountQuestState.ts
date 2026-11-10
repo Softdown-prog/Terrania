@@ -1,3 +1,4 @@
+import { MAX_KILLS } from "./Limits.ts";
 import { MOUNT_IDS, type MountId } from "../actors/MountCatalog.ts";
 import { MOUNT_QUESTS, type QuestEventKind, type MountQuestStep } from "../world/mountQuests.ts";
 
@@ -14,7 +15,6 @@ export interface MountQuestEvent {
   readonly target: string;
   readonly amount?: number;
 }
-const MAX_KILLS=9_999_999;
 export function startMountQuest(id:MountId,kills:number):MountQuestProgress|null {
   const def=MOUNT_QUESTS[id];
   if(!def.playable)return null;

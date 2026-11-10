@@ -1,3 +1,5 @@
+import { MAX_STACK } from "./Limits.ts";
+export { MAX_STACK } from "./Limits.ts";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../actors/CreatureCatalog.ts";
 import { MOUNT_IDS, MOUNTS } from "../actors/MountCatalog.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
@@ -9,7 +11,6 @@ import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, 
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 
 /** Regras da bolsa do jogo solo (antes compartilhadas com a sala Node, já retirada). */
-export const MAX_STACK = 99;
 export const QUEST_REWARD_POTIONS = 2;
 export const POTION_HEAL = 35;
 export const POTION_GEL_PRICE = 3;
@@ -37,7 +38,7 @@ export function normalizeMaterials(value: unknown): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [id, quantity] of Object.entries(value))
     if (KNOWN_MATERIALS.has(id) && typeof quantity === "number" &&
-        Number.isSafeInteger(quantity) && quantity > 0) out[id] = Math.min(99, quantity);
+        Number.isSafeInteger(quantity) && quantity > 0) out[id] = Math.min(MAX_STACK, quantity);
   return out;
 }
 const count = (value: unknown): number =>
@@ -77,9 +78,7 @@ export class Inventory {
   private weapons: WeaponLoadout;
   private equippedGear: GearState;
 
-  private readonly level: number;
   constructor(value?: unknown, level = 1) {
-    this.level = level;
     const state = normalizeInventory(value);
     this.gelCount = state.gel;
     this.materialCounts = normalizeMaterials(state.materials);
@@ -87,7 +86,7 @@ export class Inventory {
     this.foods = normalizeFoodCounts(state.food);
     this.claimed = state.questRewardClaimed;
     const restored=state.loadout ?? { forged: false, equipped: "starter" };
-    this.weapons = weaponUnlocked(restored.equipped, this.level, restored.forged)
+    this.weapons = weaponUnlocked(restored.equipped, level, restored.forged)
       ? restored : { ...restored, equipped: "starter" };
     this.equippedGear = state.gear ?? {};
   }
@@ -170,7 +169,7 @@ export class Inventory {
     return "purchased";
   }
 
-  equipWeapon(weapon: WeaponId, level: number = this.level): SwordEquipResult {
+  equipWeapon(weapon: WeaponId, level: number): SwordEquipResult {
     if (!isWeaponId(weapon)) return "not-owned";
     if (weapon === this.weapons.equipped) return "already-equipped";
     // A espada de Toren requer compra antes de validar seu nível de uso.

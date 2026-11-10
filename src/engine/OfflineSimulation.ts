@@ -1,3 +1,5 @@
+import { MAX_KILLS } from "./Limits.ts";
+export { MAX_KILLS } from "./Limits.ts";
 import { resolveSwordStrike, swordStrikeTargets } from "./SwordCombat.ts";
 import { RegionalMonster, regionalSurfaceSpawns, southCommonSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
 import { Player } from "../actors/Player.ts";
@@ -31,7 +33,6 @@ export interface OfflineSave {
   mounts?: MountSave;
 }
 
-export const MAX_KILLS = 9_999_999;
 /** Contagem de abates vinda de um save: inteira, não negativa e limitada (missões dependem disso). */
 export function normalizeKills(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value)

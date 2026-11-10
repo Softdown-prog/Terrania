@@ -148,7 +148,7 @@ export class MountStable {
   tame(level:number,kills:number,x:number,y:number):MountActionResult {
     if(!near(x,y,WILD_WARHORSE))return "too-far";
     if(this.has("warhorse"))return "already-owned";
-    if(this.stable<1||this.skill<1||level<15)return "no-training";
+    if(this.stable<1||this.skill<1||level<MOUNTS.warhorse.level)return "no-training";
     if(!this.questState)return "missing-quest";
     this.synchronizeKills(kills);
     if(currentMountQuestStep(this.questState!)?.id!=="calm")

@@ -89,3 +89,15 @@ test("quest vivo: volta ao estábulo após salvar/recarregar; loot não é dupli
   assert.equal(stable.has("warhorse"),true);
   assert.equal(stable.snapshot().quest,undefined);
 });
+
+test("ADR 0014: nível para domar sempre acompanha o catálogo de montarias", () => {
+  const entry = MOUNTS.warhorse as { level: number };
+  const oldLevel = entry.level;
+  const stable = new MountStable({ stableTier: 1, ridingTier: 1,
+    quest: { id: "warhorse", step: 3, count: 0, killsAtStart: 0, gift: "Maçã Silvestre Doce" } });
+  try {
+    entry.level = oldLevel + 1;
+    assert.equal(stable.tame(oldLevel, 0, WILD_WARHORSE.x, WILD_WARHORSE.y), "no-training");
+    assert.equal(stable.tame(oldLevel + 1, 0, WILD_WARHORSE.x, WILD_WARHORSE.y), "calmed");
+  } finally { entry.level = oldLevel; }
+});
