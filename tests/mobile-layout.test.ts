@@ -13,7 +13,11 @@ test("Canvas acompanha o tamanho do elemento e mudanças de viewport Android", (
   assert.match(game, /['"]orientationchange['"]/);
 });
 test("gamepad touch respeita gestos, notch e área segura", () => {
-  const css = read("src/style.css");
+  // O componente Angular declara a ordem canônica das folhas do jogo.
+  const declaration = read("src/app/game-page.component.ts").match(/styleUrls:\s*\[([\s\S]*?)\]/);
+  assert.ok(declaration, "a tela do jogo precisa declarar suas folhas de estilo");
+  const css = [...declaration[1].matchAll(/'\.\/styles\/([^']+\.css)'/g)]
+    .map(match => read("src/app/styles/" + match[1])).join("");
   const html = read("src/app/game-page.html");
   assert.match(css, /height: 100dvh/);
   assert.match(css, /overscroll-behavior: none/);

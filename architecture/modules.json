@@ -103,6 +103,41 @@
       "description": "Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias."
     },
     {
+      "id": "monsters",
+      "name": "Bestiário por região",
+      "layer": "domain",
+      "status": "active",
+      "roots": [
+        "src/monsters"
+      ],
+      "entrypoints": [
+        "src/monsters/catalog.ts",
+        "src/monsters/center/index.ts",
+        "src/monsters/north/index.ts",
+        "src/monsters/south/index.ts",
+        "src/monsters/east/index.ts",
+        "src/monsters/west/index.ts"
+      ],
+      "doc": "src/monsters/README.md",
+      "description": "Fichas individuais de criaturas classificadas por região; fonte única de atributos e loot, sem duplicar IA nem renderização."
+    },
+    {
+      "id": "npcs",
+      "name": "NPCs por região",
+      "layer": "domain",
+      "status": "active",
+      "roots": [
+        "src/npcs"
+      ],
+      "entrypoints": [
+        "src/npcs/catalog.ts",
+        "src/npcs/center/index.ts",
+        "src/npcs/types.ts"
+      ],
+      "doc": "src/npcs/README.md",
+      "description": "Personagens não jogáveis separados por região, com diálogo e aparência em fichas individuais."
+    },
+    {
       "id": "world",
       "name": "Terreno, colisões e NPCs",
       "layer": "domain",

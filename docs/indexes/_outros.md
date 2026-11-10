@@ -77,7 +77,6 @@
 - [`server-go/go.mod`](../../server-go/go.mod)
 - [`server-go/go.sum`](../../server-go/go.sum)
 - [`src/main.ts`](../../src/main.ts)
-- [`src/style.css`](../../src/style.css)
 - [`tsconfig.json`](../../tsconfig.json)
 - [`vite.config.mjs`](../../vite.config.mjs)
 - [`wrangler.jsonc`](../../wrangler.jsonc)

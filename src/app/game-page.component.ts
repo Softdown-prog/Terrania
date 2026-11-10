@@ -15,7 +15,7 @@ import { REGIONS, getWorldRegion } from '../world/regions.ts';
 import { getRegionDifficulty } from '../world/regionDifficulty.ts';
 import { getTile } from '../world/terrain.ts';
 
-@Component({ selector: 'app-game-page', templateUrl: './game-page.html', styleUrl: '../style.css',
+@Component({ selector: 'app-game-page', templateUrl: './game-page.html', styleUrls: ['./styles/game-core.css', './styles/dialogs-and-controls.css', './styles/responsive.css', './styles/inventory.css', './styles/game-overlays.css', './styles/battle-list.css', './styles/world-atlas.css', './styles/mounts.css'],
   imports: [RouterLink, OnlinePlayersComponent, ItemIconComponent], providers: [HudService], changeDetection: ChangeDetectionStrategy.OnPush })
 export class GamePageComponent implements AfterViewInit {
   readonly hud = inject(HudService);

@@ -1,0 +1,238 @@
+#talkButton {
+  position: absolute;
+  right: 24px;
+  bottom: max(90px, calc(env(safe-area-inset-bottom) + 85px));
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 5px;
+  border: 1px solid #dec48a;
+  background: #1f4c3de8;
+  color: #f8e9be;
+  box-shadow: 0 4px 20px #0d241bb0;
+  font-size: 12px;
+  font-weight: 600;
+}
+#talkButton[hidden] { display: none !important; }
+#talkButton kbd {
+  margin-left: 6px;
+  padding: 2px 5px;
+  border: 1px solid #e2d3a566;
+  border-radius: 3px;
+  font: 10px system-ui;
+}
+#npcSpeech { min-height: 68px; }
+#npcStep { display: block; color: #c7b888; }
+#gameNotice {
+  position: absolute;
+  bottom: 55px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  text-align: center;
+  max-width: 90%;
+  color: #f0deb0;
+  pointer-events: none;
+}
+#joystick {
+  position: absolute;
+  bottom: max(32px, env(safe-area-inset-bottom));
+  left: 25px;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: #173c2f5e;
+  border: 1px solid #e7dfb85c;
+  box-shadow: inset 0 0 20px #122e2544;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+#stick {
+  width: 45px;
+  height: 45px;
+  background: #d5d4a766;
+  border-radius: 50%;
+  border: 1px solid #e9e5c88c;
+  box-shadow: 0 3px 8px #10271e55;
+  pointer-events: none;
+}
+#attack {
+  display: none;
+  position: absolute;
+  right: 28px;
+  bottom: max(44px, env(safe-area-inset-bottom));
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #173b30d4;
+  color: #ebdba9;
+  border: 1px solid #d6bb7f;
+  touch-action: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  box-shadow: 0 5px 18px #0e2a2880;
+}
+#attack svg {
+  width: 32px;
+  height: 32px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+#attack span {
+  font-size: 7px;
+  letter-spacing: 1px;
+  margin-top: 3px;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+dialog {
+  touch-action: auto;
+  background: #142c29;
+  color: #d8dfce;
+  border: 1px solid #a6a57a66;
+  border-radius: 8px;
+  padding: 36px;
+  width: min(480px, calc(100% - 28px));
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  box-shadow: 0 28px 100px #061413bb;
+}
+dialog::backdrop {
+  background: #061b1dbb;
+  backdrop-filter: blur(4px);
+}
+dialog h1 {
+  font:
+    29px/1.12 Georgia,
+    serif;
+  color: #f2e7c8;
+  font-weight: 400;
+  margin: 12px 0 23px;
+}
+dialog p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #bac6b8;
+}
+.dialog-x {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font: 25px Georgia;
+  background: none;
+  border: 0;
+  color: #d2c696;
+}
+.dialog-kicker {
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #c8b37d;
+}
+.range-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin: 25px 0 14px;
+}
+.range-label output {
+  color: var(--gold);
+}
+#zoom {
+  width: 100%;
+  accent-color: #d1bd82;
+}
+.range-hint {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #94ad9d;
+  margin-top: 6px;
+}
+.toggle {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  cursor: pointer;
+}
+.toggle small {
+  display: block;
+  color: #95aa9b;
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 5px;
+}
+.toggle input {
+  accent-color: #d3bc83;
+  min-width: 16px;
+  min-height: 16px;
+}
+.primary-button,
+.secondary-button {
+  padding: 12px 18px;
+  font-size: 12px;
+  display: block;
+  border-radius: 3px;
+  width: 100%;
+  margin-top: 18px;
+}
+.primary-button {
+  background: #d1bc85;
+  border: 1px solid #d1bc85;
+  color: #16302c;
+}
+.primary-button:hover {
+  background: #e2cfa0;
+}
+.secondary-button {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: #d4d9be;
+}
+.secondary-button:hover {
+  background: #ffffff0a;
+}
+dialog .dialog-note {
+  font-size: 11px;
+  line-height: 1.7;
+  color: #9caf9d;
+}
+.control-list {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.control-list div {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.control-list dt {
+  color: #d9c68e;
+  font-weight: 600;
+}
+.control-list dd {
+  margin: 3px 0;
+  color: #b2c4b4;
+}
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+}
+noscript {
+  position: fixed;
+  top: 40%;
+  left: 20px;
+  right: 20px;
+  text-align: center;
+  background: #142c29;
+  padding: 20px;
+}
+noscript a {
+  color: var(--gold);
+}
