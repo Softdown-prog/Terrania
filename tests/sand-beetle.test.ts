@@ -8,7 +8,7 @@ import { swordHitDamage } from "../src/engine/combat/SwordCombat.ts";
 import { getWorldRegion } from "../src/world/regions.ts";
 import { getBiomeAt } from "../src/world/biomes.ts";
 import { getTile, TILE_SIZE } from "../src/world/terrain.ts";
-import { renderSandBeetle } from "../src/render/sandBeetle.ts";
+import { renderSandBeetle } from "../src/render/creatures/south/beetles/sandBeetle.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
 
 const collision = {canMove: () => true, speedAt: () => 1};

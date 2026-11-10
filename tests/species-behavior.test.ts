@@ -81,3 +81,65 @@ test("recuo por espécie é parametrizado: algumas fogem no amarelo, outras no v
   assert.ok(rat.x>x, "fuga aumenta distância em relação ao herói");
   assert.equal(hero.hp,hero.maxHp);
 });
+test("o registro usa o comportamento exportado pela ficha, sem duplicação",async()=>{
+  const { readFileSync, existsSync }=await import("node:fs");
+  const { duneRatBehavior }=await import("../src/monsters/south/rats/dune-rat.ts");
+  const { sandGoblinBehavior }=await import("../src/monsters/south/goblins/sand-goblin.ts");
+  const { desertOrcBehavior }=await import("../src/monsters/south/orcs/desert-orc.ts");
+  assert.strictEqual(SPECIES_BEHAVIORS["dune-rat"],duneRatBehavior);
+  assert.strictEqual(SPECIES_BEHAVIORS["sand-goblin"],sandGoblinBehavior);
+  assert.strictEqual(SPECIES_BEHAVIORS["desert-orc"],desertOrcBehavior);
+  const { readdirSync }=await import("node:fs");
+  let found=0;
+  for(const region of ["north","south","east","west"]){
+    const regionRoot="src/monsters/"+region;
+    for(const category of readdirSync(regionRoot,{withFileTypes:true}).filter(x=>x.isDirectory())){
+      for(const file of readdirSync(regionRoot+"/"+category.name).filter(x=>x.endsWith(".ts"))){
+        const species=file.slice(0,-3);
+        const name=species.replace(/-([a-z])/g,(_,c:string)=>c.toUpperCase())+"Behavior";
+        const path=regionRoot+"/"+category.name+"/"+file;
+        assert.ok(existsSync(path));
+        assert.ok(readFileSync(path,"utf8").includes("export const "+name+" = "),
+          "comportamento ainda centralizado: "+species);
+        found++;
+      }
+    }
+  }
+  assert.equal(found,REGIONAL_CREATURE_KINDS.length);
+  const central=readFileSync("src/monsters/behavior.ts","utf8");
+  assert.ok(!central.includes('"dune-rat": { gait:'),"registro não pode duplicar perfil");
+});
+
+test("infecção de rato reproduz o sorteio determinístico da mordida original",async()=>{
+  const { duneRatInfectionOnBite }=await import("../src/monsters/south/rats/dune-rat.ts");
+  const { hash2 }=await import("../src/world/random.ts");
+  for(const seed of [0,123,43121,987654321]){
+    for(let hit=1;hit<=80;hit++){
+      assert.equal(duneRatInfectionOnBite(seed,hit),hash2(seed,hit,73021)<.1);
+      assert.equal(duneRatInfectionOnBite(seed,hit),duneRatInfectionOnBite(seed,hit));
+    }
+  }
+});
+test("goblin só arremessa areia quando encurralado e orc empurra no terceiro acerto",async()=>{
+  const { sandGoblinCornered }=await import("../src/monsters/south/goblins/sand-goblin.ts");
+  const { desertOrcClubKnockback,DESERT_ORC_CLUB_PUSH_DISTANCE }=
+    await import("../src/monsters/south/orcs/desert-orc.ts");
+  assert.equal(sandGoblinCornered(23,65),false);
+  assert.equal(sandGoblinCornered(22,65),true);
+  assert.equal(sandGoblinCornered(35,100),true);
+  assert.equal(DESERT_ORC_CLUB_PUSH_DISTANCE,12);
+  assert.deepEqual(Array.from({length:9},(_,i)=>desertOrcClubKnockback(i+1)),
+    [false,false,true,false,false,true,false,false,true]);
+});
+test("troll de argila se cura aos poucos, com espera e distância reais",async()=>{
+  const { clayTrollRegeneration }=await import("../src/monsters/south/trolls/clay-troll.ts");
+  assert.deepEqual(clayTrollRegeneration(95,100,4,200,0,.1),{hp:95,elapsed:0});
+  assert.deepEqual(clayTrollRegeneration(95,100,6,120,0,.1),{hp:95,elapsed:0});
+  assert.deepEqual(clayTrollRegeneration(95,100,6,200,.9,.2),{hp:96,elapsed:.10000000000000009});
+  assert.deepEqual(clayTrollRegeneration(99,100,6,200,.9,2),{hp:100,elapsed:1.9});
+  const hero=new Player();hero.x=1000;hero.y=-600;
+  const troll=new RegionalMonster("troll-regen","clay-troll",0,-600);
+  troll.hp=troll.definition.maxHp-4;
+  for(let i=0;i<110;i++)troll.update(.1,hero,open,0,false);
+  assert.equal(troll.hp,troll.definition.maxHp,"troll tem de regenerar 4 HP no motor vivo");
+});

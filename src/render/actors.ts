@@ -427,5 +427,5 @@ export function renderHero(
 
 
 /** Compatibilidade: consumidores atuais continuam importando de actors.ts. */
-export { renderSlime } from "./creatures/center/slime.ts";
-export type { SlimeVisual, SlimeFx } from "./creatures/center/slime.ts";
+export { renderSlime } from "./creatures/center/slimes/slime.ts";
+export type { SlimeVisual, SlimeFx } from "./creatures/center/slimes/slime.ts";
