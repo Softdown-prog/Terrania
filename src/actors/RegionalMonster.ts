@@ -1,12 +1,12 @@
 import type { WeaponId } from "../engine/Weapons.ts";
 import { Slime } from "./Slime.ts";
-import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_COMMON_KINDS,
-  type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
+import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_COMMON_KINDS, SOUTH_SURFACE_KINDS,
+  sandBeetleBuried, type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
 import { moveBody, clearPath, canMoveOnSeed, type CollisionMap } from "../world/collision.ts";
 import { getWorldRegion } from "../world/regions.ts";
 import { getBiomeAt } from "../world/biomes.ts";
 import { caveThemeAt, type CaveTheme } from "../world/caves.ts";
-import { CHUNK_TILES, TILE_SIZE } from "../world/terrain.ts";
+import { CHUNK_TILES, TILE_SIZE, getTile } from "../world/terrain.ts";
 import { hash2 } from "../world/random.ts";
 import type { Player } from "./Player.ts";
 import { villageGround } from "../world/village.ts";
@@ -32,6 +32,10 @@ export class RegionalMonster extends Slime {
     this.strikeSeed = [...id].reduce((h,ch)=>Math.imul(h^ch.charCodeAt(0),16777619),2166136261);
   }
   get casting(): number { return Math.min(1, this.windup / .42); }
+  /** Armadura só contra golpes físicos; DOT elemental continua independente. */
+  override get defense(): number {
+    return super.defense + (this.kind === "sand-beetle" && sandBeetleBuried(this.hp) ? 2 : 0);
+  }
   override takeHit(sourceX: number, sourceY: number, damage = 1): void {
     super.takeHit(sourceX,sourceY,damage);
     this.quietSeconds=0;
@@ -209,8 +213,11 @@ export function southCommonSpawns(cx:number,cy:number,seed:number): RegionalMons
     if(getWorldRegion(tx,ty)!=="south" || villageGround(tx,ty) ||
        !canMoveOnSeed((tx+.5)*TILE_SIZE,(ty+.5)*TILE_SIZE,seed))continue;
     const theme=caveThemeAt(tx,ty),biome=getBiomeAt(tx,ty,seed);
-    const eligible=SOUTH_COMMON_KINDS.filter(kind=>{
+    const eligible=[...SOUTH_COMMON_KINDS,...SOUTH_SURFACE_KINDS].filter(kind=>{
       const def=CREATURE_CATALOG[kind];
+      if (kind === "sand-beetle")
+        return theme === "desert" && (def.biomes.includes(biome) ||
+          getTile(tx,ty,seed).ground === "path");
       return def.caveThemes.includes(theme) && def.biomes.includes(biome);
     });
     if(!eligible.length)continue;

@@ -8,7 +8,7 @@ import { Inventory } from "../src/engine/Inventory.ts";
 import { getBiomeAt } from "../src/world/biomes.ts";
 import { getWorldRegion } from "../src/world/regions.ts";
 import { caveThemeAt, type CaveEntrance } from "../src/world/caves.ts";
-import { TILE_SIZE, CHUNK_TILES } from "../src/world/terrain.ts";
+import { TILE_SIZE, CHUNK_TILES, getTile } from "../src/world/terrain.ts";
 
 const profiles=[
   ["dune-rat",35,6,3,[.5,.4,.1]],
@@ -24,10 +24,10 @@ const profiles=[
 ] as const;
 const collision={canMove:()=>true,speedAt:()=>1};
 
-test("terceiro lote: 10 espécies únicas e 30 totais, todas com HP, ataque e loot exatos",()=>{
+test("terceiro lote: 10 espécies comuns e 31 regionais com o novo besouro, fichas consistentes",()=>{
   assert.equal(SOUTH_COMMON_KINDS.length,10);
-  assert.equal(REGIONAL_CREATURE_KINDS.length,30);
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,30);
+  assert.equal(REGIONAL_CREATURE_KINDS.length,31);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,31);
   for(const [kind,hp,attack,n,percentages] of profiles) {
     const def=CREATURE_CATALOG[kind];
     assert.equal(def.maxHp,hp,kind);
@@ -54,12 +54,14 @@ test("sul: muitos encontros de baixo tier, determinísticos e só em biomas e ti
     for(const m of first){
       observed++;species.add(m.kind);
       assert.equal(getWorldRegion(Math.floor(m.x/TILE_SIZE),Math.floor(m.y/TILE_SIZE)),"south");
-      assert.ok(SOUTH_COMMON_KINDS.some(x=>x===m.kind));
+      assert.ok(SOUTH_COMMON_KINDS.some(x=>x===m.kind) || m.kind === "sand-beetle");
       const tx=Math.floor(m.x/TILE_SIZE),ty=Math.floor(m.y/TILE_SIZE);
       assert.equal(Math.floor(tx/CHUNK_TILES),cx);
       assert.equal(Math.floor(ty/CHUNK_TILES),cy);
-      assert.ok(CREATURE_CATALOG[m.kind].biomes.includes(getBiomeAt(tx,ty,seed)));
-      assert.ok(CREATURE_CATALOG[m.kind].caveThemes.includes(caveThemeAt(tx,ty)));
+      assert.ok(CREATURE_CATALOG[m.kind].biomes.includes(getBiomeAt(tx,ty,seed)) ||
+        (m.kind === "sand-beetle" && getTile(tx,ty,seed).ground === "path"));
+      assert.ok(CREATURE_CATALOG[m.kind].caveThemes.includes(caveThemeAt(tx,ty)) ||
+        (m.kind === "sand-beetle" && caveThemeAt(tx,ty) === "desert"));
       assert.ok(m.hp<=145);
     }
   }

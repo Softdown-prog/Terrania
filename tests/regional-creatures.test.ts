@@ -9,9 +9,9 @@ import { Player } from "../src/actors/Player.ts";
 
 const themes = ["basalt","marsh","desert","glacial","coastal"] as const satisfies readonly CaveTheme[];
 
-test("bestiário: vinte espécies com ficha completa e loot válido", () => {
-  assert.equal(REGIONAL_CREATURE_KINDS.length,30);
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,30);
+test("bestiário: 31 espécies com ficha completa e loot válido", () => {
+  assert.equal(REGIONAL_CREATURE_KINDS.length,31);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,31);
   for (const kind of REGIONAL_CREATURE_KINDS) {
     const def=CREATURE_CATALOG[kind];
     assert.ok(def.name.length>8);
@@ -19,7 +19,7 @@ test("bestiário: vinte espécies com ficha completa e loot válido", () => {
     assert.ok(def.contactDamage>=6 && def.contactDamage<=40);
     assert.ok(def.experience>0);
     assert.ok(def.loot.length>=1);
-    assert.ok(def.caveThemes.length>0);
+    assert.ok(def.caveThemes.length>0 || kind === "sand-beetle");
     assert.ok(def.biomes.length>0);
     for(const entry of def.loot) assert.ok(entry.chance>0&&entry.chance<=1);
   }
