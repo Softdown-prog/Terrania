@@ -36,6 +36,30 @@ function drawProp(ctx: CanvasRenderingContext2D, look: NpcLook, t: number, hx: n
     ctx.fillStyle = "#8a9096"; ctx.fillRect(-6, -10, 12, 2);
     ctx.fillStyle = "#2f3236"; ctx.fillRect(4, -10, 2, 7);
     ctx.restore();
+  } else if(look.prop==="dagger"){
+    ctx.save();ctx.translate(hx,hy);
+    ctx.rotate(-.28+Math.sin(t*1.1)*.04);
+    ctx.fillStyle="#7a4a18";ctx.fillRect(-1,0,3,18);
+    ctx.fillStyle="#efe3c8";ctx.beginPath();
+    ctx.moveTo(-4,0);ctx.lineTo(0,-21);ctx.lineTo(4,0);ctx.closePath();ctx.fill();
+    ctx.restore();
+  } else if(look.prop==="scales"){
+    ctx.strokeStyle="#b97a2a";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(hx,hy-17);ctx.lineTo(hx,hy+6);
+    ctx.moveTo(hx-14,hy-9);ctx.lineTo(hx+14,hy-9);ctx.stroke();
+    for(const ox of [-11,11]){
+      ctx.beginPath();ctx.moveTo(hx+ox,hy-9);ctx.lineTo(hx+ox-5,hy+4);
+      ctx.lineTo(hx+ox+5,hy+4);ctx.closePath();ctx.fillStyle="#e0a24a";ctx.fill();
+    }
+  } else if(look.prop==="vial"){
+    ctx.fillStyle="#d3c3a0";ctx.fillRect(hx-3,hy-14,6,5);
+    ctx.fillStyle="#8bd450";ctx.fillRect(hx-7,hy-9,14,17);
+    ctx.strokeStyle="#efe3c8";ctx.lineWidth=1.4;ctx.strokeRect(hx-7,hy-9,14,17);
+    ellipse(ctx,hx-2,hy-3,2,4,"#e2fb8a");
+  } else if(look.prop==="whip"){
+    ctx.strokeStyle="#7a4a18";ctx.lineWidth=2.5;ctx.beginPath();
+    ctx.moveTo(hx,hy+15);ctx.quadraticCurveTo(hx+23,hy-26,hx+8,hy-24);
+    ctx.quadraticCurveTo(hx-12,hy-28,hx-8,hy-5);ctx.stroke();
   } else {
     const sway = Math.sin(t * 1.7) * 0.07;
     ctx.save(); ctx.translate(hx, hy + 2); ctx.rotate(sway);
@@ -126,6 +150,25 @@ export function renderNpc(ctx: CanvasRenderingContext2D, npc: Npc,
   ctx.moveTo(hx - 7, hy - 3); ctx.quadraticCurveTo(hx, hy - 6, hx + 7, hy - 3);
   ctx.quadraticCurveTo(hx + 8, hy + 3.6, hx + 3.4, hy + 8); ctx.quadraticCurveTo(hx, hy + 9.2, hx - 3.4, hy + 8);
   ctx.quadraticCurveTo(hx - 8, hy + 3.6, hx - 7, hy - 3); ctx.closePath(); ctx.fill();
+  if(look.species==="goblin"||look.species==="elf"||look.species==="orc"){
+    const ear=look.species==="goblin"?11:6;
+    for(const side of [-1,1]){
+      ctx.fillStyle=look.skin;ctx.beginPath();ctx.moveTo(hx+side*7,hy-1);
+      ctx.lineTo(hx+side*(9+ear),hy-5);ctx.lineTo(hx+side*7,hy+4);
+      ctx.closePath();ctx.fill();
+    }
+  }
+  if(look.species==="imp"){
+    for(const side of [-1,1]){
+      ctx.fillStyle="#d3c3a0";ctx.beginPath();
+      ctx.moveTo(hx+side*5,hy-8);ctx.lineTo(hx+side*10,hy-17);
+      ctx.lineTo(hx+side*9,hy-6);ctx.closePath();ctx.fill();
+    }
+  }
+  if(look.species==="orc"||look.species==="troll"){
+    ellipse(ctx,hx-5,hy+7,2.2,3.5,"#efe3c8");
+    ellipse(ctx,hx+5,hy+7,2.2,3.5,"#efe3c8");
+  }
   const eyeY = hy + 0.6 + ly * 0.6;
   const closed = blink(t, seed * 10);
   for (const ex of [-3.1, 3.1]) {

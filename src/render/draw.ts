@@ -127,3 +127,13 @@ export function limb(
   ctx.stroke();
   ctx.lineCap = "butt";
 }
+
+/** Curva leve para folha/erva, compartilhada por várias camadas de terreno. */
+export const blade = (ctx: CanvasRenderingContext2D, x: number, y: number, h: number, lean: number, color: string): void => {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x + lean * 0.3, y - h * 0.6, x + lean, y - h);
+  ctx.stroke();
+};
