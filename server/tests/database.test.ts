@@ -9,13 +9,17 @@ import {databasePool,databaseStatus} from '../src/db/database.ts';
 import {marketHttp} from '../src/db/http.ts';
 
 test('catalogue exposes the ten actual Knight swords alongside existing game items',()=>{
- const items=gameCatalog();assert.equal(items.length,24);
- assert.equal(new Set(items.map(i=>i.id)).size,24);
+ const items=gameCatalog();assert.equal(items.length,34);
+ assert.equal(new Set(items.map(i=>i.id)).size,34);
  const swordIds=items.filter(i=>i.category==='weapon').map(i=>i.id);
  assert.deepEqual(swordIds, WEAPON_IDS.map(id=>'sword-'+id));
  assert.ok(items.find(i=>i.id==='sword-forge'));
  assert.ok(items.find(i=>i.id==='sword-astral'));
  assert.ok(items.find(i=>i.id==='potion'));
+ const rare=items.filter(i=>i.rarity==='rare');
+ assert.equal(rare.length,10);
+ assert.ok(rare.every(i=>i.category==='collectible'));
+ assert.ok(rare.some(i=>i.id==='rare-sandworm-pearl'));
  assert.equal(items.some(i=>i.id==='ci-relic'),false,'no speculative collectible can enter the game catalogue');
 });
 test('database is opt-in and enabled configuration cannot silently use postgres/admin',async()=>{
