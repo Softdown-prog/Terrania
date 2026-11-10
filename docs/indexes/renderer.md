@@ -29,7 +29,7 @@ Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
 - [`src/render/heroPose.ts`](../../src/render/heroPose.ts)
 - [`src/render/interior.ts`](../../src/render/interior.ts)
 - [`src/render/monsterMotion.ts`](../../src/render/monsterMotion.ts)
-- [`src/render/mounts.ts`](../../src/render/mounts.ts)- [`src/render/mounts.ts`](../../src/render/mounts.ts)
+- [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/npcs.ts`](../../src/render/npcs.ts)
 - [`src/render/reference/barrelReference.ts`](../../src/render/reference/barrelReference.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)

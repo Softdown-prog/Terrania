@@ -19,7 +19,7 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 
 - [`src/monsters/README.md`](../../src/monsters/README.md)
 - [`src/monsters/behavior.ts`](../../src/monsters/behavior.ts)
-- [`src/monsters/catalog.ts`](../../src/monsters/catalog.ts)- [`src/monsters/catalog.ts`](../../src/monsters/catalog.ts)
+- [`src/monsters/catalog.ts`](../../src/monsters/catalog.ts)
 - [`src/monsters/center/index.ts`](../../src/monsters/center/index.ts)
 - [`src/monsters/center/slime.ts`](../../src/monsters/center/slime.ts)
 - [`src/monsters/east/abyssal-octopus.ts`](../../src/monsters/east/abyssal-octopus.ts)
