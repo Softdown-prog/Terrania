@@ -1,6 +1,6 @@
 import { WEAPONS, type WeaponId, type SwordVisualProfile } from "../engine/character/Weapons.ts";
 import { KNIGHT_SWORD_GRIP } from "./heroPose.ts";
-import { clamp01, rgba, TAU } from "./draw.ts";
+import { clamp01, rgba, shade, TAU } from "./draw.ts";
 
 /** Ten sword silhouettes reconstructed as code from the author's 5×2 sheet.
  * Origin is the hilt's near end and the blade points right (+x). No texture assets.
@@ -196,8 +196,20 @@ function bladeMaterials(ctx:CanvasRenderingContext2D,s:SwordVisualProfile,tone:T
       }
       break;
   }
-  // Fio da aresta é reservado para o lado iluminado.
-  ctx.strokeStyle=tone(s.glint);ctx.lineWidth=.75;
+  // Arestas com rampas derivadas do material: fibra, têmpera, cristal e esmalte
+  // recebem três planos de contraste reais, não uma tinta única artificial.
+  ctx.strokeStyle=tone(shade(s.blade,-.19));ctx.lineWidth=.85;
+  ctx.beginPath();ctx.moveTo(18,w*.69);
+  ctx.quadraticCurveTo(len-11,w*.7,len-5,w*.15);ctx.stroke();
+  ctx.strokeStyle=tone(shade(s.blade,.24));ctx.lineWidth=.7;
+  ctx.beginPath();ctx.moveTo(18,-w*.42);
+  ctx.quadraticCurveTo(len-13,-w*.56,len-5,-w*.18);ctx.stroke();
+  ctx.strokeStyle=tone(shade(s.trim,.3));ctx.lineWidth=.6;
+  ctx.beginPath();ctx.moveTo(19,w*.83);ctx.lineTo(24,w*.62);ctx.stroke();
+  ctx.strokeStyle=tone(shade(s.accent,.46));ctx.lineWidth=.75;
+  ctx.beginPath();ctx.moveTo(len-9,-w*.22);ctx.lineTo(len-5,-w*.1);ctx.stroke();
+  // Filete de luz especular curto: evita a peça toda parecer de plástico.
+  ctx.strokeStyle=tone(s.glint);ctx.lineWidth=.8;
   ctx.beginPath();ctx.moveTo(17,-w*.63);
   ctx.quadraticCurveTo(len-12,-w*.68,len-3,-.5);ctx.stroke();
   ctx.restore();
@@ -275,8 +287,11 @@ function swordFinish(ctx:CanvasRenderingContext2D,s:SwordVisualProfile,tone:Tone
     for(let i=0;i<4;i++)star(ctx,23+i*5,i%2?2:-1,1.5,tone(s.accent));
     point(ctx,15,0,1.3,tone(s.glint));
   }
-  // Pequenos highlights que ajudam a distinguir lâminas em escala de jogo.
+  // Pequenos highlights de luz superior visíveis até com escala do cavaleiro.
+  ctx.strokeStyle=tone("#fff6dc");ctx.lineWidth=.65;
+  ctx.beginPath();ctx.moveTo(17.4,-w*.80);ctx.lineTo(20,-w*.77);ctx.stroke();
   point(ctx,len-5,-.6,.5,tone(s.glint));
+  point(ctx,14.2,-.65,.42,tone("#fff6dc"));
 }
 
 export function drawKnightSword(ctx:CanvasRenderingContext2D,weapon:WeaponId,
