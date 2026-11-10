@@ -8,6 +8,7 @@ import {
 import { LANDMARKS } from "../world/landmarks.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
 import { RUIN_CELL_TILES, getSouthRuinForCell } from "../world/southRuins.ts";
+import { TOWER_CELL_TILES, getSouthTowerForCell } from "../world/towers/placement.ts";
 import { RUIN_BACK_DEPTH, RUIN_FRONT_DEPTH } from "./scenery.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { SOUTH_CITY, SOUTH_CITY_PROPS } from "../world/southCity.ts";
@@ -84,6 +85,13 @@ export class WorldRenderer {
       for (const layer of ["back", "front"] as const)
         props.push({ kind: "south-ruin", ruinLayer: layer, variant: ruin.variant, x: ruin.x,
           y: ruin.y + (layer === "back" ? -RUIN_BACK_DEPTH : RUIN_FRONT_DEPTH) });
+    const tower = getSouthTowerForCell(
+      Math.floor(cx * CHUNK_TILES / TOWER_CELL_TILES),
+      Math.floor(cy * CHUNK_TILES / TOWER_CELL_TILES), this.seed,
+    );
+    if (tower && Math.floor(tower.tileX / CHUNK_TILES) === cx &&
+        Math.floor(tower.tileY / CHUNK_TILES) === cy)
+      props.push({ kind: "south-tower", towerId: tower.tower.id, variant: 0, x: tower.x, y: tower.y });
     const result = {
       canvas: generateChunkCanvas(cx, cy, this.seed),
       props,
@@ -178,17 +186,18 @@ export class WorldRenderer {
     const right = left + width + 90,
       bottom = top + height + 110;
     const result: Scenery[] = [];
-    // A ruína tem ~230 px de largura: sua margem lateral é maior para não aparecer de repente.
-    const wide = 125;
-    for (let cy = chunkOf(top); cy <= chunkOf(bottom); cy++)
+    // A ruína tem ~230 px de largura e a torre ~230 px de altura: as margens delas são maiores para não aparecerem de repente.
+    const wide = 125, tall = 130;
+    for (let cy = chunkOf(top); cy <= chunkOf(bottom + tall); cy++)
       for (let cx = chunkOf(left - wide); cx <= chunkOf(right + wide); cx++) {
         for (const prop of this.chunk(cx, cy).props) {
-          const pad = prop.kind === "south-ruin" ? wide : 0;
+          const pad = prop.kind === "south-ruin" ? wide : prop.kind === "south-tower" ? 70 : 0;
+          const padBottom = prop.kind === "south-tower" ? tall : 0;
           if (
             prop.x > left - pad &&
             prop.x < right + pad &&
             prop.y > top &&
-            prop.y < bottom
+            prop.y < bottom + padBottom
           )
             result.push(prop);
         }
