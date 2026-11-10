@@ -16,3 +16,10 @@
 `MountCatalog.ts` concentra todas as dez fichas, requisitos de nível e Cavalaria, selas, iscas, drops e quests. Montarias não são monstros de combate; `Player.ts` continua sendo o avatar do jogador.
 
 **Histórias e gatilhos regionais:** o catálogo não duplica fichas narrativas. As introduções e etapas das dez quests pertencem exclusivamente a `src/world/mountQuests.ts`.
+
+## Montarias com fichas individuais
+
+Cada uma das dez montarias possui sua própria ficha tipada em `src/actors/mounts/`.
+`MountCatalog.ts` mantém somente o contrato, os tipos e as referências canônicas,
+sem duplicar atributos. A lógica de progressão/domesticação permanece no motor
+`src/engine/mounts/`, e o desenho em `src/render/creatures/mounts/`.

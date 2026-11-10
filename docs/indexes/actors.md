@@ -13,7 +13,7 @@ Estado e comportamento do herói e das criaturas; catálogo inicial de espécies
 - [`src/actors/CreatureCatalog.ts`](../../src/actors/CreatureCatalog.ts)
 - [`src/actors/MountCatalog.ts`](../../src/actors/MountCatalog.ts)
 
-## Todos os arquivos deste módulo (6)
+## Todos os arquivos deste módulo (16)
 
 - [`src/actors/CreatureCatalog.ts`](../../src/actors/CreatureCatalog.ts)
 - [`src/actors/MountCatalog.ts`](../../src/actors/MountCatalog.ts)
@@ -21,3 +21,13 @@ Estado e comportamento do herói e das criaturas; catálogo inicial de espécies
 - [`src/actors/README.md`](../../src/actors/README.md)
 - [`src/actors/RegionalMonster.ts`](../../src/actors/RegionalMonster.ts)
 - [`src/actors/Slime.ts`](../../src/actors/Slime.ts)
+- [`src/actors/mounts/cargoBeetle.ts`](../../src/actors/mounts/cargoBeetle.ts)
+- [`src/actors/mounts/cavernBear.ts`](../../src/actors/mounts/cavernBear.ts)
+- [`src/actors/mounts/darkGriffin.ts`](../../src/actors/mounts/darkGriffin.ts)
+- [`src/actors/mounts/fireLion.ts`](../../src/actors/mounts/fireLion.ts)
+- [`src/actors/mounts/imperialElk.ts`](../../src/actors/mounts/imperialElk.ts)
+- [`src/actors/mounts/mountainGoat.ts`](../../src/actors/mounts/mountainGoat.ts)
+- [`src/actors/mounts/sandBasilisk.ts`](../../src/actors/mounts/sandBasilisk.ts)
+- [`src/actors/mounts/silverUnicorn.ts`](../../src/actors/mounts/silverUnicorn.ts)
+- [`src/actors/mounts/tidalHippocampus.ts`](../../src/actors/mounts/tidalHippocampus.ts)
+- [`src/actors/mounts/warhorse.ts`](../../src/actors/mounts/warhorse.ts)
