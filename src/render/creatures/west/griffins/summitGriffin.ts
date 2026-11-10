@@ -20,3 +20,12 @@ export const griffin = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   for(let i=0;i<8;i++)crystal(ctx,4+i*3,-45+i%3*2,2.8,6+i%2*2,c.light);
   eye(ctx,20,-44,c);etched(ctx,c,9,-2,-30,14,11);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#88909e","dark":"#414957","light":"#d2d6d6","accent":"#d5a24c","eyes":"#ffc866"};
+export function renderSummitGriffinCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,griffin);
+}

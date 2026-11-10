@@ -18,3 +18,12 @@ export const salamander = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void =>
   }
   eye(ctx,-30,-31,c);eye(ctx,-22,-32,c);etched(ctx,c,13,2,-22,19,9);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#5b413a","dark":"#292f38","light":"#a47558","accent":"#ff6a26","eyes":"#ffbd65"};
+export function renderMagmaSalamanderCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,salamander);
+}
