@@ -24,6 +24,7 @@ export const DUNES_SWORD = {
     glint: "#f2d780",
     guard: "#c6a66a",
     grip: "#86664b",
+    trailThickness: 4.1,
     width: 5.1,
     length: 40,
     serrated: true,

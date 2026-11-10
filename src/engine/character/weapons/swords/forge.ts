@@ -24,6 +24,7 @@ export const FORGE_SWORD = {
     glint: "#f0f5f4",
     guard: "#a8aaa7",
     grip: "#6d4f3d",
+    trailThickness: 3,
     width: 3.7,
     length: 35,
   },

@@ -24,6 +24,7 @@ export const BRONZE_SWORD = {
     glint: "#f7d4a6",
     guard: "#d6ac59",
     grip: "#a28a6d",
+    trailThickness: 3.3,
     width: 4,
     length: 35,
     pommelRadius: 2.8,

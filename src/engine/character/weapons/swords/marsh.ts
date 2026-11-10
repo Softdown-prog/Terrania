@@ -24,6 +24,7 @@ export const MARSH_SWORD = {
     glint: "#9aff65",
     guard: "#b3a59a",
     grip: "#78548c",
+    trailThickness: 4.5,
     width: 5.7,
     length: 41,
     serrated: true,

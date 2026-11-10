@@ -24,6 +24,7 @@ export const STARTER_SWORD = {
     glint: "#c8a47c",
     guard: "#73604e",
     grip: "#9c8063",
+    trailThickness: 2.4,
     width: 3.1,
     length: 31,
     wrapColor: "#ded1b7",

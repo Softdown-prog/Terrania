@@ -24,6 +24,7 @@ export const TEMPEST_SWORD = {
     glint: "#eff7ff",
     guard: "#d5ae5d",
     grip: "#244777",
+    trailThickness: 3.7,
     width: 4.4,
     length: 43,
     curved: true,

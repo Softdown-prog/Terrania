@@ -43,6 +43,8 @@ export interface SwordVisualProfile {
   readonly ornament?: "magma" | "venom" | "stars" | "storm";
   readonly trailAccent?: "sand" | "ice-shards" | "embers" | "venom-drops" | "bolts" | "stars";
   readonly trailLineWidth?: number;
+  /** Espessura máxima da fita do golpe em unidades locais da espada. */
+  readonly trailThickness: number;
 }
 export interface WeaponDefinition {
   readonly name: string;

@@ -24,6 +24,7 @@ export const OBSIDIAN_SWORD = {
     glint: "#ff772b",
     guard: "#5c3c38",
     grip: "#51413f",
+    trailThickness: 5.2,
     width: 6.3,
     length: 42,
     broad: true,

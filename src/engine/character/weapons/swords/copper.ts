@@ -24,6 +24,7 @@ export const COPPER_SWORD = {
     glint: "#f6ab73",
     guard: "#99543b",
     grip: "#5a4339",
+    trailThickness: 4.7,
     width: 5.6,
     length: 39,
     broad: true,

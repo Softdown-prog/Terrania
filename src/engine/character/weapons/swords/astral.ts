@@ -24,6 +24,7 @@ export const ASTRAL_SWORD = {
     glint: "#b0d4ff",
     guard: "#e5bd63",
     grip: "#3c448f",
+    trailThickness: 5,
     width: 5.3,
     length: 44,
     broad: true,

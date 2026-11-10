@@ -24,6 +24,7 @@ export const BOREAL_SWORD = {
     glint: "#ebffff",
     guard: "#b3e8ff",
     grip: "#547f9b",
+    trailThickness: 4.4,
     width: 5.5,
     length: 40,
     broad: true,
