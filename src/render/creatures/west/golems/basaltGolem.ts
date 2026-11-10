@@ -22,3 +22,12 @@ export const drawBasaltGolem = (ctx: CanvasRenderingContext2D, c: ColorRamp): vo
   ctx.strokeStyle = c.dark; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(-5,-41);ctx.lineTo(5,-41);ctx.stroke();
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#716f6b","light":"#b4a79a","dark":"#343944","accent":"#729267","eye":"#ffbf59"};
+export function renderBasaltGolemCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawBasaltGolem);
+}

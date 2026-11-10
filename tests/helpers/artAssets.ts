@@ -1,3 +1,39 @@
+import { renderBasaltGolemCreature } from "../../src/render/creatures/west/golems/basaltGolem.ts";
+import { renderCliffDraconidCreature } from "../../src/render/creatures/west/draconids/cliffDraconid.ts";
+import { renderMireHydraCreature } from "../../src/render/creatures/south/hydras/mireHydra.ts";
+import { renderDuneScorpionCreature } from "../../src/render/creatures/south/scorpions/duneScorpion.ts";
+import { renderSolarScarabCreature } from "../../src/render/creatures/south/beetles/solarScarab.ts";
+import { renderBorealYetiCreature } from "../../src/render/creatures/north/yetis/borealYeti.ts";
+import { renderGlacialWolfCreature } from "../../src/render/creatures/north/wolves/glacialWolf.ts";
+import { renderFrostSpiritCreature } from "../../src/render/creatures/north/spirits/frostSpirit.ts";
+import { renderCoralCrabCreature } from "../../src/render/creatures/east/crabs/coralCrab.ts";
+import { renderStormSerpentCreature } from "../../src/render/creatures/east/serpents/stormSerpent.ts";
+import { renderSummitGriffinCreature } from "../../src/render/creatures/west/griffins/summitGriffin.ts";
+import { renderMagmaSalamanderCreature } from "../../src/render/creatures/west/salamanders/magmaSalamander.ts";
+import { renderRottenMarshEntCreature } from "../../src/render/creatures/south/ents/rottenMarshEnt.ts";
+import { renderPoisonScoutToadCreature } from "../../src/render/creatures/south/toads/poisonScoutToad.ts";
+import { renderCarrionSandwormCreature } from "../../src/render/creatures/south/worms/carrionSandworm.ts";
+import { renderTundraMammothCreature } from "../../src/render/creatures/north/mammoths/tundraMammoth.ts";
+import { renderFrostBansheeCreature } from "../../src/render/creatures/north/banshees/frostBanshee.ts";
+import { renderRunicPolarBearCreature } from "../../src/render/creatures/north/bears/runicPolarBear.ts";
+import { renderAbyssalOctopusCreature } from "../../src/render/creatures/east/octopuses/abyssalOctopus.ts";
+import { renderTideHunterTritonCreature } from "../../src/render/creatures/east/tritons/tideHunterTriton.ts";
+import { renderDuneRatCreature } from "../../src/render/creatures/south/rats/duneRat.ts";
+import { renderSandGoblinCreature } from "../../src/render/creatures/south/goblins/sandGoblin.ts";
+import { renderDesertOrcCreature } from "../../src/render/creatures/south/orcs/desertOrc.ts";
+import { renderClayTrollCreature } from "../../src/render/creatures/south/trolls/clayTroll.ts";
+import { renderDuneScoutCreature } from "../../src/render/creatures/south/smallfolk/duneScout.ts";
+import { renderOasisElfCreature } from "../../src/render/creatures/south/elves/oasisElf.ts";
+import { renderMirageImpCreature } from "../../src/render/creatures/south/demons/mirageImp.ts";
+import { renderHornedViperCreature } from "../../src/render/creatures/south/snakes/hornedViper.ts";
+import { renderCarrionVultureCreature } from "../../src/render/creatures/south/vultures/carrionVulture.ts";
+import { renderCactusSproutCreature } from "../../src/render/creatures/south/plants/cactusSprout.ts";
+import { renderRegionalFrame } from "../../src/render/creatures/shared/regionalFrame.ts";
+import { renderWave2Frame } from "../../src/render/creatures/shared/wave2Frame.ts";
+import { renderWave3Frame } from "../../src/render/creatures/shared/wave3Frame.ts";
+import { drawWolf } from "../../src/render/creatures/north/wolves/glacialWolf.ts";
+import { griffin } from "../../src/render/creatures/west/griffins/summitGriffin.ts";
+import { rat } from "../../src/render/creatures/south/rats/duneRat.ts";
 import { renderDuneRatDetail } from "../../src/render/creatures/south/rats/duneRat.ts";
 import { renderSandGoblinDetail } from "../../src/render/creatures/south/goblins/sandGoblin.ts";
 import { renderDesertOrcDetail } from "../../src/render/creatures/south/orcs/desertOrc.ts";
@@ -84,6 +120,75 @@ export const ASSETS: ArtAsset[] = [
     draw:c=>renderMountTracks(c,0,0)},
   ...REGIONAL_CREATURE_KINDS.map<ArtAsset>(kind => ({id:"monstro "+kind,tier:"creature",fn:"renderRegionalCreature",
     draw:c=>renderRegionalCreature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"art-"+kind},0,0,1)})),
+  {id:"render individual basalt-golem",tier:"creature",fn:"renderBasaltGolemCreature",
+    draw:c=>renderBasaltGolemCreature(c,{kind:"basalt-golem",hp:CREATURE_CATALOG["basalt-golem"].maxHp,id:"art-individual-basalt-golem"},0,0,1)},
+  {id:"render individual cliff-draconid",tier:"creature",fn:"renderCliffDraconidCreature",
+    draw:c=>renderCliffDraconidCreature(c,{kind:"cliff-draconid",hp:CREATURE_CATALOG["cliff-draconid"].maxHp,id:"art-individual-cliff-draconid"},0,0,1)},
+  {id:"render individual mire-hydra",tier:"creature",fn:"renderMireHydraCreature",
+    draw:c=>renderMireHydraCreature(c,{kind:"mire-hydra",hp:CREATURE_CATALOG["mire-hydra"].maxHp,id:"art-individual-mire-hydra"},0,0,1)},
+  {id:"render individual dune-scorpion",tier:"creature",fn:"renderDuneScorpionCreature",
+    draw:c=>renderDuneScorpionCreature(c,{kind:"dune-scorpion",hp:CREATURE_CATALOG["dune-scorpion"].maxHp,id:"art-individual-dune-scorpion"},0,0,1)},
+  {id:"render individual solar-scarab",tier:"creature",fn:"renderSolarScarabCreature",
+    draw:c=>renderSolarScarabCreature(c,{kind:"solar-scarab",hp:CREATURE_CATALOG["solar-scarab"].maxHp,id:"art-individual-solar-scarab"},0,0,1)},
+  {id:"render individual boreal-yeti",tier:"creature",fn:"renderBorealYetiCreature",
+    draw:c=>renderBorealYetiCreature(c,{kind:"boreal-yeti",hp:CREATURE_CATALOG["boreal-yeti"].maxHp,id:"art-individual-boreal-yeti"},0,0,1)},
+  {id:"render individual glacial-wolf",tier:"creature",fn:"renderGlacialWolfCreature",
+    draw:c=>renderGlacialWolfCreature(c,{kind:"glacial-wolf",hp:CREATURE_CATALOG["glacial-wolf"].maxHp,id:"art-individual-glacial-wolf"},0,0,1)},
+  {id:"render individual frost-spirit",tier:"creature",fn:"renderFrostSpiritCreature",
+    draw:c=>renderFrostSpiritCreature(c,{kind:"frost-spirit",hp:CREATURE_CATALOG["frost-spirit"].maxHp,id:"art-individual-frost-spirit"},0,0,1)},
+  {id:"render individual coral-crab",tier:"creature",fn:"renderCoralCrabCreature",
+    draw:c=>renderCoralCrabCreature(c,{kind:"coral-crab",hp:CREATURE_CATALOG["coral-crab"].maxHp,id:"art-individual-coral-crab"},0,0,1)},
+  {id:"render individual storm-serpent",tier:"creature",fn:"renderStormSerpentCreature",
+    draw:c=>renderStormSerpentCreature(c,{kind:"storm-serpent",hp:CREATURE_CATALOG["storm-serpent"].maxHp,id:"art-individual-storm-serpent"},0,0,1)},
+  {id:"render individual summit-griffin",tier:"creature",fn:"renderSummitGriffinCreature",
+    draw:c=>renderSummitGriffinCreature(c,{kind:"summit-griffin",hp:CREATURE_CATALOG["summit-griffin"].maxHp,id:"art-individual-summit-griffin"},0,0,1)},
+  {id:"render individual magma-salamander",tier:"creature",fn:"renderMagmaSalamanderCreature",
+    draw:c=>renderMagmaSalamanderCreature(c,{kind:"magma-salamander",hp:CREATURE_CATALOG["magma-salamander"].maxHp,id:"art-individual-magma-salamander"},0,0,1)},
+  {id:"render individual rotten-marsh-ent",tier:"creature",fn:"renderRottenMarshEntCreature",
+    draw:c=>renderRottenMarshEntCreature(c,{kind:"rotten-marsh-ent",hp:CREATURE_CATALOG["rotten-marsh-ent"].maxHp,id:"art-individual-rotten-marsh-ent"},0,0,1)},
+  {id:"render individual poison-scout-toad",tier:"creature",fn:"renderPoisonScoutToadCreature",
+    draw:c=>renderPoisonScoutToadCreature(c,{kind:"poison-scout-toad",hp:CREATURE_CATALOG["poison-scout-toad"].maxHp,id:"art-individual-poison-scout-toad"},0,0,1)},
+  {id:"render individual carrion-sandworm",tier:"creature",fn:"renderCarrionSandwormCreature",
+    draw:c=>renderCarrionSandwormCreature(c,{kind:"carrion-sandworm",hp:CREATURE_CATALOG["carrion-sandworm"].maxHp,id:"art-individual-carrion-sandworm"},0,0,1)},
+  {id:"render individual tundra-mammoth",tier:"creature",fn:"renderTundraMammothCreature",
+    draw:c=>renderTundraMammothCreature(c,{kind:"tundra-mammoth",hp:CREATURE_CATALOG["tundra-mammoth"].maxHp,id:"art-individual-tundra-mammoth"},0,0,1)},
+  {id:"render individual frost-banshee",tier:"creature",fn:"renderFrostBansheeCreature",
+    draw:c=>renderFrostBansheeCreature(c,{kind:"frost-banshee",hp:CREATURE_CATALOG["frost-banshee"].maxHp,id:"art-individual-frost-banshee"},0,0,1)},
+  {id:"render individual runic-polar-bear",tier:"creature",fn:"renderRunicPolarBearCreature",
+    draw:c=>renderRunicPolarBearCreature(c,{kind:"runic-polar-bear",hp:CREATURE_CATALOG["runic-polar-bear"].maxHp,id:"art-individual-runic-polar-bear"},0,0,1)},
+  {id:"render individual abyssal-octopus",tier:"creature",fn:"renderAbyssalOctopusCreature",
+    draw:c=>renderAbyssalOctopusCreature(c,{kind:"abyssal-octopus",hp:CREATURE_CATALOG["abyssal-octopus"].maxHp,id:"art-individual-abyssal-octopus"},0,0,1)},
+  {id:"render individual tide-hunter-triton",tier:"creature",fn:"renderTideHunterTritonCreature",
+    draw:c=>renderTideHunterTritonCreature(c,{kind:"tide-hunter-triton",hp:CREATURE_CATALOG["tide-hunter-triton"].maxHp,id:"art-individual-tide-hunter-triton"},0,0,1)},
+  {id:"render individual dune-rat",tier:"creature",fn:"renderDuneRatCreature",
+    draw:c=>renderDuneRatCreature(c,{kind:"dune-rat",hp:CREATURE_CATALOG["dune-rat"].maxHp,id:"art-individual-dune-rat"},0,0,1)},
+  {id:"render individual sand-goblin",tier:"creature",fn:"renderSandGoblinCreature",
+    draw:c=>renderSandGoblinCreature(c,{kind:"sand-goblin",hp:CREATURE_CATALOG["sand-goblin"].maxHp,id:"art-individual-sand-goblin"},0,0,1)},
+  {id:"render individual desert-orc",tier:"creature",fn:"renderDesertOrcCreature",
+    draw:c=>renderDesertOrcCreature(c,{kind:"desert-orc",hp:CREATURE_CATALOG["desert-orc"].maxHp,id:"art-individual-desert-orc"},0,0,1)},
+  {id:"render individual clay-troll",tier:"creature",fn:"renderClayTrollCreature",
+    draw:c=>renderClayTrollCreature(c,{kind:"clay-troll",hp:CREATURE_CATALOG["clay-troll"].maxHp,id:"art-individual-clay-troll"},0,0,1)},
+  {id:"render individual dune-scout",tier:"creature",fn:"renderDuneScoutCreature",
+    draw:c=>renderDuneScoutCreature(c,{kind:"dune-scout",hp:CREATURE_CATALOG["dune-scout"].maxHp,id:"art-individual-dune-scout"},0,0,1)},
+  {id:"render individual oasis-elf",tier:"creature",fn:"renderOasisElfCreature",
+    draw:c=>renderOasisElfCreature(c,{kind:"oasis-elf",hp:CREATURE_CATALOG["oasis-elf"].maxHp,id:"art-individual-oasis-elf"},0,0,1)},
+  {id:"render individual mirage-imp",tier:"creature",fn:"renderMirageImpCreature",
+    draw:c=>renderMirageImpCreature(c,{kind:"mirage-imp",hp:CREATURE_CATALOG["mirage-imp"].maxHp,id:"art-individual-mirage-imp"},0,0,1)},
+  {id:"render individual horned-viper",tier:"creature",fn:"renderHornedViperCreature",
+    draw:c=>renderHornedViperCreature(c,{kind:"horned-viper",hp:CREATURE_CATALOG["horned-viper"].maxHp,id:"art-individual-horned-viper"},0,0,1)},
+  {id:"render individual carrion-vulture",tier:"creature",fn:"renderCarrionVultureCreature",
+    draw:c=>renderCarrionVultureCreature(c,{kind:"carrion-vulture",hp:CREATURE_CATALOG["carrion-vulture"].maxHp,id:"art-individual-carrion-vulture"},0,0,1)},
+  {id:"render individual cactus-sprout",tier:"creature",fn:"renderCactusSproutCreature",
+    draw:c=>renderCactusSproutCreature(c,{kind:"cactus-sprout",hp:CREATURE_CATALOG["cactus-sprout"].maxHp,id:"art-individual-cactus-sprout"},0,0,1)},
+  {id:"frame de composição regional",tier:"creature",fn:"renderRegionalFrame",
+    draw:c=>renderRegionalFrame(c,{kind:"glacial-wolf",hp:CREATURE_CATALOG["glacial-wolf"].maxHp},0,0,1,
+      {base:"#368cc4",light:"#a0f0fd",dark:"#24436e",accent:"#5bccf9",eye:"#e9fcfc"},drawWolf)},
+  {id:"frame de composição segunda leva",tier:"creature",fn:"renderWave2Frame",
+    draw:c=>renderWave2Frame(c,{kind:"summit-griffin",hp:CREATURE_CATALOG["summit-griffin"].maxHp},0,0,1,
+      {base:"#88909e",dark:"#414957",light:"#d2d6d6",accent:"#d5a24c",eyes:"#ffc866"},griffin)},
+  {id:"frame de composição fauna comum",tier:"creature",fn:"renderWave3Frame",
+    draw:c=>renderWave3Frame(c,{kind:"dune-rat",hp:CREATURE_CATALOG["dune-rat"].maxHp},0,0,1,
+      {base:"#98836b",light:"#ded3ae",dark:"#574c43",accent:"#b87871",eye:"#dfb55c",extra:"#c5aa93"},rat)},
   ...SECOND_WAVE_KINDS.map<ArtAsset>(kind => ({
     id:"nova espécie "+kind,tier:"creature",fn:"renderWave2Creature",
     draw:c=>renderWave2Creature(c,{kind,hp:CREATURE_CATALOG[kind].maxHp,id:"wave2-"+kind},0,0,1)

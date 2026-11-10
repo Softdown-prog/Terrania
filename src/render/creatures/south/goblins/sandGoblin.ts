@@ -226,3 +226,12 @@ export const goblin = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => 
   ctx.strokeStyle=GLOW;ctx.lineWidth=.9;ctx.stroke();
   freckles(ctx,c,11,0,-22,7,12);
 };
+
+/** Paleta, anatomia e detalhes visuais desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#79935e","light":"#c7d19b","dark":"#4c6844","accent":"#c08b52","eye":"#ffdc6f","extra":"#805e4d"};
+export function renderSandGoblinCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,(surface, colors, t) => { goblin(surface,colors,t); renderSandGoblinDetail(surface,{...actor,kind:"sand-goblin"},t); });
+}

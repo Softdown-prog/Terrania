@@ -20,3 +20,12 @@ export const drawScorpion = (ctx: CanvasRenderingContext2D, c: ColorRamp): void 
   shard(ctx,-4,-61,6,17,c.accent);
   headEyes(ctx,[[-4,-25],[4,-25]],c,1.7);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#b88842","light":"#f2d184","dark":"#504636","accent":"#f4a345","eye":"#ffd46c"};
+export function renderDuneScorpionCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawScorpion);
+}

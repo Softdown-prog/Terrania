@@ -25,3 +25,12 @@ export const worm = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   ellipse(ctx,-1,-54,5,4,shade(c.dark,-.4));
   etched(ctx,c,11,-1,-29,15,17);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#a57959","dark":"#594237","light":"#dbc4a0","accent":"#b39c7f","eyes":"#f9bd68"};
+export function renderCarrionSandwormCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,worm);
+}

@@ -200,3 +200,12 @@ export const rat = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   }
   freckles(ctx,c,14,-2,-14,10,7);
 };
+
+/** Paleta, anatomia e detalhes visuais desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#98836b","light":"#ded3ae","dark":"#574c43","accent":"#b87871","eye":"#dfb55c","extra":"#c5aa93"};
+export function renderDuneRatCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,(surface, colors, t) => { rat(surface,colors,t); renderDuneRatDetail(surface,{...actor,kind:"dune-rat"},t); });
+}

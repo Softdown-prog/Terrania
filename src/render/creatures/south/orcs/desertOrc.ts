@@ -204,3 +204,12 @@ export const orc = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   ellipse(ctx,10,-27,2,2,c.accent);
   ellipse(ctx,0,-23,2.5,1.3,rgba(GLOW,.4+Math.sin(t)*.1));
 };
+
+/** Paleta, anatomia e detalhes visuais desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#718063","light":"#bec09c","dark":"#36453d","accent":"#b39362","eye":"#f1c76d","extra":"#745243"};
+export function renderDesertOrcCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,(surface, colors, t) => { orc(surface,colors,t); renderDesertOrcDetail(surface,{...actor,kind:"desert-orc"},t); },24);
+}

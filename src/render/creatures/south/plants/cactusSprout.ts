@@ -32,3 +32,12 @@ export const cactus = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => 
   ellipse(ctx,0,-52,2.3,2.4,"#ffd75a");
   freckles(ctx,c,14,0,-25,8,12);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#428f64","light":"#9ddb92","dark":"#24694f","accent":"#df99b4","eye":"#f9e2a3","extra":"#f3d47e"};
+export function renderCactusSproutCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,cactus);
+}

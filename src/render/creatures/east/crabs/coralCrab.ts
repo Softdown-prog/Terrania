@@ -20,3 +20,12 @@ export const drawCrab = (ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):v
   carapaceDetail(ctx,0,-23,18,12,c,12);
   headEyes(ctx,[[-7,-22],[7,-22]],c,2);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#af6745","light":"#f3a36d","dark":"#5a3d43","accent":"#7ab79a","eye":"#fff1b6"};
+export function renderCoralCrabCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawCrab);
+}

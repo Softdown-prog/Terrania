@@ -26,3 +26,12 @@ export const mammoth = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   joint(ctx,[[40,-37],[47,-22],[46+Math.sin(t)*2,-12]],c,6);
   etched(ctx,c,12,-8,-27,22,20);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#9e7965","dark":"#584b50","light":"#d0ae87","accent":"#d4e6df","eyes":"#d9d5b6"};
+export function renderTundraMammothCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,mammoth);
+}

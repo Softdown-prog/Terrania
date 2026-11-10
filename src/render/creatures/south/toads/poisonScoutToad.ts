@@ -23,3 +23,12 @@ export const toad = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   ctx.strokeStyle=rgba(c.accent,.75);ctx.lineWidth=1.4;
   ctx.beginPath();ctx.moveTo(-2,-17);ctx.quadraticCurveTo(4+Math.sin(t*3)*3,-9,10,-15);ctx.stroke();
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#779655","dark":"#44476c","light":"#c5c88a","accent":"#a45ac7","eyes":"#f6db74"};
+export function renderPoisonScoutToadCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,toad);
+}

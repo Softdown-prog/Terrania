@@ -60,3 +60,12 @@ export const imp = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   freckles(ctx,c,14,0,-30,8,13);
   ctx.restore();
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#f4ae51","light":"#fff0a5","dark":"#a85027","accent":"#ffd770","eye":"#fff5b9","extra":"#ee762b"};
+export function renderMirageImpCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,imp);
+}

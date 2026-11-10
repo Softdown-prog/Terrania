@@ -31,3 +31,12 @@ export const drawSerpent = (ctx:CanvasRenderingContext2D,c:ColorRamp,time:number
   ellipse(ctx,-5,-59,3.1,1.8,c.dark,-.4);
   ellipse(ctx,-5.7,-59.6,1.1,.6,rgba(GLINT,.73),-.4);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#4653ac","light":"#79d1de","dark":"#302656","accent":"#d37ad8","eye":"#fce46f"};
+export function renderStormSerpentCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawSerpent);
+}

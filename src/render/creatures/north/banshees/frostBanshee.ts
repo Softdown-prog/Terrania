@@ -26,3 +26,12 @@ export const banshee = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   }
   etched(ctx,c,8,0,-30,9,12);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#4986a2","dark":"#28485f","light":"#c8edf0","accent":"#7fdbff","eyes":"#d9feff"};
+export function renderFrostBansheeCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,banshee);
+}
