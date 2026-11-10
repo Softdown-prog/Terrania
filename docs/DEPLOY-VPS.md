@@ -46,3 +46,11 @@ sudo ufw status
 ```
 
 Se a VPS usar outra porta, adapte apenas a inspeção da porta. Não copie logs brutos, chaves ou tokens para artifacts públicos. Uma falha SSH **não certifica** que houve implantação nem autoriza reexecutar manualmente sem checar a revisão já instalada; a proteção por recibo idempotente continua valendo.
+
+## Chave SSH atestada do host — correção 10/11/2026
+
+O merge #131 (commit `4ec299d`) gerou falha no deploy da API HTTP
+(`host_key_verification_failed`, [run 42856443824](https://github.com/Softdown-prog/Terrania/actions/runs/42856443824)).
+O [inventário do Painel #118](https://github.com/Softdown-prog/Painel/issues/118) autenticou na mesma VPS, comprovando Terrania saudável na revisão anterior `aee4e2a`. A [atestação #119](https://github.com/Softdown-prog/Painel/issues/119) comparou a chave pública recebida da VPS à identidade previamente confiável do Painel, confirmando o RSA SHA256 `mKWE3g30If1cz58VRxyMin3cRHf0tYbXEgF9wczN5cc`.
+
+`.github/vps-known-hosts` agora guarda exclusivamente a **chave pública** atestada, não uma credencial secreta. `deploy-vps.yml` confere o fingerprint e usa esta identidade fixa com `StrictHostKeyChecking=yes`. A chave **privada**, a autorização OIDC e a política do broker permanecem inalteradas. Não usar `ssh-keyscan` como substituição automática de confiança. Alterações futuras de chave precisam de nova verificação independente. Este commit não prova implantação: exigir recibo e saúde HTTPS no run posterior.
