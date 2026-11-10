@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import type { EquipmentSlot, GearSlot } from '../engine/Equipment.ts';
-import type { FoodId } from '../engine/Food.ts';
-import type { WeaponId } from '../engine/Weapons.ts';
+import type { EquipmentSlot, GearSlot } from '../engine/character/Equipment.ts';
+import type { FoodId } from '../engine/character/Food.ts';
+import type { WeaponId } from '../engine/character/Weapons.ts';
 
 /** Ícones desenhados para o Terrania. Somente apresentação: não carregam regra de jogo. */
 export type ItemIconId =

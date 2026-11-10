@@ -3,7 +3,7 @@ import test from "node:test";
 import { Slime } from "../src/actors/Slime.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { MAX_EXPERIENCE, MAX_LEVEL, maxHpForExperience, experienceProgress, grantExperience,
-  levelForExperience, normalizeExperience } from "../src/engine/Experience.ts";
+  levelForExperience, normalizeExperience } from "../src/engine/character/Experience.ts";
 
 const STILL = { x: 0, y: 0 };
 

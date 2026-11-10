@@ -3,9 +3,9 @@ import test from "node:test";
 import { CREATURE_CATALOG, type CreatureView } from "../src/actors/CreatureCatalog.ts";
 import { Player } from "../src/actors/Player.ts";
 import { Slime } from "../src/actors/Slime.ts";
-import { visibleBattleCreatures } from "../src/engine/ClassicBattleList.ts";
-import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
-import { ClassicPursuit, inClassicAttackPosition } from "../src/engine/ClassicPursuit.ts";
+import { visibleBattleCreatures } from "../src/engine/combat/ClassicBattleList.ts";
+import { ClassicCombat } from "../src/engine/combat/ClassicCombat.ts";
+import { ClassicPursuit, inClassicAttackPosition } from "../src/engine/combat/ClassicPursuit.ts";
 
 const open = { canMove: () => true };
 

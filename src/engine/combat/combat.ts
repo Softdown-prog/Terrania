@@ -1,4 +1,4 @@
-import type { CollisionMap } from "../world/collision.ts";
+import type { CollisionMap } from "../../world/collision.ts";
 
 export const ATTACK_DURATION = 0.28;
 export const ATTACK_COOLDOWN = 0.42;

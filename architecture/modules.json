@@ -71,16 +71,16 @@
       ],
       "entrypoints": [
         "src/engine/OfflineSimulation.ts",
-        "src/engine/ClassicCombat.ts",
-        "src/engine/ClassicTileWalker.ts",
-        "src/engine/Experience.ts",
-        "src/engine/Weapons.ts",
-        "src/engine/Equipment.ts",
-        "src/engine/CaveRoom.ts",
-        "src/engine/MountStable.ts",
-        "src/engine/MountQuestState.ts",
-        "src/engine/MountActions.ts",
-        "src/engine/CaveRewards.ts"
+        "src/engine/combat/ClassicCombat.ts",
+        "src/engine/movement/ClassicTileWalker.ts",
+        "src/engine/character/Experience.ts",
+        "src/engine/character/Weapons.ts",
+        "src/engine/character/Equipment.ts",
+        "src/engine/rooms/CaveRoom.ts",
+        "src/engine/mounts/MountStable.ts",
+        "src/engine/mounts/MountQuestState.ts",
+        "src/engine/mounts/MountActions.ts",
+        "src/engine/rooms/CaveRewards.ts"
       ],
       "doc": "src/engine/README.md",
       "description": "Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular."

@@ -1,6 +1,6 @@
 import { renderSandBeetle } from "../../src/render/sandBeetle.ts";
 import { drawKnightSword } from "../../src/render/swords.ts";
-import { WEAPON_IDS } from "../../src/engine/Weapons.ts";
+import { WEAPON_IDS } from "../../src/engine/character/Weapons.ts";
 import { renderWave3Creature } from "../../src/render/regionalWave3.ts";
 import { renderWave2Creature } from "../../src/render/regionalWave2.ts";
 /**

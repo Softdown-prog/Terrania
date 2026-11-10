@@ -1,8 +1,8 @@
 import { drawKnightSword, drawKnightTrail } from "./swords.ts";
 import type { Player } from "../actors/Player.ts";
 import type { Slime } from "../actors/Slime.ts";
-import type { GearState } from "../engine/Equipment.ts";
-import type { WeaponId } from "../engine/Weapons.ts";
+import type { GearState } from "../engine/character/Equipment.ts";
+import type { WeaponId } from "../engine/character/Weapons.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { attackBody, swordMount, swingTrail, type SwordMountFrame } from "./heroPose.ts";
 import { blink, gait, slimePose, smoothTo } from "./animation.ts";

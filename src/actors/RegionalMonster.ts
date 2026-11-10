@@ -1,4 +1,4 @@
-import type { WeaponId } from "../engine/Weapons.ts";
+import type { WeaponId } from "../engine/character/Weapons.ts";
 import { Slime } from "./Slime.ts";
 import { pursuitStep, SPECIES_BEHAVIORS } from "../monsters/behavior.ts";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_COMMON_KINDS, SOUTH_SURFACE_KINDS,

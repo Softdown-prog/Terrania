@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { findWalkingPath, clearPath, TapNavigator } from "../src/engine/TapNavigator.ts";
-import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
+import { findWalkingPath, clearPath, TapNavigator } from "../src/engine/movement/TapNavigator.ts";
+import { ClassicTileWalker } from "../src/engine/movement/ClassicTileWalker.ts";
 import { Player } from "../src/actors/Player.ts";
 import { isShortTap, screenToWorld, screenToInterior } from "../src/input/tap.ts";
-import { interiorCollision, ROOM_FURNITURE } from "../src/engine/InteriorRoom.ts";
+import { interiorCollision, ROOM_FURNITURE } from "../src/engine/rooms/InteriorRoom.ts";
 import { SeedCollision, type CollisionMap } from "../src/world/collision.ts";
 
 const open: CollisionMap = { canMove: () => true };

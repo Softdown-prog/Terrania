@@ -1,14 +1,14 @@
 import { computed, Injectable, signal } from '@angular/core';
 import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL } from '../actors/MountCatalog.ts';
-import type { MountAction, MountView } from '../engine/MountStable.ts';
-import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/Weapons.ts';
-import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/Equipment.ts';
-import type { BattleCreature } from '../engine/ClassicBattleList.ts';
+import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
+import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/character/Weapons.ts';
+import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
+import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
-import type { ExperienceProgress } from '../engine/Experience.ts';
+import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
-import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/Food.ts';
+import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
   talk: 'Conversar',

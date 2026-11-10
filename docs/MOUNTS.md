@@ -3,7 +3,7 @@
 Montarias são companheiras do **jogo solo**. O motor online não sincroniza
 posições nem criaturas entre jogadores. O catálogo canônico está em
 [MountCatalog.ts](../src/actors/MountCatalog.ts); toda regra fica em
-[MountStable.ts](../src/engine/MountStable.ts), sem Angular/DOM.
+[MountStable.ts](../src/engine/mounts/MountStable.ts), sem Angular/DOM.
 
 ## Conteúdo do primeiro lote
 

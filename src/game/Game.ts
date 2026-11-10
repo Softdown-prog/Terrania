@@ -11,15 +11,15 @@ import { CanvasScene } from "../ui/CanvasScene.ts";
 import type { GameUi, Preferences } from "../ui/GameUi.ts";
 import { nearestNpc, npcDialogue } from "../world/npcs.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
-import { QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
-import { InteriorRoom } from "../engine/InteriorRoom.ts";
-import { CaveRoom } from "../engine/CaveRoom.ts";
+import { QUEST_REWARD_POTIONS } from "../engine/character/Inventory.ts";
+import { InteriorRoom } from "../engine/rooms/InteriorRoom.ts";
+import { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { caveEntranceNear, type CaveEntrance } from "../world/caves.ts";
 import { BUILDINGS } from "../world/village.ts";
-import { nearestCombatCreature } from "../engine/ClassicCombat.ts";
+import { nearestCombatCreature } from "../engine/combat/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
-import type { MountAction } from "../engine/MountStable.ts";
-import { runMountAction } from "../engine/MountActions.ts";
+import type { MountAction } from "../engine/mounts/MountStable.ts";
+import { runMountAction } from "../engine/mounts/MountActions.ts";
 import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, usePotion,
   type ShopContext, type ShopResult } from "./actions/shopActions.ts";
 import { TravelState } from "./TravelState.ts";
@@ -29,8 +29,8 @@ import { tickSurface } from "./modes/surfaceMode.ts";
 import { tickInterior } from "./modes/interiorMode.ts";
 import { mountQuestAction, npcOffer, questStepId } from "./interactions.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
-import { visibleBattleCreatures } from "../engine/ClassicBattleList.ts";
-import { experienceProgress } from "../engine/Experience.ts";
+import { visibleBattleCreatures } from "../engine/combat/ClassicBattleList.ts";
+import { experienceProgress } from "../engine/character/Experience.ts";
 
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */

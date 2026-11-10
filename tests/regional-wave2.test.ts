@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { SECOND_WAVE_KINDS, REGIONAL_CREATURE_KINDS, CREATURE_CATALOG } from "../src/actors/CreatureCatalog.ts";
 import { caveMonsterKinds, RegionalMonster, rollCreatureLoot, regionalSurfaceSpawns } from "../src/actors/RegionalMonster.ts";
 import { Player } from "../src/actors/Player.ts";
-import { CaveRoom } from "../src/engine/CaveRoom.ts";
+import { CaveRoom } from "../src/engine/rooms/CaveRoom.ts";
 import type { CaveEntrance, CaveTheme } from "../src/world/caves.ts";
 import { caveThemeAt } from "../src/world/caves.ts";
-import { normalizeMaterials } from "../src/engine/Inventory.ts";
+import { normalizeMaterials } from "../src/engine/character/Inventory.ts";
 
 const profiles = [
   ["summit-griffin",260,33,"west","basalt"],

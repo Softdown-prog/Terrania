@@ -1,5 +1,5 @@
-import { POTION_GEL_PRICE, POTION_HEAL, type InventoryOutcome } from "../../engine/Inventory.ts";
-import { FORGE_SWORD_PRICE, WEAPONS } from "../../engine/Weapons.ts";
+import { POTION_GEL_PRICE, POTION_HEAL, type InventoryOutcome } from "../../engine/character/Inventory.ts";
+import { FORGE_SWORD_PRICE, WEAPONS } from "../../engine/character/Weapons.ts";
 
 /**
  * Texto mostrado ao jogador para cada resultado da bolsa, da loja e do equipamento.

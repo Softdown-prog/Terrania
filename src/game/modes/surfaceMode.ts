@@ -1,4 +1,4 @@
-import { currentMountQuestStep } from "../../engine/MountQuestState.ts";
+import { currentMountQuestStep } from "../../engine/mounts/MountQuestState.ts";
 import { caveEntranceNear } from "../../world/caves.ts";
 import { nearestNpc } from "../../world/npcs.ts";
 import { questStepId, surfaceNearbyAction } from "../interactions.ts";

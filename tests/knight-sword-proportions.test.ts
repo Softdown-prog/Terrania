@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { WEAPON_IDS, WEAPONS } from "../src/engine/Weapons.ts";
-import { ATTACK_DURATION } from "../src/engine/combat.ts";
+import { WEAPON_IDS, WEAPONS } from "../src/engine/character/Weapons.ts";
+import { ATTACK_DURATION } from "../src/engine/combat/combat.ts";
 import { attackBody, KNIGHT_SWORD_GRIP, KNIGHT_SWORD_SCALE, swordMount, swordSwing, swingTrail } from "../src/render/heroPose.ts";
 import { drawKnightTrail } from "../src/render/swords.ts";
 import { renderHero } from "../src/render/actors.ts";

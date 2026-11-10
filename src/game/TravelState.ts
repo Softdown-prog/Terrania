@@ -1,7 +1,7 @@
-import { ClassicCombat } from "../engine/ClassicCombat.ts";
-import { ClassicPursuit } from "../engine/ClassicPursuit.ts";
-import { ClassicTileWalker } from "../engine/ClassicTileWalker.ts";
-import { TapNavigator } from "../engine/TapNavigator.ts";
+import { ClassicCombat } from "../engine/combat/ClassicCombat.ts";
+import { ClassicPursuit } from "../engine/combat/ClassicPursuit.ts";
+import { ClassicTileWalker } from "../engine/movement/ClassicTileWalker.ts";
+import { TapNavigator } from "../engine/movement/TapNavigator.ts";
 
 /**
  * Tudo que move o herói "sozinho" (rota por toque, passo em tiles, perseguição e alvo de combate)

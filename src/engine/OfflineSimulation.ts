@@ -1,20 +1,20 @@
 import { MAX_KILLS } from "./Limits.ts";
 export { MAX_KILLS } from "./Limits.ts";
-import { resolveSwordStrike, swordStrikeTargets } from "./SwordCombat.ts";
+import { resolveSwordStrike, swordStrikeTargets } from "./combat/SwordCombat.ts";
 import { RegionalMonster, regionalSurfaceSpawns, southCommonSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
 import { Player } from "../actors/Player.ts";
-import { MountStable, type MountSave } from "./MountStable.ts";
+import { MountStable, type MountSave } from "./mounts/MountStable.ts";
 import { Slime, slimeSpawns } from "../actors/Slime.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { SeedCollision } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
-import { faceTarget } from "./combat.ts";
-import type { ClassicTileWalker, WalkDirection } from "./ClassicTileWalker.ts";
-import { Inventory, type InventoryState } from "./Inventory.ts";
-import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
-import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./Experience.ts";
-import { hasNutrition, type NutritionState } from "./Food.ts";
+import { faceTarget } from "./combat/combat.ts";
+import type { ClassicTileWalker, WalkDirection } from "./movement/ClassicTileWalker.ts";
+import { Inventory, type InventoryState } from "./character/Inventory.ts";
+import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./character/loot.ts";
+import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./character/Experience.ts";
+import { hasNutrition, type NutritionState } from "./character/Food.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
 export interface OfflineSave {

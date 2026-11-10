@@ -24,7 +24,7 @@ O Phaser é o dono do loop: uma Scene chama `Game.update(delta)` e apresenta uma
 
 Os tiles continuam 32×32, chunks 16×16 e cache visual limitado a 24 chunks. A simulação local mantém passo fixo de 1/60 s Ao sair da rota, são liberados Phaser, o sinal de presença, controles e observadores.
 
-A bolsa, a coleta, a troca com Lina e Toren e a cura são regras de `src/engine/Inventory.ts`, aplicadas na simulação local; o save fica em `localStorage`. O [ADR 0007](adr/0007-inventario-da-sala.md) descreve o desenho original da bolsa por sala, hoje histórico.
+A bolsa, a coleta, a troca com Lina e Toren e a cura são regras de `src/engine/character/Inventory.ts`, aplicadas na simulação local; o save fica em `localStorage`. O [ADR 0007](adr/0007-inventario-da-sala.md) descreve o desenho original da bolsa por sala, hoje histórico.
 
 O site usa renderização Angular no cliente. O pós-build emite dez entradas HTML com títulos e descrições próprios, base `/` e a mesma aplicação; não é SSR nem prerender do conteúdo das páginas. Pré-visualizações de mundo são estáticas e liberam seus recursos ao trocar de rota.
 

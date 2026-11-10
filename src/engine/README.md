@@ -42,3 +42,5 @@ nível, Cavalaria, proximidade e recursos, entregando montarias apenas após
 os objetivos reais da quest. Nenhum estado do Angular é autoridade de gameplay.
 
 **Golpe de espada:** `resolveSwordStrike` (`SwordCombat.ts`) é a única resolução de golpe, usada pela superfície e pela caverna: dano com defesa, efeito da lâmina e abates, nessa ordem. Cada cenário só decide o que fazer com cada abate. Auditoria e próximas etapas em [ADR 0014](../../docs/adr/0014-auditoria-da-logica-do-motor.md).
+
+**Estrutura (ADR 0016):** a raiz tem só `OfflineSimulation.ts` (a simulação) e `Limits.ts`. `combat/` guarda golpe, alvo, perseguição e lista de batalha; `movement/` guarda o andar por passos e a navegação por toque; `character/` guarda experiência, bolsa, equipamento, comida, armas e itens no chão; `mounts/` guarda estábulo, missões e ações de montaria; `rooms/` guarda a caverna, o interior e as recompensas da caverna. Arquivo novo vai para a pasta do seu assunto, não para a raiz.

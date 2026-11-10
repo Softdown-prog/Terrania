@@ -1,4 +1,4 @@
-import type { InteriorRoom } from "../../engine/InteriorRoom.ts";
+import type { InteriorRoom } from "../../engine/rooms/InteriorRoom.ts";
 import type { Frame, ModeHost } from "./types.ts";
 
 /**

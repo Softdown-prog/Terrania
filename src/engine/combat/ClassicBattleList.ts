@@ -1,5 +1,5 @@
-import { CREATURE_CATALOG, type CreatureView } from "../actors/CreatureCatalog.ts";
-import { TILE_SIZE } from "../world/terrain.ts";
+import { CREATURE_CATALOG, type CreatureView } from "../../actors/CreatureCatalog.ts";
+import { TILE_SIZE } from "../../world/terrain.ts";
 
 /** CLASSIC-003: viewport-only projection for a Battle List.
  * Pure adapter; it neither spawns monsters nor changes combat authority.

@@ -2,16 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { Player } from "../src/actors/Player.ts";
 import { Slime } from "../src/actors/Slime.ts";
-import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
-import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
-import { canStrike } from "../src/engine/combat.ts";
+import { ClassicTileWalker } from "../src/engine/movement/ClassicTileWalker.ts";
+import { ClassicCombat } from "../src/engine/combat/ClassicCombat.ts";
+import { canStrike } from "../src/engine/combat/combat.ts";
 import {
   ClassicPursuit,
   CLASSIC_FOLLOW_LIMIT,
   findClassicApproach,
   inClassicAttackPosition,
-} from "../src/engine/ClassicPursuit.ts";
-import { clearPath } from "../src/engine/TapNavigator.ts";
+} from "../src/engine/combat/ClassicPursuit.ts";
+import { clearPath } from "../src/engine/movement/TapNavigator.ts";
 import type { CollisionMap } from "../src/world/collision.ts";
 
 const DT = 1 / 60;

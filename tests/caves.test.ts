@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { caveEntranceInCell, caveEntranceNear, caveThemeAt, caveEntrancesInArea } from "../src/world/caves.ts";
-import { CaveFloor, CaveRoom, CAVE_WIDTH, CAVE_HEIGHT, CAVE_EXIT } from "../src/engine/CaveRoom.ts";
+import { CaveFloor, CaveRoom, CAVE_WIDTH, CAVE_HEIGHT, CAVE_EXIT } from "../src/engine/rooms/CaveRoom.ts";
 
 test("cavernas seguem a região: gelo, deserto, costa, montanha e brejo sudeste", () => {
   assert.equal(caveThemeAt(0,-26000),"glacial");

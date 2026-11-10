@@ -1,7 +1,7 @@
 import { OfflineSimulation } from "../engine/OfflineSimulation.ts";
-import { canStrike } from "../engine/combat.ts";
-import { PICKUP_DISTANCE } from "../engine/loot.ts";
-import { TapNavigator, clearPath, findWalkingPath, type Point } from "../engine/TapNavigator.ts";
+import { canStrike } from "../engine/combat/combat.ts";
+import { PICKUP_DISTANCE } from "../engine/character/loot.ts";
+import { TapNavigator, clearPath, findWalkingPath, type Point } from "../engine/movement/TapNavigator.ts";
 
 const DT = 1 / 60;
 const ZERO: Point = { x: 0, y: 0 };

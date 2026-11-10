@@ -1,8 +1,8 @@
-import { CREATURE_CATALOG, type CreatureView } from "../actors/CreatureCatalog.ts";
-import type { Player } from "../actors/Player.ts";
-import type { CollisionMap } from "../world/collision.ts";
+import { CREATURE_CATALOG, type CreatureView } from "../../actors/CreatureCatalog.ts";
+import type { Player } from "../../actors/Player.ts";
+import type { CollisionMap } from "../../world/collision.ts";
 import { canStrike, faceTarget } from "./combat.ts";
-import { WEAPONS, type WeaponId } from "./Weapons.ts";
+import { WEAPONS, type WeaponId } from "../character/Weapons.ts";
 import { swordArc } from "./SwordCombat.ts";
 
 /** Terrania's original classic-RPG prototype: target-and-wait, not an action combo.

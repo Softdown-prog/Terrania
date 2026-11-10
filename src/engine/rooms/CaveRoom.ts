@@ -1,14 +1,14 @@
-import { resolveSwordStrike, swordStrikeTargets } from "./SwordCombat.ts";
-import { SOUTH_COMMON_KINDS } from "../actors/CreatureCatalog.ts";
-import { RegionalMonster, caveMonsterKinds } from "../actors/RegionalMonster.ts";
-import { faceTarget } from "./combat.ts";
-import type { WeaponId } from "./Weapons.ts";
-import type { RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
-import { Player } from "../actors/Player.ts";
-import type { CollisionMap } from "../world/collision.ts";
-import { TILE_SIZE } from "../world/terrain.ts";
-import { hash2 } from "../world/random.ts";
-import type { CaveEntrance, CaveTheme } from "../world/caves.ts";
+import { resolveSwordStrike, swordStrikeTargets } from "../combat/SwordCombat.ts";
+import { SOUTH_COMMON_KINDS } from "../../actors/CreatureCatalog.ts";
+import { RegionalMonster, caveMonsterKinds } from "../../actors/RegionalMonster.ts";
+import { faceTarget } from "../combat/combat.ts";
+import type { WeaponId } from "../character/Weapons.ts";
+import type { RegionalCreatureKind } from "../../actors/CreatureCatalog.ts";
+import { Player } from "../../actors/Player.ts";
+import type { CollisionMap } from "../../world/collision.ts";
+import { TILE_SIZE } from "../../world/terrain.ts";
+import { hash2 } from "../../world/random.ts";
+import type { CaveEntrance, CaveTheme } from "../../world/caves.ts";
 
 export const CAVE_WIDTH = 42;
 export const CAVE_HEIGHT = 30;
