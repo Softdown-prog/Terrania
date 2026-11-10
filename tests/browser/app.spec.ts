@@ -502,17 +502,46 @@ test('mapa no inventário não intercepta toques do mundo no Android', async ({ 
   await expect(world).toBeVisible();
 });
 
+test('arsenal exibe dez espadas sem permitir equipar as bloqueadas', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('terrania-origins-v1', JSON.stringify({
+    seed:842136,x:16,y:16,hp:100,experience:0,kills:0,defeated:[],
+    inventory:{gel:0,potion:0,questRewardClaimed:false,
+      loadout:{forged:false,equipped:'starter'}},
+  })));
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('canvas#game')).toBeVisible();
+  await page.locator('#gameMenuButton').click();
+  await page.locator('#inventoryButton').click();
+  const equipmentTab=page.locator('#inventoryTabEquipment');
+  if(await equipmentTab.isVisible())await equipmentTab.click();
+  const swords=page.locator('.weapon-picker [data-sword-id]');
+  await expect(swords).toHaveCount(10);
+  await expect(page.locator('[data-sword-id="starter"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-sword-id="starter"]')).toBeDisabled();
+  await expect(page.locator('[data-sword-id="forge"]')).toBeDisabled();
+  await expect(page.locator('[data-sword-id="forge"]')).toContainText('Toren');
+  await expect(page.locator('[data-sword-id="astral"]')).toBeDisabled();
+  await expect(page.locator('[data-sword-id="astral"]')).toContainText('Nível 100');
+  for(const id of ['starter','forge','bronze','copper','dunes','boreal','obsidian','marsh','tempest','astral'])
+    await expect(page.locator('[data-sword-id="'+id+'"] app-item-icon'))
+      .toHaveAttribute('data-icon','sword-'+id);
+  const noOverflow=await page.locator('#inventoryDialog')
+    .evaluate(node=>node.scrollWidth<=node.clientWidth+2);
+  expect(noOverflow).toBe(true);
+});
+
 test('espada forjada equipada aparece parada na prévia e troca para a inicial sem atacar', async ({ page }) => {
   await page.addInitScript(() => {
-    const original = CanvasRenderingContext2D.prototype.fillRect;
+    const original = CanvasRenderingContext2D.prototype.roundRect;
     const swordFrames = { all: 0, forge: 0 };
     Object.assign(window, { swordFrames });
-    CanvasRenderingContext2D.prototype.fillRect = function (x, y, width, height) {
-      // All ten authored sword meshes draw the same real wrapped hilt primitive.
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radii) {
+      // O cabo real usa roundRect; a versão antiga do teste esperava fillRect.
       if (this.canvas.id === 'inventoryHero' && Math.abs(x - 4) < .0001 &&
-          Math.abs(y + 2.4) < .0001 && Math.abs(width - 8.6) < .0001 &&
-          Math.abs(height - 4.8) < .0001) swordFrames.all++;
-      original.call(this, x, y, width, height);
+          Math.abs(y + 2.5) < .0001 && Math.abs(width - 9.5) < .0001 &&
+          Math.abs(height - 5) < .0001 && typeof radii === 'number' &&
+          Math.abs(radii - .9) < .0001) swordFrames.all++;
+      original.call(this, x, y, width, height, radii);
     };
     const desc=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'fillStyle');
     if(desc?.get && desc.set)Object.defineProperty(CanvasRenderingContext2D.prototype,'fillStyle',{

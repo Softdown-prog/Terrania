@@ -155,3 +155,5 @@ em `src/render/actors.ts` preserva os imports existentes do jogo. Assim o
 herói e a Slime não precisam mais dividir um arquivo de implementação.
 
 **Escada que desce (ADR 0018):** `caveStairsDownArt.ts` desenha a descida ao andar de baixo; a de saída segue em `caveDetails.ts`. A planta (`cave.ts`) só chama as duas.
+
+**Espadas procedurais individuais:** `src/render/swords.ts` preserva a API do jogo e despacha para os dez arquivos `src/render/swords/<id>.ts`, cada qual dono de sua silhueta, materiais, ornamentos e efeitos. `src/render/swords/shared.ts` contém somente desenho genérico de cabo, volume, iluminação e fita de ataque. Regras e progressão continuam em `src/engine/character/weapons/swords/<id>.ts`, sem dependência de Canvas no motor.
