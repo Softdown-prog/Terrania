@@ -385,7 +385,8 @@ export function renderScenery(
   if (faded) ctx.globalAlpha = 0.36;
   const flip = hash2(Math.floor(prop.x), Math.floor(prop.y), 3) < 0.5 ? -1 : 1;
   if (prop.kind === "south-city" && prop.cityKind) {
-    paintSouthCity(ctx,{kind:prop.cityKind,x:prop.x,y:prop.y,variant:prop.variant,id:prop.cityId},time);
+    paintSouthCity(ctx,{kind:prop.cityKind,x:prop.x,y:prop.y,variant:prop.variant,
+      ...(prop.cityId?{id:prop.cityId}:{})},time);
   } else if (prop.kind === "tree") {
     const pine = prop.variant > 0.9;
     const b = pine ? 9 : bucket(prop.variant / 0.9, 9);

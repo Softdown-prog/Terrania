@@ -182,8 +182,8 @@ export class WorldRenderer {
     if (Math.abs(cameraX)<1800 && Math.abs(cameraY-centerY)<1800)
       for (const prop of SOUTH_CITY_PROPS)
         if (prop.x>left-135&&prop.x<right+135&&prop.y>top-155&&prop.y<bottom+45)
-          result.push({kind:"south-city",cityKind:prop.kind,cityId:prop.id,
-            x:prop.x,y:prop.y,variant:prop.variant});
+          result.push({kind:"south-city",cityKind:prop.kind,
+            ...(prop.id?{cityId:prop.id}:{}),x:prop.x,y:prop.y,variant:prop.variant});
     for (const prop of LANDMARKS)
       if (
         prop.x > left - 40 &&
