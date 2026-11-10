@@ -28,3 +28,9 @@ O motor possui apenas valores declarativos; `src/render/swords.ts` mantém o alg
 Cada espada declara a paleta (`trail.first/second/opacity`) e a forma de partículas (`visual.trailAccent`), quando aplicável. O código compartilhado no Canvas desenha seis acabamentos distintos: **sand** (Dunas, poeira), **ice-shards** (Boreal, lascas cristalinas), **embers** (Obsidiana, faíscas), **venom-drops** (Charco, gotas viscosas), **bolts** (Tempestade, relâmpagos) e **stars** (Astral, constelações). As quatro espadas iniciais usam rastro simples, sem partículas elementais.
 
 Os efeitos acompanham o arco físico da ponta e se dissipam no tempo, sem texturas externas, `Math.random` nem relógio. Os testes verificam determinismo, geometria distinta, limites espaciais e que as rotinas de gameplay, dano e cooldown continuam separadas da arte.
+
+## Largura do rastro e orientação
+
+A geometria do arco segue a ponta da arma, nunca o centro do herói. `visual.trailThickness` define a largura máxima da **fita afilada**, sem criar um setor preenchido até o cabo. O início e o fim ficam estreitos e a transparência segue o progresso da varredura. As dez espadas usam espessuras próprias entre 2,4 e 5 unidades locais, sem interferir no alcance de colisão ou no dano.
+
+Na Tempestade, os segmentos de raio são orientados pela tangente do golpe, inclusive quando o personagem está olhando para os lados ou para cima. A fita usa um gradiente determinístico; testes no Canvas cobrem quatro direções, isolamento do estado, proporção e ausência de qualquer relógio ou sorteio.

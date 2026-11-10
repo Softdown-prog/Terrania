@@ -88,3 +88,18 @@ test("rastros elementais pertencem às fichas, não são inferidos pelo ID",()=>
     assert.equal(WEAPONS[id].visual.trailAccent,undefined,id);
   assert.equal(renderer.includes('trailAccent==="particles"'),false);
 });
+
+test("espessura da fita visual por espada acompanha seu peso sem alterar dano",()=>{
+  const thickness={
+    starter:2.4,forge:3,bronze:3.3,copper:4.7,dunes:4.1,
+    boreal:4.4,obsidian:5.2,marsh:4.5,tempest:3.7,astral:5,
+  } as const;
+  const variants=new Set<number>();
+  for(const id of WEAPON_IDS){
+    const actual=WEAPONS[id].visual.trailThickness;
+    assert.equal(actual,thickness[id],id);
+    assert.ok(actual>0 && actual<=WEAPONS[id].visual.width,id);
+    variants.add(actual);
+  }
+  assert.equal(variants.size,10,"espessuras não podem ser todas idênticas");
+});

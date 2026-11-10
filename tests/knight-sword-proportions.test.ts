@@ -1,4 +1,5 @@
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { WEAPON_IDS, WEAPONS } from "../src/engine/character/Weapons.ts";
 import { ATTACK_DURATION } from "../src/engine/combat/combat.ts";
@@ -92,4 +93,26 @@ test("rastros materiais: seis geometrias distintas e determinísticas, sem desvi
     drawKnightTrail(r.ctx,weapon,0,[],0);
     assert.equal(r.metrics().paintOps,0,weapon+" desenha sem ataque");
   }
+});
+
+test("fita afilada e raios orientados ao golpe mantêm escala e determinismo",()=>{
+  const angles=[-1,-.8,-.6,-.4,-.2,0] as const;
+  const signatures=new Set<string>();
+  for(const face of [0,Math.PI/2,Math.PI,-Math.PI/2]){
+    const a=new Recorder(),b=new Recorder();
+    drawKnightTrail(a.ctx,"tempest",face,angles,.8);
+    drawKnightTrail(b.ctx,"tempest",face,angles,.8);
+    const first=a.metrics(),second=b.metrics();
+    assert.equal(first.signature,second.signature,"golpe não determinístico");
+    assert.equal(first.saves,first.restores,"estado Canvas não restaurado");
+    assert.ok(first.gradients>=2,"fita sem volume e esmaecimento");
+    assert.ok(first.width<85 && first.height<85,"efeito extrapolou o herói");
+    assert.ok(first.usesAlpha,"rastro deve ter transparência");
+    signatures.add(first.signature);
+  }
+  assert.equal(signatures.size,4,"rastro não segue as quatro direções");
+  const renderer=readFileSync("src/render/swords.ts","utf8");
+  assert.ok(renderer.includes("s.trailThickness"),"largura não veio da ficha");
+  assert.ok(renderer.includes("Math.sin(Math.PI*t)"),"falta afilamento nas extremidades");
+  assert.ok(renderer.includes("x-tx*4-nx"),"raio usa coordenada global, não a orientação do golpe");
 });
