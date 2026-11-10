@@ -2,6 +2,7 @@ import type { MountActionResult } from "../../engine/mounts/MountStable.ts";
 
 /** Texto de cada resultado de uma ação de montaria. Só dados; `Record` obriga a cobrir todo resultado novo. */
 export const MOUNT_MESSAGES: Record<MountActionResult, string> = {
+  bought: "Domador Rukh entregou a montaria, já com a sela. Treine Cavalaria e monte perto do cercado dele.",
   built: "Cercado do estábulo construído. Agora você pode treinar Cavalaria I.",
   upgraded: "Estábulo ampliado. Novas montarias podem ser abrigadas.",
   trained: "Cavalaria elevada! Verifique suas missões de domesticação.",

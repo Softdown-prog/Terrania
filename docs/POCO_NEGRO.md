@@ -42,10 +42,12 @@ A arena é somente cenário nesta etapa.
   cura toda a vida e remove os status (ADR 0022). Não cobra de quem já está bem.
   O pagamento é em **moedas** (Terrania Gold, Cripta Coin, Eclipse Crown; ADR 0023 e 0025).
 
+- **Bazar das Raridades e Ossuário** compram loot em moedas (ADR 0026).
+- **Cercado do Domador Rukh:** vende o Escaravelho de Carga e o Lagarto das Areias em moedas, já selados (ADR 0028).
+
 ## O que NÃO foi implementado
-- Venda/compra de loot raro no Bazar e Ossuário;
 - Alquimia e comércio de itens na hospedaria (o **descanso pago** existe: ver abaixo);
-- Montarias lagarto ou escaravelho no estábulo;
+- As habilidades especiais das montarias do deserto (carga extra e resistência ao calor);
 - Cultos, missões de corrupção do poço, combate de arena;
 - Uma caverna fixa de brejo junto ao muro (o bioma de brejo fica na
   transição sudeste e possui geração própria).

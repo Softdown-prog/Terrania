@@ -35,7 +35,7 @@ export interface CaveMapState {
   readonly tileX: number;
   readonly tileY: number;
 }
-export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary'; price: number };
+export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary' | 'desert-stable'; price: number };
 
 /** Data and commands exchanged between the game coordinator and the HUD. */
 export interface GameUi {

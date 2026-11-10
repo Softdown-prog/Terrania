@@ -52,6 +52,7 @@ export function surfaceNearbyAction(near: SurfaceNearby): NearbyAction | null {
 export function npcOffer(npcId: string): NpcOffer | undefined {
   if (npcId === "lina") return { item: "potion", price: POTION_GEL_PRICE };
   if (npcId === "toren") return { item: "sword", price: FORGE_SWORD_PRICE };
+  if (npcId === "south-rukh") return { item: "desert-stable", price: 0 };
   if (npcId === "south-zinha") return { item: "bazaar", price: 0 };
   if (npcId === "south-marn") return { item: "ossuary", price: 0 };
   if (npcId === "south-madame") return { item: "rest", price: INN_REST_PRICE };

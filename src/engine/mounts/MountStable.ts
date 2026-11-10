@@ -3,7 +3,8 @@ import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE, isMountId,
 import { hash2 } from "../../world/random.ts";
 import { advanceMountQuest, currentMountQuestStep, mountQuestHint, normalizeMountQuest,
   startMountQuest, synchronizeQuestKills, type MountQuestProgress } from "./MountQuestState.ts";
-import { STABLE_MASTER,WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../../world/mountLocations.ts";
+import { STABLE_MASTER,WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE,SOUTH_STABLE } from "../../world/mountLocations.ts";
+import { SOUTH_MOUNT_SALES } from "./southMountSales.ts";
 export { STABLE_MASTER,WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../../world/mountLocations.ts";
 
 export const HALTER_GEL_COST = 3;
@@ -12,12 +13,12 @@ export const RIDE_STAMINA_RECOVERY = 12;
 type Tier = 0 | RidingTier;
 export type MountAction = "build" | "upgrade" | "train" | "start-warhorse" |
   "make-halter" | "inspect-tracks" | "tame" | "return-warhorse" |
-  "mount-warhorse" | "dismount";
+  "mount-warhorse" | "dismount" | `buy:${MountId}` | `mount:${MountId}`;
 export type MountActionResult = "built" | "upgraded" | "trained" | "quest-started" |
   "halter-made" | "tracks-found" | "calmed" | "returned" | "mounted" | "dismounted" |
   "no-level" | "no-gel" | "no-coins" | "no-stable" | "no-training" | "missing-quest" |
   "quest-active" | "already-owned" | "no-apple" | "no-halter" |
-  "slimes-needed" | "too-far" | "unavailable" | "stamina-low" | "not-ready";
+  "slimes-needed" | "too-far" | "unavailable" | "stamina-low" | "not-ready" | "bought";
 export type MountQuestSave = MountQuestProgress;
 export interface MountSave {
   readonly stableTier?: Tier;
@@ -169,8 +170,19 @@ export class MountStable {
     this.questState=null;
     return "returned";
   }
+  /** Compra uma montaria do cercado do Poço Negro, já com a sela (ADR 0028). Atômico: sem dinheiro, nada muda. */
+  buy(id:MountId,level:number,coins:number,spend:(amount:number)=>boolean,x:number,y:number): MountActionResult {
+    if(!near(x,y,SOUTH_STABLE))return "too-far";
+    const sale=SOUTH_MOUNT_SALES.find(entry=>entry.id===id);
+    if(!sale)return "unavailable";
+    if(this.ownedSet.has(id))return "already-owned";
+    if(level<MOUNTS[id].level)return "no-level";
+    if(coins<sale.price||!spend(sale.price))return "no-coins";
+    this.ownedSet.add(id);this.saddles.add(id);
+    return "bought";
+  }
   mount(id:MountId,level:number,x:number,y:number): MountActionResult {
-    if(!near(x,y,STABLE_MASTER))return "too-far";
+    if(!near(x,y,STABLE_MASTER)&&!near(x,y,SOUTH_STABLE))return "too-far";
     if(this.mounted)return "unavailable";
     if(!this.ownedSet.has(id))return "unavailable";
     const def=MOUNTS[id];

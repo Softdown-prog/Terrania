@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
-import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE } from '../actors/MountCatalog.ts';
+import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE, type MountId } from '../actors/MountCatalog.ts';
 import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/character/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
@@ -9,6 +9,7 @@ import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
 import { southRareLootByName } from '../monsters/rareLoot.ts';
+import { SOUTH_MOUNT_SALES } from '../engine/mounts/southMountSales.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
@@ -47,6 +48,10 @@ type InventoryTab = 'bag' | 'equipment' | 'map';
 @Injectable()
 export class HudService implements GameUi {
   readonly mountCatalog = MOUNTS;
+  /** O que o Domador Rukh vende no Poço Negro (ADR 0028). */
+  readonly mountSales = SOUTH_MOUNT_SALES;
+  buyMount(id: MountId): void { this.mountAction(`buy:${id}`); }
+  rideMount(id: MountId): void { this.mountAction(`mount:${id}`); }
   readonly ridingLevelRequirement = RIDING_LEVEL;
   readonly stableUpgradeCost = STABLE_UPGRADE_PRICE;
   /** Valor em moedas para a tela, como "2 Cripta Coin e 50 Terrania Gold" (ADR 0025). */

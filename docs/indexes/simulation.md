@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (43)
+## Todos os arquivos deste módulo (44)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -59,6 +59,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/mounts/MountQuestState.ts`](../../src/engine/mounts/MountQuestState.ts)
 - [`src/engine/mounts/MountStable.ts`](../../src/engine/mounts/MountStable.ts)
+- [`src/engine/mounts/southMountSales.ts`](../../src/engine/mounts/southMountSales.ts)
 - [`src/engine/movement/ClassicTileWalker.ts`](../../src/engine/movement/ClassicTileWalker.ts)
 - [`src/engine/movement/TapNavigator.ts`](../../src/engine/movement/TapNavigator.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)

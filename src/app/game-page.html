@@ -523,6 +523,29 @@
                 [disabled]="hud.coins() < item.price || hud.food()[id] >= 99"
                 (click)="hud.tradeFood(id)">Comprar {{ item.name }} · {{ hud.coinText(item.price) }}</button>
             }
+          } @else if (offer.item === 'desert-stable') {
+            <section class="mount-stable-panel" aria-label="Cercado do Domador Rukh">
+              <p id="desertStableProgress">Você tem {{ hud.coinText(hud.coins()) }} · Nível {{ hud.progression()?.level ?? 1 }} ·
+                Cercado {{ hud.mountView().stableTier }}/3 · Cavalaria {{ hud.mountView().ridingTier }}/3</p>
+              @for (sale of hud.mountSales; track sale.id) {
+                @let mount = hud.mountCatalog[sale.id];
+                <div class="market-row" [attr.data-mount-sale]="sale.id">
+                  <span>{{ mount.name }} · tier {{ mount.tier }} · nível {{ mount.level }} · {{ hud.coinText(sale.price) }}</span>
+                  @if (!hud.mountView().owned.includes(sale.id)) {
+                    <button type="button" class="secondary-button" [attr.id]="'buy-mount-' + sale.id"
+                      [disabled]="(hud.progression()?.level ?? 1) < mount.level || hud.coins() < sale.price"
+                      (click)="hud.buyMount(sale.id)">Comprar</button>
+                  } @else if (hud.mountView().active === sale.id) {
+                    <button type="button" class="secondary-button" [attr.id]="'dismount-' + sale.id"
+                      (click)="hud.mountAction('dismount')">Guardar</button>
+                  } @else {
+                    <button type="button" class="secondary-button" [attr.id]="'ride-' + sale.id"
+                      [disabled]="!!hud.mountView().active" (click)="hud.rideMount(sale.id)">Montar</button>
+                  }
+                </div>
+              }
+              <p class="dialog-note">Para montar: nível, cercado e Cavalaria da espécie (treine com Eron na Travessia).</p>
+            </section>
           } @else if (offer.item === 'bazaar' || offer.item === 'ossuary') {
             <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }}.
               {{ offer.item === 'bazaar' ? 'O Bazar das Raridades compra os dez loots raros do Sul.' : 'O Ossuário compra o saque comum das criaturas.' }}</p>

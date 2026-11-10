@@ -1,10 +1,11 @@
 import type { OfflineSimulation } from "../OfflineSimulation.ts";
 import { levelForExperience } from "../character/Experience.ts";
 import { sampleMountCaptureLoot, type MountAction, type MountActionResult } from "./MountStable.ts";
+import { isMountId } from "../../actors/MountCatalog.ts";
 
 /** Resultados que alteram o que o jogador possui ou o progresso da missão e, por isso, exigem salvar. */
 const PERSISTING: ReadonlySet<MountActionResult> = new Set<MountActionResult>([
-  "built", "upgraded", "trained", "quest-started", "tracks-found", "halter-made", "calmed", "returned", "mounted", "dismounted",
+  "built", "upgraded", "trained", "quest-started", "tracks-found", "halter-made", "calmed", "returned", "mounted", "dismounted", "bought",
 ]);
 
 export interface MountActionOutcome {
@@ -26,6 +27,14 @@ export function runMountAction(sim: OfflineSimulation, action: MountAction): Mou
   const spend = (amount: number): boolean => inventory.spendGel(amount);
   const spendCoins = (amount: number): boolean => inventory.spendCoins(amount);
   mounts.synchronizeKills(kills);
+  // Montarias do Poço Negro (ADR 0028): "buy:<id>" compra com moedas e "mount:<id>" monta a que o herói tem.
+  const [verb, rawId] = action.split(":");
+  if (rawId !== undefined && (verb === "buy" || verb === "mount")) {
+    const result: MountActionResult = !isMountId(rawId) ? "unavailable" : verb === "buy"
+      ? mounts.buy(rawId, lvl, inventory.coins, spendCoins, player.x, player.y)
+      : mounts.mount(rawId, lvl, player.x, player.y);
+    return { result, persist: PERSISTING.has(result), stopMovement: result === "mounted" };
+  }
   let result: MountActionResult;
   switch (action) {
     case "build": case "upgrade": result = mounts.upgrade(lvl, inventory.coins, spendCoins, player.x, player.y); break;
@@ -41,6 +50,7 @@ export function runMountAction(sim: OfflineSimulation, action: MountAction): Mou
       break;
     case "mount-warhorse": result = mounts.mount("warhorse", lvl, player.x, player.y); break;
     case "dismount": result = mounts.dismount(); break;
+    default: result = "unavailable"; break;
   }
   return { result, persist: PERSISTING.has(result), stopMovement: result === "mounted" || result === "dismounted" };
 }
