@@ -10,7 +10,8 @@ import { hash2, valueNoise } from "../world/random.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { CaveEntrance } from "../world/caves.ts";
 import type { CaveRoom } from "../engine/rooms/CaveRoom.ts";
-import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH, type CaveFloor } from "../world/caveFloor.ts";
+import { CAVE_EXIT, CAVE_HEIGHT, CAVE_STAIRS_DOWN, CAVE_WIDTH, type CaveFloor } from "../world/caveFloor.ts";
+import { drawCaveDownStair } from "./caveStairsDownArt.ts";
 
 const PALETTE = CAVE_PALETTE;
 
@@ -130,6 +131,9 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
   const ex = (CAVE_EXIT.x + .5) * TILE_SIZE;
   const ey = (CAVE_EXIT.y + .5) * TILE_SIZE;
   drawCaveExitStair(ctx, floor.theme, ex, ey);
+  // A escada para o andar de baixo, só nos andares que têm um abaixo.
+  if (floor.hasStairsDown)
+    drawCaveDownStair(ctx, floor.theme, (CAVE_STAIRS_DOWN.x + .5) * TILE_SIZE, (CAVE_STAIRS_DOWN.y + .5) * TILE_SIZE);
 
   return canvas;
 }
@@ -324,6 +328,16 @@ export function drawCaveAtlas(ctx: CanvasRenderingContext2D, floor: CaveFloor,
   ctx.beginPath(); ctx.moveTo(exitX, exitY - 4.5); ctx.lineTo(exitX + 4.5, exitY);
   ctx.lineTo(exitX, exitY + 4.5); ctx.lineTo(exitX - 4.5, exitY); ctx.closePath(); ctx.fill();
   ctx.fillStyle = GLINT; ctx.fillRect(exitX - .7, exitY - 1, 1.4, 3);
+  if (floor.hasStairsDown) {
+    // Seta para baixo violeta = escada que desce ao andar seguinte.
+    const dx = markX(CAVE_STAIRS_DOWN.x), dy = markY(CAVE_STAIRS_DOWN.y);
+    softShadow(ctx, dx, dy + 2, 8, 4, .55);
+    ctx.fillStyle = OUTLINE;
+    ctx.beginPath(); ctx.moveTo(dx - 6.5, dy - 4.5); ctx.lineTo(dx + 6.5, dy - 4.5); ctx.lineTo(dx, dy + 6.5); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#b99cff";
+    ctx.beginPath(); ctx.moveTo(dx - 4.8, dy - 3); ctx.lineTo(dx + 4.8, dy - 3); ctx.lineTo(dx, dy + 4.6); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = GLINT; ctx.fillRect(dx - .7, dy - 2.4, 1.4, 3);
+  }
   // White triangular arrow points north. Dark ring prevents it disappearing on ice.
   const px = markX(tileX), py = markY(tileY);
   ctx.fillStyle = rgba(p.accent, .18);
