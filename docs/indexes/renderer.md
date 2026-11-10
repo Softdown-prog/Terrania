@@ -15,7 +15,7 @@ Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
 - [`src/render/caveDetails.ts`](../../src/render/caveDetails.ts)
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 
-## Todos os arquivos deste módulo (25)
+## Todos os arquivos deste módulo (26)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -38,6 +38,7 @@ Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
 - [`src/render/regionalWave3.ts`](../../src/render/regionalWave3.ts)
 - [`src/render/sandBeetle.ts`](../../src/render/sandBeetle.ts)
 - [`src/render/scenery.ts`](../../src/render/scenery.ts)
+- [`src/render/southRuinsArt.ts`](../../src/render/southRuinsArt.ts)
 - [`src/render/swords.ts`](../../src/render/swords.ts)
 - [`src/render/terrain.ts`](../../src/render/terrain.ts)
 - [`src/ui/CanvasScene.ts`](../../src/ui/CanvasScene.ts)

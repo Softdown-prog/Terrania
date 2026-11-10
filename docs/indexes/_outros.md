@@ -62,6 +62,7 @@
 - [`docs/adr/0013-decomposicao-do-game.md`](../../docs/adr/0013-decomposicao-do-game.md)
 - [`docs/adr/0014-auditoria-da-logica-do-motor.md`](../../docs/adr/0014-auditoria-da-logica-do-motor.md)
 - [`docs/adr/0016-organizacao-de-src.md`](../../docs/adr/0016-organizacao-de-src.md)
+- [`docs/adr/0017-ruinas-e-lago-negro-do-sul.md`](../../docs/adr/0017-ruinas-e-lago-negro-do-sul.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

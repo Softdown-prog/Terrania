@@ -37,3 +37,5 @@ subsolo e a interação está desabilitada nas salas online.
 desbloqueios e objetivos para as dez espécies, mas só a missão inicial está
 habilitada. `mountLocations.ts` fixa Eron, as marcas de cascos e o cavalo
 fugitivo no mapa da vila, sem criar terrenos secretos nem colisões novas.
+
+**Sítios do Sul (ADR 0017):** `southRuins.ts` coloca as ruínas abandonadas (4 modelos, uma por célula de 160 tiles) e dá a colisão a partir das peças em `RUIN_PIECES`, as mesmas que `render/southRuinsArt.ts` desenha. O lago negro é o bioma `black-lake`, decidido por `isBlackLake` em `terrain.ts`. Nenhum dos dois é espelhado no Go; `tests/south-sites.test.ts` trava as amostras de paridade.

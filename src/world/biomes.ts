@@ -1,10 +1,10 @@
 import { getTerrainProfile, type TerrainProfile } from "./terrainProfiles.ts";
 export type Biome = "meadow" | "woodland" | "trail" | "tundra" | "snowfield" |
-  "frozen-lake" | "dunes" | "oasis" | "ruins" | "beach" | "island" |
+  "frozen-lake" | "black-lake" | "dunes" | "oasis" | "ruins" | "beach" | "island" |
   "open-sea" | "highlands" | "stone-peak" | "volcanic";
 export const BIOME_NAMES: Readonly<Record<Biome, string>> = {
   meadow: "Campos Temperados", woodland: "Floresta Temperada", trail: "Trilha",
-  tundra: "Tundra Nevada", snowfield: "Neve Profunda", "frozen-lake": "Lago Gelado",
+  tundra: "Tundra Nevada", snowfield: "Neve Profunda", "frozen-lake": "Lago Gelado", "black-lake": "Lago Negro",
   dunes: "Dunas do Sul", oasis: "Oásis", ruins: "Ermos Antigos",
   beach: "Praia", island: "Ilhas Costeiras", "open-sea": "Mar Aberto",
   highlands: "Encostas", "stone-peak": "Picos Rochosos", volcanic: "Rocha Vulcânica",
