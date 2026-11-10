@@ -7,6 +7,7 @@ import type { Player } from "../../actors/Player.ts";
 import { FOODS, emptyFoodCounts, normalizeFoodCounts, type FoodCounts, type FoodId,
   type FoodTradeResult, type FoodUseResult } from "./Food.ts";
 import { nearestNpc } from "../../world/npcs.ts";
+import { MAX_COINS, marketFor, materialSalePrice, normalizeCoins, type MarketId } from "./coins/index.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 
@@ -14,11 +15,16 @@ import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, ty
 export const QUEST_REWARD_POTIONS = 2;
 export const POTION_HEAL = 35;
 export const POTION_GEL_PRICE = 3;
+/** Descanso numa hospedaria (ADR 0022): cura toda a vida e limpa os status. Preço em Terrania Gold (ADR 0025). */
+export const INN_REST_PRICE = 24;
 export type PotionTradeResult = "traded" | "insufficient-gel" | "potions-full";
-export type SwordPurchaseResult = "purchased" | "already-owned" | "insufficient-sword-gel" | "too-far-from-forge" | "unavailable";
+export type SwordPurchaseResult = "purchased" | "already-owned" | "insufficient-sword-coins" | "too-far-from-forge" | "unavailable";
+export type InnRestResult = "rested" | "insufficient-rest-coins" | "too-far-from-inn" | "rest-not-needed";
+/** `sold` = vendeu; os outros recusam sem mudar nada. */
+export type MaterialSaleResult = "sold" | "not-sellable-here" | "no-material" | "wallet-full";
 export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned" | "level-too-low";
 /** Tudo que uma ação da bolsa pode responder; a interface traduz cada valor em uma mensagem. */
-export type InventoryOutcome = PotionTradeResult | SwordPurchaseResult | SwordEquipResult | GearResult |
+export type InventoryOutcome = PotionTradeResult | InnRestResult | MaterialSaleResult | SwordPurchaseResult | SwordEquipResult | GearResult |
   FoodTradeResult | FoodUseResult | "healed" | "full-health" | "no-potion" | "too-far";
 
 export interface InventoryState {
@@ -29,6 +35,8 @@ export interface InventoryState {
   loadout?: WeaponLoadout;
   gear?: GearState;
   materials?: Record<string, number>;
+  /** Dinheiro em Terrania Gold (ADR 0023); as moedas maiores saem da conta. Ausente quando é zero. */
+  coins?: number;
 }
 
 const KNOWN_MATERIALS = new Set([...REGIONAL_CREATURE_KINDS.flatMap(kind => CREATURE_CATALOG[kind].loot.map(item => item.item)),
@@ -62,6 +70,7 @@ export function normalizeInventory(value: unknown): InventoryState {
     gel: count(state.gel),
     potion: count(state.potion),
     questRewardClaimed: state.questRewardClaimed === true,
+    ...(normalizeCoins(state.coins) > 0 ? { coins: normalizeCoins(state.coins) } : {}),
     ...(Object.values(food).some(v => v > 0) ? { food } : {}),
     ...(loadout ? { loadout } : {}),
     ...(Object.keys(gear).length ? { gear } : {}),
@@ -71,6 +80,7 @@ export function normalizeInventory(value: unknown): InventoryState {
 
 export class Inventory {
   private gelCount = 0;
+  private coinCount = 0;
   private materialCounts: Record<string, number> = {};
   private potionCount = 0;
   private foods: FoodCounts = emptyFoodCounts();
@@ -81,6 +91,7 @@ export class Inventory {
   constructor(value?: unknown, level = 1) {
     const state = normalizeInventory(value);
     this.gelCount = state.gel;
+    this.coinCount = normalizeCoins(state.coins);
     this.materialCounts = normalizeMaterials(state.materials);
     this.potionCount = state.potion;
     this.foods = normalizeFoodCounts(state.food);
@@ -92,7 +103,38 @@ export class Inventory {
   }
 
   get gel(): number { return this.gelCount; }
+  /** Dinheiro em Terrania Gold; `coinBreakdown` mostra como as moedas se juntam. */
+  get coins(): number { return this.coinCount; }
+  /** Ganha moedas (Terrania Gold). Devolve quantas couberam: a carteira tem teto e nunca perde o resto à força. */
+  addCoins(amount: number): number {
+    if (!Number.isSafeInteger(amount) || amount <= 0) return 0;
+    const added = Math.min(amount, MAX_COINS - this.coinCount);
+    this.coinCount += added;
+    return added;
+  }
+  /** Paga em moedas, dando o troco sozinho. Atômico: sem dinheiro suficiente nada muda. */
+  spendCoins(amount: number): boolean {
+    if (!Number.isSafeInteger(amount) || amount <= 0 || this.coinCount < amount) return false;
+    this.coinCount -= amount;
+    return true;
+  }
   get materials(): Readonly<Record<string, number>> { return { ...this.materialCounts }; }
+  /**
+   * Vende `quantity` unidades de um material a uma banca (ADR 0026) e paga em moedas. Atômico: só vende
+   * o que esta banca compra, o que o herói tem, e se a carteira comporta o total.
+   */
+  sellMaterial(market: MarketId, material: string, quantity: number): { result: MaterialSaleResult; coins: number; sold: number } {
+    const refused = (result: MaterialSaleResult) => ({ result, coins: 0, sold: 0 });
+    const price = materialSalePrice(material);
+    if (price === null || marketFor(material) !== market) return refused("not-sellable-here");
+    const owned = this.materialCounts[material] ?? 0;
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || owned < 1) return refused("no-material");
+    const sold = Math.min(quantity, owned), total = price * sold;
+    if (MAX_COINS - this.coinCount < total) return refused("wallet-full");
+    this.addCoins(total);
+    if (owned - sold > 0) this.materialCounts[material] = owned - sold; else delete this.materialCounts[material];
+    return { result: "sold", coins: total, sold };
+  }
   addMaterial(id: string): boolean {
     if (!KNOWN_MATERIALS.has(id) || (this.materialCounts[id] ?? 0) >= MAX_STACK) return false;
     this.materialCounts[id] = (this.materialCounts[id] ?? 0) + 1;
@@ -146,10 +188,21 @@ export class Inventory {
     return "traded";
   }
 
-  tradeGelForFood(id: FoodId): FoodTradeResult {
+  /** Paga o descanso: vida cheia e sem status. Não cobra se o herói já está bem. */
+  restAtInn(hero: { hp: number; maxHp: number; cleanse?: () => void; debuffs?: Readonly<Record<string, number>> }): InnRestResult {
+    if (!Number.isFinite(hero.hp) || !Number.isFinite(hero.maxHp) || hero.hp <= 0) return "rest-not-needed";
+    const afflicted = Object.values(hero.debuffs ?? {}).some(seconds => seconds > 0);
+    if (hero.hp >= hero.maxHp && !afflicted) return "rest-not-needed";
+    if (!this.spendCoins(INN_REST_PRICE)) return "insufficient-rest-coins";
+    hero.hp = hero.maxHp;
+    hero.cleanse?.();
+    return "rested";
+  }
+
+  /** Compra um alimento com moedas (ADR 0025). */
+  buyFood(id: FoodId): FoodTradeResult {
     if (this.foods[id] >= MAX_STACK) return "food-stack-full";
-    if (this.gelCount < FOODS[id].gelPrice) return "insufficient-gel";
-    this.gelCount -= FOODS[id].gelPrice;
+    if (!this.spendCoins(FOODS[id].price)) return "insufficient-food-coins";
     this.foods[id]++;
     return "food-traded";
   }
@@ -163,8 +216,7 @@ export class Inventory {
     if (hero.hp <= 0) return "unavailable";
     if (nearestNpc(hero.x, hero.y)?.id !== "toren") return "too-far-from-forge";
     if (this.weapons.forged) return "already-owned";
-    if (this.gelCount < FORGE_SWORD_PRICE) return "insufficient-sword-gel";
-    this.gelCount -= FORGE_SWORD_PRICE;
+    if (!this.spendCoins(FORGE_SWORD_PRICE)) return "insufficient-sword-coins";
     this.weapons = { ...this.weapons, forged: true };
     return "purchased";
   }
@@ -193,6 +245,7 @@ export class Inventory {
       gel: this.gelCount,
       potion: this.potionCount,
       questRewardClaimed: this.claimed,
+      ...(this.coinCount > 0 ? { coins: this.coinCount } : {}),
       ...(Object.values(this.foods).some(v => v > 0) ? { food: { ...this.foods } } : {}),
       ...(this.weapons.forged || this.weapons.equipped !== "starter" ? { loadout: this.weapons } : {}),
       ...(Object.keys(this.equippedGear).length ? { gear: this.equippedGear } : {}),

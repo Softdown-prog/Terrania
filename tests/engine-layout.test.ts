@@ -57,5 +57,5 @@ test("engine: weapons/swords tem uma ficha real por ID de espada do catálogo", 
   const files=list(folder).filter(name=>name.endsWith(".ts"));
   assert.deepEqual(files,WEAPON_IDS.map(id=>id+".ts").sort(),
     "toda espada do catálogo exige arquivo individual; nenhuma ficha órfã");
-  assert.equal(WEAPON_IDS.length,10,"progressão atual das dez espadas");
+  assert.equal(WEAPON_IDS.length,11,"progressão atual das onze espadas (a Espada Comum de Ferro, nível 15, entrou no PR #143)");
 });

@@ -24,13 +24,15 @@
 
 **Continuidade de passos:** `ClassicTileWalker` consome o restante do tick após cada centro, sem guardar tempo ocioso. Pode receber uma função de direção, consultada no centro para virar/parar corretamente. `ClassicPursuit.direction(0, ...)` só reavalia o caminho; a chamada positiva avança seu orçamento uma vez por tick. Velocidade diagonal e efeitos de ataque seguem tempo/distância, com regressão a 20, 30, 60 e 144 Hz. Ver [ADR 0006](../../docs/adr/0006-movimento-e-apresentacao-do-personagem.md).
 
+**Moedas (ADR 0023):** `character/coins/` tem uma moeda por arquivo (Terrania Gold, Cripta Coin, Eclipse Crown) e `wallet.ts` com a regra de junção a cada 100. A bolsa guarda o dinheiro como um só inteiro em Terrania Gold (`Inventory.coins`); as moedas maiores são calculadas por `coinBreakdown`, então se unem sozinhas e o troco volta sozinho. O gel é material de troca, não dinheiro. As criaturas deixam moedas ao cair (`coins/drops.ts`, ADR 0024: no chão na superfície, direto na bolsa nas masmorras). As compras (espada de Toren, comida da Lina, descanso de Madame Víbora e estábulo) cobram moedas (ADR 0025); o gel segue só como troca (poção da Lina) e material (cabresto).
+
 **Bolsa solo:** Aela entrega duas poções uma vez ao concluir a missão. A troca com Lina consome três unidades de gel e entrega uma poção em uma única operação do inventário. O orquestrador verifica a proximidade e grava a bolsa após uma troca concluída.
 
 **Espadas:** Toren vende a primeira arma de equipamento. A bolsa valida e grava a compra e o equipamento. A simulação fixa dano e recarga no início do ataque. Veja [ADR 0008](../../docs/adr/0008-espadas-e-recarga.md).
 
 **Equipamento:** `Equipment.ts` descreve espaços e itens do conjunto inicial. A bolsa valida e guarda a combinação de espaço e item. Os Slimes recebem a defesa calculada pela bolsa no solo e na sala Node. Veja [ADR 0009](../../docs/adr/0009-espacos-de-equipamento.md).
 
-**Alimentação do Cavaleiro 1.0:** `Food.ts` concentra a tabela de maçã (+8 HP futuros; 1 gel), pão (+18; 2 gel) e carne (+30; 3 gel). Consumir um item acumula até 60 HP futuros de regeneração e impõe espera de 5 s até a próxima refeição. O `Player` restaura 1 HP a cada 2 s enquanto está ferido; não revive nem excede a vida máxima. Lina vende suprimentos por gel em solo e Node. A reserva, o progresso fracionário e a espera são persistidos no save solo e enviados privadamente no snapshot online.
+**Alimentação do Cavaleiro 1.0:** `Food.ts` concentra a tabela de maçã (+8 HP futuros; 6 Terrania Gold), pão (+18; 12) e carne (+30; 18). Consumir um item acumula até 60 HP futuros de regeneração e impõe espera de 5 s até a próxima refeição. O `Player` restaura 1 HP a cada 2 s enquanto está ferido; não revive nem excede a vida máxima. Lina vende suprimentos por moedas (6, 12 e 18 Terrania Gold). A reserva, o progresso fracionário e a espera são persistidos no save solo e enviados privadamente no snapshot online.
 
 ### Domesticação e Cavalaria
 `MountStable.ts` mantém cercado, treinamento I–III, quest do Garrano, cabresto, selas, energia, summon, montaria e persistência serializável. O `ClassicTileWalker` aplica o multiplicador de velocidade somente sobre a malha de colisão existente. Não criar segundo loop de simulação.
@@ -47,4 +49,4 @@ os objetivos reais da quest. Nenhum estado do Angular é autoridade de gameplay.
 
 **Andares de caverna (ADR 0018):** `CaveRoom` conhece o andar (`floorIndex`, `floorCount`, `floorName`) e povoa pela tabela do andar em `src/dungeons`. `rooms/caveStairs.ts` decide descer, subir ou sair e cria o andar de destino; a planta e as escadas vêm de `world/caveFloor.ts`.
 
-**Espadas em arquivos separados:** as dez fichas autoritativas de nível, dano, recarga, efeitos e rastro ficam individualmente em `character/weapons/swords/` (primeira `starter.ts`). `character/Weapons.ts` agrega sem duplicar definições nem alterar o contrato antigo. Render e ícones permanecem em seus módulos de apresentação; ver `character/weapons/swords/README.md`.
+**Espadas em arquivos separados:** as onze fichas autoritativas de nível, dano, recarga, efeitos e rastro ficam individualmente em `character/weapons/swords/` (primeira `starter.ts`). `character/Weapons.ts` agrega sem duplicar definições nem alterar o contrato antigo. Render e ícones permanecem em seus módulos de apresentação; ver `character/weapons/swords/README.md`.

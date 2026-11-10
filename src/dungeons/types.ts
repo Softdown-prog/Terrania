@@ -1,6 +1,7 @@
 import type { WorldRegion } from "../world/regions.ts";
 import type { CaveTheme } from "../world/caves.ts";
 import type { RegionalCreatureKind } from "../monsters/catalog.ts";
+import type { TowerId } from "../world/towers/types.ts";
 
 /** Um andar de masmorra: o que ele se chama, quem mora nele e se há um chefe esperando. */
 export interface DungeonFloorDefinition {
@@ -18,8 +19,10 @@ export interface DungeonDefinition {
   readonly id: string;
   readonly name: string;
   readonly region: WorldRegion;
-  /** Tema das cavernas que viram esta masmorra. */
+  /** Tema das cavernas que viram esta masmorra (ou, numa torre, o tema da pedra por dentro). */
   readonly theme: CaveTheme;
+  /** Só nas masmorras de torre (ADR 0020): a torre cujos andares são estes. Sem isso, vale o tema. */
+  readonly tower?: TowerId;
   /** Do primeiro andar (o da entrada) ao último (o do chefe). */
   readonly floors: readonly DungeonFloorDefinition[];
   /**

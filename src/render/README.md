@@ -89,6 +89,8 @@ enxerga relevo, material e formas regionais, não apenas o piso plano da saída.
 
 **Torres do Sul (ADR 0019):** `south/towers/` tem um pintor por torre (`vigia-caida.ts`, `miragem.ts`, `sol-negro.ts`), `common.ts` com o pincel compartilhado (`TowerBrush`) e `index.ts` com `TOWER_PAINTERS`. A posição e a colisão ficam em `world/towers/`; `scenery.ts` cacheia o sprite `south-tower-<id>`.
 
+**Interior das torres (ADR 0021):** `south/towers/interior/` tem um estilo por torre (cores e luz), as peças `wallFace.ts`, `window.ts` e `sconce.ts` (registradas como `prop`) e `floor.ts`, que pinta o andar inteiro (laje, tijolo, janelas, lampiões). `cave.ts` usa esse pintor quando a entrada é de torre.
+
 
 ## Arte de espécies com anatomia própria — 10/11/2026
 
@@ -156,7 +158,7 @@ herói e a Slime não precisam mais dividir um arquivo de implementação.
 
 **Escada que desce (ADR 0018):** `caveStairsDownArt.ts` desenha a descida ao andar de baixo; a de saída segue em `caveDetails.ts`. A planta (`cave.ts`) só chama as duas.
 
-**Espadas procedurais individuais:** `src/render/swords.ts` preserva a API do jogo e despacha para os dez arquivos `src/render/swords/<id>.ts`, cada qual dono de sua silhueta, materiais, ornamentos e efeitos. `src/render/swords/shared.ts` contém somente desenho genérico de cabo, volume, iluminação e fita de ataque. Regras e progressão continuam em `src/engine/character/weapons/swords/<id>.ts`, sem dependência de Canvas no motor.
+**Espadas procedurais individuais:** `src/render/swords.ts` preserva a API do jogo e despacha para os onze arquivos `src/render/swords/<id>.ts`, cada qual dono de sua silhueta, materiais, ornamentos e efeitos. `src/render/swords/shared.ts` contém somente desenho genérico de cabo, volume, iluminação e fita de ataque. Regras e progressão continuam em `src/engine/character/weapons/swords/<id>.ts`, sem dependência de Canvas no motor.
 
 
 ## Renderização individual dos monstros (2026-11-10)
@@ -164,6 +166,14 @@ herói e a Slime não precisam mais dividir um arquivo de implementação.
 As 32 espécies possuem arquivos próprios de anatomia em `src/render/creatures/<região>/<família>/<espécie>.ts`, correspondentes a `src/monsters/`. Cada espécie agora é dona da paleta, do desenho procedural e da função de renderização. Os três arquivos `src/render/creatures/shared/*Frame.ts` contêm apenas composição Canvas comum (pose, sombra, reflexos, indicação de vida), sem selecionar corpos ou cores por monstro.
 
 `src/render/regionalCreatures.ts` é registro tipado que despacha para a espécie correta, sem paleta global ou `switch` de anatomia. `regionalWave2.ts` e `regionalWave3.ts` preservam a API pública antiga, encaminhando ao registro. A Slime e o Besouro da Areia já implementam renderização própria integral. A apresentação nunca decide combate, dano ou loot.
+
+**Acabamento temporal de espadas (10/11):** as espadas de Obsidiana, Tempestade e Astral recebem, respectivamente, fissura incandescente, descarga viajante e brilho orbital na própria arte `src/render/swords/<id>.ts`. O relógio vem do parâmetro `time` de `renderHero`, inclusive na prévia do inventário, sem aleatoriedade, partículas persistidas ou efeitos sobre dano/alcance. A espada forjada ganha canal de têmpera e rebites; madeira e metais comuns permanecem estáticos quando o herói está parado. A API anterior continua válida com `time=0`.
+
+**Acabamento individual das seis lâminas elementais:** a Areia agora tem reflexos de quartzo móveis sobre a face da lâmina, o Gelo recebe um brilho frio deslocando-se pelas facetas e o Pântano mostra veneno percorrendo os sulcos. Todos usam `animate(ctx,s,tone,time)` no arquivo específico, mesmo renderizador do jogo e prévia, `save/restore` balanceados e `time` determinístico. Madeira, Bronze e Cobre ganharam nós, pátina, marcas de forja e filetes de luz, mas **nenhuma animação mágica**. Dano, tempo de preparo e colisão não mudaram.
+
+**Rastros físicos individuais (10/11):** Madeira desenha dois riscos de ar/poeira, Ferro projeta dois filetes de reflexão no gume, Bronze produz uma meia-lua curta e Cobre marca uma varredura pesada com duas faixas assimétricas. Cada um implementa `slashAccent` no próprio módulo da espada: a geometria usa tangente/normal do golpe e a transparência vem da janela de ataque existente. O compositor compartilhado delega ao pintor disponível, sem exigir `trailAccent` elemental nas fichas físicas. Nenhum desses rastros aparece em repouso e nenhuma regra de dano/colisão foi alterada.
+
+**Espada Comum de Ferro (nível 15):** o motor registra `src/engine/character/weapons/swords/common.ts`, entre Ferro Batido (10) e Bronze (20). `src/render/swords/common.ts` desenha lâmina reta com canal central, rampa metálica, reflexos moderados, guarda simples e rastro físico próprio. `src/app/item-icon.component.ts` fornece ícone SVG específico. Sem aura mágica, nova regra de impacto ou bloqueio de posse: o arsenal desbloqueia normalmente com `weaponUnlocked` no nível 15, sem exigir comprar a espada de Toren.
 
 
 ### Anatomias e animações específicas — primeiro lote após a separação

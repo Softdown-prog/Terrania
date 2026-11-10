@@ -2,6 +2,7 @@ import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
 import { paintSword, paintSwordTrail, type SwordArtwork, type Tone } from "./swords/shared.ts";
 import { STARTER_ARTWORK } from "./swords/starter.ts";
 import { FORGE_ARTWORK } from "./swords/forge.ts";
+import { COMMON_ARTWORK } from "./swords/common.ts";
 import { BRONZE_ARTWORK } from "./swords/bronze.ts";
 import { COPPER_ARTWORK } from "./swords/copper.ts";
 import { DUNES_ARTWORK } from "./swords/dunes.ts";
@@ -14,6 +15,7 @@ import { ASTRAL_ARTWORK } from "./swords/astral.ts";
 const ARTWORK: Readonly<Record<WeaponId,SwordArtwork>> = {
   starter: STARTER_ARTWORK,
   forge: FORGE_ARTWORK,
+  common: COMMON_ARTWORK,
   bronze: BRONZE_ARTWORK,
   copper: COPPER_ARTWORK,
   dunes: DUNES_ARTWORK,
@@ -24,9 +26,9 @@ const ARTWORK: Readonly<Record<WeaponId,SwordArtwork>> = {
   astral: ASTRAL_ARTWORK,
 };
 export function drawKnightSword(ctx:CanvasRenderingContext2D,weapon:WeaponId,
-  impact=0,tone:Tone=(c)=>c):void {
+  impact=0,tone:Tone=(c)=>c,time=0):void {
   const s=WEAPONS[weapon].visual;
-  paintSword(ctx,s,ARTWORK[weapon],impact,tone);
+  paintSword(ctx,s,ARTWORK[weapon],impact,tone,time);
 }
 export function drawKnightTrail(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   facing:number,angles:readonly number[],alpha:number):void {

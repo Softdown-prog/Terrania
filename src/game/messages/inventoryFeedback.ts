@@ -1,4 +1,5 @@
-import { POTION_GEL_PRICE, POTION_HEAL, type InventoryOutcome } from "../../engine/character/Inventory.ts";
+import { INN_REST_PRICE, POTION_GEL_PRICE, POTION_HEAL, type InventoryOutcome } from "../../engine/character/Inventory.ts";
+import { describeCoins } from "../../engine/character/coins/index.ts";
 import { FORGE_SWORD_PRICE, WEAPONS } from "../../engine/character/Weapons.ts";
 
 /**
@@ -22,12 +23,21 @@ export const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "traded": "Lina colocou uma poção de cura na sua bolsa.",
   "purchased": `Toren colocou a ${WEAPONS.forge.name} na sua bolsa.`,
   "already-owned": "Você já possui essa espada.",
-  "insufficient-sword-gel": `Você precisa de ${FORGE_SWORD_PRICE} unidades de gel para comprar a espada.`,
+  "insufficient-sword-coins": `Você precisa de ${describeCoins(FORGE_SWORD_PRICE)} para comprar a espada.`,
   "too-far-from-forge": "Aproxime-se de Toren para comprar a espada.",
   "equipped": "Espada equipada.",
   "already-equipped": "Essa espada já está equipada.",
   "level-too-low": "Seu nível ainda não permite equipar essa espada.",
   "not-owned": "Você ainda não possui essa espada.",
+  "rested": "Madame Víbora serviu o descanso: vida completa e sem veneno nem queimadura.",
+  "insufficient-rest-coins": `Você precisa de ${describeCoins(INN_REST_PRICE)} para pagar o descanso.`,
+  "insufficient-food-coins": "Você não tem moedas suficientes para comprar esse alimento.",
+  "too-far-from-inn": "Aproxime-se de Madame Víbora, na Hospedaria Sombra do Escorpião, para descansar.",
+  "rest-not-needed": "Você já está descansado: vida completa e sem nenhum mal.",
+  "sold": "Venda feita.",
+  "not-sellable-here": "Esta banca não compra esse item.",
+  "no-material": "Você não tem esse item para vender.",
+  "wallet-full": "Sua carteira não comporta tanto dinheiro.",
   "gear-equipped": "Item equipado.",
   "gear-removed": "Item guardado na bolsa.",
   "gear-unchanged": "O espaço já está assim.",

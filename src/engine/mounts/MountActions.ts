@@ -24,10 +24,11 @@ export function runMountAction(sim: OfflineSimulation, action: MountAction): Mou
   const { player, mounts, inventory, kills } = sim;
   const lvl = levelForExperience(sim.experience), gel = inventory.gel;
   const spend = (amount: number): boolean => inventory.spendGel(amount);
+  const spendCoins = (amount: number): boolean => inventory.spendCoins(amount);
   mounts.synchronizeKills(kills);
   let result: MountActionResult;
   switch (action) {
-    case "build": case "upgrade": result = mounts.upgrade(lvl, gel, spend, player.x, player.y); break;
+    case "build": case "upgrade": result = mounts.upgrade(lvl, inventory.coins, spendCoins, player.x, player.y); break;
     case "train": result = mounts.train(lvl, player.x, player.y); break;
     case "start-warhorse": result = mounts.beginWarhorse(lvl, player.x, player.y, kills); break;
     case "make-halter": result = mounts.craftHalter(gel, spend, player.x, player.y); break;

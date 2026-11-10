@@ -15,14 +15,15 @@ import { QUEST_REWARD_POTIONS } from "../engine/character/Inventory.ts";
 import { InteriorRoom } from "../engine/rooms/InteriorRoom.ts";
 import { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { nearbyStairsMove, roomAfterMove } from "../engine/rooms/caveStairs.ts";
-import { caveEntranceNear, type CaveEntrance } from "../world/caves.ts";
+import type { CaveEntrance } from "../world/caves.ts";
+import { dungeonEntranceNear } from "../world/entrances.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { SOUTH_BUILDINGS } from "../world/southCity.ts";
 import { nearestCombatCreature } from "../engine/combat/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { runMountAction } from "../engine/mounts/MountActions.ts";
-import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, usePotion,
+import { buyFood, buySword, eatFood, equipGear, equipWeapon, restAtInn, sellMaterial, tradeGelForPotion, usePotion,
   type ShopContext, type ShopResult } from "./actions/shopActions.ts";
 import { TravelState } from "./TravelState.ts";
 import type { Frame, FrameTimers, ModeHost } from "./modes/types.ts";
@@ -82,6 +83,8 @@ export class Game {
     this.hud.onNewWorld(() => this.newWorld());
     this.hud.onPotionTrade(() => this.shop(tradeGelForPotion));
     this.hud.onSwordPurchase(() => this.shop(buySword));
+    this.hud.onInnRest(() => this.shop(restAtInn));
+    this.hud.onMaterialSale((market, material, quantity) => this.shop(context => sellMaterial(context, market, material, quantity)));
     this.hud.onFoodUse(id => this.shop(context => eatFood(context, id)));
     this.hud.onFoodTrade(id => this.shop(context => buyFood(context, id)));
     this.hud.onWeaponEquip(weapon => this.shop(context => equipWeapon(context, weapon)));
@@ -115,7 +118,7 @@ export class Game {
       progression: experienceProgress(this.sim.experience),
       awaitingRespawn: player.hp <= 0,
     }, aelaQuestProgress(this.sim.trainingKills));
-    this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials);
+    this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateGear(inventory.gear);
     this.hud.updateMount(this.sim.mounts.view(kills));
@@ -192,7 +195,7 @@ export class Game {
     }
     const mountStep = mountQuestAction(this.sim.player.x, this.sim.player.y, questStepId(this.sim.mounts.quest));
     if (mountStep) { this.hud.setTravelNotice(this.mountAction(mountStep)); return; }
-    const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
+    const entrance = dungeonEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
     if (entrance) { this.enterCave(entrance); return; }
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y, this.timers.clock);
     if (!npc) return;
@@ -246,7 +249,7 @@ export class Game {
     this.sim.mounts.dismount();
     this.cave=new CaveRoom(entrance,this.sim.player.hp,this.sim.player.maxHp,this.sim.defeated);
     this.cave.player.syncAdventureStateFrom(this.sim.player);
-    this.hud.setTravelNotice("Você desceu para "+entrance.name+(this.cave.floorCount>1
+    this.hud.setTravelNotice((entrance.tower ? "Você entrou em " : "Você desceu para ")+entrance.name+(this.cave.floorCount>1
       ? ". Andar 1 de "+this.cave.floorCount+": "+this.cave.floorName+"."
       : ". O mapa agora acompanha o primeiro andar da caverna."));
   }

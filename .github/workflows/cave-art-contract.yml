@@ -2,7 +2,7 @@ name: Cave art contract and regional preview (no deploy)
 
 on:
   push:
-    branches: [refactor/monster-canvas-per-species-20261110]
+    branches: [main, refactor/monster-canvas-per-species-20261110]
     paths:
       - "src/render/creatures/**"
       - "tests/specialized-creature-art.test.ts"

@@ -21,6 +21,8 @@ export interface SwordArtwork {
   readonly bladePath:(ctx:CanvasRenderingContext2D,s:SwordVisualProfile)=>void;
   readonly bladeMaterial:(ctx:CanvasRenderingContext2D,s:SwordVisualProfile,tone:Tone)=>void;
   readonly finish?:(ctx:CanvasRenderingContext2D,s:SwordVisualProfile,tone:Tone)=>void;
+  /** Acabamento temporal por espada: tempo explícito, sem estado ou aleatoriedade. */
+  readonly animate?:(ctx:CanvasRenderingContext2D,s:SwordVisualProfile,tone:Tone,time:number)=>void;
   readonly slashAccent?:(ctx:CanvasRenderingContext2D,args:SwordTrailAccent)=>void;
 }
 
@@ -122,7 +124,7 @@ function swordFinish(ctx:CanvasRenderingContext2D,s:SwordVisualProfile,art:Sword
 }
 
 export function paintSword(ctx:CanvasRenderingContext2D,s:SwordVisualProfile,
-  art:SwordArtwork,impact=0,tone:Tone=(c)=>c):void {
+  art:SwordArtwork,impact=0,tone:Tone=(c)=>c,time=0):void {
   const w=s.width,len=s.length;
   ctx.save();ctx.lineJoin="round";ctx.lineCap="round";
   // 1. Sombra de espessura (arma suspensa, não uma sombra no chão).
@@ -142,6 +144,8 @@ export function paintSword(ctx:CanvasRenderingContext2D,s:SwordVisualProfile,
   art.bladePath(ctx,s);ctx.strokeStyle="#142a2a";ctx.lineWidth=1.1;ctx.stroke();
   // 8-9. Ornamentações, marcas de material e brilhos especulares.
   swordFinish(ctx,s,art,tone);
+  // O efeito pertence ao arquivo da espada. Apenas desenho, nunca hitbox.
+  art.animate?.(ctx,s,tone,time);
   if(impact>0){
     ctx.save();ctx.globalAlpha=clamp01(impact)*.72;
     const glow=ctx.createRadialGradient(len-5,0,.6,len-5,0,13);
@@ -197,7 +201,9 @@ export function paintSwordTrail(ctx:CanvasRenderingContext2D,w:WeaponDefinition,
     if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
   });
   ctx.strokeStyle=rgba(w.trail.second,opacity);ctx.lineWidth=s.trailLineWidth??2;ctx.stroke();
-  if(s.trailAccent && art.slashAccent){
+  // Espadas físicas também podem definir riscos de movimento, sem motivos mágicos.
+  // O motivo elemental permanece na ficha; a anatomia do risco pertence à espada.
+  if(art.slashAccent){
     for(let i=1;i<angles.length;i++){
       const a=facing+angles[i]!,x=Math.cos(a)*(range+3),y=Math.sin(a)*(range+3);
       // O começo do golpe se dissipa primeiro; a ponta recente fica legível.

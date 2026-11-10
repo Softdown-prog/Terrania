@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
-import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL } from '../actors/MountCatalog.ts';
+import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE } from '../actors/MountCatalog.ts';
 import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/character/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
@@ -9,6 +9,7 @@ import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
 import { southRareLootByName } from '../monsters/rareLoot.ts';
+import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
@@ -26,7 +27,7 @@ const KIT_IDS = Object.keys(GEAR) as GearId[];
 /** Somente a visualização da bolsa; quantidades e propriedade vêm do motor. */
 export interface BackpackItemView {
   readonly id: string;
-  readonly kind: 'material' | 'potion' | 'food' | 'gear' | 'weapon';
+  readonly kind: 'material' | 'potion' | 'food' | 'gear' | 'weapon' | 'coin';
   readonly name: string;
   readonly description: string;
   readonly icon: ItemIconId;
@@ -47,7 +48,9 @@ type InventoryTab = 'bag' | 'equipment' | 'map';
 export class HudService implements GameUi {
   readonly mountCatalog = MOUNTS;
   readonly ridingLevelRequirement = RIDING_LEVEL;
-  readonly stableUpgradeCost = STABLE_UPGRADE_GEL;
+  readonly stableUpgradeCost = STABLE_UPGRADE_PRICE;
+  /** Valor em moedas para a tela, como "2 Cripta Coin e 50 Terrania Gold" (ADR 0025). */
+  coinText(amount: number): string { return describeCoins(amount); }
   readonly mountIds = MOUNT_IDS;
   readonly mountView = signal<MountView>({
     stableTier:0,ridingTier:0,owned:[],active:null,stamina:0,maxStamina:0,
@@ -80,6 +83,8 @@ export class HudService implements GameUi {
   readonly cave = signal<CaveMapState | null>(null, {equal:(a,b)=> a===b ||
     (a!==null && b!==null && a.floor===b.floor && a.floorIndex===b.floorIndex && a.tileX===b.tileX && a.tileY===b.tileY)});
   readonly gel = signal(0);
+  /** Dinheiro em Terrania Gold; as moedas maiores são calculadas por `coinBreakdown`. */
+  readonly coins = signal(0);
   readonly creatureMaterials = signal<Readonly<Record<string,number>>>({}, {
     equal: (a,b) => a===b || (Object.keys(a).length===Object.keys(b).length &&
       Object.entries(a).every(([key,quantity])=>b[key]===quantity)),
@@ -97,7 +102,7 @@ export class HudService implements GameUi {
     const forged=this.loadout()?.forged ?? false;
     return WEAPON_IDS.filter(id=>weaponUnlocked(id,level,forged));
   });
-  /** Os dez modelos ficam visíveis mesmo quando o jogador ainda não pode equipá-los. */
+  /** Todos os modelos ficam visíveis mesmo quando o jogador ainda não pode equipá-los. */
   readonly swordIds = WEAPON_IDS;
   weaponIcon(id: WeaponId): ItemIconId { return weaponItemIcon(id); }
   readonly equipmentSlots = EQUIPMENT_SLOTS;
@@ -115,6 +120,12 @@ export class HudService implements GameUi {
       { id: 'potion', kind: 'potion', name: 'Poção de cura', icon: 'potion', quantity: this.potions(),
         description: 'Recupera 35 HP imediatamente, sem ultrapassar a vida máxima.' },
     ];
+    // Moedas (ADR 0023): só aparecem as que o total forma; a Terrania Gold fica sempre, mesmo zerada.
+    for (const { id, count } of coinBreakdown(this.coins())) {
+      if (count <= 0 && id !== 'terrania-gold') continue;
+      const coin = COIN_TIERS.find(tier => tier.id === id)!;
+      result.push({ id: 'coin-' + id, kind: 'coin', name: coin.name, icon: id, quantity: count, description: coin.description });
+    }
     for (const [name,quantity] of Object.entries(this.creatureMaterials()).sort(([a],[b])=>a.localeCompare(b))) {
       if (quantity <= 0) continue;
       const rare=southRareLootByName(name);
@@ -167,7 +178,7 @@ export class HudService implements GameUi {
   readonly canUseSelectedBagItem = computed(() => {
     const item = this.selectedBagItem();
     if (!item || this.hp() <= 0) return false;
-    if (item.kind === 'material') return false;
+    if (item.kind === 'material' || item.kind === 'coin') return false;
     if (item.kind === 'potion') return item.quantity > 0 && this.hp() < this.maxHp();
     if (item.kind === 'food') {
       return item.quantity > 0 && this.nutrition().cooldown <= 0 &&
@@ -197,6 +208,8 @@ export class HudService implements GameUi {
   private newWorldCallback: () => void = () => {};
   private talkCallback: () => void = () => {};
   private potionTradeCallback: () => string = () => '';
+  private innRestCallback: () => string = () => '';
+  private materialSaleCallback: (market: MarketId, material: string, quantity: number) => string = () => '';
   private potionCallback: () => string = () => '';
   private foodCallback: (id: FoodId) => string = () => '';
   private foodTradeCallback: (id: FoodId) => string = () => '';
@@ -236,6 +249,8 @@ export class HudService implements GameUi {
   onFoodUse(callback: (id: FoodId) => string): void { this.foodCallback = callback; }
   onFoodTrade(callback: (id: FoodId) => string): void { this.foodTradeCallback = callback; }
   onSwordPurchase(callback: () => string): void { this.swordPurchaseCallback = callback; }
+  onInnRest(callback: () => string): void { this.innRestCallback = callback; }
+  onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void { this.materialSaleCallback = callback; }
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void { this.gearEquipCallback = callback; }
   onRespawn(callback: () => void): void { this.respawnCallback = callback; }
@@ -263,6 +278,18 @@ export class HudService implements GameUi {
   newWorld(): void { this.newWorldCallback(); }
   talk(): void { this.talkCallback(); }
   tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
+  restAtInn(): void { this.npcTradeFeedback.set(this.innRestCallback()); }
+  /** Vende `quantity` unidades (ou tudo, com um número grande) do material à banca aberta (ADR 0026). */
+  sellMaterial(market: MarketId, material: string, quantity: number): void {
+    this.npcTradeFeedback.set(this.materialSaleCallback(market, material, quantity));
+  }
+  /** O que o herói tem e esta banca compra, com o preço de cada unidade em Terrania Gold. */
+  sellableMaterials(market: MarketId): ReadonlyArray<{ name: string; quantity: number; price: number }> {
+    return Object.entries(this.creatureMaterials())
+      .filter(([name, quantity]) => quantity > 0 && marketFor(name) === market)
+      .map(([name, quantity]) => ({ name, quantity, price: materialSalePrice(name) ?? 0 }))
+      .sort((a, b) => b.price - a.price || a.name.localeCompare(b.name));
+  }
   usePotion(): void {
     const message = this.potionCallback();
     this.inventoryFeedback.set(message);
@@ -304,8 +331,9 @@ export class HudService implements GameUi {
   }
   respawn(): void { this.respawnCallback(); }
   updateInventory(gel: number, potions: number, food: FoodCounts,
-    materials: Readonly<Record<string,number>> = {}): void {
+    materials: Readonly<Record<string,number>> = {}, coins = 0): void {
     this.gel.set(gel); this.potions.set(potions); this.food.set(food);
+    this.coins.set(coins);
     this.creatureMaterials.set(materials);
   }
   updateLoadout(loadout: WeaponLoadout | null): void { this.loadout.set(loadout); }
@@ -334,7 +362,7 @@ export class HudService implements GameUi {
   setCave(location:CaveMapState|null):void {
     this.cave.set(location);
     if(location) {
-      this.coords.set("Subsolo · X "+location.tileX+" · Y "+location.tileY);
+      this.coords.set((location.floor.entrance.tower ? "Torre" : "Subsolo")+" · X "+location.tileX+" · Y "+location.tileY);
       this.quest.set(location.floor.name);
       this.questProgress.set(location.floorCount > 1
         ? "Andar " + location.floorIndex + " de " + location.floorCount + " · " + location.floorName

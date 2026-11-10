@@ -69,8 +69,10 @@ test("save: reidrata apenas progresso legítimo, clamps de contagem e meta bloqu
 });
 test("quest vivo: volta ao estábulo após salvar/recarregar; loot não é duplicado",()=>{
   let gel=18;const spend=(n:number)=>gel>=n?(gel-=n,true):false;
+  let coins=72;const spendCoins=(n:number)=>coins>=n?(coins-=n,true):false;
   let stable=new MountStable();
-  assert.equal(stable.upgrade(15,gel,spend,STABLE_MASTER.x,STABLE_MASTER.y),"built");
+  assert.equal(stable.upgrade(15,coins,spendCoins,STABLE_MASTER.x,STABLE_MASTER.y),"built");
+  assert.equal(coins,0,"o cercado é pago em moedas");
   assert.equal(stable.train(15,STABLE_MASTER.x,STABLE_MASTER.y),"trained");
   assert.equal(stable.beginWarhorse(15,STABLE_MASTER.x,STABLE_MASTER.y,3),"quest-started");
   stable=new MountStable(stable.snapshot());
@@ -78,7 +80,7 @@ test("quest vivo: volta ao estábulo após salvar/recarregar; loot não é dupli
   assert.equal(stable.tame(15,7,WILD_WARHORSE.x,WILD_WARHORSE.y),"slimes-needed");
   stable.synchronizeKills(8);
   assert.equal(stable.craftHalter(gel,spend,STABLE_MASTER.x,STABLE_MASTER.y),"halter-made");
-  assert.equal(gel,3);
+  assert.equal(gel,15,"o cabresto é pago em gel");
   assert.equal(stable.tame(15,8,WILD_WARHORSE.x,WILD_WARHORSE.y),"calmed");
   const saved=stable.snapshot();
   assert.equal(saved.quest?.step,4);

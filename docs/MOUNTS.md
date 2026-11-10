@@ -33,7 +33,7 @@ precisam de artefatos/interações, novos pontos de interesse e lógica de habil
 
 ## Fluxo jogável — O Garrano Fugitivo (nova narrativa)
 
-1. Com nível 15, vá até **Eron** e repare o cercado do estábulo (12 gel).
+1. Com nível 15, vá até **Eron** e repare o cercado do estábulo (72 Terrania Gold).
    Treine Cavalaria I e aceite a missão. Eron entrega automaticamente
    uma **Maçã Silvestre Doce**, registrada no estado da quest.
 2. Examine as **marcas de cascos** na saída oeste da Vila da Travessia.
@@ -58,7 +58,7 @@ enquanto seus locais, gatilhos e testes não estiverem implementados.
 
 Cavalaria I, II, III exige níveis 15, 35, 55; o teto de nível sobe para 70
 para permitir unicórnio (60) e grifo (65). Cada melhoria do cercado exige
-12, 25 ou 40 gel e treinamento correspondente. O estábulo será a casa para
+72, 150 ou 240 Terrania Gold e treinamento correspondente. O estábulo será a casa para
 trocar montarias depois que as outras quests forem jogáveis.
 
 **Ainda não implementado como ação real nesta etapa:** quests regionais 2–10,

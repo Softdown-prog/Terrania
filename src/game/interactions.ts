@@ -1,7 +1,7 @@
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { currentMountQuestStep, type MountQuestProgress } from "../engine/mounts/MountQuestState.ts";
 import { FORGE_SWORD_PRICE } from "../engine/character/Weapons.ts";
-import { POTION_GEL_PRICE } from "../engine/character/Inventory.ts";
+import { INN_REST_PRICE, POTION_GEL_PRICE } from "../engine/character/Inventory.ts";
 import type { Npc } from "../world/npcs.ts";
 import { MOUNT_INTERACT_DISTANCE, STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE } from "../world/mountLocations.ts";
 import type { NearbyAction, NpcOffer } from "../ui/GameUi.ts";
@@ -52,6 +52,9 @@ export function surfaceNearbyAction(near: SurfaceNearby): NearbyAction | null {
 export function npcOffer(npcId: string): NpcOffer | undefined {
   if (npcId === "lina") return { item: "potion", price: POTION_GEL_PRICE };
   if (npcId === "toren") return { item: "sword", price: FORGE_SWORD_PRICE };
+  if (npcId === "south-zinha") return { item: "bazaar", price: 0 };
+  if (npcId === "south-marn") return { item: "ossuary", price: 0 };
+  if (npcId === "south-madame") return { item: "rest", price: INN_REST_PRICE };
   if (npcId === "stablemaster") return { item: "stable", price: 0 };
   return undefined;
 }

@@ -6,7 +6,7 @@ test("Estábulo: construir, treinar e iniciar quest na UI Android/desktop", asyn
   await page.addInitScript(xp=>{
     localStorage.setItem("terrania-origins-v1",JSON.stringify({
       seed:842136,x:384,y:112,hp:100,kills:5,defeated:[],
-      experience:xp,inventory:{gel:20,potion:0,questRewardClaimed:false},
+      experience:xp,inventory:{gel:20,potion:0,questRewardClaimed:false,coins:100},
     }));
   },experienceForLevel(15));
   const errors:string[]=[];
@@ -23,7 +23,7 @@ test("Estábulo: construir, treinar e iniciar quest na UI Android/desktop", asyn
   await expect(page.locator("#stableProgress")).toContainText("Estábulo 0/3");
   await page.locator("#buildStable").click();
   await expect(page.locator("#stableProgress")).toContainText("Estábulo 1/3");
-  await expect(page.locator("#stableProgress")).toContainText("8 gel");
+  await expect(page.locator("#stableProgress")).toContainText("28 Terrania Gold"); // 100 - 72 do cercado
   await page.locator("#trainRiding").click();
   await expect(page.locator("#stableProgress")).toContainText("Cavalaria 1/3");
   await page.locator("#startWarhorseQuest").click();

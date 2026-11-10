@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mountQuestAction, npcOffer, questStepId, surfaceNearbyAction } from "../src/game/interactions.ts";
 import { MOUNT_INTERACT_DISTANCE, STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE } from "../src/world/mountLocations.ts";
 import { FORGE_SWORD_PRICE } from "../src/engine/character/Weapons.ts";
-import { POTION_GEL_PRICE } from "../src/engine/character/Inventory.ts";
+import { INN_REST_PRICE, POTION_GEL_PRICE } from "../src/engine/character/Inventory.ts";
 
 const far = { x: 5000, y: 5000 };
 
@@ -49,6 +49,9 @@ test("interação: ofertas de comércio de Lina, Toren e do Mestre de Estábulos
   assert.deepEqual(npcOffer("lina"), { item: "potion", price: POTION_GEL_PRICE });
   assert.deepEqual(npcOffer("toren"), { item: "sword", price: FORGE_SWORD_PRICE });
   assert.deepEqual(npcOffer("stablemaster"), { item: "stable", price: 0 });
+  assert.deepEqual(npcOffer("south-madame"), { item: "rest", price: INN_REST_PRICE });
+  assert.deepEqual(npcOffer("south-zinha"), { item: "bazaar", price: 0 }, "o Bazar compra os raros (ADR 0026)");
+  assert.equal(npcOffer("south-gorrak"), undefined, "os demais moradores não têm oferta");
   assert.equal(npcOffer("aela"), undefined);
   assert.equal(npcOffer("inexistente"), undefined);
 });

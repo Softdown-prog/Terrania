@@ -29,7 +29,10 @@ test("masmorras: cada andar só tem moradores do tema da caverna, e só o últim
       assert.equal(dungeon.shortVariant.at(-1), dungeon.floors.length - 1, "a versão curta termina no andar do chefe");
     }
   }
-  assert.equal(new Set(DUNGEONS.map(d => d.theme)).size, DUNGEONS.length, "um tema, uma masmorra");
+  const caves = DUNGEONS.filter(d => !d.tower);
+  assert.equal(new Set(caves.map(d => d.theme)).size, caves.length, "um tema de caverna, uma masmorra");
+  const towers = DUNGEONS.filter(d => d.tower);
+  assert.equal(new Set(towers.map(d => d.tower)).size, towers.length, "uma torre, uma masmorra");
 });
 
 test("masmorras: um arquivo por masmorra, na pasta da região", () => {

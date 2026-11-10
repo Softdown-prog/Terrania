@@ -37,7 +37,8 @@ export interface MountDefinition {
   readonly bait: string;
 }
 export const RIDING_LEVEL: Readonly<Record<RidingTier, number>> = {1: 15, 2: 35, 3: 55};
-export const STABLE_UPGRADE_GEL: Readonly<Record<RidingTier, number>> = {1: 12, 2: 25, 3: 40};
+/** Preço de construir (I) e ampliar (II e III) o estábulo, em Terrania Gold (ADR 0025). */
+export const STABLE_UPGRADE_PRICE: Readonly<Record<RidingTier, number>> = {1: 72, 2: 150, 3: 240};
 /** Um único catálogo, sem fichas duplicadas entre HUD, missões e motor. */
 export const MOUNTS: Readonly<Record<MountId, MountDefinition>> = {
   warhorse: warhorse,

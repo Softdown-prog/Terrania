@@ -25,6 +25,17 @@ export const TEMPEST_ARTWORK: SwordArtwork = {
     ctx.beginPath();ctx.moveTo(20,w+1);ctx.lineTo(26,w+4);
     ctx.lineTo(31,w+.2);ctx.lineTo(36,w+3);ctx.stroke();
   },
+  animate(ctx,s,tone,time) {
+    const travel=.5+.5*Math.sin(time*5.2);
+    const x=22+(s.length-32)*travel;
+    ctx.save();
+    ctx.globalAlpha=.34+.36*travel;
+    ctx.strokeStyle=tone(s.glint);ctx.lineWidth=.85;
+    ctx.beginPath();ctx.moveTo(x-2,-1.1);ctx.lineTo(x+.2,-3);
+    ctx.lineTo(x+1.2,.7);ctx.lineTo(x+3,-1.6);ctx.stroke();
+    point(ctx,x+1.2,.7,.52,tone(s.accent));
+    ctx.restore();
+  },
   slashAccent(ctx,args) {
     const { x, y, angle, alpha, second, glow } = args;
     const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;

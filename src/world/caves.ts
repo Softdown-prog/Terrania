@@ -3,6 +3,7 @@ import { isWalkable, TILE_SIZE } from "./terrain.ts";
 import { getWorldRegion } from "./regions.ts";
 import { canMoveOnSeed } from "./collision.ts";
 import { southCitySafe } from "./southCity.ts";
+import type { TowerId } from "./towers/types.ts";
 
 /** A cave has its own finite local space; surface tiles never double as dungeon coordinates. */
 export const CAVE_CELL_TILES = 96;
@@ -18,6 +19,8 @@ export interface CaveEntrance {
   readonly kind: CaveEntranceKind;
   readonly name: string;
   readonly seed: number;
+  /** Só nas portas de torre (ADR 0020): qual torre é. A caverna comum não tem. */
+  readonly tower?: TowerId;
 }
 const THEMES: Record<CaveTheme, string> = {
   verdant: "Gruta das Raízes", glacial: "Gruta das Geadas",

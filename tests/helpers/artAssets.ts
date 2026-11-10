@@ -61,6 +61,12 @@ import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
 import { paintSouthRuin } from "../../src/render/southRuinsArt.ts";
 import { TOWER_PAINTERS } from "../../src/render/south/towers/index.ts";
 import { TOWERS } from "../../src/world/towers/index.ts";
+import { renderCoinDrop } from "../../src/render/coinDrop.ts";
+import { COIN_TIERS } from "../../src/engine/character/coins/index.ts";
+import { TOWER_INTERIOR_STYLES } from "../../src/render/south/towers/interior/index.ts";
+import { drawTowerSconce } from "../../src/render/south/towers/interior/sconce.ts";
+import { drawTowerWallFace } from "../../src/render/south/towers/interior/wallFace.ts";
+import { drawTowerWindow } from "../../src/render/south/towers/interior/window.ts";
 import { RUIN_NAMES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
@@ -218,6 +224,21 @@ export const ASSETS: ArtAsset[] = [
   ...TOWERS.map<ArtAsset>(tower => ({ id: "torre " + tower.name, tier: "structure",
     fn: ({ "vigia-caida": "paintTorreDoVigiaCaida", miragem: "paintTorreDaMiragem", "sol-negro": "paintTorreDoSolNegro" } as const)[tower.id],
     draw: c => TOWER_PAINTERS[tower.id](c) })),
+  // Interior das torres (ADR 0021): três peças físicas por torre, cada torre com o seu estilo em render/south/towers/interior/.
+  ...TOWERS.flatMap<ArtAsset>(tower => {
+    const style = TOWER_INTERIOR_STYLES[tower.id];
+    return [
+      ...(["south", "east"] as const).map<ArtAsset>(side => ({ id: `face de tijolo ${tower.name} ${side}`,
+        tier: "prop", fn: "drawTowerWallFace", draw: c => drawTowerWallFace(c, style, 0, 0, side, .61) })),
+      { id: `fresta de janela ${tower.name}`, tier: "prop", fn: "drawTowerWindow",
+        draw: c => drawTowerWindow(c, style, 0, 0, .61) },
+      { id: `lampião de parede ${tower.name}`, tier: "prop", fn: "drawTowerSconce",
+        draw: c => drawTowerSconce(c, style, 0, 0, .61) },
+    ];
+  }),
+  // Moedas no chão (ADR 0024): uma peça por moeda, com a marca de cada uma.
+  ...COIN_TIERS.map<ArtAsset>(coin => ({ id: "moedas no chão " + coin.name, tier: "prop", fn: "renderCoinDrop",
+    draw: c => renderCoinDrop(c, coin.id, 0, 0, .6) })),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
   ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
     .flatMap<ArtAsset>(theme => [
@@ -254,7 +275,7 @@ export const NOT_AN_ASSET: Record<string, string> = {
   limb: "primitiva compartilhada de draw.ts, usada por todas as peças",
   point: "primitiva de círculo do pintor compartilhado, não é uma espada ou peça isolada",
   star: "primitiva de estrela do pintor compartilhado, não é uma peça isolada",
-  paintSword: "compositor genérico de uma espada; a peça final drawKnightSword já é auditada para todas as dez armas",
+  paintSword: "compositor genérico de uma espada; a peça final drawKnightSword já é auditada para todas as onze armas",
   paintSwordTrail: "pintor compartilhado do rastro do golpe; efeito transitório auditado em testes de regressão",
   drawKnightTrail: "rastro temporário composto com a espada e o golpe do herói; cada lâmina está registrada em ASSETS",
   drawWorldView: "compõe a cena inteira a partir das peças registradas",

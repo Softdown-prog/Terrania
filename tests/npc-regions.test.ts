@@ -75,7 +75,7 @@ test("NPCs: falas originais independentes de reexportações e aliases",()=>{
     ]],
     ["toren",2,true,[
       "Sou Toren, ferreiro da Vila da Travessia.",
-      "Trouxe gel de Slime? Posso trocar por uma espada forjada aqui na vila.",
+      "Trouxe moedas? Vendo uma espada forjada aqui na vila por 30 Terrania Gold.",
     ]],
     ["lina",0,false,[
       "Sou Lina, anfitriã da Travessia.",

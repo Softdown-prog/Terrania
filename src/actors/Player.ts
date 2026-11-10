@@ -49,6 +49,12 @@ export class Player {
     this.infectionElapsed = other.infectionElapsed;
     this.weakVenomElapsed = other.weakVenomElapsed;
   }
+  /** Tira todos os status (veneno, queimadura, gelo...) de uma vez, como o descanso numa hospedaria. */
+  cleanse(): void {
+    for (const kind of Object.keys(this.effects) as DebuffKind[]) this.effects[kind] = 0;
+    this.poisonElapsed = 0; this.poisonStacks = 0; this.burnElapsed = 0;
+    this.infectionElapsed = 0; this.weakVenomElapsed = 0;
+  }
   applyStatus(kind: DebuffKind, seconds: number): void {
     if (!Number.isFinite(seconds) || seconds <= 0 || this.hp <= 0) return;
     this.effects[kind] = Math.max(this.effects[kind], Math.min(12, seconds));

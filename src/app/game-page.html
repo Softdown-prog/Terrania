@@ -33,7 +33,7 @@
           </div>
         </div>
         <div class="quest">
-          <span class="stat-heading">{{ hud.cave() ? "EXPLORAÇÃO · SUBSOLO" : "MISSÃO DA CLAREIRA" }}</span
+          <span class="stat-heading">{{ hud.cave() ? (hud.cave()!.floor.entrance.tower ? "EXPLORAÇÃO · TORRE" : "EXPLORAÇÃO · SUBSOLO") : "MISSÃO DA CLAREIRA" }}</span
           ><b id="quest">{{ hud.quest() }}</b>
           <div class="quest-bottom">
             <div class="quest-meter"><div id="questFill" [style.width.%]="hud.questPercent()"></div></div>
@@ -215,8 +215,8 @@
                   @let current = hud.weapons[loadout.equipped];
                   <strong id="equippedWeapon">{{ current.name }}</strong>
                   <p>{{ current.damage }} de dano · {{ current.interval }} s entre golpes · {{ current.windup * 1000 }} ms de preparo</p>
-                  <p class="weapon-roster-caption">Arsenal do cavaleiro · 10 espadas · progressão completa</p>
-                  <div class="weapon-picker" role="group" aria-label="Arsenal com dez espadas">
+                  <p class="weapon-roster-caption">Arsenal do cavaleiro · 11 espadas · progressão completa</p>
+                  <div class="weapon-picker" role="group" aria-label="Arsenal com onze espadas">
                     @for (id of hud.swordIds; track id) {
                       @let sword = hud.weapons[id];
                       @let unlocked = hud.availableWeapons().includes(id);
@@ -282,7 +282,9 @@
                   (click)="hud.selectBagItem(item.id)">
                   <span class="backpack-icon" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" /></span>
                   <span class="backpack-name">{{ item.name }}</span>
-                  @if (item.kind === 'material' || item.kind === 'potion' || item.kind === 'food') {
+                  @if (item.kind === 'coin') {
+                    <b class="backpack-quantity" [attr.id]="'coinCount-' + item.id">{{ item.quantity }}</b>
+                  } @else if (item.kind === 'material' || item.kind === 'potion' || item.kind === 'food') {
                     <b class="backpack-quantity"
                       [attr.id]="item.kind === 'material' ? 'gelCount' : item.kind === 'potion' ? 'potionCount' : 'foodCount-' + item.foodId">{{ item.quantity }} / 99</b>
                   } @else { <b class="backpack-quantity">1</b> }
@@ -305,7 +307,7 @@
                 @if (item.kind === 'weapon') {
                   <p id="bagItemComparison">Dano do item: {{ item.damage }} · Dano da arma equipada: {{ item.comparedDamage }}</p>
                 }
-                @if (item.kind !== 'material') {
+                @if (item.kind !== 'material' && item.kind !== 'coin') {
                   <button class="primary-button" type="button"
                     [attr.id]="item.kind === 'food' ? 'eat-' + item.foodId : item.kind === 'potion' ? 'usePotion' : 'equip-' + item.id"
                     [disabled]="!hud.canUseSelectedBagItem()" (click)="hud.useSelectedBagItem()">
@@ -514,30 +516,48 @@
           @if (offer.item === 'potion') {
             <p class="dialog-note">Gel {{ hud.gel() }} · Poções {{ hud.potions() }}</p>
             <button (click)="hud.tradePotion()" class="secondary-button" type="button">Trocar {{ offer.price }} de gel por 1 poção</button>
-            <p class="dialog-note">Alimentos para recuperação gradual:</p>
+            <p class="dialog-note">Alimentos para recuperação gradual (você tem {{ hud.coinText(hud.coins()) }}):</p>
             @for (id of hud.foodIds; track id) {
               @let item = hud.foodCatalog[id];
               <button [attr.id]="'buy-' + id" type="button" class="secondary-button"
-                [disabled]="hud.gel() < item.gelPrice || hud.food()[id] >= 99"
-                (click)="hud.tradeFood(id)">Comprar {{ item.name }} · {{ item.gelPrice }} gel</button>
+                [disabled]="hud.coins() < item.price || hud.food()[id] >= 99"
+                (click)="hud.tradeFood(id)">Comprar {{ item.name }} · {{ hud.coinText(item.price) }}</button>
             }
+          } @else if (offer.item === 'bazaar' || offer.item === 'ossuary') {
+            <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }}.
+              {{ offer.item === 'bazaar' ? 'O Bazar das Raridades compra os dez loots raros do Sul.' : 'O Ossuário compra o saque comum das criaturas.' }}</p>
+            @for (entry of hud.sellableMaterials(offer.item); track entry.name) {
+              <div class="market-row">
+                <span>{{ entry.name }} × {{ entry.quantity }} · {{ hud.coinText(entry.price) }} cada</span>
+                <button type="button" class="secondary-button" [attr.data-sell-one]="entry.name"
+                  (click)="hud.sellMaterial(offer.item, entry.name, 1)">Vender 1</button>
+                @if (entry.quantity > 1) {
+                  <button type="button" class="secondary-button" [attr.data-sell-all]="entry.name"
+                    (click)="hud.sellMaterial(offer.item, entry.name, entry.quantity)">Vender todos</button>
+                }
+              </div>
+            } @empty { <p class="dialog-note">Você não tem nada que esta banca compre.</p> }
+          } @else if (offer.item === 'rest') {
+            <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }} · Vida {{ hud.hp() }} / {{ hud.maxHp() }}</p>
+            <button id="innRest" (click)="hud.restAtInn()" class="secondary-button" type="button"
+              [disabled]="hud.coins() < offer.price">Descansar na hospedaria · {{ hud.coinText(offer.price) }}</button>
           } @else if (offer.item === 'sword') {
-            <p class="dialog-note">Gel {{ hud.gel() }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes · {{ hud.weapons.forge.windup * 1000 }} ms até o impacto</p>
-            <button [disabled]="hud.loadout()?.forged" (click)="hud.buySword()" class="secondary-button" type="button">{{ hud.loadout()?.forged ? "Espada já adquirida" : "Comprar " + hud.weapons.forge.name + " por " + offer.price + " de gel" }}</button>
+            <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes · {{ hud.weapons.forge.windup * 1000 }} ms até o impacto</p>
+            <button [disabled]="hud.loadout()?.forged" (click)="hud.buySword()" class="secondary-button" type="button">{{ hud.loadout()?.forged ? "Espada já adquirida" : "Comprar " + hud.weapons.forge.name + " por " + hud.coinText(offer.price) }}</button>
           } @else {
             <section class="mount-stable-panel" aria-label="Estábulo e montarias">
-              <p id="stableProgress">Estábulo {{ hud.mountView().stableTier }}/3 · Cavalaria {{ hud.mountView().ridingTier }}/3 · {{ hud.gel() }} gel · Nível {{ hud.progression()?.level ?? 1 }}</p>
+              <p id="stableProgress">Estábulo {{ hud.mountView().stableTier }}/3 · Cavalaria {{ hud.mountView().ridingTier }}/3 · {{ hud.coinText(hud.coins()) }} · Nível {{ hud.progression()?.level ?? 1 }}</p>
               <p id="mountQuestHint">{{ hud.mountView().questHint }}</p>
               @if (hud.mountView().quest) {
                 <p id="mountQuestGift" class="dialog-note">Item de missão: {{ hud.mountView().quest?.gift }}</p>
               }
               @if (hud.mountView().stableTier === 0) {
                 <button id="buildStable" type="button" class="secondary-button"
-                  (click)="hud.mountAction('build')">Construir cercado · 12 gel · nível 15</button>
+                  (click)="hud.mountAction('build')">Construir cercado · {{ hud.coinText(hud.stableUpgradeCost[1]) }} · nível 15</button>
               } @else {
                 @if (hud.mountView().stableTier < 3) {
                   <button id="upgradeStable" class="secondary-button" type="button"
-                    (click)="hud.mountAction('upgrade')">Ampliar estábulo (II: 25 gel / III: 40 gel)</button>
+                    (click)="hud.mountAction('upgrade')">Ampliar estábulo (II: {{ hud.coinText(hud.stableUpgradeCost[2]) }} / III: {{ hud.coinText(hud.stableUpgradeCost[3]) }})</button>
                 }
                 @if (hud.mountView().ridingTier < hud.mountView().stableTier) {
                   <button id="trainRiding" class="secondary-button" type="button"

@@ -252,3 +252,8 @@ noscript {
 noscript a {
   color: var(--gold);
 }
+
+/* Bazar das Raridades e Ossuário (ADR 0026): uma linha por material, com os botões de venda ao lado. */
+.market-row { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin: .3rem 0; }
+.market-row > span { flex: 1 1 14rem; font-size: .88rem; }
+.market-row > button { flex: 0 0 auto; }

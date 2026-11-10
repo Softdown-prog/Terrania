@@ -3,14 +3,16 @@ import type { EquipmentSlot, GearSlot } from '../engine/character/Equipment.ts';
 import type { FoodId } from '../engine/character/Food.ts';
 import type { WeaponId } from '../engine/character/Weapons.ts';
 import type { SouthRareLootId } from '../monsters/rareLoot.ts';
+import type { CoinId } from '../engine/character/coins/index.ts';
 
 /** Ícones desenhados para o Terrania. Somente apresentação: não carregam regra de jogo. */
 export type ItemIconId =
   | 'gel' | 'material' | 'potion' | 'apple' | 'bread' | 'meat'
-  | 'sword-starter' | 'sword-forge' | 'sword-bronze' | 'sword-copper'
+  | 'sword-starter' | 'sword-forge' | 'sword-common' | 'sword-bronze' | 'sword-copper'
   | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
   | 'sword-tempest' | 'sword-astral'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
+  | CoinId
   | SouthRareLootId;
 
 const SLOT_ICONS: Record<GearSlot, ItemIconId> = {
@@ -42,6 +44,25 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
           <path d="M16 3.5C13 10 6.5 13.5 6.5 20C6.5 25.5 10.5 28.5 16 28.5C21.5 28.5 25.5 25.5 25.5 20C25.5 13.5 19 10 16 3.5Z" fill="#4fd68a"/>
           <path d="M9 23.5Q16 29.5 23 23.5Q23 27.5 16 28Q10 27.5 9 23.5Z" fill="#2a9b63" stroke="none"/>
           <ellipse cx="11.6" cy="19" rx="2" ry="3.4" fill="#c4f9da" stroke="none" transform="rotate(12 11.6 19)"/>
+        }
+        @case ('terrania-gold') {
+          <circle cx="16" cy="16" r="12.5" fill="#e0a24a"/>
+          <circle cx="16" cy="16" r="9.2" fill="#f6cd72" stroke="#a8691d" stroke-width="1"/>
+          <path d="M11.2 11.8H20.8M16 11.8V21.4" fill="none" stroke="#8a5a1e" stroke-width="2.4"/>
+          <path d="M6.6 13Q7.6 8.6 12 6.6" fill="none" stroke="#fff3c4" stroke-width="1.6"/>
+        }
+        @case ('cripta-coin') {
+          <circle cx="16" cy="16" r="12.5" fill="#6f5bd0"/>
+          <circle cx="16" cy="16" r="9.2" fill="#9b8aea" stroke="#3d2f8a" stroke-width="1"/>
+          <path d="M11.4 21.6V15.2Q11.4 10.4 16 10.4Q20.6 10.4 20.6 15.2V21.6Z" fill="#2b2166" stroke="#1d1648" stroke-width="1"/>
+          <path d="M16 15.4V19.2" fill="none" stroke="#c9bdf7" stroke-width="1.6"/>
+          <path d="M6.6 13Q7.6 8.6 12 6.6" fill="none" stroke="#efeaff" stroke-width="1.6"/>
+        }
+        @case ('eclipse-crown') {
+          <circle cx="16" cy="16" r="12.5" fill="#2a2038"/>
+          <circle cx="16" cy="16" r="9.2" fill="#120c1c" stroke="#ffc861" stroke-width="1.8"/>
+          <path d="M10.4 19.6L11.4 13.2L14 16.4L16 12L18 16.4L20.6 13.2L21.6 19.6Z" fill="#ffc861" stroke="#a8691d" stroke-width="1"/>
+          <path d="M6.6 13Q7.6 8.6 12 6.6" fill="none" stroke="#ffe9b0" stroke-width="1.6"/>
         }
         @case ('material') {
           <path d="M16 3L25 8L28 19L20 28L10 27L4 18L7 8Z" fill="#807da0"/>
@@ -97,6 +118,20 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
             <rect x="14.6" y="20.9" width="2.8" height="6" fill="#5b3b28"/>
             <path d="M14.5 22L17.4 24M14.5 24.5L17.4 26.4" fill="none" stroke="#ae8054" stroke-width=".9"/>
             <circle cx="16" cy="28.5" r="2.2" fill="#899598"/>
+          </g>
+        }
+        @case ('sword-common') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 1.5L18.6 5V18.5H13.4V5Z" fill="#aab9bc"/>
+            <path d="M13.7 5.2L16 2.5L16 18.2H13.7Z" fill="#d8ddd7" stroke="none"/>
+            <path d="M16 5V17.2" stroke="#56696d" stroke-width="1" fill="none"/>
+            <path d="M17.6 6V17.5" stroke="#edf0e7" stroke-width=".7" fill="none"/>
+            <rect x="9.5" y="18.2" width="13" height="2.4" rx=".7" fill="#818c87"/>
+            <path d="M10.5 18.7H21.5" stroke="#d8ddd7" stroke-width=".6"/>
+            <rect x="14.5" y="20.6" width="3" height="6.6" rx=".4" fill="#74543e"/>
+            <path d="M14.7 22L17.2 23.7M14.7 24.7L17.2 26.2" stroke="#a18462" stroke-width=".7"/>
+            <circle cx="16" cy="28.1" r="2" fill="#818c87"/>
+            <circle cx="15.5" cy="27.8" r=".55" fill="#edf0e7" stroke="none"/>
           </g>
         }
         @case ('sword-bronze') {
