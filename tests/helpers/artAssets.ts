@@ -270,7 +270,7 @@ export const NOT_AN_ASSET: Record<string, string> = {
   limb: "primitiva compartilhada de draw.ts, usada por todas as peças",
   point: "primitiva de círculo do pintor compartilhado, não é uma espada ou peça isolada",
   star: "primitiva de estrela do pintor compartilhado, não é uma peça isolada",
-  paintSword: "compositor genérico de uma espada; a peça final drawKnightSword já é auditada para todas as dez armas",
+  paintSword: "compositor genérico de uma espada; a peça final drawKnightSword já é auditada para todas as onze armas",
   paintSwordTrail: "pintor compartilhado do rastro do golpe; efeito transitório auditado em testes de regressão",
   drawKnightTrail: "rastro temporário composto com a espada e o golpe do herói; cada lâmina está registrada em ASSETS",
   drawWorldView: "compõe a cena inteira a partir das peças registradas",

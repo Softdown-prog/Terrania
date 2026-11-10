@@ -30,7 +30,7 @@ test("espada: mão do cavaleiro e cabo permanecem juntos na cintura, em todas as
   }
 });
 
-test("arte: dez espadas renderizam dentro da escala do cavaleiro com equipamento",()=>{
+test("arte: onze espadas renderizam dentro da escala do cavaleiro com equipamento",()=>{
   assert.ok(KNIGHT_SWORD_SCALE<=.65);
   for(const equippedWeapon of WEAPON_IDS)for(const direction of directions)
     for(const attackTime of [0,ATTACK_DURATION]){
@@ -83,7 +83,7 @@ test("acabamento animado usa o tempo do jogo, é determinístico e não altera l
     assert.equal(later.metrics().saves,later.metrics().restores,weapon+" não restaura o Canvas");
     assert.ok(later.metrics().width<100 && later.metrics().height<80,weapon+" extrapolou a silhueta");
   }
-  for(const weapon of ["starter","forge","bronze","copper"] as const){
+  for(const weapon of ["starter","forge","common","bronze","copper"] as const){
     const first=new Recorder(),later=new Recorder();
     drawKnightSword(first.ctx,weapon,0,c=>c,.25);
     drawKnightSword(later.ctx,weapon,0,c=>c,1.1);
@@ -119,7 +119,7 @@ test("rastros materiais: seis geometrias distintas e determinísticas, sem desvi
 });
 
 test("rastros físicos individuais seguem o giro, dissipam e não geram magia em repouso",()=>{
-  const physical=["starter","forge","bronze","copper"] as const;
+  const physical=["starter","forge","common","bronze","copper"] as const;
   const angles=[-1.1,-.8,-.5,-.2,0] as const;
   const signatures=new Set<string>();
   for(const weapon of physical){

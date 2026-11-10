@@ -6,15 +6,15 @@ import { WEAPON_IDS, WEAPONS, weaponUnlocked, type WeaponDefinition } from "../s
 const directory="src/engine/character/weapons/swords";
 const swordFiles=WEAPON_IDS.map(id=>id+".ts");
 const stages=[
-  ["starter",0,8,.8,null],["forge",10,16,1,null],
+  ["starter",0,8,.8,null],["forge",10,16,1,null],["common",15,21,.98,null],
   ["bronze",20,26,.95,null],["copper",30,38,1.35,"push"],
   ["dunes",45,52,1.15,"bleed"],["boreal",60,68,1.1,"ice"],
   ["obsidian",70,84,1.25,"fire"],["marsh",80,98,1.3,"poison"],
   ["tempest",90,115,1.15,"lightning"],["astral",100,140,1.4,"astral"],
 ] as const;
 
-test("dez fichas individuais em weapons/swords; nenhuma espada continua inline em Weapons.ts",()=>{
-  assert.equal(WEAPON_IDS.length,10);
+test("onze fichas individuais em weapons/swords; nenhuma espada continua inline em Weapons.ts",()=>{
+  assert.equal(WEAPON_IDS.length,11);
   assert.deepEqual(readdirSync(directory).filter(n=>n.endsWith(".ts")).sort(),[...swordFiles].sort());
   const barrel=readFileSync("src/engine/character/Weapons.ts","utf8");
   for(const id of WEAPON_IDS) {
@@ -43,16 +43,19 @@ test("fichas preservam progressão, atributos e compatibilidade de compra/forja"
   }
   assert.equal(WEAPONS.starter.name,"Espada de Treino de Carvalho");
   assert.equal(WEAPONS.forge.name,"Espada Curta de Ferro Batido");
+  assert.equal(WEAPONS.common.name,"Espada Comum de Ferro");
   assert.equal(weaponUnlocked("forge",10,false),false);
+  assert.equal(weaponUnlocked("common",14,false),false);
+  assert.equal(weaponUnlocked("common",15,false),true);
   assert.equal(weaponUnlocked("astral",99,true),false);
 });
 
-test("os perfis visuais pertencem às dez fichas, não ao renderizador",()=>{
+test("os perfis visuais pertencem às onze fichas, não ao renderizador",()=>{
   const renderer=readFileSync("src/render/swords.ts","utf8");
   assert.equal(renderer.includes("const SHAPES"),false);
   assert.ok(renderer.includes("WEAPONS[weapon].visual"));
-  const lengths=[31,35,35,39,40,40,42,41,43,44];
-  const widths=[3.1,3.7,4,5.6,5.1,5.5,6.3,5.7,4.4,5.3];
+  const lengths=[31,35,36,35,39,40,40,42,41,43,44];
+  const widths=[3.1,3.7,3.8,4,5.6,5.1,5.5,6.3,5.7,4.4,5.3];
   const signatures=new Set<string>();
   for(const [i,id] of WEAPON_IDS.entries()){
     const visual=WEAPONS[id].visual;
@@ -63,7 +66,7 @@ test("os perfis visuais pertencem às dez fichas, não ao renderizador",()=>{
     assert.ok(readFileSync(directory+"/"+id+".ts","utf8").includes("visual: {"),id);
     signatures.add([visual.length,visual.width,visual.blade,visual.guard,visual.curved,visual.serrated,visual.rune].join(":"));
   }
-  assert.equal(signatures.size,10);
+  assert.equal(signatures.size,11);
   assert.equal(WEAPONS.starter.visual.trailLineWidth,1);
   assert.equal(WEAPONS.dunes.visual.guardReach,5);
   assert.equal(WEAPONS.tempest.visual.trailAccent,"bolts");
@@ -84,14 +87,14 @@ test("rastros elementais pertencem às fichas, não são inferidos pelo ID",()=>
     assert.equal(WEAPONS[id].visual.trailAccent,accent,id);
     assert.ok(readFileSync("src/render/swords/"+id+".ts","utf8").includes("slashAccent("),accent+" não desenhado");
   }
-  for(const id of ["starter","forge","bronze","copper"] as const)
+  for(const id of ["starter","forge","common","bronze","copper"] as const)
     assert.equal(WEAPONS[id].visual.trailAccent,undefined,id);
   assert.equal(renderer.includes('trailAccent==="particles"'),false);
 });
 
 test("espessura da fita visual por espada acompanha seu peso sem alterar dano",()=>{
   const thickness={
-    starter:2.4,forge:3,bronze:3.3,copper:4.7,dunes:4.1,
+    starter:2.4,forge:3,common:3.05,bronze:3.3,copper:4.7,dunes:4.1,
     boreal:4.4,obsidian:5.2,marsh:4.5,tempest:3.7,astral:5,
   } as const;
   const variants=new Set<number>();
@@ -101,7 +104,7 @@ test("espessura da fita visual por espada acompanha seu peso sem alterar dano",(
     assert.ok(actual>0 && actual<=WEAPONS[id].visual.width,id);
     variants.add(actual);
   }
-  assert.equal(variants.size,10,"espessuras não podem ser todas idênticas");
+  assert.equal(variants.size,11,"espessuras não podem ser todas idênticas");
 });
 
 test("pintura procedural da espada pertence a cada arquivo; não existe seletor monolítico",()=>{

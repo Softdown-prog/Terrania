@@ -13,6 +13,7 @@ import { Recorder } from "./helpers/recordingContext.ts";
 const stages=[
   ["starter",0,8,.8,null],
   ["forge",10,16,1,null],
+  ["common",15,21,.98,null],
   ["bronze",20,26,.95,null],
   ["copper",30,38,1.35,"push"],
   ["dunes",45,52,1.15,"bleed"],
@@ -25,9 +26,9 @@ const stages=[
 const OPEN={canMove:()=>true,speedAt:()=>1};
 const hero=()=>{const h=new Player();h.x=0;h.y=0;h.faceX=1;return h;};
 
-test("progressão da ficha: dez armas únicas, nível, dano e recarga exatos",()=>{
-  assert.equal(WEAPON_IDS.length,10);
-  assert.equal(new Set(WEAPON_IDS).size,10);
+test("progressão da ficha: onze armas únicas, nível, dano e recarga exatos",()=>{
+  assert.equal(WEAPON_IDS.length,11);
+  assert.equal(new Set(WEAPON_IDS).size,11);
   for(const [id,level,damage,interval,special] of stages){
     const w=WEAPONS[id];
     assert.equal(w.level,level,id);
@@ -62,6 +63,28 @@ test("equipamento por nível: protege contra saves forjados e conserva a compra 
   assert.equal(unowned.equipWeapon("bronze",19),"level-too-low");
   assert.equal(unowned.equipWeapon("bronze",20),"equipped");
 });
+test("Espada Comum de Ferro equipa no nível 15, salva e restaura sem exigir forja",()=>{
+  assert.equal(isWeaponId("common"),true);
+  assert.equal(weaponUnlocked("common",14,false),false);
+  assert.equal(weaponUnlocked("common",15,false),true);
+  const bag=new Inventory(undefined,14);
+  assert.equal(bag.equipWeapon("common",14),"level-too-low");
+  assert.equal(bag.equipWeapon("common",15),"equipped");
+  assert.equal(bag.weapon.name,"Espada Comum de Ferro");
+  assert.equal(bag.weapon.damage,21);
+  const saved=bag.snapshot();
+  assert.equal(saved.loadout?.equipped,"common");
+  assert.equal(new Inventory(saved,15).loadout.equipped,"common");
+  assert.equal(new Inventory(saved,14).loadout.equipped,"starter");
+  assert.equal(new Inventory(saved,15).loadout.forged,false);
+  const a=new Recorder(),b=new Recorder();
+  drawKnightSword(a.ctx,"common",.5);
+  drawKnightSword(b.ctx,"common",.5);
+  assert.equal(a.metrics().signature,b.metrics().signature);
+  assert.equal(a.metrics().saves,a.metrics().restores);
+  assert.ok(a.metrics().gradients>=2);
+});
+
 test("tempo de recarga passa a ser da arma e não do cooldown global antigo",()=>{
   const h=hero();
   assert.equal(h.startAttack("starter"),true);
@@ -109,7 +132,7 @@ test("faísca elétrica não atravessa colisões e atinge no máximo dois vizinh
   const blocked=applySwordImpact("tempest",p,target,[target,a,b,c],wall);
   assert.equal(blocked.extra.length,0);
 });
-test("arte e rastro: todos os dez modelos são determinísticos e sem imagens",()=>{
+test("arte e rastro: todos os onze modelos são determinísticos e sem imagens",()=>{
   const signatures=new Set<string>();
   for(const id of WEAPON_IDS){
     const a=new Recorder(),b=new Recorder();
@@ -124,7 +147,7 @@ test("arte e rastro: todos os dez modelos são determinísticos e sem imagens",(
     drawKnightTrail(t.ctx,id,0,[-1.2,-1,-.8,-.4,0,.2],.9);
     assert.ok(t.metrics().paintOps>2,id);
   }
-  assert.equal(signatures.size,10);
+  assert.equal(signatures.size,11);
 });
 
 test("battle list can begin Astral auto-attacks at extended range without bypassing walls",()=>{
