@@ -103,3 +103,14 @@ test("NPCs do Sul são únicos, falam sem inventar transações e três interior
     }
   }
 });
+
+
+test("QA regional percorre Poço Negro e valida todas as conversas e três interiores", async () => {
+  const { runQaBot } = await import("../src/qa/QaBot.ts");
+  const report = runQaBot({ seed: 842136, region: "south", maxTicks: 36000 });
+  const issues = report.checks.filter(check => check.status !== "passed");
+  assert.deepEqual(issues, [], "a cidade deve ser navegável sem teletransporte");
+  assert.equal(report.status, "passed");
+  assert.equal(report.totals.npcInteractions, 19);
+  assert.equal(report.totals.interiorsVisited, 3);
+});
