@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (82)
+## Todos os arquivos deste módulo (83)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -94,6 +94,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/south-rare-loot.test.ts`](../../tests/south-rare-loot.test.ts)
 - [`tests/south-sites.test.ts`](../../tests/south-sites.test.ts)
 - [`tests/species-behavior.test.ts`](../../tests/species-behavior.test.ts)
+- [`tests/sword-definitions.test.ts`](../../tests/sword-definitions.test.ts)
 - [`tests/sword-strike.test.ts`](../../tests/sword-strike.test.ts)
 - [`tests/tap-navigation.test.ts`](../../tests/tap-navigation.test.ts)
 - [`tests/travel-state.test.ts`](../../tests/travel-state.test.ts)
