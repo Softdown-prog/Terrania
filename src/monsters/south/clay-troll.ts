@@ -1,5 +1,5 @@
 import type { CreatureDefinition } from "../types.ts";
-import { southRareDrop } from "./rareLoot.ts";
+import { southRareDrop } from "../rareLoot.ts";
 
 /** clay-troll: ficha da região Sul. */
 export const clayTroll = {

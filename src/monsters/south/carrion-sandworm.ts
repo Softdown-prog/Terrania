@@ -1,5 +1,5 @@
 import type { CreatureDefinition } from "../types.ts";
-import { southRareDrop } from "./rareLoot.ts";
+import { southRareDrop } from "../rareLoot.ts";
 
 /** carrion-sandworm: ficha da região Sul. */
 export const carrionSandworm = {
