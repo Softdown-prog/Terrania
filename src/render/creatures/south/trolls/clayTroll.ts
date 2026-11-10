@@ -32,5 +32,5 @@ import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
 const CREATURE_PALETTE: Palette = {"base":"#ac8864","light":"#d7b88e","dark":"#6e5643","accent":"#c79972","eye":"#eac778","extra":"#857c64"};
 export function renderClayTrollCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
   sx:number,sy:number,time=0):void {
-  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,troll);
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,troll,24);
 }

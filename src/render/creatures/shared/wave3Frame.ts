@@ -7,10 +7,10 @@ import { GLOW, OUTLINE } from "./southGeometry.ts";
 /** Animação e indicador visual compartilhados, sem selecionar anatomias. */
 export function renderWave3Frame(ctx:CanvasRenderingContext2D,
  actor:RegionalCreatureVisual,sx:number,sy:number,time:number,c:Palette,
- draw:(ctx:CanvasRenderingContext2D,c:Palette,time:number)=>void):void {
+ draw:(ctx:CanvasRenderingContext2D,c:Palette,time:number)=>void,shadowRadius=16):void {
   const seed=hashString(actor.id??actor.kind);
   ctx.save();ctx.translate(sx,sy);
-  softShadow(ctx,0,3,actor.kind==="clay-troll"||actor.kind==="desert-orc"?24:16,5,.3);
+  softShadow(ctx,0,3,shadowRadius,5,.3);
   const pose=monsterPose(actor,time);ctx.translate(pose.sway,pose.lift);ctx.rotate(pose.tilt);ctx.scale(pose.stretchX,pose.stretchY);
   draw(ctx,c,time);
   // Stable micro-highlights supply material structure even on the smallest actors.
