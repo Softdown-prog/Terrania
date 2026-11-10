@@ -61,7 +61,7 @@ test("Sul: raros são materiais legítimos e persistem após salvar a bolsa", ()
 
 test("Sul: catálogo PostgreSQL publica dez raros reais sem inventar negociação", () => {
   const catalog=gameCatalog();
-  assert.equal(catalog.length,34);
+  assert.equal(catalog.length,35, "catálogo com a espada nova do PR #143");
   for(const [monster,rare] of Object.entries(SOUTH_RARE_LOOT)) {
     const item=catalog.find(row=>row.id===rare.id);
     assert.ok(item,rare.id);

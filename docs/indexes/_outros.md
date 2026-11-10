@@ -82,7 +82,6 @@
 - [`public/art/crest.svg`](../../public/art/crest.svg)
 - [`public/art/terrania-world.svg`](../../public/art/terrania-world.svg)
 - [`public/robots.txt`](../../public/robots.txt)
-- [`pw.tmp.config.ts`](../../pw.tmp.config.ts)
 - [`server-go/.golangci.yml`](../../server-go/.golangci.yml)
 - [`server-go/Dockerfile`](../../server-go/Dockerfile)
 - [`server-go/README.md`](../../server-go/README.md)

@@ -8,8 +8,8 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | --- | --- | ---: | --- |
 | [Site e HUD Angular](indexes/angular-site.md) | active | 34 | Páginas do site, navegação, HUD e ações de interface. Não calcula regras autoritativas. |
 | [Orquestração Phaser](indexes/phaser-game.md) | active | 12 | Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir regras do motor para este adaptador. |
-| [Renderização e adaptadores Canvas](indexes/renderer.md) | active | 103 | Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com composição Canvas compartilhada. |
-| [Regras e simulação offline](indexes/simulation.md) | active | 41 | Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular. |
+| [Renderização e adaptadores Canvas](indexes/renderer.md) | active | 104 | Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com composição Canvas compartilhada. |
+| [Regras e simulação offline](indexes/simulation.md) | active | 42 | Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular. |
 | [Entidades jogáveis](indexes/actors.md) | active | 16 | Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias. |
 | [Bestiário por região](indexes/monsters.md) | active | 42 | Fichas individuais de criaturas classificadas por região; fonte única de atributos e loot, sem duplicar IA nem renderização. |
 | [Masmorras por região](indexes/dungeons.md) | active | 9 | Masmorras de vários andares: nome de cada andar, moradores e chefe, uma masmorra por arquivo na pasta da sua região. Só dados; a planta fica em world e o povoamento em engine. |
@@ -26,6 +26,6 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | [Módulo Rust espacial e entidades](indexes/rust-spatial.md) | experimental | 10 | Kernel Rust e FFI opt-in; não é servidor de rede. |
 | [Scripts, automação e CI](indexes/tooling.md) | active | 27 | Build, verificação, testes automatizados, deploys e índice; operações de produção são fluxos distintos. |
 
-**Outros arquivos:** [documentos, configurações e arquivos de entrada](indexes/_outros.md) (91).
+**Outros arquivos:** [documentos, configurações e arquivos de entrada](indexes/_outros.md) (90).
 
 Para regras de alteração, veja [AGENTS.md](../AGENTS.md), [manutenção](MANUTENCAO.md) e [ADR 0001](adr/0001-catalogo-e-fronteiras.md).
