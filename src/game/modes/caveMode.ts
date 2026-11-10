@@ -1,5 +1,6 @@
 import { applyCaveVictories } from "../../engine/rooms/CaveRewards.ts";
 import type { CaveRoom } from "../../engine/rooms/CaveRoom.ts";
+import { nearbyStairsMove, reachedStairsMove } from "../../engine/rooms/caveStairs.ts";
 import { TILE_SIZE } from "../../world/terrain.ts";
 import type { Frame, ModeHost } from "./types.ts";
 
@@ -23,20 +24,25 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
     const changed = applyCaveVictories(host.sim, cave);
     if(changed)host.save();
   }
+  const stairs=reachedStairsMove(cave);
   if(cave.player.hp<=0){
     host.leaveCave();
     host.sim.player.hp=0;
     host.save();
     host.hud.setTravelNotice("Você tombou na caverna. Renasça para continuar.");
-  } else if(cave.reachedExit){
+  } else if(stairs==="leave"){
     host.leaveCave();
+  } else if(stairs!==null){
+    // Pisar na escada troca de andar; o quadro termina aqui e o novo andar aparece no próximo.
+    host.changeCaveFloor(stairs);
+    return true;
   } else {
     timers.saveClock += dt;
     if(timers.saveClock>12){timers.saveClock=0;host.save();}
     host.updateHud();
-    host.hud.setCave({floor:cave.floor,
-      tileX:Math.floor(cave.player.x/TILE_SIZE),tileY:Math.floor(cave.player.y/TILE_SIZE)});
-    host.hud.setNearbyAction(cave.nearExit?"leave":null);
+    host.hud.setCave({floor:cave.floor,floorIndex:cave.floorIndex,floorCount:cave.floorCount,
+      floorName:cave.floorName,tileX:Math.floor(cave.player.x/TILE_SIZE),tileY:Math.floor(cave.player.y/TILE_SIZE)});
+    host.hud.setNearbyAction(nearbyStairsMove(cave));
     if(timers.battleClock>=0.2){
       timers.battleClock=0;
       host.hud.setBattleCreatures(host.hudBattleRows(),host.travel.combat.targetId);

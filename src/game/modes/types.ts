@@ -50,5 +50,7 @@ export interface ModeHost {
   updateHud(): void;
   hudBattleRows(): ReturnType<typeof visibleBattleCreatures>;
   leaveCave(): void;
+  /** Troca de andar dentro da caverna: o herói leva seu estado e os derrotados continuam derrotados. */
+  changeCaveFloor(move: "descend" | "ascend"): void;
   leaveInterior(): void;
 }

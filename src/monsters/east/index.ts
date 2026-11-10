@@ -1,8 +1,8 @@
 import type { CreatureDefinition } from "../types.ts";
-import { coralCrab } from "./coral-crab.ts";
-import { stormSerpent } from "./storm-serpent.ts";
-import { abyssalOctopus } from "./abyssal-octopus.ts";
-import { tideHunterTriton } from "./tide-hunter-triton.ts";
+import { coralCrab } from "./crabs/coral-crab.ts";
+import { stormSerpent } from "./serpents/storm-serpent.ts";
+import { abyssalOctopus } from "./octopuses/abyssal-octopus.ts";
+import { tideHunterTriton } from "./tritons/tide-hunter-triton.ts";
 
 /** Região Leste: apenas agrega fichas, sem duplicar IA e render. */
 export const EAST_MONSTERS = {

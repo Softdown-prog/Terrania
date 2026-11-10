@@ -1,9 +1,9 @@
-import { renderDuneRatDetail } from "../../src/render/creatures/south/duneRat.ts";
-import { renderSandGoblinDetail } from "../../src/render/creatures/south/sandGoblin.ts";
-import { renderDesertOrcDetail } from "../../src/render/creatures/south/desertOrc.ts";
+import { renderDuneRatDetail } from "../../src/render/creatures/south/rats/duneRat.ts";
+import { renderSandGoblinDetail } from "../../src/render/creatures/south/goblins/sandGoblin.ts";
+import { renderDesertOrcDetail } from "../../src/render/creatures/south/orcs/desertOrc.ts";
 import { renderSandBasiliskDetail } from "../../src/render/creatures/mounts/sandBasilisk.ts";
 import { renderCargoBeetleDetail } from "../../src/render/creatures/mounts/cargoBeetle.ts";
-import { renderSandBeetle } from "../../src/render/sandBeetle.ts";
+import { renderSandBeetle } from "../../src/render/creatures/south/beetles/sandBeetle.ts";
 import { drawKnightSword } from "../../src/render/swords.ts";
 import { WEAPON_IDS } from "../../src/engine/character/Weapons.ts";
 import { renderWave3Creature } from "../../src/render/regionalWave3.ts";
@@ -30,6 +30,7 @@ import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
+import { drawCaveDownStair } from "../../src/render/caveStairsDownArt.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
 import type { RegionalLandmarkKind } from "../../src/world/regionalLandmarks.ts";
 import { NPCS } from "../../src/world/npcs.ts";
@@ -119,6 +120,8 @@ export const ASSETS: ArtAsset[] = [
         draw: c => drawCaveFormation(c, theme, 0, 0, .61) },
       { id: "escada subterrânea " + theme, tier: "prop", fn: "drawCaveExitStair",
         draw: c => drawCaveExitStair(c, theme, 0, 0) },
+      { id: "escada de descida " + theme, tier: "prop", fn: "drawCaveDownStair",
+        draw: c => drawCaveDownStair(c, theme, 0, 0) },
       ...(["south", "east"] as const).map<ArtAsset>(side => ({
         id: "face rochosa " + theme + " " + side,
         tier: "prop", fn: "drawCaveWallFace",

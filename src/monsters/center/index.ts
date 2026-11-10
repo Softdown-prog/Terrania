@@ -1,5 +1,5 @@
 import type { CreatureDefinition } from "../types.ts";
-import { slime } from "./slime.ts";
+import { slime } from "./slimes/slime.ts";
 
 /** Região Centro: apenas agrega fichas, sem duplicar IA e render. */
 export const CENTER_MONSTERS = {

@@ -11,7 +11,7 @@ const nav = createNavigator();
 
 test("MCP lista catálogo real e não confunde produção com laboratório", () => {
   const all = nav.list_modules();
-  assert.equal(all.total, 18);
+  assert.equal(all.total, 19);
   assert.equal(all.modules.find(m=>m.id==="npcs")?.status,"active");
   assert.equal(all.modules.find(m => m.id === "monsters")?.status, "active");
   assert.equal(all.modules.find(m => m.id === "node-server")?.status, "active");
@@ -26,7 +26,7 @@ test("MCP localiza arquivos sem ler conteúdo arbitrário", () => {
   const npc = nav.locate_file({query:"aela.ts"});
   assert.ok(npc.files.some(f=>f.path==="src/npcs/center/aela.ts" && f.module_id==="npcs"));
   const monster = nav.locate_file({query:"dune-rat.ts"});
-  assert.ok(monster.files.some(file => file.path === "src/monsters/south/dune-rat.ts" && file.module_id === "monsters"));
+  assert.ok(monster.files.some(file => file.path === "src/monsters/south/rats/dune-rat.ts" && file.module_id === "monsters"));
   assert.equal(nav.locate_file({query:"arquivo_que_nao_existe_xyz"}).total, 0);
   assert.ok(nav.locate_file({query:"ts", limit:2}).files.length <= 2);
 });

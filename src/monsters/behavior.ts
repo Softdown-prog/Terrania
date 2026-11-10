@@ -1,4 +1,35 @@
 import type { RegionalCreatureKind } from "./catalog.ts";
+import { coralCrabBehavior } from "./east/crabs/coral-crab.ts";
+import { abyssalOctopusBehavior } from "./east/octopuses/abyssal-octopus.ts";
+import { stormSerpentBehavior } from "./east/serpents/storm-serpent.ts";
+import { tideHunterTritonBehavior } from "./east/tritons/tide-hunter-triton.ts";
+import { frostBansheeBehavior } from "./north/banshees/frost-banshee.ts";
+import { runicPolarBearBehavior } from "./north/bears/runic-polar-bear.ts";
+import { tundraMammothBehavior } from "./north/mammoths/tundra-mammoth.ts";
+import { frostSpiritBehavior } from "./north/spirits/frost-spirit.ts";
+import { glacialWolfBehavior } from "./north/wolves/glacial-wolf.ts";
+import { borealYetiBehavior } from "./north/yetis/boreal-yeti.ts";
+import { sandBeetleBehavior } from "./south/beetles/sand-beetle.ts";
+import { solarScarabBehavior } from "./south/beetles/solar-scarab.ts";
+import { mirageImpBehavior } from "./south/demons/mirage-imp.ts";
+import { oasisElfBehavior } from "./south/elves/oasis-elf.ts";
+import { rottenMarshEntBehavior } from "./south/ents/rotten-marsh-ent.ts";
+import { sandGoblinBehavior } from "./south/goblins/sand-goblin.ts";
+import { mireHydraBehavior } from "./south/hydras/mire-hydra.ts";
+import { desertOrcBehavior } from "./south/orcs/desert-orc.ts";
+import { cactusSproutBehavior } from "./south/plants/cactus-sprout.ts";
+import { duneRatBehavior } from "./south/rats/dune-rat.ts";
+import { duneScorpionBehavior } from "./south/scorpions/dune-scorpion.ts";
+import { duneScoutBehavior } from "./south/smallfolk/dune-scout.ts";
+import { hornedViperBehavior } from "./south/snakes/horned-viper.ts";
+import { poisonScoutToadBehavior } from "./south/toads/poison-scout-toad.ts";
+import { clayTrollBehavior } from "./south/trolls/clay-troll.ts";
+import { carrionVultureBehavior } from "./south/vultures/carrion-vulture.ts";
+import { carrionSandwormBehavior } from "./south/worms/carrion-sandworm.ts";
+import { cliffDraconidBehavior } from "./west/draconids/cliff-draconid.ts";
+import { basaltGolemBehavior } from "./west/golems/basalt-golem.ts";
+import { summitGriffinBehavior } from "./west/griffins/summit-griffin.ts";
+import { magmaSalamanderBehavior } from "./west/salamanders/magma-salamander.ts";
 
 /** Identidade mecânica de cada espécie (fora do Slime).
  * Comportamentos são determinísticos, respeitam a colisão do motor e não alteram dano ou loot.
@@ -15,38 +46,39 @@ export interface SpeciesBehavior {
   readonly retreatAt?: number;
 }
 
+/** Registro único de imports das estratégias que pertencem a cada arquivo de espécie. */
 export const SPECIES_BEHAVIORS: Readonly<Record<RegionalCreatureKind, SpeciesBehavior>> = Object.freeze({
-  "basalt-golem": { gait: "stomp", pursuit: "direct", cadence: 0.8, weave: 0 },
-  "cliff-draconid": { gait: "stride", pursuit: "rush", cadence: 1.22, weave: 0.08 },
-  "mire-hydra": { gait: "slither", pursuit: "flank", cadence: 0.94, weave: 0.18 },
-  "dune-scorpion": { gait: "scuttle", pursuit: "flank", cadence: 1.65, weave: 0.33 },
-  "solar-scarab": { gait: "scuttle", pursuit: "rush", cadence: 1.8, weave: 0.24 },
-  "boreal-yeti": { gait: "lumber", pursuit: "direct", cadence: 0.97, weave: 0.02 },
-  "glacial-wolf": { gait: "gallop", pursuit: "rush", cadence: 1.92, weave: 0.12 },
-  "frost-spirit": { gait: "hover", pursuit: "flank", cadence: 1.13, weave: 0.27 },
-  "coral-crab": { gait: "scuttle", pursuit: "flank", cadence: 1.38, weave: 0.43 },
-  "storm-serpent": { gait: "slither", pursuit: "flank", cadence: 1.12, weave: 0.26 },
-  "summit-griffin": { gait: "flap", pursuit: "rush", cadence: 1.49, weave: 0.12 },
-  "magma-salamander": { gait: "crawl", pursuit: "direct", cadence: 1.26, weave: 0.14 },
-  "rotten-marsh-ent": { gait: "lumber", pursuit: "direct", cadence: 0.58, weave: 0 },
-  "poison-scout-toad": { gait: "hop", pursuit: "cautious", cadence: 1.52, weave: 0.21, retreatAt: 0.25 },
-  "carrion-sandworm": { gait: "burrow", pursuit: "rush", cadence: 1.02, weave: 0.15 },
-  "tundra-mammoth": { gait: "stomp", pursuit: "direct", cadence: 0.75, weave: 0.01 },
-  "frost-banshee": { gait: "hover", pursuit: "cautious", cadence: 1.17, weave: 0.35 },
-  "runic-polar-bear": { gait: "gallop", pursuit: "rush", cadence: 1.33, weave: 0.06 },
-  "abyssal-octopus": { gait: "float", pursuit: "flank", cadence: 1.47, weave: 0.39 },
-  "tide-hunter-triton": { gait: "stride", pursuit: "cautious", cadence: 1.08, weave: 0.11 },
-  "dune-rat": { gait: "skitter", pursuit: "cautious", cadence: 2.16, weave: 0.35, retreatAt: 0.5 },
-  "sand-goblin": { gait: "skitter", pursuit: "flank", cadence: 1.57, weave: 0.23, retreatAt: 0.25 },
-  "desert-orc": { gait: "stride", pursuit: "rush", cadence: 1.01, weave: 0.09 },
-  "clay-troll": { gait: "lumber", pursuit: "direct", cadence: 0.68, weave: 0.07 },
-  "dune-scout": { gait: "stride", pursuit: "cautious", cadence: 1.73, weave: 0.2, retreatAt: 0.45 },
-  "oasis-elf": { gait: "stride", pursuit: "flank", cadence: 1.43, weave: 0.18 },
-  "mirage-imp": { gait: "float", pursuit: "flank", cadence: 1.85, weave: 0.3 },
-  "horned-viper": { gait: "slither", pursuit: "flank", cadence: 1.76, weave: 0.31 },
-  "carrion-vulture": { gait: "hop", pursuit: "cautious", cadence: 1.15, weave: 0.09, retreatAt: 0.25 },
-  "cactus-sprout": { gait: "hop", pursuit: "direct", cadence: 0.84, weave: 0.07 },
-  "sand-beetle": { gait: "scuttle", pursuit: "cautious", cadence: 1.98, weave: 0.3 },
+  "basalt-golem": basaltGolemBehavior,
+  "cliff-draconid": cliffDraconidBehavior,
+  "mire-hydra": mireHydraBehavior,
+  "dune-scorpion": duneScorpionBehavior,
+  "solar-scarab": solarScarabBehavior,
+  "boreal-yeti": borealYetiBehavior,
+  "glacial-wolf": glacialWolfBehavior,
+  "frost-spirit": frostSpiritBehavior,
+  "coral-crab": coralCrabBehavior,
+  "storm-serpent": stormSerpentBehavior,
+  "summit-griffin": summitGriffinBehavior,
+  "magma-salamander": magmaSalamanderBehavior,
+  "rotten-marsh-ent": rottenMarshEntBehavior,
+  "poison-scout-toad": poisonScoutToadBehavior,
+  "carrion-sandworm": carrionSandwormBehavior,
+  "tundra-mammoth": tundraMammothBehavior,
+  "frost-banshee": frostBansheeBehavior,
+  "runic-polar-bear": runicPolarBearBehavior,
+  "abyssal-octopus": abyssalOctopusBehavior,
+  "tide-hunter-triton": tideHunterTritonBehavior,
+  "dune-rat": duneRatBehavior,
+  "sand-goblin": sandGoblinBehavior,
+  "desert-orc": desertOrcBehavior,
+  "clay-troll": clayTrollBehavior,
+  "dune-scout": duneScoutBehavior,
+  "oasis-elf": oasisElfBehavior,
+  "mirage-imp": mirageImpBehavior,
+  "horned-viper": hornedViperBehavior,
+  "carrion-vulture": carrionVultureBehavior,
+  "cactus-sprout": cactusSproutBehavior,
+  "sand-beetle": sandBeetleBehavior,
 });
 
 /** A direção e o ritmo mudam conforme a espécie, sem contornar colisões. */

@@ -66,49 +66,48 @@ test("32 criaturas possuem corpo procedural específico, e não só ficha de atr
   const { REGIONAL_CREATURE_KINDS }=await import("../src/actors/CreatureCatalog.ts");
   const { readFileSync, existsSync }=await import("node:fs");
   const paths: Record<string,string>={
-    "dune-rat":"south/duneRat",
-    "sand-goblin":"south/sandGoblin",
-    "desert-orc":"south/desertOrc",
-    "clay-troll":"south/clayTroll",
-    "dune-scout":"south/duneScout",
-    "oasis-elf":"south/oasisElf",
-    "mirage-imp":"south/mirageImp",
-    "horned-viper":"south/hornedViper",
-    "carrion-vulture":"south/carrionVulture",
-    "cactus-sprout":"south/cactusSprout",
-    "summit-griffin":"wave2/summitGriffin",
-    "magma-salamander":"wave2/magmaSalamander",
-    "rotten-marsh-ent":"wave2/rottenMarshEnt",
-    "poison-scout-toad":"wave2/poisonScoutToad",
-    "carrion-sandworm":"wave2/carrionSandworm",
-    "tundra-mammoth":"wave2/tundraMammoth",
-    "frost-banshee":"wave2/frostBanshee",
-    "runic-polar-bear":"wave2/runicPolarBear",
-    "abyssal-octopus":"wave2/abyssalOctopus",
-    "tide-hunter-triton":"wave2/tideHunterTriton",
-    "basalt-golem":"regional/basaltGolem",
-    "cliff-draconid":"regional/cliffDraconid",
-    "mire-hydra":"regional/mireHydra",
-    "dune-scorpion":"regional/duneScorpion",
-    "solar-scarab":"regional/solarScarab",
-    "boreal-yeti":"regional/borealYeti",
-    "glacial-wolf":"regional/glacialWolf",
-    "frost-spirit":"regional/frostSpirit",
-    "coral-crab":"regional/coralCrab",
-    "storm-serpent":"regional/stormSerpent",
-    "sand-beetle":"../sandBeetle",
+    "dune-rat":"south/rats/duneRat",
+    "sand-goblin":"south/goblins/sandGoblin",
+    "desert-orc":"south/orcs/desertOrc",
+    "clay-troll":"south/trolls/clayTroll",
+    "dune-scout":"south/smallfolk/duneScout",
+    "oasis-elf":"south/elves/oasisElf",
+    "mirage-imp":"south/demons/mirageImp",
+    "horned-viper":"south/snakes/hornedViper",
+    "carrion-vulture":"south/vultures/carrionVulture",
+    "cactus-sprout":"south/plants/cactusSprout",
+    "summit-griffin":"west/griffins/summitGriffin",
+    "magma-salamander":"west/salamanders/magmaSalamander",
+    "rotten-marsh-ent":"south/ents/rottenMarshEnt",
+    "poison-scout-toad":"south/toads/poisonScoutToad",
+    "carrion-sandworm":"south/worms/carrionSandworm",
+    "tundra-mammoth":"north/mammoths/tundraMammoth",
+    "frost-banshee":"north/banshees/frostBanshee",
+    "runic-polar-bear":"north/bears/runicPolarBear",
+    "abyssal-octopus":"east/octopuses/abyssalOctopus",
+    "tide-hunter-triton":"east/tritons/tideHunterTriton",
+    "basalt-golem":"west/golems/basaltGolem",
+    "cliff-draconid":"west/draconids/cliffDraconid",
+    "mire-hydra":"south/hydras/mireHydra",
+    "dune-scorpion":"south/scorpions/duneScorpion",
+    "solar-scarab":"south/beetles/solarScarab",
+    "boreal-yeti":"north/yetis/borealYeti",
+    "glacial-wolf":"north/wolves/glacialWolf",
+    "frost-spirit":"north/spirits/frostSpirit",
+    "coral-crab":"east/crabs/coralCrab",
+    "storm-serpent":"east/serpents/stormSerpent",
+    "sand-beetle":"south/beetles/sandBeetle",
   };
   assert.equal(REGIONAL_CREATURE_KINDS.length,31);
   for(const kind of REGIONAL_CREATURE_KINDS){
     const loc=paths[kind];
     assert.ok(loc,kind+" não tem arte individual");
-    const full=loc.startsWith("../")?"src/render/"+loc.slice(3)+".ts":
-      "src/render/creatures/"+loc+".ts";
+    const full="src/render/creatures/"+loc+".ts";
     assert.ok(existsSync(full),kind+" não possui arquivo de anatomia");
     const contents=readFileSync(full,"utf8");
     assert.ok(contents.length>350,kind+" ainda é só uma linha de ficha");
   }
-  assert.ok(readFileSync("src/render/creatures/center/slime.ts","utf8").includes("export function renderSlime"),
+  assert.ok(readFileSync("src/render/creatures/center/slimes/slime.ts","utf8").includes("export function renderSlime"),
     "Slime precisa do próprio arquivo de anatomia");
   assert.ok(readFileSync("src/render/actors.ts","utf8").includes('export { renderSlime }'),
     "API pública antiga de renderSlime deve continuar funcionando");
@@ -144,5 +143,31 @@ test("dez montarias possuem arquivo visual único, além de ficha de atributos p
     assert.equal(first.signature,capture(c=>renderMount(c,id,0,0,2.2)).signature,id+" não determinístico");
     assert.ok(!signatures.has(first.signature),id+" compartilha a mesma silhueta/traçado");
     signatures.add(first.signature);
+  }
+});
+
+test("32 desenhos acompanham as categorias de cada ficha sem anatomias órfãs", async()=>{
+  const { existsSync, readdirSync, readFileSync }=await import("node:fs");
+  const root="src/monsters";
+  const regions=["center","north","south","east","west"] as const;
+  let artCount=0;
+  for(const region of regions){
+    for(const family of readdirSync(root+"/"+region,{withFileTypes:true}).filter(x=>x.isDirectory())){
+      for(const item of readdirSync(root+"/"+region+"/"+family.name,{withFileTypes:true})){
+        assert.ok(item.isFile()&&item.name.endsWith(".ts"),
+          region+"/"+family.name+" contém item que não é ficha TypeScript");
+        const species=item.name.slice(0,-3);
+        const camel=species.replace(/-([a-z])/g,(_,letter:string)=>letter.toUpperCase());
+        const path="src/render/creatures/"+region+"/"+family.name+"/"+camel+".ts";
+        assert.ok(existsSync(path),"arte faltando para "+region+"/"+family.name+"/"+species);
+        assert.ok(readFileSync(path,"utf8").length>350,"arte sem implementação: "+path);
+        artCount++;
+      }
+    }
+  }
+  assert.equal(artCount,Object.keys(CREATURE_CATALOG).length);
+  for(const legacy of ["src/render/creatures/wave2","src/render/creatures/regional",
+      "src/render/creatures/south/geometry.ts","src/render/sandBeetle.ts"]){
+    assert.equal(existsSync(legacy),false,"caminho antigo não pode coexistir: "+legacy);
   }
 });
