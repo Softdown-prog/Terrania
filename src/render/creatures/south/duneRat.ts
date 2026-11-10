@@ -6,6 +6,8 @@
  */
 import type { DesertCommonVisual } from "../../regionalWave3.ts";
 import { clamp01, ellipse, hashString, rgba, TAU } from "../../draw.ts";
+import type { Palette } from "./geometry.ts";
+import { body, line, tip, eye, freckles, OUTLINE } from "./geometry.ts";
 const P = {
   fur:"#97806a", ridge:"#5b4b40", highlight:"#ead5ad", shadow:"#322d2b",
   undercoat:"#d2b98a", ear:"#cc8b82", inner:"#7c4a48",
@@ -170,10 +172,6 @@ export function renderDuneRatDetail(ctx:CanvasRenderingContext2D,actor:DesertCom
   dust(ctx,moving,phase,seed);
   infection(ctx,actor.casting??0,time);
 }
-import type { Palette } from "./geometry.ts";
-import { body, line, tip, eye, freckles, OUTLINE } from "./geometry.ts";
-import { ellipse, rgba } from "../../draw.ts";
-
 export const rat = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   ctx.strokeStyle=OUTLINE;ctx.lineWidth=5;ctx.lineCap="round";
   ctx.beginPath();ctx.moveTo(9,-10);ctx.bezierCurveTo(23,-6,26,-27,34+Math.sin(t*2)*2,-18);ctx.stroke();

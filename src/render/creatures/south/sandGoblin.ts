@@ -4,6 +4,8 @@
  */
 import type { DesertCommonVisual } from "../../regionalWave3.ts";
 import { clamp01, ellipse, hashString, rgba, TAU } from "../../draw.ts";
+import type { Palette } from "./geometry.ts";
+import { body, line, tip, eye, freckles, OUTLINE, GLOW } from "./geometry.ts";
 const C={
   leather:"#563e35",leatherLight:"#a67a4f",bronze:"#d1a15d",verdigris:"#63875e",
   linen:"#e3cfab",shadow:"#26322b",eye:"#f5ce69",glint:"#fff4d8",
@@ -178,10 +180,6 @@ export function renderSandGoblinDetail(ctx:CanvasRenderingContext2D,actor:Desert
   movingCloth(ctx,actor.motionPhase??0,clamp01(actor.moving??0));
   sandCloud(ctx,actor.casting??0,time);
 }
-import type { Palette } from "./geometry.ts";
-import { body, line, tip, eye, freckles, OUTLINE, GLOW } from "./geometry.ts";
-import { ellipse } from "../../draw.ts";
-
 export const goblin = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   const linen:Palette={...c,base:"#b6a17e",light:"#f0dec0",dark:"#7b6958"};
   for(const side of [-1,1]){

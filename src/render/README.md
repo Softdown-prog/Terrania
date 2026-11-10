@@ -105,3 +105,10 @@ do mesmo nível de acabamento em arquivos próprios. Cada atualização deve
 ser medida por diferenças verificáveis de silhueta, legibilidade, reação a
 estados e custo em Canvas real; 500 linhas cheias de repetições não garantem
 qualidade. O lote atual não declara as demais espécies como concluídas.
+
+**Arquivos individuais de anatomia:** as dez criaturas comuns dos Ermos agora
+separam silhueta/ficha em módulos próprios em `src/render/creatures/south/`.
+`regionalWave3.ts` apenas seleciona a espécie e aplica os estados globais de
+render. Sete delas mantêm a anatomia original enquanto aguardam a mesma
+rodada de acabamento aprofundado das três primeiras. A extração não afirma
+que sete receberam arte nova.

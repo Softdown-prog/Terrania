@@ -4,6 +4,8 @@
  */
 import type { DesertCommonVisual } from "../../regionalWave3.ts";
 import { clamp01, ellipse, hashString, rgba, TAU } from "../../draw.ts";
+import type { Palette } from "./geometry.ts";
+import { body, line, tip, eye, freckles, GLOW } from "./geometry.ts";
 const C={
   leather:"#71513d",rawhide:"#ad8258",steel:"#666e69",bone:"#e8d9b6",
   bronze:"#d3aa61",skin:"#89967a",skinLight:"#c4c9a2",skinDark:"#394c40",
@@ -169,10 +171,6 @@ export function renderDesertOrcDetail(ctx:CanvasRenderingContext2D,actor:DesertC
   dust(ctx,clamp01(actor.moving??0),actor.motionPhase??0);
   warCry(ctx,actor.casting??0,time);
 }
-import type { Palette } from "./geometry.ts";
-import { body, line, tip, eye, freckles, GLOW } from "./geometry.ts";
-import { ellipse, rgba } from "../../draw.ts";
-
 export const orc = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   for(const s of [-1,1]){
     line(ctx,s*9,-14,s*11,0,c,8);
