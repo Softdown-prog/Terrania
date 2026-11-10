@@ -1,8 +1,8 @@
-import { CREATURE_CATALOG, type CreatureKind } from "../actors/CreatureCatalog.ts";
-import { rollCreatureLoot } from "../actors/RegionalMonster.ts";
-import { grantExperience } from "./Experience.ts";
-import { MAX_KILLS } from "./Limits.ts";
-import type { OfflineSimulation } from "./OfflineSimulation.ts";
+import { CREATURE_CATALOG, type CreatureKind } from "../../actors/CreatureCatalog.ts";
+import { rollCreatureLoot } from "../../actors/RegionalMonster.ts";
+import { grantExperience } from "../character/Experience.ts";
+import { MAX_KILLS } from "../Limits.ts";
+import type { OfflineSimulation } from "../OfflineSimulation.ts";
 
 /** O que a caverna precisa expor para premiar o herói; `CaveRoom` já cumpre isso. */
 export interface CaveVictorySource {

@@ -1,4 +1,4 @@
-import { WEAPONS, type WeaponId } from "../engine/Weapons.ts";
+import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
 import type { Player } from "../actors/Player.ts";
 import { clamp01 } from "./draw.ts";
 

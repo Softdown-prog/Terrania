@@ -1,6 +1,6 @@
-import { Player } from "../actors/Player.ts";
-import type { CollisionMap } from "../world/collision.ts";
-import { BUILDINGS, type Building } from "../world/village.ts";
+import { Player } from "../../actors/Player.ts";
+import type { CollisionMap } from "../../world/collision.ts";
+import { BUILDINGS, type Building } from "../../world/village.ts";
 
 export const ROOM_WIDTH = 360;
 export const ROOM_HEIGHT = 264;

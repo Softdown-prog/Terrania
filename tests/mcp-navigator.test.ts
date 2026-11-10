@@ -21,7 +21,7 @@ test("MCP lista catálogo real e não confunde produção com laboratório", () 
 
 test("MCP localiza arquivos sem ler conteúdo arbitrário", () => {
   const result = nav.locate_file({query:"ClassicTileWalker.ts"});
-  assert.equal(result.files[0]?.path, "src/engine/ClassicTileWalker.ts");
+  assert.equal(result.files[0]?.path, "src/engine/movement/ClassicTileWalker.ts");
   assert.equal(result.files[0]?.module_id, "simulation");
   const npc = nav.locate_file({query:"aela.ts"});
   assert.ok(npc.files.some(f=>f.path==="src/npcs/center/aela.ts" && f.module_id==="npcs"));

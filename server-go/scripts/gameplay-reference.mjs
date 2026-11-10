@@ -1,7 +1,7 @@
 import { Player } from "../../src/actors/Player.ts";
 import { Slime } from "../../src/actors/Slime.ts";
 import { SeedCollision } from "../../src/world/collision.ts";
-import { canStrike } from "../../src/engine/combat.ts";
+import { canStrike } from "../../src/engine/combat/combat.ts";
 import { villageGround } from "../../src/world/village.ts";
 
 const seed=842136;

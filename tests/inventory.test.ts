@@ -1,17 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { Inventory, normalizeInventory, normalizeMaterials, MAX_STACK, POTION_GEL_PRICE, POTION_HEAL } from "../src/engine/Inventory.ts";
-import { normalizeDrops, MAX_WORLD_DROPS } from "../src/engine/loot.ts";
+import { Inventory, normalizeInventory, normalizeMaterials, MAX_STACK, POTION_GEL_PRICE, POTION_HEAL } from "../src/engine/character/Inventory.ts";
+import { normalizeDrops, MAX_WORLD_DROPS } from "../src/engine/character/loot.ts";
 import { OfflineSimulation, normalizeKills, MAX_KILLS } from "../src/engine/OfflineSimulation.ts";
-import { normalizeFoodCounts } from "../src/engine/Food.ts";
-import { startMountQuest } from "../src/engine/MountQuestState.ts";
+import { normalizeFoodCounts } from "../src/engine/character/Food.ts";
+import { startMountQuest } from "../src/engine/mounts/MountQuestState.ts";
 import { MAX_KILLS as SHARED_MAX_KILLS, MAX_STACK as SHARED_MAX_STACK } from "../src/engine/Limits.ts";
 import { Slime } from "../src/actors/Slime.ts";
-import { EQUIPMENT_SLOTS, GEAR } from "../src/engine/Equipment.ts";
-import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../src/engine/Weapons.ts";
-import { experienceForLevel } from "../src/engine/Experience.ts";
-import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
-import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
+import { EQUIPMENT_SLOTS, GEAR } from "../src/engine/character/Equipment.ts";
+import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../src/engine/character/Weapons.ts";
+import { experienceForLevel } from "../src/engine/character/Experience.ts";
+import { ClassicCombat } from "../src/engine/combat/ClassicCombat.ts";
+import { ClassicTileWalker } from "../src/engine/movement/ClassicTileWalker.ts";
 
 const seed = 842136;
 const still = { x: 0, y: 0 };

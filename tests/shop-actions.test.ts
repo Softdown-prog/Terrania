@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
-import { POTION_GEL_PRICE } from "../src/engine/Inventory.ts";
-import { FORGE_SWORD_PRICE } from "../src/engine/Weapons.ts";
-import { experienceForLevel } from "../src/engine/Experience.ts";
+import { POTION_GEL_PRICE } from "../src/engine/character/Inventory.ts";
+import { FORGE_SWORD_PRICE } from "../src/engine/character/Weapons.ts";
+import { experienceForLevel } from "../src/engine/character/Experience.ts";
 import { NPCS } from "../src/world/npcs.ts";
 import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, usePotion,
   type ShopContext } from "../src/game/actions/shopActions.ts";

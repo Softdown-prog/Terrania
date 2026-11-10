@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { caveEntranceInCell, caveEntranceNear, caveThemeAt, caveEntrancesInArea } from "../src/world/caves.ts";
-import { CaveFloor, CaveRoom, CAVE_WIDTH, CAVE_HEIGHT, CAVE_EXIT } from "../src/engine/CaveRoom.ts";
+import { CaveFloor, CaveRoom, CAVE_WIDTH, CAVE_HEIGHT, CAVE_EXIT } from "../src/engine/rooms/CaveRoom.ts";
 
 test("cavernas seguem a região: gelo, deserto, costa, montanha e brejo sudeste", () => {
   assert.equal(caveThemeAt(0,-26000),"glacial");
@@ -57,7 +57,7 @@ test("cada primeiro andar tem câmaras conectadas, paredes sólidas e saída tra
 test("caverna de treino fica fora da vila, contém cinco slimes e premia só uma vez", async () => {
   const { villageGround } = await import("../src/world/village.ts");
   const { OfflineSimulation } = await import("../src/engine/OfflineSimulation.ts");
-  const { applyCaveVictories } = await import("../src/engine/CaveRewards.ts");
+  const { applyCaveVictories } = await import("../src/engine/rooms/CaveRewards.ts");
   for (const seed of [42,842136,987654321]) {
     const entry=caveEntranceInCell(0,0,seed);
     assert.ok(entry);

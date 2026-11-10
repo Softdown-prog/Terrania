@@ -1,5 +1,5 @@
-import { ATTACK_DURATION } from "../engine/combat.ts";
-import { WEAPONS, type WeaponId } from "../engine/Weapons.ts";
+import { ATTACK_DURATION } from "../engine/combat/combat.ts";
+import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
 
 const smooth = (t: number): number => t * t * (3 - 2 * t);
 

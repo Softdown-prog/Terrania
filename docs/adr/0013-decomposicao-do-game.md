@@ -30,7 +30,7 @@ Resultado da sessão 1: **663 → 510 linhas**, com **15 testes novos** sobre o 
 2. **Regra no motor, efeito no orquestrador.** Uma regra de jogo (o que uma ação faz e se muda a bolsa) vive em `src/engine/` ou em função pura que devolve um resultado (`{ result, persist, stopMovement }`, `{ message, changed }`). Salvar, atualizar o HUD e parar o movimento são efeitos e ficam em `Game`.
 3. **Textos são dados** em `src/game/messages/`, com `Record<Resultado, string>`: o compilador obriga a cobrir todo resultado novo.
 4. **Cada extração traz testes que exercitam o motor real** (`OfflineSimulation`), não *mocks*, e é validada por **mutação**: quebrar a regra de propósito precisa reprovar o teste. (Na sessão 1 isso pegou um teste fraco: uma recusa por menu fechado também era recusada por distância, com a mesma mensagem.)
-5. **Teto de tamanho:** `tests/file-size-budget.test.ts` reprova arquivo `.ts` novo acima de 400 linhas e qualquer crescimento dos arquivos já grandes. Ao dividir um deles, baixe a linha dele na tabela para travar o ganho.
+5. **Política atual (substitui o antigo teto rígido):** `tests/file-size-budget.test.ts` classifica até 400 linhas como preferencial, 401–800 como aviso, e acima de 800 como recomendação de revisão arquitetural. Não há reprovação apenas pela contagem, nem lista de arquivos proibidos de crescer. Código gerado é avaliado separadamente. Preserve decomposição por responsabilidade, direção de dependências, tipagem e os testes reais; nunca fracione só para reduzir linhas.
 6. **Comportamento idêntico.** A decomposição não muda gameplay. A ordem dos efeitos (parar movimento → salvar → atualizar HUD) foi preservada e a suíte de navegador roda antes de cada PR.
 
 ## Sessão 2 (concluída): o que foi feito e o que foi decidido não fazer
@@ -72,7 +72,7 @@ Fora deste ADR, mas na mesma linha: `src/style.css` (mais de mil linhas globais)
 1. Ler este ADR e `src/game/README.md`; não é preciso ler o projeto.
 2. Escolher **uma** linha da tabela; extrair; escrever testes com o motor real; fazer a checagem de mutação.
 3. Rodar `architecture:check`, `typecheck`, `npm test`, `build` e o Playwright dos fluxos tocados.
-4. Baixar o teto em `tests/file-size-budget.test.ts` e atualizar a tabela acima.
+4. Consultar os avisos de `tests/file-size-budget.test.ts` e registrar a justificativa arquitetural da extração quando houver ganho concreto. Não editar índices gerados à mão.
 
 ## Limites
 

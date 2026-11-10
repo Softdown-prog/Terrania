@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Player } from "../src/actors/Player.ts";
-import { ATTACK_DURATION, ATTACK_WINDUP } from "../src/engine/combat.ts";
+import { ATTACK_DURATION, ATTACK_WINDUP } from "../src/engine/combat/combat.ts";
 import { swordSwing } from "../src/render/heroPose.ts";
 import { gait, blink, slimePose, smoothTo, resetSmoothing } from "../src/render/animation.ts";
 import { attackBody, swingTrail } from "../src/render/heroPose.ts";
-import { WEAPONS } from "../src/engine/Weapons.ts";
+import { WEAPONS } from "../src/engine/character/Weapons.ts";
 
 test("espada cruza a direção do alvo no instante em que o golpe fica disponível", () => {
   const hero = new Player();

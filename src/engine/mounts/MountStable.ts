@@ -1,10 +1,10 @@
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL, isMountId,
-  type MountId, type RidingTier } from "../actors/MountCatalog.ts";
-import { hash2 } from "../world/random.ts";
+  type MountId, type RidingTier } from "../../actors/MountCatalog.ts";
+import { hash2 } from "../../world/random.ts";
 import { advanceMountQuest, currentMountQuestStep, mountQuestHint, normalizeMountQuest,
   startMountQuest, synchronizeQuestKills, type MountQuestProgress } from "./MountQuestState.ts";
-import { STABLE_MASTER,WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
-export { STABLE_MASTER,WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../world/mountLocations.ts";
+import { STABLE_MASTER,WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../../world/mountLocations.ts";
+export { STABLE_MASTER,WILD_WARHORSE,WILD_HOOFPRINTS,MOUNT_INTERACT_DISTANCE } from "../../world/mountLocations.ts";
 
 export const HALTER_GEL_COST = 3;
 export const RIDE_STAMINA_DRAIN = 9;

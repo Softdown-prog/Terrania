@@ -4,7 +4,7 @@ import { Slime } from "../src/actors/Slime.ts";
 import {
   MAX_BATTLE_CREATURES, visibleBattleCreatures,
   type BattleViewport,
-} from "../src/engine/ClassicBattleList.ts";
+} from "../src/engine/combat/ClassicBattleList.ts";
 
 const HERO = { x: 32, y: 32 };
 const VIEW: BattleViewport = {

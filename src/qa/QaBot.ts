@@ -1,6 +1,6 @@
 import { OfflineSimulation } from "../engine/OfflineSimulation.ts";
-import { TapNavigator, findWalkingPath, type Point } from "../engine/TapNavigator.ts";
-import { InteriorRoom } from "../engine/InteriorRoom.ts";
+import { TapNavigator, findWalkingPath, type Point } from "../engine/movement/TapNavigator.ts";
+import { InteriorRoom } from "../engine/rooms/InteriorRoom.ts";
 import { NPCS, nearestNpc, npcDialogue, type Npc } from "../world/npcs.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 
