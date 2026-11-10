@@ -1,9 +1,9 @@
-import { renderDuneRatDetail } from "../../src/render/creatures/south/duneRat.ts";
-import { renderSandGoblinDetail } from "../../src/render/creatures/south/sandGoblin.ts";
-import { renderDesertOrcDetail } from "../../src/render/creatures/south/desertOrc.ts";
+import { renderDuneRatDetail } from "../../src/render/creatures/south/rats/duneRat.ts";
+import { renderSandGoblinDetail } from "../../src/render/creatures/south/goblins/sandGoblin.ts";
+import { renderDesertOrcDetail } from "../../src/render/creatures/south/orcs/desertOrc.ts";
 import { renderSandBasiliskDetail } from "../../src/render/creatures/mounts/sandBasilisk.ts";
 import { renderCargoBeetleDetail } from "../../src/render/creatures/mounts/cargoBeetle.ts";
-import { renderSandBeetle } from "../../src/render/sandBeetle.ts";
+import { renderSandBeetle } from "../../src/render/creatures/south/beetles/sandBeetle.ts";
 import { drawKnightSword } from "../../src/render/swords.ts";
 import { WEAPON_IDS } from "../../src/engine/character/Weapons.ts";
 import { renderWave3Creature } from "../../src/render/regionalWave3.ts";

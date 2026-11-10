@@ -1,6 +1,10 @@
 import type { WeaponId } from "../engine/character/Weapons.ts";
 import { Slime } from "./Slime.ts";
 import { pursuitStep, SPECIES_BEHAVIORS, speciesRetreats } from "../monsters/behavior.ts";
+import { duneRatInfectionOnBite } from "../monsters/south/rats/dune-rat.ts";
+import { sandGoblinCornered } from "../monsters/south/goblins/sand-goblin.ts";
+import { desertOrcClubKnockback, DESERT_ORC_CLUB_PUSH_DISTANCE } from "../monsters/south/orcs/desert-orc.ts";
+import { clayTrollRegeneration } from "../monsters/south/trolls/clay-troll.ts";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_COMMON_KINDS, SOUTH_SURFACE_KINDS,
   sandBeetleBuried, type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
 import { moveBody, clearPath, canMoveOnSeed, type CollisionMap } from "../world/collision.ts";
@@ -60,13 +64,11 @@ export class RegionalMonster extends Slime {
     this.phase += dt;
     this.moving = 0;
     this.quietSeconds += dt;
-    if(abilitySpecialIsTroll(this.definition) && this.hp < this.definition.maxHp &&
-       this.quietSeconds > 4 && Math.hypot(hero.x-this.x,hero.y-this.y)>120){
-      this.regenElapsed += dt;
-      while(this.regenElapsed >= 1 && this.hp < this.definition.maxHp){
-        this.regenElapsed -= 1;
-        this.hp += 1;
-      }
+    if(this.kind==="clay-troll"){
+      const regen=clayTrollRegeneration(this.hp,this.definition.maxHp,this.quietSeconds,
+        Math.hypot(hero.x-this.x,hero.y-this.y),this.regenElapsed,dt);
+      this.hp=regen.hp;
+      this.regenElapsed=regen.elapsed;
     }
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     this.contactCooldown = Math.max(0, this.contactCooldown - dt);
@@ -91,7 +93,7 @@ export class RegionalMonster extends Slime {
     this.frozenFloor = speedBoost > 1;
     // Não ultrapassar paredes nem caçar alvos de outras áreas do mundo.
     const retreating=speciesRetreats(this.kind,this.hp,ability.maxHp);
-    const frightened=retreating || (ability.special==="sand-throw" && this.hp<=ability.maxHp*.35);
+    const frightened=retreating || (this.kind==="sand-goblin" && sandGoblinCornered(this.hp,ability.maxHp));
     if(retreating)this.windup=0;
     const keepRange=ability.range > 32 && (ability.nature === "magical" ||
       ability.special === "ink" || ability.special === "tidal-lightning" ||
@@ -139,7 +141,7 @@ export class RegionalMonster extends Slime {
       return;
     }
     const ranged = ability.range > 35 && ability.special !== "none" &&
-      (ability.special!=="sand-throw" || this.hp <= ability.maxHp*.35);
+      (ability.special!=="sand-throw" || sandGoblinCornered(this.hp,ability.maxHp));
     if (ranged && this.cooldown === 0 && inSight && d > 36) {
       this.windup = .42;
       this.cooldown = ability.interval + .42;
@@ -160,12 +162,12 @@ export class RegionalMonster extends Slime {
     if (!hit) return;
     this.successfulHits++;
     // Infection is 10% per successful bite, rolled from monster ID and hit count.
-    if(d.special==="infected-bite"){
-      if(hash2(this.strikeSeed,this.successfulHits,73021)<.1)
-        hero.applyStatus("infection",3);
+    if(this.kind==="dune-rat"){
+      if(duneRatInfectionOnBite(this.strikeSeed,this.successfulHits))
+        hero.applyStatus("infection",d.statusSeconds);
     } else if(d.status) hero.applyStatus(d.status,d.statusSeconds);
-    if(d.special==="orc-club" && !ranged && this.successfulHits%3===0)
-      hero.pushFrom(this.x,this.y,12,world);
+    if(this.kind==="desert-orc" && !ranged && desertOrcClubKnockback(this.successfulHits))
+      hero.pushFrom(this.x,this.y,DESERT_ORC_CLUB_PUSH_DISTANCE,world);
     if (d.special === "gust") hero.pushFrom(this.x,this.y,32,world);
     if (d.special === "trample" && Math.hypot(hero.x-this.x,hero.y-this.y)<54)
       hero.applyStatus("stun",.75);
@@ -220,10 +222,6 @@ export function rollCreatureLoot(kind: RegionalCreatureKind, id: string): string
   const def = CREATURE_CATALOG[kind];
   const salt = [...id].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
   return def.loot.filter((entry, i) => hash2(salt, i, 811) < entry.chance).map(entry => entry.item);
-}
-
-function abilitySpecialIsTroll(species: CreatureDefinition): boolean {
-  return species.special === "clay-clod";
 }
 
 /** Starter/intermediate South population: many cheap creatures, distinct IDs from elites.

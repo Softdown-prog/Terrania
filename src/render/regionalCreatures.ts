@@ -1,15 +1,15 @@
 import { monsterPose } from "./monsterMotion.ts";
-import { drawBasaltGolem } from "./creatures/regional/basaltGolem.ts";
-import { drawDraconid } from "./creatures/regional/cliffDraconid.ts";
-import { drawHydra } from "./creatures/regional/mireHydra.ts";
-import { drawScorpion } from "./creatures/regional/duneScorpion.ts";
-import { drawScarab } from "./creatures/regional/solarScarab.ts";
-import { drawYeti } from "./creatures/regional/borealYeti.ts";
-import { drawWolf } from "./creatures/regional/glacialWolf.ts";
-import { drawSpirit } from "./creatures/regional/frostSpirit.ts";
-import { drawCrab } from "./creatures/regional/coralCrab.ts";
-import { drawSerpent } from "./creatures/regional/stormSerpent.ts";
-import { renderSandBeetle } from "./sandBeetle.ts";
+import { drawBasaltGolem } from "./creatures/west/golems/basaltGolem.ts";
+import { drawDraconid } from "./creatures/west/draconids/cliffDraconid.ts";
+import { drawHydra } from "./creatures/south/hydras/mireHydra.ts";
+import { drawScorpion } from "./creatures/south/scorpions/duneScorpion.ts";
+import { drawScarab } from "./creatures/south/beetles/solarScarab.ts";
+import { drawYeti } from "./creatures/north/yetis/borealYeti.ts";
+import { drawWolf } from "./creatures/north/wolves/glacialWolf.ts";
+import { drawSpirit } from "./creatures/north/spirits/frostSpirit.ts";
+import { drawCrab } from "./creatures/east/crabs/coralCrab.ts";
+import { drawSerpent } from "./creatures/east/serpents/stormSerpent.ts";
+import { renderSandBeetle } from "./creatures/south/beetles/sandBeetle.ts";
 import { renderWave3Creature } from "./regionalWave3.ts";
 import { renderWave2Creature } from "./regionalWave2.ts";
 import { CREATURE_CATALOG, SECOND_WAVE_KINDS, SOUTH_COMMON_KINDS, type SouthCommonKind, type SecondWaveKind, type RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
@@ -24,8 +24,8 @@ export interface RegionalCreatureVisual {
   readonly motionPhase?: number;
   readonly moving?: number;
 }
-import type { ColorRamp } from "./creatures/regional/geometry.ts";
-import { OUTLINE, GLINT } from "./creatures/regional/geometry.ts";
+import type { ColorRamp } from "./creatures/shared/regionalGeometry.ts";
+import { OUTLINE, GLINT } from "./creatures/shared/regionalGeometry.ts";
 const PALETTE: Readonly<Partial<Record<RegionalCreatureKind, ColorRamp>>> = {
   "basalt-golem": { base: "#716f6b", light: "#b4a79a", dark: "#343944", accent: "#729267", eye: "#ffbf59" },
   "cliff-draconid": { base: "#66646a", light: "#b0a499", dark: "#292d3b", accent: "#e38b4f", eye: "#f7bb4d" },
