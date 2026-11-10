@@ -326,6 +326,65 @@ export function drawKnightSword(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   ctx.restore();
 }
 
+
+/** Materiais diferentes produzem rastros realmente diferentes, sem duplicar
+ * algoritmos por ID de espada. Tudo segue a ponta e depende apenas da pose.
+ */
+function swordSlashAccent(ctx:CanvasRenderingContext2D,
+  accent:NonNullable<SwordVisualProfile["trailAccent"]>,
+  x:number,y:number,angle:number,alpha:number,
+  first:string,second:string,glow:string,index:number):void {
+  const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;
+  const light=rgba(second,alpha),base=rgba(first,alpha);
+  switch(accent){
+    case "sand":
+      point(ctx,x,y,.75+(index%3)*.42,light);
+      point(ctx,x-nx*2.4,y-ny*2.4,.43,base);
+      ctx.strokeStyle=base;ctx.lineWidth=.75;ctx.beginPath();
+      ctx.moveTo(x-tx*3,y-ty*3);ctx.lineTo(x+tx,y+ty);ctx.stroke();
+      break;
+    case "ice-shards":
+      ctx.fillStyle=rgba(glow,alpha*.68);ctx.beginPath();
+      ctx.moveTo(x+nx*3,y+ny*3);ctx.lineTo(x+tx*1.8,y+ty*1.8);
+      ctx.lineTo(x-nx*2.6,y-ny*2.6);ctx.lineTo(x-tx*1.5,y-ty*1.5);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle=light;ctx.lineWidth=.72;ctx.stroke();
+      point(ctx,x+nx*3.4,y+ny*3.4,.4,light);
+      break;
+    case "embers":
+      ctx.fillStyle=base;ctx.beginPath();
+      ctx.moveTo(x+nx*2.8,y+ny*2.8);
+      ctx.lineTo(x+tx*1.25,y+ty*1.25);
+      ctx.lineTo(x-nx*1.1-tx*1.4,y-ny*1.1-ty*1.4);
+      ctx.closePath();ctx.fill();
+      point(ctx,x+nx*4.6,y+ny*4.6,.53,light);
+      ctx.strokeStyle=rgba(glow,alpha*.85);ctx.lineWidth=.68;
+      ctx.beginPath();ctx.moveTo(x-tx*2,y-ty*2);
+      ctx.lineTo(x-tx*3.6+nx,y-ty*3.6+ny);ctx.stroke();
+      break;
+    case "venom-drops":
+      ctx.fillStyle=base;ctx.beginPath();
+      ctx.ellipse(x+nx*2.1,y+ny*2.1,.8,1.6,angle,0,TAU);ctx.fill();
+      ctx.strokeStyle=light;ctx.lineWidth=.8;ctx.beginPath();
+      ctx.moveTo(x+nx*2.1,y+ny*2.1);
+      ctx.quadraticCurveTo(x-tx*1.7,y-ty*1.7,x-tx*3-nx*.5,y-ty*3-ny*.5);
+      ctx.stroke();
+      point(ctx,x-nx*1.9,y-ny*1.9,.42,rgba(glow,alpha*.8));
+      break;
+    case "bolts":
+      ctx.strokeStyle=light;ctx.lineWidth=1.3;ctx.beginPath();
+      ctx.moveTo(x-5,y-1);ctx.lineTo(x+1,y-4);
+      ctx.lineTo(x-1,y+3);ctx.lineTo(x+5,y);ctx.stroke();
+      point(ctx,x+1,y-4,.45,rgba(glow,alpha));
+      break;
+    case "stars":
+      star(ctx,x,y,2.2,light);
+      ctx.strokeStyle=rgba(glow,alpha*.5);ctx.lineWidth=.65;
+      ctx.beginPath();ctx.arc(x,y,3.2,0,TAU);ctx.stroke();
+      break;
+  }
+}
+
 /** A distinct color and texture for each illustrated attack trail. */
 export function drawKnightTrail(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   facing:number,angles:readonly number[],alpha:number):void {
@@ -359,16 +418,10 @@ export function drawKnightTrail(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   if(s.trailAccent){
     for(let i=1;i<angles.length;i++){
       const a=facing+angles[i]!,x=Math.cos(a)*(range+3),y=Math.sin(a)*(range+3);
-      const color=i%2?w.trail.first:w.trail.second;
-      if(s.trailAccent==="bolts"){
-        ctx.strokeStyle=color;ctx.lineWidth=1.3;
-        ctx.beginPath();ctx.moveTo(x-5,y-1);ctx.lineTo(x+1,y-4);
-        ctx.lineTo(x-1,y+3);ctx.lineTo(x+5,y);ctx.stroke();
-      }else if(s.trailAccent==="stars"){
-        star(ctx,x,y,2.2,rgba(color,opacity));
-      }else{
-        point(ctx,x,y,(i%3)+.4,rgba(color,opacity));
-      }
+      // O começo do golpe se dissipa primeiro; a ponta recente fica legível.
+      const fade=opacity*(.35+.65*i/(angles.length-1));
+      swordSlashAccent(ctx,s.trailAccent,x,y,a,fade,
+        w.trail.first,w.trail.second,s.accent,i);
     }
   }
   ctx.restore();
