@@ -1,5 +1,5 @@
-import type { CreatureDefinition } from "../types.ts";
-import { southRareDrop } from "../rareLoot.ts";
+import type { CreatureDefinition } from "../../types.ts";
+import { southRareDrop } from "../../rareLoot.ts";
 
 /** horned-viper: ficha da região Sul. */
 export const hornedViper = {

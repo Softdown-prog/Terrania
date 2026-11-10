@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** cactus-sprout: ficha da região Sul. */
 export const cactusSprout = {
