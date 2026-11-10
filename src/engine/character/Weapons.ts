@@ -14,6 +14,38 @@ import { ASTRAL_SWORD } from "./weapons/swords/astral.ts";
 export const WEAPON_IDS = ["starter","forge","bronze","copper","dunes","boreal","obsidian","marsh","tempest","astral"] as const;
 export type WeaponId = typeof WEAPON_IDS[number];
 export type SwordSpecial = "push" | "bleed" | "ice" | "fire" | "poison" | "lightning" | "astral";
+/** Visual de cada arma, declarativo e independente do Canvas.
+ * O renderizador lê esta ficha, sem cadastrar geometrias em paralelo. */
+export interface SwordVisualProfile {
+  /** Silhueta e tratamento de material, definidos na ficha da espada. */
+  readonly motif: "oak" | "iron" | "bronze" | "copper" | "dunes" |
+    "frost" | "magma" | "venom" | "storm" | "astral";
+  readonly accent: string;
+  readonly trim: string;
+  readonly blade: string;
+  readonly shade: string;
+  readonly glint: string;
+  readonly guard: string;
+  readonly grip: string;
+  readonly width: number;
+  readonly length: number;
+  readonly serrated?: boolean;
+  readonly broad?: boolean;
+  readonly curved?: boolean;
+  readonly rune?: boolean;
+  readonly wrapColor?: string;
+  readonly pommelRadius?: number;
+  readonly pommelRing?: boolean;
+  readonly guardReach?: number;
+  readonly wingedGuard?: boolean;
+  readonly wingColor?: string;
+  readonly runeColor?: string;
+  readonly ornament?: "magma" | "venom" | "stars" | "storm";
+  readonly trailAccent?: "sand" | "ice-shards" | "embers" | "venom-drops" | "bolts" | "stars";
+  readonly trailLineWidth?: number;
+  /** Espessura máxima da fita do golpe em unidades locais da espada. */
+  readonly trailThickness: number;
+}
 export interface WeaponDefinition {
   readonly name: string;
   readonly level: number;
@@ -22,6 +54,7 @@ export interface WeaponDefinition {
   readonly windup: number;
   readonly nature: "physical" | "hybrid";
   readonly special: SwordSpecial | null;
+  readonly visual: SwordVisualProfile;
   readonly trail: { readonly first: string; readonly second: string; readonly opacity: number };
 }
 

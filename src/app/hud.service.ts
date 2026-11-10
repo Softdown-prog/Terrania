@@ -97,6 +97,9 @@ export class HudService implements GameUi {
     const forged=this.loadout()?.forged ?? false;
     return WEAPON_IDS.filter(id=>weaponUnlocked(id,level,forged));
   });
+  /** Os dez modelos ficam visíveis mesmo quando o jogador ainda não pode equipá-los. */
+  readonly swordIds = WEAPON_IDS;
+  weaponIcon(id: WeaponId): ItemIconId { return weaponItemIcon(id); }
   readonly equipmentSlots = EQUIPMENT_SLOTS;
   readonly gearCatalog = GEAR;
   readonly gear = signal<GearState | null>(null, { equal: (a, b) => a === b ||

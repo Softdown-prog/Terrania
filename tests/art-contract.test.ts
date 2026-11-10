@@ -94,6 +94,7 @@ test("arte: exceções são fechadas e exigem revisão explícita de novos pinto
   assert.deepEqual(Object.keys(NOT_AN_ASSET).sort(), [
     "drawCaveAtlas", "drawCaveView", "drawInterior", "drawWorldAtlas",
     "drawWorldView", "drawKnightTrail", "ellipse", "limb", "pill", "softShadow",
+    "point", "star", "paintSword", "paintSwordTrail",
   ].sort());
 });
 
