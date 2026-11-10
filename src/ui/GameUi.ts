@@ -4,7 +4,7 @@ import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/character/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/character/Equipment.ts';
-import type { CaveFloor } from '../engine/rooms/CaveRoom.ts';
+import type { CaveFloor } from '../world/caveFloor.ts';
 import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 
 export interface Preferences {

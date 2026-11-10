@@ -9,7 +9,8 @@ import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation, drawCaveWallFace } 
 import { hash2, valueNoise } from "../world/random.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { CaveEntrance } from "../world/caves.ts";
-import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH, type CaveFloor, type CaveRoom } from "../engine/rooms/CaveRoom.ts";
+import type { CaveRoom } from "../engine/rooms/CaveRoom.ts";
+import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH, type CaveFloor } from "../world/caveFloor.ts";
 
 const PALETTE = CAVE_PALETTE;
 
