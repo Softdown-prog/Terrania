@@ -1,4 +1,32 @@
 import type { WeaponDefinition } from "../../Weapons.ts";
 
-/** Ficha autoritativa individual da espada marsh; combate e inventário consomem o catálogo central. */
-export const MARSH_SWORD = {name:"Cutelo Peçonhento do Charco",level:80,damage:98,interval:1.3,windup:0.14,nature:"hybrid",special:"poison",trail:{first:"#76ff03",second:"#6a1b9a",opacity:1}} as const satisfies WeaponDefinition;
+/** Cutelo serrilhado com gotejamento de veneno. Perfil físico e ficha de combate autoritativos. */
+export const MARSH_SWORD = {
+  name: "Cutelo Peçonhento do Charco",
+  level: 80,
+  damage: 98,
+  interval: 1.3,
+  windup: 0.14,
+  nature: "hybrid",
+  special: "poison",
+  trail: {
+    first: "#76ff03",
+    second: "#6a1b9a",
+    opacity: 1,
+  },
+  // Formato e materiais da arma, não ícones ou dependências do Canvas.
+  visual: {
+    blade: "#578b4b",
+    shade: "#3b345e",
+    glint: "#9aff65",
+    guard: "#b3a59a",
+    grip: "#78548c",
+    width: 5.7,
+    length: 41,
+    serrated: true,
+    rune: true,
+    runeColor: "#aaec58",
+    ornament: "venom",
+    trailAccent: "particles",
+  },
+} as const satisfies WeaponDefinition;

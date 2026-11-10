@@ -46,3 +46,28 @@ test("fichas preservam progressão, atributos e compatibilidade de compra/forja"
   assert.equal(weaponUnlocked("forge",10,false),false);
   assert.equal(weaponUnlocked("astral",99,true),false);
 });
+
+test("os perfis visuais pertencem às dez fichas, não ao renderizador",()=>{
+  const renderer=readFileSync("src/render/swords.ts","utf8");
+  assert.equal(renderer.includes("const SHAPES"),false);
+  assert.ok(renderer.includes("WEAPONS[weapon].visual"));
+  const lengths=[31,35,35,39,40,40,42,41,43,44];
+  const widths=[3.1,3.7,4,5.6,5.1,5.5,6.3,5.7,4.4,5.3];
+  const signatures=new Set<string>();
+  for(const [i,id] of WEAPON_IDS.entries()){
+    const visual=WEAPONS[id].visual;
+    assert.equal(visual.length,lengths[i],id);
+    assert.equal(visual.width,widths[i],id);
+    for(const key of ["blade","shade","glint","guard","grip"] as const)
+      assert.match(visual[key],/^#[0-9a-f]{6}$/i,id+"."+key);
+    assert.ok(readFileSync(directory+"/"+id+".ts","utf8").includes("visual: {"),id);
+    signatures.add([visual.length,visual.width,visual.blade,visual.guard,visual.curved,visual.serrated,visual.rune].join(":"));
+  }
+  assert.equal(signatures.size,10);
+  assert.equal(WEAPONS.starter.visual.trailLineWidth,1);
+  assert.equal(WEAPONS.dunes.visual.guardReach,5);
+  assert.equal(WEAPONS.tempest.visual.trailAccent,"bolts");
+  assert.equal(WEAPONS.astral.visual.ornament,"stars");
+  assert.equal(WEAPONS.obsidian.visual.ornament,"magma");
+  assert.equal(WEAPONS.marsh.visual.ornament,"venom");
+});

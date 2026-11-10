@@ -5,21 +5,8 @@ import { clamp01, rgba, TAU } from "./draw.ts";
 /** Ten sword silhouettes reconstructed as code from the author's 5×2 sheet.
  * Origin is the hilt's near end and the blade points right (+x). No texture assets.
  */
-const SHAPES: Readonly<Record<WeaponId, {
-  blade: string; shade:string; glint:string; guard:string; grip:string; width:number; length:number;
-  serrated?: boolean; broad?: boolean; curved?: boolean; rune?: boolean;
-}>> = {
-  starter: {blade:"#98734e",shade:"#584231",glint:"#c8a47c",guard:"#73604e",grip:"#9c8063",width:3.1,length:31},
-  forge: {blade:"#c4ced0",shade:"#66767b",glint:"#f0f5f4",guard:"#a8aaa7",grip:"#6d4f3d",width:3.7,length:35},
-  bronze:{blade:"#c99a69",shade:"#886448",glint:"#f7d4a6",guard:"#d6ac59",grip:"#a28a6d",width:4,length:35},
-  copper:{blade:"#bb6744",shade:"#773a30",glint:"#f6ab73",guard:"#99543b",grip:"#5a4339",width:5.6,length:39,broad:true},
-  dunes:{blade:"#d3a25a",shade:"#83613e",glint:"#f2d780",guard:"#c6a66a",grip:"#86664b",width:5.1,length:40,serrated:true},
-  boreal:{blade:"#90dfff",shade:"#4b9ec7",glint:"#ebffff",guard:"#b3e8ff",grip:"#547f9b",width:5.5,length:40,broad:true,rune:true},
-  obsidian:{blade:"#34333f",shade:"#171925",glint:"#ff772b",guard:"#5c3c38",grip:"#51413f",width:6.3,length:42,broad:true,rune:true},
-  marsh:{blade:"#578b4b",shade:"#3b345e",glint:"#9aff65",guard:"#b3a59a",grip:"#78548c",width:5.7,length:41,serrated:true,rune:true},
-  tempest:{blade:"#668cd0",shade:"#263e72",glint:"#eff7ff",guard:"#d5ae5d",grip:"#244777",width:4.4,length:43,curved:true,rune:true},
-  astral:{blade:"#5878d1",shade:"#212d81",glint:"#b0d4ff",guard:"#e5bd63",grip:"#3c448f",width:5.3,length:44,broad:true,rune:true},
-};
+// Cada espada define suas propriedades físicas em character/weapons/swords/.
+// O renderizador apenas aplica rotinas comuns de pintura procedural.
 /** O arco usa a empunhadura como pivô, e não o centro do corpo. */
 function point(ctx:CanvasRenderingContext2D,x:number,y:number,r:number,color:string):void {
   ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
@@ -31,7 +18,7 @@ function star(ctx:CanvasRenderingContext2D,x:number,y:number,r:number,color:stri
 }
 export function drawKnightSword(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   impact=0,tone:(color:string)=>string=(c)=>c):void {
-  const s=SHAPES[weapon],w=s.width,len=s.length;
+  const s=WEAPONS[weapon].visual,w=s.width,len=s.length;
   ctx.save();ctx.lineJoin="round";ctx.lineCap="round";
   // Linen-wrapped or jeweled hilt (x=4..13), consistent with the grip position.
   const handle=ctx.createLinearGradient(4,-3.3,12,3.3);
@@ -39,28 +26,28 @@ export function drawKnightSword(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   ctx.strokeStyle="#20232c";ctx.lineWidth=1.5;
   ctx.fillStyle=handle;ctx.fillRect(4,-2.4,8.6,4.8);ctx.strokeRect(4,-2.4,8.6,4.8);
   for(let i=0;i<4;i++){
-    ctx.strokeStyle=tone(weapon==="starter"?"#ded1b7":"#b2a187");
+    ctx.strokeStyle=tone(s.wrapColor??"#b2a187");
     ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(5+i*2,-2.1);
     ctx.lineTo(6.5+i*2,2);ctx.stroke();
   }
-  point(ctx,3.5,0,weapon==="bronze"?2.8:2.2,tone(s.guard));
+  point(ctx,3.5,0,s.pommelRadius??2.2,tone(s.guard));
   point(ctx,13,-w-1,.85,tone("#f7e9c6"));
   point(ctx,13,w+1,.85,tone("#8e8573"));
   point(ctx,6.7,0,.7,tone("#fef9dd"));
-  if(weapon==="bronze"||weapon==="astral") {
+  if(s.pommelRing) {
     ctx.strokeStyle=tone("#edc45e");ctx.lineWidth=1.1;
     ctx.beginPath();ctx.arc(3.5,0,1.5,0,TAU);ctx.stroke();
   }
   // Unique guards: short iron cross, spiked dune bone, crystalline and celestial wings.
   ctx.fillStyle=tone(s.guard);ctx.strokeStyle="#262431";ctx.lineWidth=1.2;
   ctx.beginPath();
-  ctx.moveTo(12,-w-.8);ctx.lineTo(13.6,-w-(weapon==="astral"?7:weapon==="dunes"?5:3));
+  ctx.moveTo(12,-w-.8);ctx.lineTo(13.6,-w-(s.guardReach??3));
   ctx.lineTo(15.3,-w-1);ctx.lineTo(15.3,w+1);
-  ctx.lineTo(13.6,w+(weapon==="astral"?7:weapon==="dunes"?5:3));
+  ctx.lineTo(13.6,w+(s.guardReach??3));
   ctx.lineTo(12,w+.8);ctx.closePath();ctx.fill();ctx.stroke();
-  if(weapon==="boreal"||weapon==="astral"||weapon==="obsidian"){
+  if(s.wingedGuard){
     for(const sign of [-1,1]){
-      ctx.fillStyle=tone(weapon==="obsidian"?"#573f43":s.guard);
+      ctx.fillStyle=tone(s.wingColor??s.guard);
       ctx.beginPath();ctx.moveTo(13.4,sign*3);ctx.lineTo(18,sign*(w+7));
       ctx.lineTo(19.2,sign*4);ctx.closePath();ctx.fill();
     }
@@ -92,27 +79,27 @@ export function drawKnightSword(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   ctx.lineTo(len-7,s.curved?-w-2:-w*.5);ctx.stroke();
   ctx.strokeStyle=tone(s.shade);ctx.beginPath();ctx.moveTo(17,0);ctx.lineTo(len-5,0);ctx.stroke();
   if(s.rune){
-    ctx.strokeStyle=tone(weapon==="marsh"?"#aaec58":weapon==="obsidian"?"#ed642e":weapon==="astral"?"#ecca57":"#e4fbff");
+    ctx.strokeStyle=tone(s.runeColor??"#e4fbff");
     ctx.lineWidth=1.15;
     for(let i=0;i<5;i++){
-      const x=20+i*(len-27)/5,vertical=weapon==="tempest"?(i%2?2:-2):0;
+      const x=20+i*(len-27)/5,vertical=s.ornament==="storm"?(i%2?2:-2):0;
       ctx.beginPath();ctx.moveTo(x,-1.3+vertical);ctx.lineTo(x+2,-.2);
       ctx.lineTo(x+.7,1.5);ctx.stroke();
     }
   }
-  if(weapon==="obsidian"){
+  if(s.ornament==="magma"){
     ctx.strokeStyle="#fb7427";ctx.lineWidth=1.8;
     ctx.beginPath();ctx.moveTo(19,0);ctx.lineTo(24,-2);ctx.lineTo(30,2);
     ctx.lineTo(len-4,-1);ctx.stroke();
   }
-  if(weapon==="marsh"){
+  if(s.ornament==="venom"){
     for(let i=0;i<5;i++)point(ctx,21+i*4,w+1+(i%2)*2,1.3,"#8cff2e");
   }
-  if(weapon==="astral"){
+  if(s.ornament==="stars"){
     for(let i=0;i<4;i++)star(ctx,24+i*5,i%2?2:-1,2,"#efcd74");
     point(ctx,15.2,0,2.1,"#65cdf8");
   }
-  if(weapon==="tempest"){
+  if(s.ornament==="storm"){
     ctx.strokeStyle="#ffee58";ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(19,1);ctx.lineTo(27,-3);
     ctx.lineTo(31,1);ctx.lineTo(len-5,-4);ctx.stroke();
@@ -131,9 +118,9 @@ export function drawKnightSword(ctx:CanvasRenderingContext2D,weapon:WeaponId,
 export function drawKnightTrail(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   facing:number,angles:readonly number[],alpha:number):void {
   if(angles.length<2 || alpha<=.02)return;
-  const w=WEAPONS[weapon],opacity=alpha*w.trail.opacity;
+  const w=WEAPONS[weapon],s=w.visual,opacity=alpha*w.trail.opacity;
   // Raio acompanha a lâmina real; o herói fornece escala e posição da mão.
-  const range=SHAPES[weapon].length-KNIGHT_SWORD_GRIP;
+  const range=s.length-KNIGHT_SWORD_GRIP;
   const inner=Math.max(9,range*.6);
   ctx.save();
   for(let layer=0;layer<2;layer++){
@@ -156,16 +143,16 @@ export function drawKnightTrail(ctx:CanvasRenderingContext2D,weapon:WeaponId,
     const a=facing+offset,x=Math.cos(a)*range,y=Math.sin(a)*range;
     if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
   });
-  ctx.strokeStyle=rgba(w.trail.second,opacity);ctx.lineWidth=weapon==="starter"?1:2;ctx.stroke();
-  if(["dunes","boreal","obsidian","marsh","tempest","astral"].includes(weapon)){
+  ctx.strokeStyle=rgba(w.trail.second,opacity);ctx.lineWidth=s.trailLineWidth??2;ctx.stroke();
+  if(s.trailAccent){
     for(let i=1;i<angles.length;i++){
       const a=facing+angles[i]!,x=Math.cos(a)*(range+3),y=Math.sin(a)*(range+3);
       const color=i%2?w.trail.first:w.trail.second;
-      if(weapon==="tempest"){
+      if(s.trailAccent==="bolts"){
         ctx.strokeStyle=color;ctx.lineWidth=1.3;
         ctx.beginPath();ctx.moveTo(x-5,y-1);ctx.lineTo(x+1,y-4);
         ctx.lineTo(x-1,y+3);ctx.lineTo(x+5,y);ctx.stroke();
-      }else if(weapon==="astral"){
+      }else if(s.trailAccent==="stars"){
         star(ctx,x,y,2.2,rgba(color,opacity));
       }else{
         point(ctx,x,y,(i%3)+.4,rgba(color,opacity));
