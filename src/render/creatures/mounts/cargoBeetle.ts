@@ -91,7 +91,13 @@ function harness(ctx:CanvasRenderingContext2D):void{
 function load(ctx:CanvasRenderingContext2D,time:number):void{
   for(const side of [-1,1]){
     ctx.save();ctx.translate(side*24,-39+Math.sin(time*1.4+side)*.35);
-    ctx.fillStyle=C.wood;ctx.strokeStyle=C.shadow;ctx.lineWidth=1.3;
+    // Volumes por caixa: tampo iluminado, fundo envelhecido e cantos escurecidos.
+    const crate=ctx.createLinearGradient(-13,-14,13,12);
+    crate.addColorStop(0,C.shellLight);
+    crate.addColorStop(.28,C.bronze);
+    crate.addColorStop(.72,C.wood);
+    crate.addColorStop(1,C.shadow);
+    ctx.fillStyle=crate;ctx.strokeStyle=C.shadow;ctx.lineWidth=1.3;
     ctx.beginPath();ctx.moveTo(-12,-14);ctx.lineTo(12,-14);
     ctx.lineTo(11,12);ctx.lineTo(-11,12);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.fillStyle=C.bronze;ctx.fillRect(-12,-13,24,4);
