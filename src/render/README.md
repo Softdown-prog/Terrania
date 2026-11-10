@@ -204,3 +204,17 @@ as articulações de deslocamento ficam estacionárias quando moving=0.
 Nenhuma alteração foi feita no catálogo de combate, colisão ou loot.
 Os dois testes do segundo lote em tests/specialized-creature-art.test.ts
 auditam diretamente as anatomias e a API de renderização.
+
+
+### Terceiro lote: espírito, tritão e polvo
+
+Os desenhos individuais north/spirits/frostSpirit.ts, east/tritons/tideHunterTriton.ts
+e east/octopuses/abyssalOctopus.ts ganharam silhuetas detalhadas, partes móveis
+e efeitos próprios de casting: véus e cristais de geada, tridente e nadadeira,
+oito tentáculos com ventosas e nuvem de tinta. Os movimentos dependem do
+estado real da criatura; o motor e o loot não mudaram.
+
+A captura monstros-estados-reais.png é produzida pelo próprio Canvas 2D do
+Terrania em Chromium via scripts/art-preview.mjs, usando renderRegionalCreature
+em repouso, deslocamento e preparação de ataque. É uma imagem de inspeção
+renderizada pelo jogo, não um screenshot da partida com HUD.

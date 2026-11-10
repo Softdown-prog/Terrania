@@ -7,6 +7,7 @@ on:
       - "src/render/creatures/**"
       - "tests/specialized-creature-art.test.ts"
       - ".github/workflows/cave-art-contract.yml"
+      - "scripts/art-preview.mjs"
   pull_request:
     paths:
       - "src/render/creatures/**"
@@ -58,6 +59,7 @@ jobs:
           name: terrania-cave-art-contract
           path: |
             test-results/art-preview/pecas.png
+            test-results/art-preview/monstros-estados-reais.png
             test-results/art-preview/cavernas-regionais.png
             test-results/art-preview/cavernas-paredes.png
           if-no-files-found: warn

@@ -1,3 +1,6 @@
+import { drawSpirit } from "../src/render/creatures/north/spirits/frostSpirit.ts";
+import { triton } from "../src/render/creatures/east/tritons/tideHunterTriton.ts";
+import { octopus } from "../src/render/creatures/east/octopuses/abyssalOctopus.ts";
 import { drawBasaltGolem } from "../src/render/creatures/west/golems/basaltGolem.ts";
 import { drawHydra } from "../src/render/creatures/south/hydras/mireHydra.ts";
 import { drawDraconid } from "../src/render/creatures/west/draconids/cliffDraconid.ts";
@@ -310,5 +313,52 @@ test("segundo lote preserva contrato público, vida, combate e determinismo",()=
     assert.equal(a.saves,a.restores,kind+" mudou o estado do Canvas externo");
     assert.equal(a.signature,b.signature,kind+" perdeu reprodução determinística");
     assert.equal(actor.hp,hp,kind+" modificou atributos fora do render");
+  }
+});
+
+
+/** Terceiro lote: inspeciona anatomia, sem contar animações do frame compartilhado. */
+test("espírito, tritão e polvo desenham movimento e conjuração na própria espécie",()=>{
+  const cold={base:"#519bcc",light:"#dcf7ff",dark:"#205c8e",accent:"#83e4ff",eye:"#cffaff"};
+  const tide={base:"#349b93",dark:"#27516f",light:"#8be6c7",accent:"#82bdef",eyes:"#ffe17c"};
+  const abyss={base:"#7a58ae",dark:"#354668",light:"#bb78c9",accent:"#4adbc8",eyes:"#ffe987"};
+  type Draw=(ctx:CanvasRenderingContext2D,t:number,phase:number,moving:number,casting:number)=>void;
+  const species:ReadonlyArray<{kind:string,draw:Draw}>=[
+    {kind:"frost-spirit",draw:(ctx,t,p,m,c)=>drawSpirit(ctx,cold,t,p,m,c)},
+    {kind:"tide-hunter-triton",draw:(ctx,t,p,m,c)=>triton(ctx,tide,t,p,m,c)},
+    {kind:"abyssal-octopus",draw:(ctx,t,p,m,c)=>octopus(ctx,abyss,t,p,m,c)},
+  ];
+  const seen=new Set<string>();
+  for(const {kind,draw} of species){
+    const at=(p:number,m:number,c:number)=>capture(ctx=>draw(ctx,1.7,p,m,c));
+    const idle=at(0,0,0),still=at(2.5,0,0),
+      moving=at(2.5,1,0),casting=at(0,0,.9);
+    assert.ok(idle.paintOps>45,kind+" sem volume e detalhes suficientes");
+    assert.ok(idle.paintOps<850,kind+" ultrapassa orçamento simples de Canvas");
+    assert.ok(idle.curves>15,kind+" sem articulações e formas orgânicas");
+    assert.equal(idle.saves,idle.restores,kind+" desempilhou estado do Canvas");
+    assert.equal(idle.signature,still.signature,kind+" usa fase de passos em repouso");
+    assert.notEqual(idle.signature,moving.signature,kind+" não responde ao movimento real");
+    assert.notEqual(idle.signature,casting.signature,kind+" não reage à preparação");
+    assert.ok(casting.paintOps>idle.paintOps,kind+" sem novos detalhes na conjuração");
+    assert.equal(idle.signature,at(0,0,0).signature,kind+" não determinístico");
+    assert.equal(moving.signature,at(2.5,1,0).signature,kind+" animação não reprodutível");
+    assert.ok(!seen.has(idle.signature),kind+" reutiliza anatomia de outra espécie");
+    seen.add(idle.signature);
+  }
+});
+
+test("terceiro lote mantém catálogo, composição e contexto Canvas intactos",()=>{
+  for(const kind of ["frost-spirit","tide-hunter-triton","abyssal-octopus"] as const){
+    const catalog=CREATURE_CATALOG[kind];
+    const state={kind,hp:catalog.maxHp,id:"test-third:"+kind,
+      moving:1,motionPhase:2.5,casting:.9};
+    const captureState=()=>capture(ctx=>renderRegionalCreature(ctx,state,65,85,1.7));
+    const first=captureState(),second=captureState();
+    assert.ok(first.paintOps>55,kind+" sem anatomia em renderRegionalCreature");
+    assert.equal(first.saves,first.restores,kind+" desequilibra Canvas");
+    assert.equal(first.signature,second.signature,kind+" não é reprodutível");
+    assert.equal(state.hp,catalog.maxHp,kind+" alterou HP de combate");
+    assert.ok(catalog.loot.length>0,kind+" perdeu loot canônico");
   }
 });
