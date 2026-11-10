@@ -1,7 +1,7 @@
 /** Anatomia e movimentos próprios da espécie: não é uma ficha de atributos. */
-import type { Ramp } from "./geometry.ts";
-import { mass, eye, crystal, etched, EDGE } from "./geometry.ts";
-import { ellipse, TAU } from "../../draw.ts";
+import type { Ramp } from "../../shared/wave2Geometry.ts";
+import { mass, eye, crystal, etched, EDGE } from "../../shared/wave2Geometry.ts";
+import { ellipse, TAU } from "../../../draw.ts";
 
 export const octopus = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   for(let i=0;i<8;i++){

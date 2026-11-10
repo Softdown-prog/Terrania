@@ -1,6 +1,6 @@
 /** Silhueta e materiais exclusivos, mantendo as mesmas regras de combate. */
-import type { ColorRamp } from "./geometry.ts";
-import { organic, shard, headEyes, curvedLeg } from "./geometry.ts";
+import type { ColorRamp } from "../../shared/regionalGeometry.ts";
+import { organic, shard, headEyes, curvedLeg } from "../../shared/regionalGeometry.ts";
 
 export const drawBasaltGolem = (ctx: CanvasRenderingContext2D, c: ColorRamp): void => {
   for (const s of [-1,1]) {

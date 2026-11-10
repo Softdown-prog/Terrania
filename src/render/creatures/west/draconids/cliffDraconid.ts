@@ -1,6 +1,6 @@
 /** Silhueta e materiais exclusivos, mantendo as mesmas regras de combate. */
-import type { ColorRamp } from "./geometry.ts";
-import { organic, shard, headEyes, curvedLeg, carapaceDetail, OUTLINE } from "./geometry.ts";
+import type { ColorRamp } from "../../shared/regionalGeometry.ts";
+import { organic, shard, headEyes, curvedLeg, carapaceDetail, OUTLINE } from "../../shared/regionalGeometry.ts";
 
 export const drawDraconid = (ctx: CanvasRenderingContext2D, c: ColorRamp, time: number): void => {
   ctx.fillStyle = c.dark; ctx.strokeStyle = c.light; ctx.lineWidth = 1.3;

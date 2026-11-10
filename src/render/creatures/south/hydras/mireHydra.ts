@@ -1,7 +1,7 @@
 /** Silhueta e materiais exclusivos, mantendo as mesmas regras de combate. */
-import type { ColorRamp } from "./geometry.ts";
-import { organic, headEyes, carapaceDetail, OUTLINE } from "./geometry.ts";
-import { ellipse } from "../../draw.ts";
+import type { ColorRamp } from "../../shared/regionalGeometry.ts";
+import { organic, headEyes, carapaceDetail, OUTLINE } from "../../shared/regionalGeometry.ts";
+import { ellipse } from "../../../draw.ts";
 
 export const drawHydra = (ctx: CanvasRenderingContext2D, c: ColorRamp, time: number): void => {
   organic(ctx,0,-8,26,11,c);

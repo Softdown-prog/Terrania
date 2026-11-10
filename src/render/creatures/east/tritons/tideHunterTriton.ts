@@ -1,7 +1,7 @@
 /** Anatomia e movimentos próprios da espécie: não é uma ficha de atributos. */
-import type { Ramp } from "./geometry.ts";
-import { mass, eye, joint, crystal, etched, EDGE } from "./geometry.ts";
-import { rgba } from "../../draw.ts";
+import type { Ramp } from "../../shared/wave2Geometry.ts";
+import { mass, eye, joint, crystal, etched, EDGE } from "../../shared/wave2Geometry.ts";
+import { rgba } from "../../../draw.ts";
 
 export const triton = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   ctx.strokeStyle=EDGE;ctx.lineWidth=16;ctx.lineCap="round";
