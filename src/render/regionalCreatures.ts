@@ -1,3 +1,4 @@
+import { renderSandBeetle } from "./sandBeetle.ts";
 import { renderWave3Creature } from "./regionalWave3.ts";
 import { renderWave2Creature } from "./regionalWave2.ts";
 import { CREATURE_CATALOG, SECOND_WAVE_KINDS, SOUTH_COMMON_KINDS, type SouthCommonKind, type SecondWaveKind, type RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
@@ -265,9 +266,13 @@ function drawSerpent(ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void 
   ellipse(ctx,-5,-59,3.1,1.8,c.dark,-.4);
   ellipse(ctx,-5.7,-59.6,1.1,.6,rgba(GLINT,.73),-.4);
 }
-/** Desenha as 30 espécies usando as três camadas procedurais, sem PNGs. */
+/** Desenha o bestiário regional por renderizadores procedurais, sem PNGs. */
 export function renderRegionalCreature(ctx: CanvasRenderingContext2D,
   creature: RegionalCreatureVisual, sx: number, sy: number, time = 0): void {
+  if (creature.kind === "sand-beetle") {
+    renderSandBeetle(ctx, creature, sx, sy, time);
+    return;
+  }
   if(SOUTH_COMMON_KINDS.some(kind=>kind===creature.kind)) {
     renderWave3Creature(ctx,{...creature,kind:creature.kind as SouthCommonKind},sx,sy,time);
     return;

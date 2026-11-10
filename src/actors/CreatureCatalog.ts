@@ -15,11 +15,14 @@ export const SOUTH_COMMON_KINDS = [
   "oasis-elf", "mirage-imp", "horned-viper", "carrion-vulture", "cactus-sprout",
 ] as const;
 export type SouthCommonKind = typeof SOUTH_COMMON_KINDS[number];
+/** Fauna inicial exclusiva da superfície do Sul; não entra no sorteio das cavernas. */
+export const SOUTH_SURFACE_KINDS = ["sand-beetle"] as const;
 export const REGIONAL_CREATURE_KINDS = [
   "basalt-golem", "cliff-draconid", "mire-hydra", "dune-scorpion", "solar-scarab",
   "boreal-yeti", "glacial-wolf", "frost-spirit", "coral-crab", "storm-serpent",
   ...SECOND_WAVE_KINDS,
   ...SOUTH_COMMON_KINDS,
+  ...SOUTH_SURFACE_KINDS,
 ] as const;
 export type RegionalCreatureKind = typeof REGIONAL_CREATURE_KINDS[number];
 export type CreatureKind = "slime" | RegionalCreatureKind;
@@ -50,6 +53,7 @@ export interface CreatureDefinition {
   readonly biomes: readonly Biome[];
   readonly loot: readonly LootChance[];
   readonly autoLoot?: boolean;
+  readonly recommendedLevels?: readonly [number, number];
 }
 /** Tipo, números, habitat e tabela de drops são partilhados entre combate e arte. */
 export const CREATURE_CATALOG: Readonly<Record<CreatureKind, CreatureDefinition>> = Object.freeze({
@@ -201,6 +205,15 @@ export const CREATURE_CATALOG: Readonly<Record<CreatureKind, CreatureDefinition>
     loot: [{ item: "Escama Azulada", chance: .65 }, { item: "Coral Energizado", chance: .30 }, { item: "Tridente das Marés", chance: .04 }],
   },
 
+  // Inimigo de superfície; sprite minúsculo (9 × 10 px), não entra em dungeons.
+  "sand-beetle": {
+    name: "Besouro da Areia", maxHp: 40, contactDamage: 7, experience: 18,
+    nature: "physical", special: "none", speed: 62, range: 22, interval: 1.05,
+    status: null, statusSeconds: 0, region: "south", caveThemes: [],
+    biomes: ["dunes", "ruins", "trail"], recommendedLevels: [5, 18],
+    loot: [{ item: "Carapaça Seca", chance: .4 }],
+  },
+
   // Lote 3: frequentes e de baixo tier no Sul. Chance é por item e por morte.
   "dune-rat": {
     name: "Rato das Dunas", maxHp: 35, contactDamage: 6, experience: 16,
@@ -273,6 +286,11 @@ export const CREATURE_CATALOG: Readonly<Record<CreatureKind, CreatureDefinition>
     loot: [{ item: "Flor do Deserto", chance: .40 }, { item: "Polpa de Cacto Hidratante", chance: .65 }, { item: "Espinho Verde", chance: .55 }],
   },
 });
+
+/** Enterra-se parcialmente somente abaixo de 20% dos 40 HP (1–7 HP). */
+export function sandBeetleBuried(hp: number): boolean {
+  return hp > 0 && hp < CREATURE_CATALOG["sand-beetle"].maxHp * .2;
+}
 
 export interface CreatureView {
   readonly id: string;

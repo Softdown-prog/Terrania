@@ -1,3 +1,4 @@
+import { renderSandBeetle } from "../../src/render/sandBeetle.ts";
 import { drawKnightSword } from "../../src/render/swords.ts";
 import { WEAPON_IDS } from "../../src/engine/Weapons.ts";
 import { renderWave3Creature } from "../../src/render/regionalWave3.ts";
@@ -49,6 +50,8 @@ export const ASSETS: ArtAsset[] = [
     draw:c=>drawKnightSword(c,kind,1)
   })),
   { id: "slime", tier: "creature", fn: "renderSlime", draw: c => renderSlime(c, { hp: 3, bounce: 0.2, id: "s1" }, 0, 0, {}) },
+  { id: "Besouro da Areia 9x10", tier: "creature", fn: "renderSandBeetle",
+    draw: c => renderSandBeetle(c, { hp: 40 }, 0, 0, 1) },
   ...MOUNT_IDS.map<ArtAsset>(id => ({
     id:"montaria "+id,tier:"creature",fn:"renderMount",
     draw:c=>renderMount(c,id,0,0,1),
