@@ -1,4 +1,4 @@
-name: Deploy verified Terrania multiplayer to VPS
+name: Deploy verified Terrania HTTP API to VPS
 on:
   push:
     branches: [main]
@@ -65,10 +65,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Softdown-prog/Painel
-          ref: 95655f3614c7c267270ab09128b25a608dbb75b1
+          ref: 8af962c48ea0347b9db3ea6c8598b39b60b68640
           path: operations-client
           persist-credentials: false
-      - name: Install only Terrania multiplayer and verify public SHA
+      - name: Install Terrania HTTP API and verify public SHA
         env:
           VPS_OPERATION: deploy
           VPS_PROJECT: terrania
