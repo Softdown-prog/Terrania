@@ -1,4 +1,4 @@
-import type { OfflineSave } from '../engine/OfflineSimulation.ts';
+import { normalizeKills, type OfflineSave } from '../engine/OfflineSimulation.ts';
 import { normalizeInventory } from '../engine/Inventory.ts';
 import { normalizeDrops } from '../engine/loot.ts';
 import { maxHpForExperience, normalizeExperience } from '../engine/Experience.ts';
@@ -22,7 +22,7 @@ export function loadLocalSave(): OfflineSave | null {
     return { seed: save.seed >>> 0, x: save.x, y: save.y,
       hp: awaitingRespawn ? 0 : Math.min(maxHpForExperience(experience), Math.max(1, save.hp)),
       ...(awaitingRespawn ? { awaitingRespawn: true } : {}),
-      kills: typeof save.kills === 'number' && Number.isFinite(save.kills) ? Math.max(0, save.kills) : 0,
+      kills: normalizeKills(save.kills),
       experience,
       defeated: save.defeated.slice(-2000),
       inventory: normalizeInventory(save.inventory),

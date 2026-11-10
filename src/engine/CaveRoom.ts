@@ -1,7 +1,7 @@
-import { applySwordImpact, swordHitDamage } from "./SwordCombat.ts";
+import { applySwordImpact, swordHitDamage, swordStrikeTargets } from "./SwordCombat.ts";
 import { SOUTH_COMMON_KINDS } from "../actors/CreatureCatalog.ts";
 import { RegionalMonster, caveMonsterKinds } from "../actors/RegionalMonster.ts";
-import { canStrike, faceTarget } from "./combat.ts";
+import { faceTarget } from "./combat.ts";
 import type { WeaponId } from "./Weapons.ts";
 import type { RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
 import { Player } from "../actors/Player.ts";
@@ -139,33 +139,30 @@ export class CaveRoom {
     if(attack)this.player.startAttack(weapon);
     for(const [id,monster] of this.monsters){
       monster.update(dt,this.player,this.collision,defense);
-      if(monster.hp<=0)this.defeat(id,monster);
+      if(monster.hp<=0)this.defeat(id,monster,defense);
     }
     if(this.player.consumeStrike()){
       const equipped=this.player.attackWeapon;
-      const reach=equipped==="astral"?72:52,cone=equipped==="astral"?-.5:-.1;
-      const targets=[...this.monsters.values()]
-        .filter(monster=>(targetId===undefined || monster.id===targetId) &&
-          canStrike(this.player,monster,this.collision,reach,cone))
-        .sort((a,b)=>Math.hypot(a.x-this.player.x,a.y-this.player.y)-
-          Math.hypot(b.x-this.player.x,b.y-this.player.y))
-        .slice(0,equipped==="astral"?3:1);
+      const targets=swordStrikeTargets(equipped,this.player,this.monsters.values(),
+        this.collision,targetId);
+      // O herói encara o alvo principal; os demais do arco astral não giram o golpe.
+      if(targets[0])faceTarget(this.player,targets[0]);
       for(const monster of targets){
         if(monster.hp<=0)continue;
-        faceTarget(this.player,monster);
         monster.takeHit(this.player.x,this.player.y,swordHitDamage(equipped,monster));
         monster.onSwordHit(this.player,equipped);
         const arcs=applySwordImpact(equipped,this.player,monster,
           this.monsters.values(),this.collision).extra;
-        for(const struck of arcs)if(struck.hp<=0)this.defeat(struck.id,struck as RegionalMonster);
-        if(monster.hp<=0)this.defeat(monster.id,monster);
+        for(const struck of arcs)if(struck.hp<=0)this.defeat(struck.id,struck as RegionalMonster,defense);
+        if(monster.hp<=0)this.defeat(monster.id,monster,defense);
       }
     }
   }
   /** One kill event even if DOT, direct hit and chained lightning overlap. */
-  private defeat(id:string,monster:RegionalMonster):void {
+  private defeat(id:string,monster:RegionalMonster,defense:number):void {
     if(!this.monsters.has(id))return;
-    monster.deathBurst(this.player,this.collision,0);
+    // A explosão final respeita a armadura, como na superfície.
+    monster.deathBurst(this.player,this.collision,defense);
     this.monsters.delete(id);
     this.victories.push({kind:monster.kind,id});
   }

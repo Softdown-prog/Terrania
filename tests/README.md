@@ -20,3 +20,6 @@ pela escada; CI verde sem esse cenário não comprova que a navegação está co
 
 ### Montarias
 `mounts.test.ts`: dez fichas, tier/nível, stable, taming, captura idempotente, stamina, save e colisão com velocidade montada. `browser/mounts.spec.ts` exercita controles reais do mestre de estábulos e Android. As dez artes obedecem ao mesmo contrato de criaturas existente.
+
+### Invariantes do motor e portões de qualidade
+`engine-invariants.test.ts` guarda as regressões dos bugs de combate, derrota e save já corrigidos (lista em "Invariantes do motor" no `AGENTS.md`); cada teste falha se a correção correspondente for desfeita. `quality-gates.test.ts` reprova acaso global ou relógio de parede nas regras e no render, TypeScript estrito enfraquecido (`@ts-ignore`, `any`) e testes pulados ou isolados fora da lista de exceções.
