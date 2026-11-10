@@ -1,5 +1,6 @@
 import type { WeaponId } from "../engine/Weapons.ts";
 import { Slime } from "./Slime.ts";
+import { pursuitStep, SPECIES_BEHAVIORS } from "../monsters/behavior.ts";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_COMMON_KINDS, SOUTH_SURFACE_KINDS,
   sandBeetleBuried, type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
 import { moveBody, clearPath, canMoveOnSeed, type CollisionMap } from "../world/collision.ts";
@@ -16,6 +17,9 @@ export class RegionalMonster extends Slime {
   override readonly kind: RegionalCreatureKind;
   readonly definition: CreatureDefinition;
   private phase = 0;
+  /** Distância percorrida alimenta a animação, não apenas o relógio visual. */
+  motionPhase = 0;
+  moving = 0;
   private cooldown = 0;
   private windup = 0;
   private enraged = 0;
@@ -53,6 +57,7 @@ export class RegionalMonster extends Slime {
     this.tickSwordStatuses(dt);
     if(this.hp<=0)return;
     this.phase += dt;
+    this.moving = 0;
     this.quietSeconds += dt;
     if(abilitySpecialIsTroll(this.definition) && this.hp < this.definition.maxHp &&
        this.quietSeconds > 4 && Math.hypot(hero.x-this.x,hero.y-this.y)>120){
@@ -77,14 +82,23 @@ export class RegionalMonster extends Slime {
       ability.special === "ink" || ability.special === "tidal-lightning" ||
       ability.special === "spore-cloud" || ability.special === "lava-burst" ||
       ability.special === "sling" || frightened);
+    const beforeX=this.x,beforeY=this.y;
     if(frightened && d>0.001 && d<70 && this.hurtTime<=0) {
-      // Retreat while throwing grit, without bypassing the normal collision grid.
-      moveBody(this,-dx/d*ability.speed*dt,-dy/d*ability.speed*dt,world);
+      // Fuga da espécie, sem ultrapassar colisão nem ignorar a física.
+      const flee=pursuitStep(this.kind,this.phase,-dx,-dy,d);
+      moveBody(this,flee.x*ability.speed*dt*flee.pace,
+        flee.y*ability.speed*dt*flee.pace,world);
     } else if (d < 245 && d > (keepRange ? 70 : 22) &&
         this.hurtTime <= 0 && d > .001) {
       const vultureRage=ability.special==="carrion-dive" && hero.hp < hero.maxHp*.5 ? 1.45 : 1;
       const speed = ability.speed * this.swordSpeedMultiplier * speedBoost * vultureRage * (1 + .18 * this.enraged);
-      moveBody(this, dx / d * speed * dt, dy / d * speed * dt, world);
+      const step=pursuitStep(this.kind,this.phase,dx,dy,d);
+      moveBody(this,step.x*speed*step.pace*dt,step.y*speed*step.pace*dt,world);
+    }
+    const traveled=Math.hypot(this.x-beforeX,this.y-beforeY);
+    if(traveled>.001){
+      this.moving=Math.min(1,traveled/Math.max(.001,ability.speed*dt));
+      this.motionPhase+=traveled/TILE_SIZE*SPECIES_BEHAVIORS[this.kind].cadence*Math.PI*2;
     }
     const inSight = d <= ability.range && d > .001 && clearPath(this, hero, world);
     if (this.windup > 0) {

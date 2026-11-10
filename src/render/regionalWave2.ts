@@ -1,3 +1,4 @@
+import { monsterPose } from "./monsterMotion.ts";
 import { CREATURE_CATALOG, type SecondWaveKind } from "../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, hashString, mix, pill, rgba, shade, softShadow, TAU } from "./draw.ts";
 
@@ -7,6 +8,8 @@ export interface Wave2Visual {
   readonly id?: string;
   readonly hurtTime?: number;
   readonly casting?: number;
+  readonly motionPhase?: number;
+  readonly moving?: number;
 }
 type Ramp = Readonly<{ base:string; dark:string; light:string; accent:string; eyes:string }>;
 const PAL: Readonly<Record<SecondWaveKind,Ramp>> = {
@@ -289,7 +292,10 @@ export function renderWave2Creature(ctx:CanvasRenderingContext2D,
   const c=PAL[actor.kind],seed=hashString(actor.id??actor.kind);
   ctx.save();ctx.translate(sx,sy);
   softShadow(ctx,0,4,31,8,.38);
-  ctx.translate(0,Math.sin(time*2+seed*TAU)*.8);
+  const pose=monsterPose(actor,time);
+  ctx.translate(pose.sway,pose.lift);
+  ctx.rotate(pose.tilt);
+  ctx.scale(pose.stretchX,pose.stretchY);
   switch(actor.kind){
     case "summit-griffin":griffin(ctx,c,time);break;
     case "magma-salamander":salamander(ctx,c,time);break;

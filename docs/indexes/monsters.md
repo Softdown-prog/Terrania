@@ -15,9 +15,10 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/east/index.ts`](../../src/monsters/east/index.ts)
 - [`src/monsters/west/index.ts`](../../src/monsters/west/index.ts)
 
-## Todos os arquivos deste módulo (40)
+## Todos os arquivos deste módulo (41)
 
 - [`src/monsters/README.md`](../../src/monsters/README.md)
+- [`src/monsters/behavior.ts`](../../src/monsters/behavior.ts)
 - [`src/monsters/catalog.ts`](../../src/monsters/catalog.ts)
 - [`src/monsters/center/index.ts`](../../src/monsters/center/index.ts)
 - [`src/monsters/center/slime.ts`](../../src/monsters/center/slime.ts)
