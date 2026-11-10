@@ -86,3 +86,62 @@ enxerga relevo, material e formas regionais, não apenas o piso plano da saída.
 `mounts.ts` contém silhuetas procedurais diferentes para as dez montarias, além do cercado da vila. `renderMount` e `renderStableFence` estão em `tests/helpers/artAssets.ts` como `creature` e `structure`; sem imagens externas ou novas exceções ao contrato.
 
 **Ruínas e lago negro do Sul (ADR 0017):** `southRuinsArt.ts` desenha as mesmas peças que a colisão usa (`world/southRuins.ts`), em duas camadas de profundidade (`back` e `front`) cacheadas por `scenery.ts`. O lago negro é desenhado em `terrain.ts` (paleta, margem de lama, juncos secos) e animado em `WorldRenderer.ts` com ondas e fio roxo no lugar da espuma branca.
+
+
+## Arte de espécies com anatomia própria — 10/11/2026
+
+A diferença entre ficha, IA e desenho é deliberada: as fichas canônicas e o loot
+ficam em `src/monsters/`; colisão/dano em `src/actors/`; arte Canvas em
+`src/render/creatures/`. As espécies prioritárias agora têm arquivos individuais
+de acabamento que são **chamados pelo renderizador do jogo**, não demonstrações
+isoladas: Rato das Dunas, Goblin Saqueador e Orc Nômade; além das montarias
+Lagarto das Areias e Escaravelho de Carga.
+
+O código específico acrescenta volumes, materiais, olhos, boca, cicatrizes,
+vestes, armas, escamas, animação de pose e efeitos condicionais. Usa estados
+verdadeiros (`hp`, `hurtTime`, `moving`, `motionPhase`, `casting`) quando
+disponíveis. Não simula loot em Canvas nem muda os números de combate.
+
+**Incompleto por design:** outras 29 espécies e oito montarias ainda precisam
+do mesmo nível de acabamento em arquivos próprios. Cada atualização deve
+ser medida por diferenças verificáveis de silhueta, legibilidade, reação a
+estados e custo em Canvas real; 500 linhas cheias de repetições não garantem
+qualidade. O lote atual não declara as demais espécies como concluídas.
+
+**Arquivos individuais de anatomia:** as dez criaturas comuns dos Ermos agora
+separam silhueta/ficha em módulos próprios em `src/render/creatures/south/`.
+`regionalWave3.ts` apenas seleciona a espécie e aplica os estados globais de
+render. Sete delas mantêm a anatomia original enquanto aguardam a mesma
+rodada de acabamento aprofundado das três primeiras. A extração não afirma
+que sete receberam arte nova.
+
+**Anatomia por espécie em todas as regiões:** os 10 desenhos da onda regional
+estão em `src/render/creatures/regional/`, e os 10 da segunda onda em
+`src/render/creatures/wave2/`. Somados aos 10 comuns em `south/`, ao
+`sandBeetle.ts` e ao slime em `actors.ts`, as 32 espécies podem ser localizadas
+por renderizadores específicos sem que a ficha de atributos importe Canvas.
+Arquivos `geometry.ts` compartilham primitivas sem copiar corpos inteiros.
+A extração de 27 espécies **não** é acabamento novo: a arte pré-existente
+continua até ser revisada em novas passagens.
+
+### Montarias separadas por espécie — 10/11/2026
+
+O renderizador `mounts.ts` agora seleciona cada um dos **dez** módulos de
+`src/render/creatures/mounts/`. O arquivo `geometry.ts` guarda apenas
+primitivas de volume, membros, textura, olhos e acessórios. Silhuetas,
+cabeças, chifres, crinas, asas, penas, cauda, escamas e nadadeiras ficam
+nos próprios arquivos, com movimento temporal determinístico. As fichas
+individuais foram movidas para `src/actors/mounts/` e continuam
+consumidas pelo contrato público `MountCatalog.ts`.
+
+O primeiro acabamento aprofundado de Lagarto das Areias e Escaravelho
+de Carga permanece; as outras oito montarias ganharam desenhos individuais
+com materiais e movimentos característicos. Nenhuma mudança de loot,
+velocidade, colisão, domar ou habilidades do motor foi feita. A avaliação
+de fidelidade artística em Android físico e o aprofundamento de animações
+sincronizadas ao estado real de movimento ainda são trabalhos pendentes.
+
+**Slime em módulo próprio:** `src/render/creatures/center/slime.ts` contém
+a renderização gelatinosa completa, expressões, efeitos e HP. A reexportação
+em `src/render/actors.ts` preserva os imports existentes do jogo. Assim o
+herói e a Slime não precisam mais dividir um arquivo de implementação.
