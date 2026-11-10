@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** basalt-golem: ficha da região Oeste. */
 export const basaltGolem = {
@@ -8,3 +9,6 @@ export const basaltGolem = {
     biomes: ["highlands", "stone-peak", "volcanic"],
     loot: [{ item: "Minério de Ferro Bruto", chance: .6 }, { item: "Núcleo de Rocha", chance: .2 }, { item: "Moedas de Ouro", chance: .8 }],
 } satisfies CreatureDefinition;
+
+/** Estratégia própria de basalt-golem, sem código de movimento duplicado. */
+export const basaltGolemBehavior = { gait: "stomp", pursuit: "direct", cadence: 0.8, weave: 0 } satisfies SpeciesBehavior;

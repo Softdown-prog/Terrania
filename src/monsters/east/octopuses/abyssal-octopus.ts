@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** abyssal-octopus: ficha da região Leste. */
 export const abyssalOctopus = {
@@ -8,3 +9,6 @@ export const abyssalOctopus = {
     biomes: ["beach", "island"],
     loot: [{ item: "Tentáculo Fresco", chance: .70 }, { item: "Bolsa de Tinta Abissal", chance: .50 }, { item: "Moedas Antigas", chance: .45 }],
 } satisfies CreatureDefinition;
+
+/** Estratégia própria de abyssal-octopus, sem código de movimento duplicado. */
+export const abyssalOctopusBehavior = { gait: "float", pursuit: "flank", cadence: 1.47, weave: 0.39 } satisfies SpeciesBehavior;

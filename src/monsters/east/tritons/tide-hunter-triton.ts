@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** tide-hunter-triton: ficha da região Leste. */
 export const tideHunterTriton = {
@@ -8,3 +9,6 @@ export const tideHunterTriton = {
     biomes: ["beach", "island"],
     loot: [{ item: "Escama Azulada", chance: .65 }, { item: "Coral Energizado", chance: .30 }, { item: "Tridente das Marés", chance: .04 }],
 } satisfies CreatureDefinition;
+
+/** Estratégia própria de tide-hunter-triton, sem código de movimento duplicado. */
+export const tideHunterTritonBehavior = { gait: "stride", pursuit: "cautious", cadence: 1.08, weave: 0.11 } satisfies SpeciesBehavior;
