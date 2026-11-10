@@ -147,4 +147,63 @@ try {
   writeFileSync(wallFile, Buffer.from(wallDetails.split(',')[1], 'base64'));
   console.log('Amostra real de paredes e formações nos seis temas: ' + wallFile);
 
+
+  // Captação REAL de Canvas: são as mesmas funções de render usadas no jogo,
+  // compiladas pelo esbuild e executadas no Chromium (não imagens ilustrativas).
+  const monsterBundle = await build({
+    stdin: { contents: [
+      "import { renderRegionalCreature } from './src/render/regionalCreatures.ts';",
+      "import { CREATURE_CATALOG } from './src/actors/CreatureCatalog.ts';",
+      "globalThis.MONSTER_ART = { renderRegionalCreature, CREATURE_CATALOG };",
+    ].join("\n"), resolveDir: root, loader: 'ts' },
+    bundle: true, format: 'iife', write: false, logLevel: 'error',
+  });
+  await page.addScriptTag({ content: monsterBundle.outputFiles[0].text });
+  const monsters = await page.evaluate(() => {
+    const species = [
+      { kind: 'frost-spirit', name: 'ESPÍRITO DE GELO' },
+      { kind: 'tide-hunter-triton', name: 'TRITÃO CAÇADOR DAS MARÉS' },
+      { kind: 'abyssal-octopus', name: 'POLVO ABISSAL' },
+    ];
+    const frames = [
+      { key: 'PARADO', moving: 0, motionPhase: 0, casting: 0 },
+      { key: 'MOVIMENTO', moving: 1, motionPhase: 2.5, casting: 0 },
+      { key: 'PREPARANDO ATAQUE', moving: 0, motionPhase: 0, casting: .95 },
+    ];
+    const cw = 440, ch = 326;
+    const canvas = document.createElement('canvas');
+    canvas.width = cw * species.length;
+    canvas.height = ch * frames.length;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#102524'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    for (let row=0;row<frames.length;row++){
+      for (let col=0;col<species.length;col++){
+        const speciesItem=species[col], state=frames[row];
+        const bx=col*cw,by=row*ch;
+        ctx.fillStyle=(row+col)%2?'#3e7459':'#467b5c';
+        ctx.fillRect(bx+3,by+3,cw-6,ch-6);
+        ctx.fillStyle='#172c2e';ctx.fillRect(bx+4,by+4,cw-8,39);
+        ctx.fillStyle='#fff4d9';ctx.textAlign='center';
+        ctx.font='bold 16px system-ui';
+        ctx.fillText(speciesItem.name,bx+cw/2,by+29);
+        ctx.save();
+        ctx.translate(bx+cw/2,by+273);
+        ctx.scale(2.55,2.55);
+        const kind=speciesItem.kind;
+        const actor={kind,hp:globalThis.MONSTER_ART.CREATURE_CATALOG[kind].maxHp,
+          id:'ci-preview:'+kind,
+          moving:state.moving,motionPhase:state.motionPhase,casting:state.casting};
+        globalThis.MONSTER_ART.renderRegionalCreature(ctx,actor,0,0,1.7);
+        ctx.restore();
+        ctx.fillStyle='#f5e5c5';ctx.font='bold 12px system-ui';
+        ctx.textAlign='right';ctx.fillText(state.key,bx+cw-15,by+ch-16);
+        ctx.strokeStyle='#91b4a0';ctx.lineWidth=1;ctx.strokeRect(bx+3.5,by+3.5,cw-7,ch-7);
+      }
+    }
+    return canvas.toDataURL('image/png');
+  });
+  const monsterFile=join(out,'monstros-estados-reais.png');
+  writeFileSync(monsterFile,Buffer.from(monsters.split(',')[1],'base64'));
+  console.log('Captura real do Canvas de três monstros em idle, movimento e conjuração: '+monsterFile);
+
 } finally { await browser.close(); }

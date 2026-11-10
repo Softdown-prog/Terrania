@@ -174,3 +174,57 @@ As 32 espécies possuem arquivos próprios de anatomia em `src/render/creatures/
 **Rastros físicos individuais (10/11):** Madeira desenha dois riscos de ar/poeira, Ferro projeta dois filetes de reflexão no gume, Bronze produz uma meia-lua curta e Cobre marca uma varredura pesada com duas faixas assimétricas. Cada um implementa `slashAccent` no próprio módulo da espada: a geometria usa tangente/normal do golpe e a transparência vem da janela de ataque existente. O compositor compartilhado delega ao pintor disponível, sem exigir `trailAccent` elemental nas fichas físicas. Nenhum desses rastros aparece em repouso e nenhuma regra de dano/colisão foi alterada.
 
 **Espada Comum de Ferro (nível 15):** o motor registra `src/engine/character/weapons/swords/common.ts`, entre Ferro Batido (10) e Bronze (20). `src/render/swords/common.ts` desenha lâmina reta com canal central, rampa metálica, reflexos moderados, guarda simples e rastro físico próprio. `src/app/item-icon.component.ts` fornece ícone SVG específico. Sem aura mágica, nova regra de impacto ou bloqueio de posse: o arsenal desbloqueia normalmente com `weaponUnlocked` no nível 15, sem exigir comprar a espada de Toren.
+
+
+### Anatomias e animações específicas — primeiro lote após a separação
+
+Seis monstros receberam aprofundamento **no próprio arquivo de espécie**:
+`north/wolves/glacialWolf.ts` (galope, dedos, mandíbula e geada),
+`south/scorpions/duneScorpion.ts` (oito patas em contrafase, pinças e ferrão),
+`east/crabs/coralCrab.ts` (passada lateral, pinças e colônias de coral),
+`east/serpents/stormSerpent.ts` (coluna ondulante, escamas e eletricidade),
+`north/bears/runicPolarBear.ts` (peso, garras e runas) e
+`west/salamanders/magmaSalamander.ts` (cauda, crosta rachada e brasas).
+
+A intensidade de locomoção, a fase da passada e a preparação de ataque vêm
+exclusivamente do estado visual `moving`, `motionPhase` e `casting`. Sem
+movimento real não se dispara o ciclo de patas; sem conjuração não aparecem
+os efeitos especiais de ataque. Tempo e geometria são determinísticos,
+sem `Math.random` ou novos assets externos.
+
+A composição global, o registro de espécies, os atributos de combate e o
+loot não foram alterados. A separação dos **32 arquivos** continua íntegra;
+**isso não significa que as outras 26 espécies já tenham esse acabamento**.
+As seis são auditadas em `tests/specialized-creature-art.test.ts` diretamente
+no desenho anatômico (sem depender dos efeitos genéricos do frame).
+
+
+### Segundo lote de animações específicas: rocha, pântano e penhascos
+
+O Golem de Basalto (west/golems/basaltGolem.ts) agora tem lajes facetadas,
+fissuras, passos pesados, ombros e punhos independentes, com preparo de golpe
+derivado de casting. A Hidra do Pântano (south/hydras/mireHydra.ts)
+possui três pescoços com oscilações distintas, cristas, mandíbulas e veneno
+visível somente durante a preparação. O Draconídeo dos Penhascos
+(west/draconids/cliffDraconid.ts) ganhou membranas com nervuras, asas
+que se abrem, garras, cauda e brasa no focinho durante conjuração.
+
+As rotinas recebem motionPhase, moving e casting da entidade;
+as articulações de deslocamento ficam estacionárias quando moving=0.
+Nenhuma alteração foi feita no catálogo de combate, colisão ou loot.
+Os dois testes do segundo lote em tests/specialized-creature-art.test.ts
+auditam diretamente as anatomias e a API de renderização.
+
+
+### Terceiro lote: espírito, tritão e polvo
+
+Os desenhos individuais north/spirits/frostSpirit.ts, east/tritons/tideHunterTriton.ts
+e east/octopuses/abyssalOctopus.ts ganharam silhuetas detalhadas, partes móveis
+e efeitos próprios de casting: véus e cristais de geada, tridente e nadadeira,
+oito tentáculos com ventosas e nuvem de tinta. Os movimentos dependem do
+estado real da criatura; o motor e o loot não mudaram.
+
+A captura monstros-estados-reais.png é produzida pelo próprio Canvas 2D do
+Terrania em Chromium via scripts/art-preview.mjs, usando renderRegionalCreature
+em repouso, deslocamento e preparação de ataque. É uma imagem de inspeção
+renderizada pelo jogo, não um screenshot da partida com HUD.

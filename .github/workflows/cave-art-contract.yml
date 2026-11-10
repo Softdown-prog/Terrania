@@ -1,8 +1,17 @@
 name: Cave art contract and regional preview (no deploy)
 
 on:
+  push:
+    branches: [main, refactor/monster-canvas-per-species-20261110]
+    paths:
+      - "src/render/creatures/**"
+      - "tests/specialized-creature-art.test.ts"
+      - ".github/workflows/cave-art-contract.yml"
+      - "scripts/art-preview.mjs"
   pull_request:
     paths:
+      - "src/render/creatures/**"
+      - "tests/specialized-creature-art.test.ts"
       - "src/render/cave.ts"
       - "src/render/caveDetails.ts"
       - "tests/art-contract.test.ts"
@@ -33,6 +42,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Verify module registry and generated indexes
         run: npm run architecture:check
+      - name: Check strict Angular and TypeScript types
+        run: npm run typecheck
       - name: Execute procedural art and all unit regression tests
         run: npm test
       - name: Install Chromium for real Canvas captures
@@ -41,6 +52,50 @@ jobs:
       - name: Produce six-biome and registered-assets evidence
         if: always()
         run: npm run art:preview
+      - name: Capturar a partida Angular real (desktop e Android simulados)
+        run: |
+          set -e
+          PORT=18787 ALLOWED_ORIGINS=http://127.0.0.1:5173 node --experimental-strip-types server/src/main.ts >/tmp/terrania-game-api.log 2>&1 &
+          API_PID=$!
+          npm run dev >/tmp/terrania-game-front.log 2>&1 &
+          FRONT_PID=$!
+          trap 'kill "$FRONT_PID" "$API_PID" 2>/dev/null || true' EXIT
+          ready=0
+          for i in $(seq 1 100); do
+            if curl -sSf http://127.0.0.1:5173/jogar/ >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/terrania-game-front.log
+            exit 1
+          fi
+          node --input-type=module <<'NODE'
+          import { chromium, devices } from '@playwright/test';
+          import { mkdirSync } from 'node:fs';
+          const folder = 'test-results/art-preview';
+          mkdirSync(folder, { recursive: true });
+          const browser = await chromium.launch();
+          try {
+            const profiles = [
+              {name:'desktop',opts:{viewport:{width:1366,height:768},deviceScaleFactor:1}},
+              {name:'android',opts:{...devices['Pixel 5']}},
+            ];
+            for (const profile of profiles) {
+              const context=await browser.newContext(profile.opts);
+              const page=await context.newPage();
+              try {
+                await page.goto('http://127.0.0.1:5173/jogar/?modo=solo',
+                  {waitUntil:'domcontentloaded',timeout:60000});
+                await page.locator('canvas#game').waitFor({state:'visible',timeout:60000});
+                await page.locator('#coords').waitFor({state:'attached',timeout:15000});
+                await page.waitForTimeout(1300);
+                await page.screenshot({path:folder+'/jogo-'+profile.name+'-real.png',
+                  animations:'disabled'});
+                console.log('Screenshot real do Angular Terrania: '+profile.name);
+              } finally { await context.close(); }
+            }
+          } finally { await browser.close(); }
+          NODE
       - name: Upload unfiltered art evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -48,6 +103,9 @@ jobs:
           name: terrania-cave-art-contract
           path: |
             test-results/art-preview/pecas.png
+            test-results/art-preview/monstros-estados-reais.png
+            test-results/art-preview/jogo-desktop-real.png
+            test-results/art-preview/jogo-android-real.png
             test-results/art-preview/cavernas-regionais.png
             test-results/art-preview/cavernas-paredes.png
           if-no-files-found: warn

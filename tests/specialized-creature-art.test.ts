@@ -1,3 +1,15 @@
+import { drawSpirit } from "../src/render/creatures/north/spirits/frostSpirit.ts";
+import { triton } from "../src/render/creatures/east/tritons/tideHunterTriton.ts";
+import { octopus } from "../src/render/creatures/east/octopuses/abyssalOctopus.ts";
+import { drawBasaltGolem } from "../src/render/creatures/west/golems/basaltGolem.ts";
+import { drawHydra } from "../src/render/creatures/south/hydras/mireHydra.ts";
+import { drawDraconid } from "../src/render/creatures/west/draconids/cliffDraconid.ts";
+import { drawWolf } from "../src/render/creatures/north/wolves/glacialWolf.ts";
+import { drawScorpion } from "../src/render/creatures/south/scorpions/duneScorpion.ts";
+import { drawCrab } from "../src/render/creatures/east/crabs/coralCrab.ts";
+import { drawSerpent } from "../src/render/creatures/east/serpents/stormSerpent.ts";
+import { bear } from "../src/render/creatures/north/bears/runicPolarBear.ts";
+import { salamander } from "../src/render/creatures/west/salamanders/magmaSalamander.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Recorder, withFakeDocument } from "./helpers/recordingContext.ts";
@@ -206,5 +218,147 @@ test("render de monstros: registro apenas delega a paleta e função exclusivas 
   for(const part of ["wave2Frame","wave3Frame","regionalFrame"]){
     const shared=readFileSync("src/render/creatures/shared/"+part+".ts","utf8");
     assert.ok(!shared.includes("switch("),part+" contém seleção de espécie");
+  }
+});
+
+/**
+ * Direto na anatomia, sem o Frame compartilhado: prova que são as articulações
+ * e os efeitos exclusivos da espécie que reagem à simulação (e não apenas
+ * sombra, escala ou o círculo genérico de conjuração).
+ */
+test("seis anatomias especializadas animam passada e conjuração reais, com saída determinística",()=>{
+  const regional={base:"#687f99",light:"#f0e5cc",dark:"#27364b",accent:"#d59d67",eye:"#fdf0a3"};
+  const bulky={base:"#a4a9ad",dark:"#344351",light:"#edf8f7",accent:"#ff9955",eyes:"#f6d181"};
+  type Detail=(ctx:CanvasRenderingContext2D,phase:number,moving:number,casting:number)=>void;
+  const species:ReadonlyArray<{kind:string;draw:Detail}>=[
+    {kind:"glacial-wolf",draw:(c,p,m,a)=>drawWolf(c,regional,1.3,p,m,a)},
+    {kind:"dune-scorpion",draw:(c,p,m,a)=>drawScorpion(c,regional,1.3,p,m,a)},
+    {kind:"coral-crab",draw:(c,p,m,a)=>drawCrab(c,regional,1.3,p,m,a)},
+    {kind:"storm-serpent",draw:(c,p,m,a)=>drawSerpent(c,regional,1.3,p,m,a)},
+    {kind:"runic-polar-bear",draw:(c,p,m,a)=>bear(c,bulky,1.3,p,m,a)},
+    {kind:"magma-salamander",draw:(c,p,m,a)=>salamander(c,bulky,1.3,p,m,a)},
+  ];
+  const signatures=new Set<string>();
+  for(const {kind,draw} of species){
+    const idle=capture(c=>draw(c,0,0,0));
+    const walk=capture(c=>draw(c,2.1,1,0));
+    const prepare=capture(c=>draw(c,0,0,.95));
+    assert.ok(idle.paintOps>=35,kind+" sem volume anatômico mínimo");
+    assert.ok(idle.paintOps<650,kind+" excedeu orçamento básico de operações Canvas");
+    assert.ok(idle.curves>=14,kind+" sem traços anatômicos suficientes");
+    assert.equal(idle.saves,idle.restores,kind+" desequilibrou estado do contexto");
+    assert.notEqual(idle.signature,walk.signature,kind+" não articula locomoção");
+    assert.notEqual(idle.signature,prepare.signature,kind+" não prepara ataque em sua anatomia");
+    assert.equal(idle.signature,capture(c=>draw(c,0,0,0)).signature,kind+" não determinístico");
+    assert.equal(walk.signature,capture(c=>draw(c,2.1,1,0)).signature,kind+" passada não determinística");
+    assert.ok(!signatures.has(idle.signature),kind+" desenho idêntico ao de outra espécie");
+    signatures.add(idle.signature);
+  }
+});
+
+test("seis renderizadores especializados usam estado visual sem alterar ficha ou loot",()=>{
+  for(const kind of ["glacial-wolf","dune-scorpion","coral-crab",
+    "storm-serpent","runic-polar-bear","magma-salamander"] as const){
+    const base={kind,hp:CREATURE_CATALOG[kind].maxHp,id:"visual-reaction:"+kind};
+    const rest=capture(c=>renderRegionalCreature(c,{...base,moving:0,motionPhase:0,casting:0},0,0,1.3));
+    const action=capture(c=>renderRegionalCreature(c,{...base,moving:1,motionPhase:2.1,casting:.9},0,0,1.3));
+    assert.ok(action.paintOps>=rest.paintOps,kind+" perdeu detalhes na ação");
+    assert.notEqual(rest.signature,action.signature,kind+" perdeu estado de movimento/ataque");
+    assert.equal(action.saves,action.restores,kind+" desequilibrou Canvas");
+    assert.equal(base.hp,CREATURE_CATALOG[kind].maxHp,kind+" alterou ficha de combate");
+  }
+});
+
+/** O segundo lote responde à simulação na geometria própria de cada espécie. */
+test("golem, hidra e draconídeo articulam deslocamento e ataque na anatomia, sem efeitos globais",()=>{
+  const palette={base:"#68737b",light:"#e2d4b7",dark:"#2c3446",accent:"#a6b75f",eye:"#ffe196"};
+  type Anatomy=(ctx:CanvasRenderingContext2D,c:typeof palette,
+    time:number,phase:number,moving:number,casting:number)=>void;
+  const species: ReadonlyArray<{kind:"basalt-golem"|"mire-hydra"|"cliff-draconid";draw:Anatomy}>=[
+    {kind:"basalt-golem",draw:drawBasaltGolem},
+    {kind:"mire-hydra",draw:drawHydra},
+    {kind:"cliff-draconid",draw:drawDraconid},
+  ];
+  const signatures=new Set<string>();
+  for(const {kind,draw} of species){
+    const at=(phase:number,moving:number,casting:number)=>{
+      return capture(ctx=>draw(ctx,palette,1.7,phase,moving,casting));
+    };
+    const rest=at(0,0,0);
+    const still=at(3.4,0,0);
+    const step=at(2.1,1,0);
+    const windup=at(0,0,.95);
+    assert.ok(rest.paintOps>45,kind+" ficou sem materiais e anatomia suficientes");
+    assert.ok(rest.paintOps<550,kind+" excedeu o orçamento básico de Canvas");
+    assert.ok(rest.curves>12,kind+" ficou sem curvas e partes anatômicas");
+    assert.equal(rest.saves,rest.restores,kind+" desbalanceou o contexto Canvas");
+    assert.equal(rest.signature,still.signature,kind+" animou a passada sem deslocamento real");
+    assert.notEqual(rest.signature,step.signature,kind+" não reage à passada real");
+    assert.notEqual(rest.signature,windup.signature,kind+" não prepara o ataque na anatomia");
+    assert.ok(windup.paintOps>rest.paintOps,kind+" não ganhou detalhes durante a preparação");
+    assert.equal(rest.signature,at(0,0,0).signature,kind+" não é determinístico em repouso");
+    assert.equal(step.signature,at(2.1,1,0).signature,kind+" não é determinístico em movimento");
+    assert.ok(!signatures.has(rest.signature),kind+" compartilha silhueta com outra espécie");
+    signatures.add(rest.signature);
+  }
+});
+
+test("segundo lote preserva contrato público, vida, combate e determinismo",()=>{
+  for(const kind of ["basalt-golem","mire-hydra","cliff-draconid"] as const){
+    const hp=CREATURE_CATALOG[kind].maxHp;
+    const actor={kind,hp,id:"render-test:"+kind,moving:1,motionPhase:2.1,casting:.85};
+    const a=capture(ctx=>renderRegionalCreature(ctx,actor,30,48,1.7));
+    const b=capture(ctx=>renderRegionalCreature(ctx,actor,30,48,1.7));
+    assert.ok(a.paintOps>45,kind+" não é desenhado via registro público");
+    assert.equal(a.saves,a.restores,kind+" mudou o estado do Canvas externo");
+    assert.equal(a.signature,b.signature,kind+" perdeu reprodução determinística");
+    assert.equal(actor.hp,hp,kind+" modificou atributos fora do render");
+  }
+});
+
+
+/** Terceiro lote: inspeciona anatomia, sem contar animações do frame compartilhado. */
+test("espírito, tritão e polvo desenham movimento e conjuração na própria espécie",()=>{
+  const cold={base:"#519bcc",light:"#dcf7ff",dark:"#205c8e",accent:"#83e4ff",eye:"#cffaff"};
+  const tide={base:"#349b93",dark:"#27516f",light:"#8be6c7",accent:"#82bdef",eyes:"#ffe17c"};
+  const abyss={base:"#7a58ae",dark:"#354668",light:"#bb78c9",accent:"#4adbc8",eyes:"#ffe987"};
+  type Draw=(ctx:CanvasRenderingContext2D,t:number,phase:number,moving:number,casting:number)=>void;
+  const species:ReadonlyArray<{kind:string,draw:Draw}>=[
+    {kind:"frost-spirit",draw:(ctx,t,p,m,c)=>drawSpirit(ctx,cold,t,p,m,c)},
+    {kind:"tide-hunter-triton",draw:(ctx,t,p,m,c)=>triton(ctx,tide,t,p,m,c)},
+    {kind:"abyssal-octopus",draw:(ctx,t,p,m,c)=>octopus(ctx,abyss,t,p,m,c)},
+  ];
+  const seen=new Set<string>();
+  for(const {kind,draw} of species){
+    const at=(p:number,m:number,c:number)=>capture(ctx=>draw(ctx,1.7,p,m,c));
+    const idle=at(0,0,0),still=at(2.5,0,0),
+      moving=at(2.5,1,0),casting=at(0,0,.9);
+    assert.ok(idle.paintOps>45,kind+" sem volume e detalhes suficientes");
+    assert.ok(idle.paintOps<850,kind+" ultrapassa orçamento simples de Canvas");
+    assert.ok(idle.curves>15,kind+" sem articulações e formas orgânicas");
+    assert.equal(idle.saves,idle.restores,kind+" desempilhou estado do Canvas");
+    assert.equal(idle.signature,still.signature,kind+" usa fase de passos em repouso");
+    assert.notEqual(idle.signature,moving.signature,kind+" não responde ao movimento real");
+    assert.notEqual(idle.signature,casting.signature,kind+" não reage à preparação");
+    assert.ok(casting.paintOps>idle.paintOps,kind+" sem novos detalhes na conjuração");
+    assert.equal(idle.signature,at(0,0,0).signature,kind+" não determinístico");
+    assert.equal(moving.signature,at(2.5,1,0).signature,kind+" animação não reprodutível");
+    assert.ok(!seen.has(idle.signature),kind+" reutiliza anatomia de outra espécie");
+    seen.add(idle.signature);
+  }
+});
+
+test("terceiro lote mantém catálogo, composição e contexto Canvas intactos",()=>{
+  for(const kind of ["frost-spirit","tide-hunter-triton","abyssal-octopus"] as const){
+    const catalog=CREATURE_CATALOG[kind];
+    const state={kind,hp:catalog.maxHp,id:"test-third:"+kind,
+      moving:1,motionPhase:2.5,casting:.9};
+    const captureState=()=>capture(ctx=>renderRegionalCreature(ctx,state,65,85,1.7));
+    const first=captureState(),second=captureState();
+    assert.ok(first.paintOps>55,kind+" sem anatomia em renderRegionalCreature");
+    assert.equal(first.saves,first.restores,kind+" desequilibra Canvas");
+    assert.equal(first.signature,second.signature,kind+" não é reprodutível");
+    assert.equal(state.hp,catalog.maxHp,kind+" alterou HP de combate");
+    assert.ok(catalog.loot.length>0,kind+" perdeu loot canônico");
   }
 });
