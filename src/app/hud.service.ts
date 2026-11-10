@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Preferences } from '../ui/GameUi.ts';
-import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL } from '../actors/MountCatalog.ts';
+import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE } from '../actors/MountCatalog.ts';
 import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/character/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
@@ -9,7 +9,7 @@ import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
 import { southRareLootByName } from '../monsters/rareLoot.ts';
-import { COIN_TIERS, coinBreakdown } from '../engine/character/coins/index.ts';
+import { COIN_TIERS, coinBreakdown, describeCoins } from '../engine/character/coins/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
@@ -48,7 +48,9 @@ type InventoryTab = 'bag' | 'equipment' | 'map';
 export class HudService implements GameUi {
   readonly mountCatalog = MOUNTS;
   readonly ridingLevelRequirement = RIDING_LEVEL;
-  readonly stableUpgradeCost = STABLE_UPGRADE_GEL;
+  readonly stableUpgradeCost = STABLE_UPGRADE_PRICE;
+  /** Valor em moedas para a tela, como "2 Cripta Coin e 50 Terrania Gold" (ADR 0025). */
+  coinText(amount: number): string { return describeCoins(amount); }
   readonly mountIds = MOUNT_IDS;
   readonly mountView = signal<MountView>({
     stableTier:0,ridingTier:0,owned:[],active:null,stamina:0,maxStamina:0,

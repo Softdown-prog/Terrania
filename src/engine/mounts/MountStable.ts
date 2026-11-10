@@ -1,4 +1,4 @@
-import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL, isMountId,
+import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE, isMountId,
   type MountId, type RidingTier } from "../../actors/MountCatalog.ts";
 import { hash2 } from "../../world/random.ts";
 import { advanceMountQuest, currentMountQuestStep, mountQuestHint, normalizeMountQuest,
@@ -15,7 +15,7 @@ export type MountAction = "build" | "upgrade" | "train" | "start-warhorse" |
   "mount-warhorse" | "dismount";
 export type MountActionResult = "built" | "upgraded" | "trained" | "quest-started" |
   "halter-made" | "tracks-found" | "calmed" | "returned" | "mounted" | "dismounted" |
-  "no-level" | "no-gel" | "no-stable" | "no-training" | "missing-quest" |
+  "no-level" | "no-gel" | "no-coins" | "no-stable" | "no-training" | "missing-quest" |
   "quest-active" | "already-owned" | "no-apple" | "no-halter" |
   "slimes-needed" | "too-far" | "unavailable" | "stamina-low" | "not-ready";
 export type MountQuestSave = MountQuestProgress;
@@ -99,12 +99,12 @@ export class MountStable {
   get quest(): MountQuestSave | null { return this.questState; }
   has(id: MountId): boolean { return this.ownedSet.has(id); }
   private levelRequired(t: RidingTier, level: number): boolean { return level >= RIDING_LEVEL[t]; }
-  upgrade(level: number, gel: number, spend: (amount:number)=>boolean, x:number, y:number): MountActionResult {
+  upgrade(level: number, coins: number, spend: (amount:number)=>boolean, x:number, y:number): MountActionResult {
     if (!near(x,y,STABLE_MASTER)) return "too-far";
     if (this.stable >= 3) return "unavailable";
     const t = (this.stable + 1) as RidingTier;
     if (!this.levelRequired(t, level)) return "no-level";
-    if (gel < STABLE_UPGRADE_GEL[t] || !spend(STABLE_UPGRADE_GEL[t])) return "no-gel";
+    if (coins < STABLE_UPGRADE_PRICE[t] || !spend(STABLE_UPGRADE_PRICE[t])) return "no-coins";
     this.stable = t;
     return t === 1 ? "built" : "upgraded";
   }

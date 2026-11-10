@@ -15,11 +15,11 @@ import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, ty
 export const QUEST_REWARD_POTIONS = 2;
 export const POTION_HEAL = 35;
 export const POTION_GEL_PRICE = 3;
-/** Descanso numa hospedaria (ADR 0022): cura toda a vida e limpa os status. O gel é a moeda do jogo. */
-export const INN_REST_GEL_PRICE = 4;
+/** Descanso numa hospedaria (ADR 0022): cura toda a vida e limpa os status. Preço em Terrania Gold (ADR 0025). */
+export const INN_REST_PRICE = 24;
 export type PotionTradeResult = "traded" | "insufficient-gel" | "potions-full";
-export type SwordPurchaseResult = "purchased" | "already-owned" | "insufficient-sword-gel" | "too-far-from-forge" | "unavailable";
-export type InnRestResult = "rested" | "insufficient-rest-gel" | "too-far-from-inn" | "rest-not-needed";
+export type SwordPurchaseResult = "purchased" | "already-owned" | "insufficient-sword-coins" | "too-far-from-forge" | "unavailable";
+export type InnRestResult = "rested" | "insufficient-rest-coins" | "too-far-from-inn" | "rest-not-needed";
 export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned" | "level-too-low";
 /** Tudo que uma ação da bolsa pode responder; a interface traduz cada valor em uma mensagem. */
 export type InventoryOutcome = PotionTradeResult | InnRestResult | SwordPurchaseResult | SwordEquipResult | GearResult |
@@ -175,17 +175,16 @@ export class Inventory {
     if (!Number.isFinite(hero.hp) || !Number.isFinite(hero.maxHp) || hero.hp <= 0) return "rest-not-needed";
     const afflicted = Object.values(hero.debuffs ?? {}).some(seconds => seconds > 0);
     if (hero.hp >= hero.maxHp && !afflicted) return "rest-not-needed";
-    if (this.gelCount < INN_REST_GEL_PRICE) return "insufficient-rest-gel";
-    this.gelCount -= INN_REST_GEL_PRICE;
+    if (!this.spendCoins(INN_REST_PRICE)) return "insufficient-rest-coins";
     hero.hp = hero.maxHp;
     hero.cleanse?.();
     return "rested";
   }
 
-  tradeGelForFood(id: FoodId): FoodTradeResult {
+  /** Compra um alimento com moedas (ADR 0025). */
+  buyFood(id: FoodId): FoodTradeResult {
     if (this.foods[id] >= MAX_STACK) return "food-stack-full";
-    if (this.gelCount < FOODS[id].gelPrice) return "insufficient-gel";
-    this.gelCount -= FOODS[id].gelPrice;
+    if (!this.spendCoins(FOODS[id].price)) return "insufficient-food-coins";
     this.foods[id]++;
     return "food-traded";
   }
@@ -199,8 +198,7 @@ export class Inventory {
     if (hero.hp <= 0) return "unavailable";
     if (nearestNpc(hero.x, hero.y)?.id !== "toren") return "too-far-from-forge";
     if (this.weapons.forged) return "already-owned";
-    if (this.gelCount < FORGE_SWORD_PRICE) return "insufficient-sword-gel";
-    this.gelCount -= FORGE_SWORD_PRICE;
+    if (!this.spendCoins(FORGE_SWORD_PRICE)) return "insufficient-sword-coins";
     this.weapons = { ...this.weapons, forged: true };
     return "purchased";
   }

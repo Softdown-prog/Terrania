@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
-import { INN_REST_GEL_PRICE, POTION_GEL_PRICE } from "../src/engine/character/Inventory.ts";
+import { INN_REST_PRICE, POTION_GEL_PRICE } from "../src/engine/character/Inventory.ts";
 import { FORGE_SWORD_PRICE } from "../src/engine/character/Weapons.ts";
+import { FOODS } from "../src/engine/character/Food.ts";
 import { experienceForLevel } from "../src/engine/character/Experience.ts";
 import { NPCS } from "../src/world/npcs.ts";
 import { buyFood, buySword, eatFood, equipGear, equipWeapon, restAtInn, tradeGelForPotion, usePotion,
@@ -10,9 +11,10 @@ import { buyFood, buySword, eatFood, equipGear, equipWeapon, restAtInn, tradeGel
 import { INVENTORY_FEEDBACK } from "../src/game/messages/inventoryFeedback.ts";
 
 const at = (id: string) => NPCS.find(n => n.id === id)!;
-function world(over: Partial<ShopContext> = {}, gel = 0) {
+function world(over: Partial<ShopContext> = {}, gel = 0, coins = 0) {
   const sim = new OfflineSimulation(842136);
   for (let i = 0; i < gel; i++) sim.inventory.addGel();
+  sim.inventory.addCoins(coins);
   const context = (extra: Partial<ShopContext> = {}): ShopContext =>
     ({ sim, hero: sim.player, inInterior: false, menuOpen: true, caveHeroDown: false, ...over, ...extra });
   const goTo = (id: string) => { sim.player.x = at(id).x; sim.player.y = at(id).y; };
@@ -38,24 +40,33 @@ test("loja: trocar gel por poção exige menu aberto, fora de interior, vivo e p
   assert.deepEqual(tradeGelForPotion(w.context()), { message: INVENTORY_FEEDBACK["insufficient-gel"], changed: false });
 });
 
-test("loja: comida é comprada da Lina e comida acabada não muda nada", () => {
-  const w = world({}, 5);
+test("loja: comida é comprada da Lina com moedas (o gel não paga) e comida acabada não muda nada", () => {
+  const w = world({}, 9, FOODS.apple.price);
   assert.equal(buyFood(w.context(), "apple").message, INVENTORY_FEEDBACK["too-far"], "longe da Lina");
   w.goTo("lina");
+  assert.deepEqual(buyFood(w.context(), "bread"), { message: INVENTORY_FEEDBACK["insufficient-food-coins"], changed: false },
+    "9 de gel não compram um pão de " + FOODS.bread.price + " Terrania Gold");
+  assert.equal(w.sim.inventory.coins, FOODS.apple.price, "a recusa não cobrou nada");
   assert.deepEqual(buyFood(w.context(), "apple"), { message: "Lina entregou Maçã.", changed: true });
+  assert.equal(w.sim.inventory.coins, 0, "a maçã foi paga em moedas");
+  assert.equal(w.sim.inventory.gel, 9, "o gel não foi tocado");
   assert.equal(buyFood(w.context({ menuOpen: false }), "apple").changed, false);
   assert.deepEqual(eatFood(w.context(), "bread"), { message: INVENTORY_FEEDBACK["no-food"], changed: false });
   assert.deepEqual(eatFood(w.context(), "apple"), { message: "Maçã: " + INVENTORY_FEEDBACK.ate, changed: true });
 });
 
-test("loja: a espada de Toren só é vendida com gel suficiente, uma única vez, e só então pode ser equipada", () => {
-  const w = world({}, FORGE_SWORD_PRICE - 1);
+test("loja: a espada de Toren só é vendida com moedas suficientes, uma única vez, e só então pode ser equipada", () => {
+  const w = world({}, 50, FORGE_SWORD_PRICE - 1);
   w.goTo("toren");
   assert.deepEqual(buySword(w.context({ menuOpen: false })), { message: INVENTORY_FEEDBACK["too-far-from-forge"], changed: false });
   assert.deepEqual(equipWeapon(w.context(), "forge"), { message: INVENTORY_FEEDBACK["not-owned"], changed: false });
-  assert.deepEqual(buySword(w.context()), { message: INVENTORY_FEEDBACK["insufficient-sword-gel"], changed: false });
-  w.sim.inventory.addGel();
+  assert.deepEqual(buySword(w.context()), { message: INVENTORY_FEEDBACK["insufficient-sword-coins"], changed: false },
+    "50 de gel não compram a espada");
+  assert.equal(w.sim.inventory.coins, FORGE_SWORD_PRICE - 1, "a recusa não cobrou nada");
+  w.sim.inventory.addCoins(1);
   assert.deepEqual(buySword(w.context()), { message: INVENTORY_FEEDBACK.purchased, changed: true });
+  assert.equal(w.sim.inventory.coins, 0, "a espada foi paga em moedas");
+  assert.equal(w.sim.inventory.gel, 50, "o gel não foi tocado");
   assert.deepEqual(buySword(w.context()), { message: INVENTORY_FEEDBACK["already-owned"], changed: false });
   assert.deepEqual(equipWeapon(w.context(), "forge"), { message: INVENTORY_FEEDBACK["level-too-low"], changed: false });
   w.sim.experience = experienceForLevel(10);
@@ -95,8 +106,8 @@ test("loja: usa o herói de quem age (caverna) para cura e comida, e o da simula
   assert.ok(caveHero.hp > 5, "curou o herói da caverna");
 });
 
-test("hospedaria do Poço Negro: o descanso custa gel, cura tudo e limpa os status, só ao lado de Madame Víbora", () => {
-  const w = world({}, INN_REST_GEL_PRICE);
+test("hospedaria do Poço Negro: o descanso custa moedas, cura tudo e limpa os status, só ao lado de Madame Víbora", () => {
+  const w = world({}, 0, INN_REST_PRICE);
   w.sim.player.hp = 12;
   w.sim.player.applyStatus("poison", 6);
   w.sim.player.applyStatus("burn", 4);
@@ -105,29 +116,30 @@ test("hospedaria do Poço Negro: o descanso custa gel, cura tudo e limpa os stat
   w.goTo("south-madame");
   assert.deepEqual(restAtInn(w.context({ menuOpen: false })), refused, "menu fechado");
   assert.deepEqual(restAtInn(w.context({ inInterior: true })), refused, "dentro de um interior");
-  assert.equal(w.sim.inventory.gel, INN_REST_GEL_PRICE, "as recusas não cobraram nada");
+  assert.equal(w.sim.inventory.coins, INN_REST_PRICE, "as recusas não cobraram nada");
   assert.equal(w.sim.player.hp, 12);
   assert.deepEqual(restAtInn(w.context()), { message: INVENTORY_FEEDBACK.rested, changed: true });
   assert.equal(w.sim.player.hp, w.sim.player.maxHp, "vida completa");
   assert.ok(Object.values(w.sim.player.debuffs).every(seconds => seconds === 0), "sem nenhum status");
-  assert.equal(w.sim.inventory.gel, 0, "o preço foi pago");
+  assert.equal(w.sim.inventory.coins, 0, "o preço foi pago em moedas");
 });
 
 test("hospedaria do Poço Negro: sem gel não cura, e quem já está bem não paga nada", () => {
-  const w = world({}, INN_REST_GEL_PRICE - 1);
+  const w = world({}, 99, INN_REST_PRICE - 1);
   w.goTo("south-madame");
   w.sim.player.hp = 20;
-  assert.deepEqual(restAtInn(w.context()), { message: INVENTORY_FEEDBACK["insufficient-rest-gel"], changed: false });
+  assert.deepEqual(restAtInn(w.context()), { message: INVENTORY_FEEDBACK["insufficient-rest-coins"], changed: false });
   assert.equal(w.sim.player.hp, 20, "sem gel a vida não muda");
-  assert.equal(w.sim.inventory.gel, INN_REST_GEL_PRICE - 1);
-  w.sim.inventory.addGel();
+  assert.equal(w.sim.inventory.coins, INN_REST_PRICE - 1);
+  assert.equal(w.sim.inventory.gel, 99, "99 de gel não pagam o descanso");
+  w.sim.inventory.addCoins(1);
   w.sim.player.hp = w.sim.player.maxHp;
   assert.deepEqual(restAtInn(w.context()), { message: INVENTORY_FEEDBACK["rest-not-needed"], changed: false });
-  assert.equal(w.sim.inventory.gel, INN_REST_GEL_PRICE, "vida cheia e sem status: não cobra");
+  assert.equal(w.sim.inventory.coins, INN_REST_PRICE, "vida cheia e sem status: não cobra");
   w.sim.player.applyStatus("poison", 3);
   assert.equal(restAtInn(w.context()).changed, true, "só o veneno já justifica o descanso");
   w.sim.player.hp = 0;
-  w.sim.inventory.addGel();
+  w.sim.inventory.addCoins(INN_REST_PRICE);
   assert.deepEqual(restAtInn(w.context()), { message: INVENTORY_FEEDBACK.unavailable, changed: false }, "herói caído só volta por respawn");
   assert.equal(w.sim.player.hp, 0);
 });

@@ -79,7 +79,8 @@ export const WEAPONS: Readonly<Record<WeaponId, WeaponDefinition>> = {
 };
 
 /** Tier 0 means a new player starts with this sword (the existing player level starts at 1). */
-export const FORGE_SWORD_PRICE = 5;
+/** Preço da espada de Toren, em Terrania Gold (ADR 0025). */
+export const FORGE_SWORD_PRICE = 30;
 export function isWeaponId(value: unknown): value is WeaponId {
   return typeof value === "string" && WEAPON_IDS.some(id => id === value);
 }

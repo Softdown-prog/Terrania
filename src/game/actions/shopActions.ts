@@ -64,7 +64,7 @@ export function buyFood({ sim, inInterior, menuOpen }: ShopContext, id: FoodId):
   if (inInterior || !menuOpen) return say("too-far");
   if (sim.awaitingRespawn) return say("unavailable");
   if (!nearLina(sim)) return say("too-far");
-  const outcome = sim.inventory.tradeGelForFood(id);
+  const outcome = sim.inventory.buyFood(id);
   return outcome === "food-traded"
     ? { message: `Lina entregou ${FOODS[id].name}.`, changed: true }
     : say(outcome);

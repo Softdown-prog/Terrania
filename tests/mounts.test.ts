@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL } from "../src/actors/MountCatalog.ts";
+import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE } from "../src/actors/MountCatalog.ts";
 import { MountStable, STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE,
   sampleMountCaptureLoot,normalizeMountSave } from "../src/engine/mounts/MountStable.ts";
 import { experienceForLevel, levelForExperience, MAX_LEVEL } from "../src/engine/character/Experience.ts";
@@ -31,10 +31,10 @@ test("montarias: dez espécies únicas com atributos, tiers, selas, iscas e ques
   assert.equal(MOUNTS["tidal-hippocampus"].waterSpeedBonus,.75);
   assert.equal(MOUNTS["silver-unicorn"].ability,"purify");
   assert.equal(MOUNTS["cargo-beetle"].ability,"cargo");
-  assert.deepEqual(STABLE_UPGRADE_GEL,{1:12,2:25,3:40});
+  assert.deepEqual(STABLE_UPGRADE_PRICE,{1:72,2:150,3:240},"preços do estábulo, em Terrania Gold");
 });
-test("estábulo: nível, gel e Cavalaria não podem ser burlados por botões",()=>{
-  let gel=45;
+test("estábulo: nível, moedas e Cavalaria não podem ser burlados por botões",()=>{
+  let gel=300; // aqui `gel` guarda as moedas (Terrania Gold); o nome vem de antes do ADR 0025
   const spend=(amount:number):boolean=>{
     if(gel<amount)return false;
     gel-=amount;return true;
@@ -43,24 +43,26 @@ test("estábulo: nível, gel e Cavalaria não podem ser burlados por botões",()
   const {x,y}=STABLE_MASTER;
   assert.equal(stable.upgrade(15,gel,spend,99999,99999),"too-far");
   assert.equal(stable.upgrade(14,gel,spend,x,y),"no-level");
-  assert.equal(gel,45);
+  assert.equal(gel,300);
   assert.equal(stable.upgrade(15,gel,spend,x,y),"built");
-  assert.equal(gel,33);
+  assert.equal(gel,300-72);
   assert.equal(stable.beginWarhorse(15,x,y),"no-training");
   assert.equal(stable.train(14,x,y),"no-level");
   assert.equal(stable.train(15,x,y),"trained");
   assert.equal(stable.beginWarhorse(15,x,y),"quest-started");
   assert.equal(stable.upgrade(34,gel,spend,x,y),"no-level");
   assert.equal(stable.upgrade(35,gel,spend,x,y),"upgraded");
-  assert.equal(gel,8);
+  assert.equal(gel,300-72-150);
   assert.equal(stable.train(35,x,y),"trained");
-  assert.equal(stable.upgrade(55,gel,spend,x,y),"no-gel");
+  assert.equal(stable.upgrade(55,gel,spend,x,y),"no-coins");
   assert.equal(stable.stableTier,2);
 });
 test("Garrano Fugitivo: Eron entrega maçã, cascos, cinco slimes novos, cabresto, escolta e sela",()=>{
-  let gel=30;const spend=(n:number)=>gel>=n?(gel-=n,true):false;
+  let gel=18;const spend=(n:number)=>gel>=n?(gel-=n,true):false;
+  let coins=100;const spendCoins=(n:number)=>coins>=n?(coins-=n,true):false;
   const s=new MountStable();
-  assert.equal(s.upgrade(15,gel,spend,STABLE_MASTER.x,STABLE_MASTER.y),"built");
+  assert.equal(s.upgrade(15,coins,spendCoins,STABLE_MASTER.x,STABLE_MASTER.y),"built");
+  assert.equal(coins,100-72,"o cercado é pago em moedas");
   assert.equal(s.train(15,STABLE_MASTER.x,STABLE_MASTER.y),"trained");
   assert.equal(s.beginWarhorse(15,STABLE_MASTER.x,STABLE_MASTER.y,5),"quest-started");
   assert.equal(s.quest?.gift,"Maçã Silvestre Doce");
@@ -71,7 +73,7 @@ test("Garrano Fugitivo: Eron entrega maçã, cascos, cinco slimes novos, cabrest
   s.synchronizeKills(10);
   assert.equal(s.quest?.step,2);
   assert.equal(s.craftHalter(gel,spend,STABLE_MASTER.x,STABLE_MASTER.y),"halter-made");
-  assert.equal(gel,15);
+  assert.equal(gel,15,"o cabresto é pago em gel (material)");
   assert.equal(s.tame(15,10,WILD_WARHORSE.x,WILD_WARHORSE.y),"calmed");
   assert.equal(s.has("warhorse"),false,"acalmar não concede montaria antes de voltar");
   assert.equal(s.returnWarhorse(0,0),"too-far");

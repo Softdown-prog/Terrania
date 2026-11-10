@@ -5,7 +5,7 @@ Cada ficha contém aparência (incluindo orcs, goblins, troll e diabretes), aces
 e três falas exclusivas. Hesh e Zinha patrulham trajetos curtos; a mesma função
 alimenta desenho e alcance da conversa.
 
-Madame Víbora vende o **descanso pago** (4 de gel: vida completa e sem status, ADR 0022); é o
+Madame Víbora vende o **descanso pago** (24 Terrania Gold: vida completa e sem status, ADR 0022 e 0025); é o
 primeiro serviço da cidade.
 
 Interiores disponíveis: Fortaleza, Fornalha e Hospedaria. Bazar, Casa de Venenos,

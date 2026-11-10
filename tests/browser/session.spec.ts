@@ -165,7 +165,7 @@ test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar',
   await page.addInitScript(() => {
     const key = 'terrania-origins-v1';
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ seed: 842136,
-      x: 528, y: 48, hp: 100, experience: 1350, kills: 5, defeated: [], inventory: { gel: 7, potion: 0 } }));
+      x: 528, y: 48, hp: 100, experience: 1350, kills: 5, defeated: [], inventory: { gel: 7, potion: 0, coins: 35 } }));
   });
   const activate = (button: ReturnType<typeof page.locator>) => android ? button.tap() : button.click();
   const openBag = async () => {
@@ -180,13 +180,14 @@ test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar',
   await page.goto('/jogar/?modo=solo');
   await activate(page.getByRole('button', { name: 'Conversar (E)' }));
   const toren = page.getByRole('dialog', { name: 'Toren' });
-  await activate(toren.getByRole('button', { name: 'Comprar Espada Curta de Ferro Batido por 5 de gel' }));
+  await activate(toren.getByRole('button', { name: 'Comprar Espada Curta de Ferro Batido por 30 Terrania Gold' }));
   await expect(toren.getByRole('status')).toContainText('Toren colocou');
   await expect(toren.getByRole('button', { name: 'Espada já adquirida' })).toBeDisabled();
   await activate(toren.getByRole('button', { name: 'Fechar conversa' }));
 
   await openBag();
-  await expect(page.locator('#gelCount')).toHaveText('2 / 99');
+  await expect(page.locator('#gelCount')).toHaveText('7 / 99'); // a espada é paga em moedas, o gel não é tocado
+  await expect(page.locator('[data-bag-item="coin-terrania-gold"] .backpack-quantity')).toHaveText('5');
   await openEquipment();
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada de Treino de Carvalho');
   await activate(page.locator('#equip-slot-weapon-forge'));

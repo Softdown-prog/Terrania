@@ -1,6 +1,6 @@
 # ADR 0024 — Drops de moedas
 
-**Estado:** fatia 2 do sistema de moedas entregue em 2026-11-10, direto na `main` por pedido do dono. Continua o ADR 0023 (carteira e bolsa). Falta trocar os preços de gel por moedas.
+**Estado:** fatia 2 do sistema de moedas entregue em 2026-11-10, direto na `main` por pedido do dono. Continua o ADR 0023 (carteira e bolsa). Os preços passaram a moedas na fatia 3 ([ADR 0025](0025-precos-em-moedas.md)).
 
 ## Contexto
 

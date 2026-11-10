@@ -2,9 +2,10 @@ import { MAX_STACK } from "../Limits.ts";
 
 /** Alimentação da vocação inicial (Cavaleiro) no jogo solo. */
 export const FOODS = {
-  apple: { name: "Maçã", healBudget: 8, gelPrice: 1 },
-  bread: { name: "Pão", healBudget: 18, gelPrice: 2 },
-  meat: { name: "Carne assada", healBudget: 30, gelPrice: 3 },
+  /** `price` em Terrania Gold (ADR 0025). */
+  apple: { name: "Maçã", healBudget: 8, price: 6 },
+  bread: { name: "Pão", healBudget: 18, price: 12 },
+  meat: { name: "Carne assada", healBudget: 30, price: 18 },
 } as const;
 export type FoodId = keyof typeof FOODS;
 export const FOOD_IDS: readonly FoodId[] = ["apple", "bread", "meat"];
@@ -13,7 +14,7 @@ export const MAX_NUTRITION = 60;
 export const FOOD_HEAL_INTERVAL = 2;
 export const FOOD_EAT_COOLDOWN = 5;
 export type FoodUseResult = "ate" | "no-food" | "eat-cooldown" | "nutrition-full" | "unavailable";
-export type FoodTradeResult = "food-traded" | "insufficient-gel" | "food-stack-full";
+export type FoodTradeResult = "food-traded" | "insufficient-food-coins" | "food-stack-full";
 export interface NutritionState {
   readonly reserve: number;
   readonly elapsed: number;

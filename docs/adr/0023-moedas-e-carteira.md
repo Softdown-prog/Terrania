@@ -1,6 +1,6 @@
 # ADR 0023 — Moedas e carteira
 
-**Estado:** fatia 1 entregue em 2026-11-10, direto na `main` por pedido do dono. Os drops de moeda vieram na fatia 2 ([ADR 0024](0024-drops-de-moedas.md)); falta a troca dos preços de gel por moedas (ver "Próximas fatias").
+**Estado:** fatia 1 entregue em 2026-11-10, direto na `main` por pedido do dono. Os drops de moeda vieram na fatia 2 ([ADR 0024](0024-drops-de-moedas.md)); os preços passaram a moedas na fatia 3 ([ADR 0025](0025-precos-em-moedas.md)).
 
 ## Contexto
 

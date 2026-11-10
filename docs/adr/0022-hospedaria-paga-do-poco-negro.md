@@ -1,6 +1,6 @@
 # ADR 0022 — Descanso pago na Hospedaria do Poço Negro
 
-**Estado:** entregue em 2026-11-10, direto na `main` por pedido do dono. Primeira fatia de economia da cidade do Sul (`docs/POCO_NEGRO.md`).
+**Estado:** entregue em 2026-11-10, direto na `main` por pedido do dono. O preço passou de 4 de gel para 24 Terrania Gold no [ADR 0025](0025-precos-em-moedas.md). Primeira fatia de economia da cidade do Sul (`docs/POCO_NEGRO.md`).
 
 ## Contexto
 
