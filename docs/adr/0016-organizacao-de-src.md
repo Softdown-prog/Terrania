@@ -4,7 +4,7 @@
 
 ## Contexto
 
-`src/` cresceu por camadas e por entregas (ondas), e hoje há pastas planas com assuntos misturados, ciclos entre pastas, arquivos que burlam o teto de linhas e três pastas com cara de "interface". Medi o estado da `main` em `1ad18e8` (imports resolvidos por script, não por impressão). A área dos monstros (`src/monsters`, `src/actors`, `src/render/regional*`) está em trabalho paralelo (plano do bestiário) e **fica fora** destas sessões até esse trabalho terminar.
+`src/` cresceu por camadas e por entregas (ondas), e hoje há pastas planas com assuntos misturados, ciclos entre pastas, arquivos que evidenciam como o antigo teto rígido de linhas incentivava compressão e três pastas com cara de "interface". Medi o estado da `main` em `1ad18e8` (imports resolvidos por script, não por impressão). A área dos monstros (`src/monsters`, `src/actors`, `src/render/regional*`) está em trabalho paralelo (plano do bestiário) e **fica fora** destas sessões até esse trabalho terminar.
 
 ## Achados medidos
 
@@ -17,7 +17,7 @@
 | 5 | `src/ui/` guarda o renderizador de Canvas (`CanvasScene.ts`) e a ponte com o Angular (`GameUi.ts`); `src/app`, `src/game` e `src/ui` se sobrepõem no nome | leitura | 5 |
 | 6 | `src/app` mistura as páginas do site (`pages/`, rotas, layout) e a tela do jogo (HUD, ícones, `game-page`); `hud.service.ts` tem 42 sinais e ~20 registradores de callback; `game-page.html` tem 576 linhas | listagem | 6 |
 | 7 | `src/site/site.css` tem 2.063 linhas (36 KB) em um arquivo só, com 700 linhas dentro de um único `@media`; o CSS do jogo já foi dividido em `app/styles/` | contagem | 7 |
-| 8 | **O teto de linhas é burlável:** o commit `bd8fb08` manteve `regionalWave3.ts` sob o teto juntando instruções numa linha. O código compacto já é comum: 24 arquivos têm linhas com 4 ou mais instruções (`scenery.ts`, 40 linhas) | `git show bd8fb08`, script | 2 |
+| 8 | **O antigo teto de linhas incentivava compactação:** o commit `bd8fb08` manteve `regionalWave3.ts` sob o limite rígido juntando instruções numa linha. O código compacto já é comum: 24 arquivos têm linhas com 4 ou mais instruções (`scenery.ts`, 40 linhas) | `git show bd8fb08`, script | 2 |
 | 9 | Os testes (`tests/`) **não passam por checagem de tipos**: o `tsconfig.json` só inclui `src` e não há `@types/node` | `tsconfig.json` | 8 |
 | 10 | `src/qa/` não é importado pelo aplicativo, mas **deve ficar em `src/`**: é lá que o `typecheck` o cobre, e `scripts/qa-bot.mjs` e o workflow `qa-bot.yml` dependem do caminho | verificado | nenhuma |
 
@@ -36,7 +36,7 @@ Só se moveu e se reescreveu `import`. **Prova:** das 88 `.ts`/`.mjs` alteradas,
 
 ## Próximas sessões (cada uma, um PR)
 
-- **Sessão 2 — teto que não se burla:** somar ao teto de linhas um teto de **bytes** por arquivo (começando nos valores atuais) e travar a largura da linha. Teste de regressão: um arquivo de 500 linhas "espremido" em 390 linhas reprova.
+- **Sessão 2 — legibilidade sem teto artificial:** o tamanho passou a ser um diagnóstico não bloqueante: até 400 linhas preferível, 401–800 aviso e acima de 800 revisão recomendada, conforme `tests/file-size-budget.test.ts`. Em vez de tetos por linhas ou bytes, avaliar instruções comprimidas e largura de linha em revisão de legibilidade, sem reprovar o CI apenas por tamanho. Os portões reais de arquitetura, tipagem e testes permanecem.
 - **Sessão 3 — ciclos pequenos:** remover `world/npcs.ts` (importar de `npcs/`) e tirar `mountQuests` de `world/` ou inverter o tipo; mover `CaveFloor` (geração do mapa) para `world/` (ADR 0014, sessão 3).
 - **Sessão 4 — camada de regras sob os atores:** `Weapons`, `Food`, `Experience`, `Equipment` e as constantes de `combat.ts` são regras puras usadas por `actors/Player.ts`; devem ficar abaixo de `actors`, para que `engine` dependa de `actors` e não o contrário. **Só depois do bestiário**, pois mexe nos imports de `Player`/`RegionalMonster`.
 - **Sessão 5 — `render/` e `ui/`:** subpastas (`hero`, `world`, `fx`, `mounts`, `monsters` por último), dividir `render/actors.ts` (585) em herói e slime, e levar `CanvasScene.ts` para `render/`, deixando `ui/` só com a ponte do Angular.
@@ -45,3 +45,7 @@ Só se moveu e se reescreveu `import`. **Prova:** das 88 `.ts`/`.mjs` alteradas,
 - **Sessão 8 — checagem de tipos dos testes:** incluir `tests/` no `typecheck` (exige `@types/node`) e corrigir o que aparecer.
 
 Fora de escopo: mudar regra de jogo, balanceamento, protocolo, servidor ou qualquer comportamento. Cada sessão passa também pela suíte de navegador.
+
+## Compatibilidade com a política de tamanho do PR #124
+
+A consolidação com o PR #124 remove o limite rígido de 400 linhas e os tetos dos arquivos antigos. A antiga proposta de adicionar teto de bytes foi substituída por avisos não bloqueantes e revisão por responsabilidade. A sessão 1 continua limitada à reorganização física e à atualização de imports, sem mudar a jogabilidade.
