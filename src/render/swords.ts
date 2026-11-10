@@ -372,10 +372,14 @@ function swordSlashAccent(ctx:CanvasRenderingContext2D,
       point(ctx,x-nx*1.9,y-ny*1.9,.42,rgba(glow,alpha*.8));
       break;
     case "bolts":
+      // Raios acompanham a tangente da ponta, mesmo olhando para esquerda/cima.
+      // Nunca usar desvios em X/Y do mundo para um efeito preso à espada.
       ctx.strokeStyle=light;ctx.lineWidth=1.3;ctx.beginPath();
-      ctx.moveTo(x-5,y-1);ctx.lineTo(x+1,y-4);
-      ctx.lineTo(x-1,y+3);ctx.lineTo(x+5,y);ctx.stroke();
-      point(ctx,x+1,y-4,.45,rgba(glow,alpha));
+      ctx.moveTo(x-tx*4-nx,y-ty*4-ny);
+      ctx.lineTo(x-tx+nx*3,y-ty+ny*3);
+      ctx.lineTo(x+tx-nx*2.5,y+ty-ny*2.5);
+      ctx.lineTo(x+tx*4+nx*.5,y+ty*4+ny*.5);ctx.stroke();
+      point(ctx,x-tx+nx*3,y-ty+ny*3,.45,rgba(glow,alpha));
       break;
     case "stars":
       star(ctx,x,y,2.2,light);
@@ -392,22 +396,35 @@ export function drawKnightTrail(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   const w=WEAPONS[weapon],s=w.visual,opacity=alpha*w.trail.opacity;
   // Raio acompanha a lâmina real; o herói fornece escala e posição da mão.
   const range=s.length-KNIGHT_SWORD_GRIP;
-  const inner=Math.max(9,range*.6);
   ctx.save();
+  // Fita fina junto à ponta, não um setor preenchido desde o punho.
+  // A largura é do próprio equipamento; ambas as extremidades se afilam.
   for(let layer=0;layer<2;layer++){
+    const outer=range-(layer?0.65:0);
+    const thickness=s.trailThickness*(layer?.38:1);
     ctx.beginPath();
     for(let i=0;i<angles.length;i++){
       const a=facing+angles[i]!;
-      if(!i)ctx.moveTo(Math.cos(a)*range,Math.sin(a)*range);
-      else ctx.lineTo(Math.cos(a)*range,Math.sin(a)*range);
+      const x=Math.cos(a)*outer,y=Math.sin(a)*outer;
+      if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y);
     }
     for(let i=angles.length-1;i>=0;i--){
       const a=facing+angles[i]!;
-      ctx.lineTo(Math.cos(a)*(inner+layer*9),Math.sin(a)*(inner+layer*9));
+      const t=i/(angles.length-1);
+      const taper=.16+.84*Math.sin(Math.PI*t);
+      const inner=outer-thickness*taper;
+      ctx.lineTo(Math.cos(a)*inner,Math.sin(a)*inner);
     }
     ctx.closePath();
-    ctx.fillStyle=rgba(layer?w.trail.second:w.trail.first,opacity*(layer?.5:.28));
-    ctx.fill();
+    const first=facing+angles[0]!,last=facing+angles[angles.length-1]!;
+    const gradient=ctx.createLinearGradient(
+      Math.cos(first)*range,Math.sin(first)*range,
+      Math.cos(last)*range,Math.sin(last)*range);
+    const color=layer?w.trail.second:w.trail.first;
+    gradient.addColorStop(0,rgba(color,opacity*.08));
+    gradient.addColorStop(.5,rgba(color,opacity*(layer?.62:.34)));
+    gradient.addColorStop(1,rgba(color,opacity*(layer?.32:.2)));
+    ctx.fillStyle=gradient;ctx.fill();
   }
   ctx.beginPath();
   angles.forEach((offset,i)=>{
