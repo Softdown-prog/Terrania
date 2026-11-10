@@ -1,6 +1,6 @@
 /** Silhueta e materiais exclusivos, mantendo as mesmas regras de combate. */
-import type { ColorRamp } from "./geometry.ts";
-import { organic, shard, headEyes, curvedLeg, carapaceDetail } from "./geometry.ts";
+import type { ColorRamp } from "../../shared/regionalGeometry.ts";
+import { organic, shard, headEyes, curvedLeg, carapaceDetail } from "../../shared/regionalGeometry.ts";
 
 export const drawCrab = (ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void => {
   for(const s of [-1,1]){

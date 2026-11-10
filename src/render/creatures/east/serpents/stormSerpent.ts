@@ -1,7 +1,7 @@
 /** Silhueta e materiais exclusivos, mantendo as mesmas regras de combate. */
-import type { ColorRamp } from "./geometry.ts";
-import { organic, shard, headEyes, OUTLINE, GLINT } from "./geometry.ts";
-import { ellipse, rgba } from "../../draw.ts";
+import type { ColorRamp } from "../../shared/regionalGeometry.ts";
+import { organic, shard, headEyes, OUTLINE, GLINT } from "../../shared/regionalGeometry.ts";
+import { ellipse, rgba } from "../../../draw.ts";
 
 export const drawSerpent = (ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):void => {
   ctx.strokeStyle=OUTLINE;ctx.lineWidth=19;ctx.lineCap="round";
