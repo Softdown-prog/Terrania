@@ -211,5 +211,5 @@ import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
 const CREATURE_PALETTE: Palette = {"base":"#718063","light":"#bec09c","dark":"#36453d","accent":"#b39362","eye":"#f1c76d","extra":"#745243"};
 export function renderDesertOrcCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
   sx:number,sy:number,time=0):void {
-  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,(surface, colors, t) => { orc(surface,colors,t,24); renderDesertOrcDetail(surface,{...actor,kind:"desert-orc"},t); });
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,(surface, colors, t) => { orc(surface,colors,t); renderDesertOrcDetail(surface,{...actor,kind:"desert-orc"},t); },24);
 }

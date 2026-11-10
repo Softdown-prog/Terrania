@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { Recorder, withFakeDocument } from "./helpers/recordingContext.ts";
 import { renderWave3Creature } from "../src/render/regionalWave3.ts";
+import { renderRegionalCreature } from "../src/render/regionalCreatures.ts";
 import { renderMount } from "../src/render/mounts.ts";
 import { CREATURE_CATALOG } from "../src/actors/CreatureCatalog.ts";
 import { MOUNTS } from "../src/actors/MountCatalog.ts";
@@ -169,5 +170,41 @@ test("32 desenhos acompanham as categorias de cada ficha sem anatomias órfãs",
   for(const legacy of ["src/render/creatures/wave2","src/render/creatures/regional",
       "src/render/creatures/south/geometry.ts","src/render/sandBeetle.ts"]){
     assert.equal(existsSync(legacy),false,"caminho antigo não pode coexistir: "+legacy);
+  }
+});
+
+
+test("render de monstros: registro apenas delega a paleta e função exclusivas por espécie",async()=>{
+  const { readFileSync }=await import("node:fs");
+  const { REGIONAL_CREATURE_KINDS }=await import("../src/actors/CreatureCatalog.ts");
+  const root=readFileSync("src/render/regionalCreatures.ts","utf8");
+  assert.equal(REGIONAL_CREATURE_KINDS.length,31);
+  for(const kind of REGIONAL_CREATURE_KINDS){
+    const named="render"+kind.split("-").map(part=>part[0]!.toUpperCase()+part.slice(1)).join("")+"Creature";
+    if(kind!=="sand-beetle"){
+      const pattern=new RegExp('import\\s*\\{\\s*'+named+'\\s*\\}\\s*from\\s*"\\./creatures/([^"]+)\\.ts"');
+      const match=pattern.exec(root);
+      assert.ok(match,kind+" ausente do registro de renderizadores individuais");
+      const art=readFileSync("src/render/creatures/"+match[1]+".ts","utf8");
+      assert.ok(art.includes("const CREATURE_PALETTE:"),kind+" não possui paleta própria");
+      assert.ok(art.includes("export function "+named+"("),kind+" não possui função de render própria");
+      assert.ok(art.includes("Frame(ctx,actor,"),kind+" não usa composição Canvas comum");
+    }
+    const actor={kind,hp:CREATURE_CATALOG[kind].maxHp,id:"visual:"+kind,
+      motionPhase:1.7,moving:0.8,casting:0.3};
+    const a=capture(ctx=>renderRegionalCreature(ctx,actor,0,0,2.4));
+    const b=capture(ctx=>renderRegionalCreature(ctx,actor,0,0,2.4));
+    assert.ok(a.paintOps>12,kind+" não tem anatomia visível");
+    assert.equal(a.saves,a.restores,kind+" deixou o Canvas com estado desbalanceado");
+    assert.equal(a.signature,b.signature,kind+" perdeu determinismo no desenho");
+  }
+  for(const old of ["regionalCreatures","regionalWave2","regionalWave3"]){
+    const code=readFileSync("src/render/"+old+".ts","utf8");
+    assert.ok(!code.includes("switch("),old+" voltou a agrupar os desenhos");
+    assert.ok(!/#[a-fA-F0-9]{6}/.test(code),old+" voltou a agrupar paletas");
+  }
+  for(const part of ["wave2Frame","wave3Frame","regionalFrame"]){
+    const shared=readFileSync("src/render/creatures/shared/"+part+".ts","utf8");
+    assert.ok(!shared.includes("switch("),part+" contém seleção de espécie");
   }
 });
