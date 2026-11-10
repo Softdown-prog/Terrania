@@ -8,7 +8,7 @@ function person(id:string,name:string,role:string,x:number,y:number):Npc {
 export const SOUTH_NPCS:readonly Npc[]=[
   person("south-gorrak","Gorrak, Senhor do Poço","Chefe dos Ermos",-18,-8),
   person("south-brutha","Brutha Pedra-Rubra","Ferreiro troll",-19,13),
-  person("south-zinha","Zinha Dedos-de-Cobre","Mercadora goblin",11,-8),
+  person("south-zinha","Zinha Dedos-de-Cobre","Mercadora goblin",8,-5),
   person("south-madame","Madame Víbora","Hospedeira",-8,15),
   person("south-pip","Pip Olhos-de-Areia","Batedor de caminhos",-6,-4),
   person("south-ixtal","Ixtal, o Destilador","Alquimista diabrete",19,-2),

@@ -3,6 +3,7 @@ import { TapNavigator, findWalkingPath, type Point } from "../engine/TapNavigato
 import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { NPCS, nearestNpc, npcDialogue, type Npc } from "../world/npcs.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
+import { SOUTH_CITY, southPoint } from "../world/southCity.ts";
 
 export const QA_BOT_ID = "QA-BOT-001";
 const STEP_SECONDS = 1 / 60;
@@ -55,6 +56,8 @@ export interface QaBotReport {
 export interface QaBotOptions {
   readonly seed?: number;
   readonly maxTicks?: number;
+  /** Cada região deve ser auditada separadamente: não simular 500 km de caminhada. */
+  readonly region?: "center"|"south";
 }
 
 const distance = (a: Point, b: Point): number => Math.hypot(a.x - b.x, a.y - b.y);
@@ -97,8 +100,17 @@ export function runQaBot(options: QaBotOptions = {}): QaBotReport {
     throw new RangeError("maxTicks deve ficar entre 120 e 36000");
 
   const sim = new OfflineSimulation(seed);
+  const region=options.region??"center";
+  if(region!=="center"&&region!=="south")throw new RangeError("região de QA inválida");
+  if(region==="south"){
+    const start=southPoint(0,-18);
+    sim.player.x=start.x;sim.player.y=start.y;
+    sim.slimes.clear();
+  }
   const navigator = new TapNavigator();
-  const goals: Npc[] = [...NPCS];
+  const goals: Npc[] = NPCS.filter(npc=>
+    region==="south" ? Math.abs(npc.y-(SOUTH_CITY.centerY+.5)*TILE_SIZE)<1100 :
+    Math.abs(npc.y)<1100);
   const checks: QaFinding[] = [];
   const visited = new Set<string>();
   let ticks = 0;

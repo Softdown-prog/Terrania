@@ -4,6 +4,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { NPCS, NPC_CHARACTERS, NPC_LOOKS, NPC_TALK_RANGE, npcDialogue, nearestNpc } from "../src/npcs/catalog.ts";
 import { NPCS as legacyNPCS } from "../src/world/npcs.ts";
 import { CENTER_NPCS, CENTER_NPC_LOOKS } from "../src/npcs/center/index.ts";
+import { SOUTH_NPCS, SOUTH_NPC_LOOKS } from "../src/npcs/south/index.ts";
+import { SOUTH_SIGNS, SOUTH_BUILDINGS } from "../src/world/southCity.ts";
 import { BUILDINGS, SIGNS } from "../src/world/village.ts";
 
 test("NPCs: cinco personagens únicos na vila central, sem NPCs inventados nas outras regiões",()=>{
@@ -12,16 +14,21 @@ test("NPCs: cinco personagens únicos na vila central, sem NPCs inventados nas o
   assert.deepEqual(NPC_CHARACTERS.map(n=>[n.x,n.y]),[[80,-16],[304,16],[538,32],[448,250],[384,112]]);
   assert.equal(new Set(NPC_CHARACTERS.map(n=>n.id)).size,5);
   assert.strictEqual(NPC_CHARACTERS,CENTER_NPCS);
-  assert.strictEqual(NPC_LOOKS,CENTER_NPC_LOOKS);
-  assert.deepEqual(Object.keys(NPC_LOOKS),["aela","mira","toren","lina"]);
-  for(const region of ["north","south","east","west"])
+  for(const id of ["aela","mira","toren","lina"])
+    assert.strictEqual(NPC_LOOKS[id],CENTER_NPC_LOOKS[id]);
+  assert.deepEqual(Object.keys(NPC_LOOKS).slice(0,4),["aela","mira","toren","lina"]);
+  assert.equal(Object.keys(SOUTH_NPC_LOOKS).length,12);
+  assert.equal(SOUTH_NPCS.length,12);
+  for(const region of ["north","east","west"])
     assert.deepEqual(readdirSync("src/npcs/"+region),["README.md"]);
+  assert.deepEqual(readdirSync("src/npcs/south").sort(),["README.md","index.ts"]);
 });
 test("NPCs: cada personagem tem ficha única e objetos de vila mantêm ordem",()=>{
   const files=readdirSync("src/npcs/center").filter(f=>f.endsWith(".ts")&&f!=="index.ts").sort();
   assert.deepEqual(files,["aela.ts","eron.ts","lina.ts","mira.ts","toren.ts"]);
   assert.strictEqual(NPCS,legacyNPCS);
-  assert.equal(NPCS.length,5+SIGNS.length+BUILDINGS.length);
+  assert.equal(NPCS.length,5+SIGNS.length+BUILDINGS.length+
+    SOUTH_NPCS.length+SOUTH_SIGNS.length+SOUTH_BUILDINGS.filter(b=>b.interior).length);
   assert.deepEqual(NPCS.slice(0,5),NPC_CHARACTERS);
   assert.equal(NPCS[5]?.kind,"sign");
   assert.equal(NPCS[NPCS.length-1]?.kind,"door");
@@ -101,7 +108,7 @@ test("NPCs: falas originais independentes de reexportações e aliases",()=>{
 
 test("NPCs: aparência da vila mantém paletas, acessórios e proporções anteriores",()=>{
   assert.deepEqual(
-    Object.entries(NPC_LOOKS).map(([id,look])=>[id,look.robe,look.prop,look.hairStyle,look.width]),
+    Object.entries(CENTER_NPC_LOOKS).map(([id,look])=>[id,look.robe,look.prop,look.hairStyle,look.width]),
     [
       ["aela","#456f4d","staff","long",1],
       ["mira","#4f7c8a","scroll","short",1],
