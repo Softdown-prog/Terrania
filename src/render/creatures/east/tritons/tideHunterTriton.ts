@@ -32,3 +32,12 @@ export const triton = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   }
   etched(ctx,c,9,0,-35,9,14);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#349b93","dark":"#27516f","light":"#8be6c7","accent":"#82bdef","eyes":"#ffe17c"};
+export function renderTideHunterTritonCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,triton);
+}

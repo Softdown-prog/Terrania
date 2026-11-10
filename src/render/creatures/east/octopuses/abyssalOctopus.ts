@@ -24,3 +24,12 @@ export const octopus = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   for(let i=0;i<7;i++)crystal(ctx,-15+i*5,-44+i%2*4,2.8,7,i%2?c.accent:c.light);
   etched(ctx,c,11,0,-39,12,10);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#7a58ae","dark":"#354668","light":"#bb78c9","accent":"#4adbc8","eyes":"#ffe987"};
+export function renderAbyssalOctopusCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,octopus);
+}
