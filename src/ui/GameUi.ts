@@ -23,9 +23,14 @@ export interface HeroHudState {
   readonly awaitingRespawn: boolean;
 }
 
-export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave' | 'tracks' | 'tame';
+export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave' | 'ascend' | 'descend' | 'tracks' | 'tame';
 export interface CaveMapState {
   readonly floor: CaveFloor;
+  /** 1 = o andar da entrada. Cavernas comuns têm um andar só. */
+  readonly floorIndex: number;
+  readonly floorCount: number;
+  /** Nome do andar (masmorra) ou o da própria caverna. */
+  readonly floorName: string;
   readonly tileX: number;
   readonly tileY: number;
 }
