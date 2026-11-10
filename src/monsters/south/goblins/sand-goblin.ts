@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 import { southRareDrop } from "../../rareLoot.ts";
 
 /** sand-goblin: ficha da região Sul. */
@@ -9,3 +10,6 @@ export const sandGoblin = {
     biomes: ["dunes", "ruins"],
     loot: [{ item: "Moedas de Cobre", chance: .85 }, { item: "Adaga Enferrujada", chance: .15 }, { item: "Retalho de Pano", chance: .60 }, southRareDrop("sand-goblin")],
 } satisfies CreatureDefinition;
+
+/** Movimento, perseguição e retirada próprios de sand-goblin; lidos pelo motor. */
+export const sandGoblinBehavior = { gait: "skitter", pursuit: "flank", cadence: 1.57, weave: 0.23, retreatAt: 0.25 } satisfies SpeciesBehavior;

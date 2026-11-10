@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** dune-scout: ficha da região Sul. */
 export const duneScout = {
@@ -8,3 +9,6 @@ export const duneScout = {
     biomes: ["oasis", "ruins", "dunes"],
     loot: [{ item: "Bolsa de Sementes", chance: .50 }, { item: "Pedra Polida", chance: .65 }, { item: "Pão de Viagem", chance: .35 }, { item: "Moedas de Prata", chance: .50 }],
 } satisfies CreatureDefinition;
+
+/** Movimento, perseguição e retirada próprios de dune-scout; lidos pelo motor. */
+export const duneScoutBehavior = { gait: "stride", pursuit: "cautious", cadence: 1.73, weave: 0.2, retreatAt: 0.45 } satisfies SpeciesBehavior;
