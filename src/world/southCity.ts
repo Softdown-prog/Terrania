@@ -85,6 +85,7 @@ function wallTile(tx:number,ty:number):boolean{
 /** Muralha, fundações e o poço são físicos: as aberturas dos portões permanecem livres. */
 export function southCityBlocks(x:number,y:number,r:number):boolean{
   if(![x,y,r].every(Number.isFinite))return true;
+  if(Math.abs(x)>1600 || Math.abs(y-(SOUTH_CITY.centerY+.5)*32)>1700)return false;
   for(const dx of [-r,r])for(const dy of [-r,r])
     if(wallTile(Math.floor((x+dx)/32),Math.floor((y+dy)/32)))return true;
   const well=southPoint(0,0);

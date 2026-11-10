@@ -101,6 +101,7 @@ func southCityWall(tx,ty int) bool {
 	return (y==-24||y==23)&&absInt(x)>2
 }
 func southCityBlocks(x,y,r float64) bool {
+	if math.Abs(x)>1600||math.Abs(y-(southCityY+.5)*32)>1700{return false}
 	for _,dx:=range []float64{-r,r} {for _,dy:=range []float64{-r,r} {
 		if southCityWall(int(math.Floor((x+dx)/32)),int(math.Floor((y+dy)/32))) {return true}
 	}}
