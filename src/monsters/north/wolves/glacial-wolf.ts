@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** glacial-wolf: ficha da região Norte. */
 export const glacialWolf = {

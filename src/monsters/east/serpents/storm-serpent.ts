@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** storm-serpent: ficha da região Leste. */
 export const stormSerpent = {

@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** coral-crab: ficha da região Leste. */
 export const coralCrab = {

@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** tide-hunter-triton: ficha da região Leste. */
 export const tideHunterTriton = {

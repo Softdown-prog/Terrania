@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** magma-salamander: ficha da região Oeste. */
 export const magmaSalamander = {

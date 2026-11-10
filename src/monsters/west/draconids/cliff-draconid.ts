@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** cliff-draconid: ficha da região Oeste. */
 export const cliffDraconid = {

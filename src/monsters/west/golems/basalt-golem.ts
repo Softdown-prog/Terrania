@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** basalt-golem: ficha da região Oeste. */
 export const basaltGolem = {

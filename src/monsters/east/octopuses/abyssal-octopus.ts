@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** abyssal-octopus: ficha da região Leste. */
 export const abyssalOctopus = {
