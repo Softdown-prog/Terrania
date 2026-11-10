@@ -16,6 +16,9 @@ export const COPPER_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "copper",
+    accent: "#f6ab73",
+    trim: "#7d3d30",
     blade: "#bb6744",
     shade: "#773a30",
     glint: "#f6ab73",

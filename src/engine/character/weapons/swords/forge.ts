@@ -16,6 +16,9 @@ export const FORGE_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "iron",
+    accent: "#f0f5f4",
+    trim: "#697b86",
     blade: "#c4ced0",
     shade: "#66767b",
     glint: "#f0f5f4",

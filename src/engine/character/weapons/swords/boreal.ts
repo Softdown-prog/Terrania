@@ -16,6 +16,9 @@ export const BOREAL_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "frost",
+    accent: "#ecffff",
+    trim: "#54cfff",
     blade: "#90dfff",
     shade: "#4b9ec7",
     glint: "#ebffff",

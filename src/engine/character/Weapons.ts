@@ -17,6 +17,11 @@ export type SwordSpecial = "push" | "bleed" | "ice" | "fire" | "poison" | "light
 /** Visual de cada arma, declarativo e independente do Canvas.
  * O renderizador lê esta ficha, sem cadastrar geometrias em paralelo. */
 export interface SwordVisualProfile {
+  /** Silhueta e tratamento de material, definidos na ficha da espada. */
+  readonly motif: "oak" | "iron" | "bronze" | "copper" | "dunes" |
+    "frost" | "magma" | "venom" | "storm" | "astral";
+  readonly accent: string;
+  readonly trim: string;
   readonly blade: string;
   readonly shade: string;
   readonly glint: string;

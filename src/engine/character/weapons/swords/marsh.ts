@@ -16,6 +16,9 @@ export const MARSH_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "venom",
+    accent: "#b5ff66",
+    trim: "#603b7d",
     blade: "#578b4b",
     shade: "#3b345e",
     glint: "#9aff65",

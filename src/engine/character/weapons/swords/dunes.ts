@@ -16,6 +16,9 @@ export const DUNES_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "dunes",
+    accent: "#fff0ae",
+    trim: "#8c6731",
     blade: "#d3a25a",
     shade: "#83613e",
     glint: "#f2d780",

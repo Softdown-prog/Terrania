@@ -16,6 +16,9 @@ export const TEMPEST_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "storm",
+    accent: "#fff293",
+    trim: "#2852ac",
     blade: "#668cd0",
     shade: "#263e72",
     glint: "#eff7ff",

@@ -16,6 +16,9 @@ export const ASTRAL_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "astral",
+    accent: "#ffe6a5",
+    trim: "#353b99",
     blade: "#5878d1",
     shade: "#212d81",
     glint: "#b0d4ff",

@@ -16,6 +16,9 @@ export const BRONZE_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "bronze",
+    accent: "#f7d4a6",
+    trim: "#c18d47",
     blade: "#c99a69",
     shade: "#886448",
     glint: "#f7d4a6",

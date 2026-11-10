@@ -16,6 +16,9 @@ export const OBSIDIAN_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "magma",
+    accent: "#ff8c33",
+    trim: "#4b252a",
     blade: "#34333f",
     shade: "#171925",
     glint: "#ff772b",

@@ -16,6 +16,9 @@ export const STARTER_SWORD = {
   },
   // Formato e materiais da arma, não ícones ou dependências do Canvas.
   visual: {
+    motif: "oak",
+    accent: "#c8a47c",
+    trim: "#765134",
     blade: "#98734e",
     shade: "#584231",
     glint: "#c8a47c",
