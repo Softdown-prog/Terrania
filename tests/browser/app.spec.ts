@@ -111,7 +111,7 @@ test('abates de slimes na superfície não completam missão da gruta de Aela', 
   })));
   await page.goto('/jogar/?modo=solo');
   await expect(page.locator('#questProgress')).toHaveText('0 / 5 slimes');
-  await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\\s*0%/);
+  await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\s*0%/);
 });
 
 test('HUD oferece ler placa, entrar e sair conforme a interação do mundo', async ({ page }, info) => {
