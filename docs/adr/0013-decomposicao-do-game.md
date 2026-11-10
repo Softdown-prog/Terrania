@@ -1,6 +1,6 @@
 # ADR 0013 — Decomposição do `Game.ts`
 
-**Estado:** em andamento. Sessões 1 e 2 concluídas em 2026-11-09; faltam as sessões 3 e 4 abaixo.
+**Estado:** em andamento. Sessões 1, 2 e 3 concluídas em 2026-11-09; falta a sessão 4 abaixo.
 
 ## Problema
 
@@ -17,9 +17,10 @@
 | Loja e bolsa (7 métodos) | 75 | regra + efeitos | `src/game/actions/shopActions.ts` | feito |
 | "O que a tecla E faz" e rótulo do HUD | 40 | decisão pura (duplicada) | `src/game/interactions.ts` | feito |
 | Reinício de movimento/combate repetido em 7 lugares | ~35 | estado | `src/game/TravelState.ts` | feito (sessão 2) |
-| `update()`: superfície, caverna e interior | ~210 | laço | separado em `tickCave`, `tickInterior` e `tickSurface` | métodos feitos (sessão 2); cada um para o seu arquivo na sessão 3 |
-| Projeção para o HUD, lista de batalha, 15 argumentos de `scene.render` | ~60 | adaptação | `HudProjection`, `SurfaceFrame` | sessão 3 |
-| Transições (entrar/sair de caverna e interior, novo mundo, renascer) | ~70 | orquestração | `transitions.ts` | sessão 3 |
+| `update()`: superfície, caverna e interior | ~210 | laço | `src/game/modes/surfaceMode.ts`, `caveMode.ts`, `interiorMode.ts` | feito (sessões 2 e 3) |
+| 16 argumentos soltos de `scene.render` | ~20 | adaptação | `SurfaceFrame` (objeto nomeado) | feito (sessão 3) |
+| Projeção para o HUD e lista de batalha | ~40 | adaptação | `HudProjection` | sessão 4 |
+| Transições (entrar/sair de caverna e interior, novo mundo, renascer) | ~90 | orquestração | `transitions.ts` | sessão 4 |
 
 Resultado da sessão 1: **663 → 510 linhas**, com **15 testes novos** sobre o motor real (antes, nada disso era testável sem navegador) e 3 do teto de tamanho.
 
@@ -39,6 +40,15 @@ Resultado da sessão 1: **663 → 510 linhas**, com **15 testes novos** sobre o 
 - **`InteriorMode` como classe: descartado.** O interior tem 13 linhas no laço; uma classe com todas as dependências ligadas por interface criaria mais ligação do que o trecho que isola.
 - **Tamanho:** `Game.ts` foi de 510 para 508 linhas. Esta sessão reorganizou mais do que encolheu: a economia do `TravelState` foi consumida pelo andaime dos métodos. O ganho real vem na sessão 3, quando os métodos saírem para os seus arquivos. O teto foi baixado para 508.
 
+## Sessão 3 (concluída): modos em arquivos próprios
+
+- **`modes/types.ts`** define `Frame` (o que o início do quadro decidiu), `FrameTimers` (os quatro relógios do jogo, passados por referência) e **`ModeHost`**: a lista fechada do que um modo pode usar do jogo (`sim`, `world`, `input`, `travel`, `hud`, `scene`, `camera`, `effects`, `timers` e as ações `save`, `updateHud`, `hudBattleRows`, `leaveCave`, `leaveInterior`). Se um modo precisar de algo novo, aparece ali, à vista, em vez de alcançar o `Game` inteiro. `sim` e `world` são trocados a cada mundo novo; por isso a `host` expõe getters e os modos leem sempre dela, nunca guardam uma cópia.
+- **Um arquivo por modo:** `interiorMode.ts` (21 linhas), `caveMode.ts` (50) e `surfaceMode.ts` (98), cada um uma função `tickX(host, ..., frame)`. O contrato de retorno foi mantido: `true` = o quadro terminou; `false` = o herói saiu e a superfície ainda roda NESTE quadro.
+- **`SurfaceFrame`** substitui os 16 argumentos posicionais de `scene.render` por um objeto com campos nomeados. Quatro deles eram booleanos em sequência (`wildHorse`, `stableBuilt`, `tracksVisible`, `leadingHorse`), onde trocar dois passaria no compilador sem ninguém notar.
+- **Provas de equivalência (uma por commit):** em cada movimento, o corpo antigo (com `this.` trocado por `host.`) foi comparado linha a linha com o novo. Nenhuma linha de lógica mudou, exceto uma, deliberada: em `tickInterior`, a guarda `if (this.interior)` após `leaveInterior()` virou o retorno antecipado `if (room.reachedExit) { host.leaveInterior(); return false; }`. É equivalente porque `leaveInterior()` sempre zera `this.interior` e o despachante só chama o modo com o próprio `this.interior`. Para o `SurfaceFrame`, as 16 expressões do chamador antigo foram conferidas, por posição, com os campos nomeados.
+- **Tamanho:** `Game.ts` foi de **510 para 358 linhas** (663 no começo) e **saiu da tabela de arquivos grandes**, porque passou a caber no limite padrão de 400.
+- **Erro de processo achado e corrigido:** um commit local saiu com o teste de tamanho vermelho, porque o encadeamento `npm test | grep` devolve o código de saída do `grep`, não o do teste. O commit ainda não tinha sido enviado e foi corrigido; daí em diante o código de saída real é conferido.
+
 ## Estrutura alvo de `src/game/`
 
 ```
@@ -53,8 +63,7 @@ hud/                   HudProjection (sessão 3)
 
 ## Sessões restantes
 
-- **Sessão 3:** mover `tickCave` e `tickSurface` para `modes/CaveMode.ts` e `modes/SurfaceMode.ts`, ligados ao jogo por uma interface estreita (`ModeHost`: simulação, HUD, cena, `TravelState`, câmera, salvar). `Frame` vira tipo compartilhado. Junto: `SurfaceFrame` tipado no lugar dos 15 argumentos posicionais de `scene.render`, `HudProjection` e `transitions.ts` (entrar/sair de caverna e interior, novo mundo, renascer). Risco alto e o mais valioso: aqui o arquivo encolhe de verdade. Manter a regra de que a caverna pode terminar o quadro com `false`.
-- **Sessão 4:** `Game.ts` só com ligação (≤ 250 linhas) e teto rebaixado. Depois, o mesmo método nos outros arquivos da tabela de tamanho: `render/actors.ts` (669), `render/terrain.ts`, `render/regionalWave3.ts` e `render/scenery.ts` (divisão por criatura/peça, mantendo `tests/helpers/artAssets.ts` em dia).
+- **Sessão 4:** `HudProjection` (`updateHud`, `hudBattleRows`) e `transitions.ts` (entrar/sair de caverna e interior, novo mundo, renascer; exige `cave` e `interior` no `ModeHost` ou num objeto de estado de modo), levando o `Game.ts` a só ligação (alvo ≤ 250 linhas). Depois, o mesmo método nos outros arquivos da tabela de tamanho: `render/actors.ts`, `render/terrain.ts`, `render/regionalWave3.ts` e `render/scenery.ts` (divisão por criatura/peça, mantendo `tests/helpers/artAssets.ts` em dia).
 
 Fora deste ADR, mas na mesma linha: `src/style.css` (mais de mil linhas globais) merece divisão por tela.
 
