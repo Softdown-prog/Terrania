@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** frost-spirit: ficha da região Norte. */
 export const frostSpirit = {
@@ -8,3 +9,6 @@ export const frostSpirit = {
     biomes: ["snowfield", "frozen-lake"],
     loot: [{ item: "Essência de Gelo", chance: .5 }, { item: "Cristal Boreal", chance: .2 }],
 } satisfies CreatureDefinition;
+
+/** Locomoção e recuo por espécie: frost-spirit. */
+export const frostSpiritBehavior = { gait: "hover", pursuit: "flank", cadence: 1.13, weave: 0.27 } satisfies SpeciesBehavior;

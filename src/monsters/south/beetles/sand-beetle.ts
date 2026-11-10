@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 import { southRareDrop } from "../../rareLoot.ts";
 
 /** Besouro da Areia: habitante de superfície do Sul, níveis 5–18. */
@@ -9,3 +10,6 @@ export const sandBeetle = {
     biomes: ["dunes", "ruins", "trail"], recommendedLevels: [5, 18],
     loot: [{ item: "Carapaça Seca", chance: .4 }, southRareDrop("sand-beetle")],
 } satisfies CreatureDefinition;
+
+/** Locomoção e recuo por espécie: sand-beetle. */
+export const sandBeetleBehavior = { gait: "scuttle", pursuit: "cautious", cadence: 1.98, weave: 0.3 } satisfies SpeciesBehavior;

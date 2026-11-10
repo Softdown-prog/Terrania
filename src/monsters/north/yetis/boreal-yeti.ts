@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** boreal-yeti: ficha da região Norte. */
 export const borealYeti = {
@@ -8,3 +9,6 @@ export const borealYeti = {
     biomes: ["tundra", "snowfield"],
     loot: [{ item: "Pelagem Espessa", chance: .65 }, { item: "Carne Congelada", chance: .75 }, { item: "Clava de Osso", chance: .1 }],
 } satisfies CreatureDefinition;
+
+/** Locomoção e recuo por espécie: boreal-yeti. */
+export const borealYetiBehavior = { gait: "lumber", pursuit: "direct", cadence: 0.97, weave: 0.02 } satisfies SpeciesBehavior;
