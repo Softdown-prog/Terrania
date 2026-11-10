@@ -1,4 +1,6 @@
 import { renderRegionalCreature } from "./regionalCreatures.ts";
+import { renderSlime } from "./actors.ts";
+import { RegionalMonster } from "../actors/RegionalMonster.ts";
 import type { GearState } from "../engine/Equipment.ts";
 import type { WeaponId } from "../engine/Weapons.ts";
 import { renderHero } from "./actors.ts";
@@ -197,7 +199,9 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   const occupants: Array<{y:number;render:()=>void}> = [];
   for(const mob of room.monsters.values()){
     if(Math.abs(mob.x-player.x)>width/2+65||Math.abs(mob.y-player.y)>height/2+80)continue;
-    occupants.push({y:mob.y,render:()=>renderRegionalCreature(ctx,mob,mob.x-left,mob.y-top,time)});
+    occupants.push({y:mob.y,render:()=>mob instanceof RegionalMonster
+      ? renderRegionalCreature(ctx,mob,mob.x-left,mob.y-top,time)
+      : renderSlime(ctx,mob,mob.x-left,mob.y-top,{time,lookX:player.x-mob.x,lookY:player.y-mob.y})});
   }
   occupants.push({y:player.y,render:()=>renderHero(ctx,
     {...player,gear,equippedWeapon:weapon},player.x-left,player.y-top,time)});

@@ -1,11 +1,11 @@
-import { CREATURE_CATALOG, type RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
+import { CREATURE_CATALOG, type CreatureKind } from "../actors/CreatureCatalog.ts";
 import { rollCreatureLoot } from "../actors/RegionalMonster.ts";
 import { grantExperience } from "./Experience.ts";
 import type { OfflineSimulation } from "./OfflineSimulation.ts";
 
 /** O que a caverna precisa expor para premiar o herói; `CaveRoom` já cumpre isso. */
 export interface CaveVictorySource {
-  drainVictories(): Array<{ kind: RegionalCreatureKind; id: string }>;
+  drainVictories(): Array<{ kind: CreatureKind; id: string }>;
   readonly player: { hp: number; maxHp: number };
 }
 
@@ -19,7 +19,13 @@ export function applyCaveVictories(sim: OfflineSimulation, cave: CaveVictorySour
     if (sim.defeated.has(victory.id)) continue;
     sim.defeated.add(victory.id);
     sim.experience = grantExperience(sim.experience, CREATURE_CATALOG[victory.kind].experience, cave.player);
-    for (const item of rollCreatureLoot(victory.kind, victory.id)) sim.inventory.addMaterial(item);
+    sim.kills += 1;
+    if (victory.kind === "slime" && victory.id.includes(":floor:1:slime:")) {
+      sim.trainingKills = Math.min(5, sim.trainingKills + 1);
+      sim.inventory.addGel();
+    } else if (victory.kind !== "slime") {
+      for (const item of rollCreatureLoot(victory.kind, victory.id)) sim.inventory.addMaterial(item);
+    }
     changed = true;
   }
   return changed;

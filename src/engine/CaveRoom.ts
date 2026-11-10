@@ -1,9 +1,11 @@
 import { resolveSwordStrike, swordStrikeTargets } from "./SwordCombat.ts";
-import { SOUTH_COMMON_KINDS } from "../actors/CreatureCatalog.ts";
+import { SOUTH_COMMON_KINDS, type CreatureKind } from "../actors/CreatureCatalog.ts";
+import { Slime } from "../actors/Slime.ts";
+import { AELA_SLIME_GOAL } from "../world/aelaQuest.ts";
 import { RegionalMonster, caveMonsterKinds } from "../actors/RegionalMonster.ts";
 import { faceTarget } from "./combat.ts";
 import type { WeaponId } from "./Weapons.ts";
-import type { RegionalCreatureKind } from "../actors/CreatureCatalog.ts";
+
 import { Player } from "../actors/Player.ts";
 import type { CollisionMap } from "../world/collision.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
@@ -82,9 +84,9 @@ export class CaveFloor {
 export class CaveRoom {
   readonly floor: CaveFloor;
   readonly player: Player;
-  readonly monsters = new Map<string, RegionalMonster>();
+  readonly monsters = new Map<string, Slime>();
   readonly collision: CollisionMap;
-  private readonly victories: Array<{ kind: RegionalCreatureKind; id: string }> = [];
+  private readonly victories: Array<{ kind: CreatureKind; id: string }> = [];
   private readonly defeated: ReadonlySet<string>;
   constructor(entrance:CaveEntrance, hp = 100, maxHp = 100,
     defeated: ReadonlySet<string> = new Set()) {
@@ -99,6 +101,23 @@ export class CaveRoom {
     this.populate(entrance);
   }
   private populate(entrance: CaveEntrance): void {
+    if (entrance.id === `cave:${entrance.seed}:0:0`) {
+      // Sete encontros de treino, com locais garantidamente transitáveis.
+      const spots: Array<{ x: number; y: number }> = [];
+      for (let ty = 5; ty <= 23 && spots.length < AELA_SLIME_GOAL + 2; ty += 2)
+        for (let tx = 6; tx <= 36 && spots.length < AELA_SLIME_GOAL + 2; tx += 2) {
+          const x = (tx + .5) * TILE_SIZE, y = (ty + .5) * TILE_SIZE;
+          if (!this.collision.canMove(x, y) ||
+              Math.hypot(x - this.player.x, y - this.player.y) < 210 ||
+              spots.some(point => Math.hypot(x - point.x, y - point.y) < 92)) continue;
+          spots.push({ x, y });
+        }
+      for (const [i, spot] of spots.entries()) {
+        const id = this.floor.id + ":slime:" + i;
+        if (!this.defeated.has(id)) this.monsters.set(id, new Slime(id, spot.x, spot.y));
+      }
+      return;
+    }
     const kinds=caveMonsterKinds(entrance.theme);
     if (!kinds.length) return;
     const salt=entrance.seed ^ Math.imul(entrance.tileX,1033) ^ Math.imul(entrance.tileY,2053);
@@ -128,7 +147,7 @@ export class CaveRoom {
       }
     }
   }
-  drainVictories(): Array<{kind:RegionalCreatureKind;id:string}> {
+  drainVictories(): Array<{kind:CreatureKind;id:string}> {
     return this.victories.splice(0);
   }
   update(dt:number,movement:{x:number;y:number},attack=false,weapon:WeaponId="starter",defense=0,
@@ -138,7 +157,7 @@ export class CaveRoom {
     this.player.update(dt,movement,this.collision);
     if(attack)this.player.startAttack(weapon);
     for(const [id,monster] of this.monsters){
-      monster.update(dt,this.player,this.collision,defense);
+      monster.update(dt,this.player,this.collision,defense,false);
       if(monster.hp<=0)this.defeat(id,monster,defense);
     }
     if(this.player.consumeStrike()){
@@ -152,10 +171,10 @@ export class CaveRoom {
     }
   }
   /** One kill event even if DOT, direct hit and chained lightning overlap. */
-  private defeat(id:string,monster:RegionalMonster,defense:number):void {
+  private defeat(id:string,monster:Slime,defense:number):void {
     if(!this.monsters.has(id))return;
     // A explosão final respeita a armadura, como na superfície.
-    monster.deathBurst(this.player,this.collision,defense);
+    if (monster instanceof RegionalMonster)monster.deathBurst(this.player,this.collision,defense,false);
     this.monsters.delete(id);
     this.victories.push({kind:monster.kind,id});
   }
