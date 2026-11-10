@@ -1,4 +1,4 @@
-import { applySwordImpact, swordHitDamage } from "./SwordCombat.ts";
+import { applySwordImpact, swordHitDamage, swordStrikeTargets } from "./SwordCombat.ts";
 import { RegionalMonster, regionalSurfaceSpawns, southCommonSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
 import { Player } from "../actors/Player.ts";
 import { MountStable, type MountSave } from "./MountStable.ts";
@@ -7,7 +7,7 @@ import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { SeedCollision } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
-import { canStrike, faceTarget } from "./combat.ts";
+import { faceTarget } from "./combat.ts";
 import type { ClassicTileWalker, WalkDirection } from "./ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./Inventory.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./loot.ts";
@@ -29,6 +29,13 @@ export interface OfflineSave {
   experience?: number;
   awaitingRespawn?: true;
   mounts?: MountSave;
+}
+
+export const MAX_KILLS = 9_999_999;
+/** Contagem de abates vinda de um save: inteira, não negativa e limitada (missões dependem disso). */
+export function normalizeKills(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.max(0, Math.min(MAX_KILLS, Math.floor(value))) : 0;
 }
 
 /** Motor puro: nenhuma dependência de Canvas, DOM, UI, rede ou localStorage. */
@@ -60,10 +67,11 @@ export class OfflineSimulation {
       this.experience = normalizeExperience(saved.experience);
       this.player.maxHp = maxHpForExperience(this.experience);
       this.player.hp = saved.awaitingRespawn === true && saved.hp === 0
-        ? 0 : Math.min(this.player.maxHp, Math.max(1, saved.hp));
+        ? 0 : Number.isFinite(saved.hp) ? Math.min(this.player.maxHp, Math.max(1, saved.hp)) : this.player.maxHp;
       if (this.player.hp > 0) this.player.restoreNutrition(saved.nutrition);
-      this.kills = saved.kills;
-      for (const id of saved.defeated) this.defeated.add(id);
+      this.kills = normalizeKills(saved.kills);
+      for (const id of Array.isArray(saved.defeated) ? saved.defeated : [])
+        if (typeof id === "string") this.defeated.add(id);
       for (const drop of normalizeDrops(saved.drops)) {
         // Não carregar itens incompatíveis com a lista de monstros derrotados.
         if (this.defeated.has(drop.id)) this.drops.set(drop.id, drop);
@@ -105,7 +113,7 @@ export class OfflineSimulation {
     if(this.defeated.has(id))return;
     this.slimes.delete(id);
     this.defeated.add(id);
-    if(slime.kind==="slime")this.kills++;
+    if(slime.kind==="slime")this.kills=Math.min(MAX_KILLS,this.kills+1);
     if(slime instanceof RegionalMonster){
       slime.deathBurst(this.player,this.collision,defense);
       for(const item of rollCreatureLoot(slime.kind,slime.id))this.inventory.addMaterial(item);
@@ -167,17 +175,12 @@ export class OfflineSimulation {
     if (focused && this.player.attackTime > 0) faceTarget(this.player, focused);
     if (this.player.consumeStrike()) {
       const weapon=this.player.attackWeapon;
-      const reach=weapon==="astral"?72:52;
-      const cone=weapon==="astral"?-.5:-.1;
-      const targets=[...this.slimes].filter(([id,mob])=>
-        (strikeTargetId===undefined || id===strikeTargetId) &&
-        canStrike(this.player,mob,this.collision,reach,cone))
-        .sort((a,b)=>Math.hypot(a[1].x-this.player.x,a[1].y-this.player.y)-
-          Math.hypot(b[1].x-this.player.x,b[1].y-this.player.y));
       // The astral arc can contact three; every other blade hits one primary.
-      const primary=targets.slice(0,weapon==="astral"?3:1);
-      for(const [id,mob] of primary){
+      const primary=swordStrikeTargets(weapon,this.player,this.slimes.values(),
+        this.collision,strikeTargetId);
+      for(const mob of primary){
         if(mob.hp<=0)continue;
+        const id=mob.id;
         mob.takeHit(this.player.x,this.player.y,swordHitDamage(weapon,mob));
         if(mob instanceof RegionalMonster)mob.onSwordHit(this.player,weapon);
         const secondary=applySwordImpact(weapon,this.player,mob,
@@ -198,7 +201,8 @@ export class OfflineSimulation {
         changed = true;
       }
     }
-    return changed;
+    // Derrota por veneno, queimadura ou espinhos também é progresso: salvar na hora.
+    return changed || this.awaitingRespawn;
   }
   snapshot(): OfflineSave {
     return {

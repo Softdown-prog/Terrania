@@ -30,6 +30,7 @@ export class Player {
   private swingNumber = 0;
   private poisonStacks = 0;
   get debuffs(): Readonly<Record<DebuffKind, number>> { return { ...this.effects }; }
+  get stunned(): boolean { return this.effects.stun > 0; }
   /** Status apply equally to tile-mode outdoor movement and free cave movement. */
   get movementMultiplier(): number {
     if (this.effects.freeze > 0 || this.effects.stun > 0) return 0;
@@ -196,7 +197,7 @@ export class Player {
   get attackSequence(): number { return this.swingNumber; }
   get strikeDamage(): number { return WEAPONS[this.attackWeapon].damage; }
   startAttack(weapon: WeaponId = "starter"): boolean {
-    if (this.attackCooldown > 0 || this.hp <= 0 || this.effects.stun > 0) return false;
+    if (this.attackCooldown > 0 || this.hp <= 0 || this.stunned) return false;
     this.attackTime = ATTACK_DURATION;
     this.attackCooldown = WEAPONS[weapon].interval * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
     this.attackWeapon = weapon;

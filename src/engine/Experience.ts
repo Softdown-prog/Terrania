@@ -46,7 +46,8 @@ export function grantExperience(current: number, reward: number,
   const next = Math.min(MAX_EXPERIENCE, current + reward);
   const maxHp = maxHpForExperience(next);
   if (maxHp > hero.maxHp) {
-    hero.hp = Math.min(maxHp, hero.hp + (maxHp - hero.maxHp));
+    // Subir de nível aumenta a vida de quem está de pé; herói derrotado só volta por `respawn()`.
+    if (hero.hp > 0) hero.hp = Math.min(maxHp, hero.hp + (maxHp - hero.maxHp));
     hero.maxHp = maxHp;
   }
   return next;

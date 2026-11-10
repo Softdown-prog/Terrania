@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (69)
+## Todos os arquivos deste módulo (71)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -44,6 +44,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
 - [`tests/cloudflare-deploy.test.ts`](../../tests/cloudflare-deploy.test.ts)
 - [`tests/creature-catalog.test.ts`](../../tests/creature-catalog.test.ts)
+- [`tests/engine-invariants.test.ts`](../../tests/engine-invariants.test.ts)
 - [`tests/experience.test.ts`](../../tests/experience.test.ts)
 - [`tests/file-size-budget.test.ts`](../../tests/file-size-budget.test.ts)
 - [`tests/helpers/artAssets.ts`](../../tests/helpers/artAssets.ts)
@@ -73,6 +74,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/qa-combat.test.ts`](../../tests/qa-combat.test.ts)
 - [`tests/qa-expedition.test.ts`](../../tests/qa-expedition.test.ts)
 - [`tests/qa-natural.test.ts`](../../tests/qa-natural.test.ts)
+- [`tests/quality-gates.test.ts`](../../tests/quality-gates.test.ts)
 - [`tests/regional-creatures.test.ts`](../../tests/regional-creatures.test.ts)
 - [`tests/regional-landmark-art.test.ts`](../../tests/regional-landmark-art.test.ts)
 - [`tests/regional-wave2.test.ts`](../../tests/regional-wave2.test.ts)
