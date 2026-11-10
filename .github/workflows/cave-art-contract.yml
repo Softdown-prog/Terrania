@@ -87,7 +87,7 @@ jobs:
                 await page.goto('http://127.0.0.1:5173/jogar/?modo=solo',
                   {waitUntil:'domcontentloaded',timeout:60000});
                 await page.locator('canvas#game').waitFor({state:'visible',timeout:60000});
-                await page.locator('#coords').waitFor({state:'visible',timeout:15000});
+                await page.locator('#coords').waitFor({state:'attached',timeout:15000});
                 await page.waitForTimeout(1300);
                 await page.screenshot({path:folder+'/jogo-'+profile.name+'-real.png',
                   animations:'disabled'});
