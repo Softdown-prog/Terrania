@@ -30,6 +30,6 @@ export const BOREAL_SWORD = {
     rune: true,
     wingedGuard: true,
     runeColor: "#e4fbff",
-    trailAccent: "particles",
+    trailAccent: "ice-shards",
   },
 } as const satisfies WeaponDefinition;

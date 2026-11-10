@@ -28,6 +28,6 @@ export const DUNES_SWORD = {
     length: 40,
     serrated: true,
     guardReach: 5,
-    trailAccent: "particles",
+    trailAccent: "sand",
   },
 } as const satisfies WeaponDefinition;

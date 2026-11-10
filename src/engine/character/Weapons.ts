@@ -41,7 +41,7 @@ export interface SwordVisualProfile {
   readonly wingColor?: string;
   readonly runeColor?: string;
   readonly ornament?: "magma" | "venom" | "stars" | "storm";
-  readonly trailAccent?: "particles" | "bolts" | "stars";
+  readonly trailAccent?: "sand" | "ice-shards" | "embers" | "venom-drops" | "bolts" | "stars";
   readonly trailLineWidth?: number;
 }
 export interface WeaponDefinition {

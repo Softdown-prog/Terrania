@@ -32,6 +32,6 @@ export const OBSIDIAN_SWORD = {
     wingColor: "#573f43",
     runeColor: "#ed642e",
     ornament: "magma",
-    trailAccent: "particles",
+    trailAccent: "embers",
   },
 } as const satisfies WeaponDefinition;

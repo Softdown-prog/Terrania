@@ -30,6 +30,6 @@ export const MARSH_SWORD = {
     rune: true,
     runeColor: "#aaec58",
     ornament: "venom",
-    trailAccent: "particles",
+    trailAccent: "venom-drops",
   },
 } as const satisfies WeaponDefinition;
