@@ -10,9 +10,6 @@ export const drawFireLion = (ctx:CanvasRenderingContext2D,p:Palette,time:number)
     const a=i*TAU/20+(ring*.1),s=ring?12:17;
     const rx=18+Math.cos(a)*s,ry=-41+Math.sin(a)*s;
     const length=8+ring*2+Math.sin(time*4+i*1.1)*1.5;
-    const g=ctx.createLinearGradient(rx-3,ry-8,rx+4,ry+8);
-    g.addColorStop(0,p.light);g.addColorStop(.5,ring?p.base:p.accent);
-    g.addColorStop(1,p.dark);
     body(ctx,rx,ry,4+ring, length,{...p,base:p.accent,light:p.light,dark:p.dark},a);
     ctx.strokeStyle=rgba(p.light,.65);ctx.lineWidth=.75;
     ctx.beginPath();ctx.moveTo(rx-2,ry-3);ctx.lineTo(rx+2,ry+2);ctx.stroke();
