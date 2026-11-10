@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { SOUTH_RARE_LOOT, southRareDrop, southRareLootById, southRareLootByName } from "../src/monsters/south/rareLoot.ts";
+import { SOUTH_RARE_LOOT, southRareDrop, southRareLootById, southRareLootByName } from "../src/monsters/rareLoot.ts";
 import { CREATURE_CATALOG } from "../src/monsters/catalog.ts";
 import { rollCreatureLoot } from "../src/actors/RegionalMonster.ts";
 import { Inventory, MAX_STACK } from "../src/engine/character/Inventory.ts";

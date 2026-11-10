@@ -2,7 +2,7 @@ import { GEAR } from '../../../src/engine/character/Equipment.ts';
 import { FOODS } from '../../../src/engine/character/Food.ts';
 import { WEAPONS } from '../../../src/engine/character/Weapons.ts';
 import { MAX_STACK, POTION_HEAL } from '../../../src/engine/character/Inventory.ts';
-import { SOUTH_RARE_LOOT } from '../../../src/monsters/south/rareLoot.ts';
+import { SOUTH_RARE_LOOT } from '../../../src/monsters/rareLoot.ts';
 
 /** Somente itens reais da aventura. O catálogo não comprova posse nem ativa negociação. */
 export function gameCatalog() {

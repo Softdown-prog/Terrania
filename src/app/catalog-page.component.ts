@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy,Component,OnDestroy,OnInit,signal} from '@angula
 import {RouterLink} from '@angular/router';
 import {runtimeConfig} from './runtime-config.ts';
 import {ItemIconComponent} from './item-icon.component.ts';
-import {southRareLootById, type SouthRareLootId} from '../monsters/south/rareLoot.ts';
+import {southRareLootById, type SouthRareLootId} from '../monsters/rareLoot.ts';
 import {catalogEndpoint,catalogItems,type CatalogItem} from '../net/itemCatalog.ts';
 
 @Component({selector:'app-catalog-page',imports:[RouterLink,ItemIconComponent],changeDetection:ChangeDetectionStrategy.OnPush,

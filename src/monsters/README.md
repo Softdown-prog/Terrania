@@ -32,6 +32,6 @@ continuam classificadas no Sul, sem criar uma região nova artificial.
 
 ## Dez loots raros da Região Sul
 
-`south/rareLoot.ts` é a fonte canônica dos dez itens autorais na mesma ordem da cartela de referência (5×2). Cada ficha de espécie contém seu drop raro com probabilidade determinística baixa (1,2% a 3,5%), sem substituir o saque comum. As recompensas entram no `Inventory.addMaterial` da aventura solo, tanto na superfície quanto em cavernas, e sobrevivem ao save.
+`rareLoot.ts` é a fonte canônica dos dez itens autorais na mesma ordem da cartela de referência (5×2). Cada ficha de espécie contém seu drop raro com probabilidade determinística baixa (1,2% a 3,5%), sem substituir o saque comum. As recompensas entram no `Inventory.addMaterial` da aventura solo, tanto na superfície quanto em cavernas, e sobrevivem ao save.
 
 Os desenhos procedurais são caminhos SVG em `src/app/item-icon.component.ts`; o aplicativo **não carrega a imagem raster como textura**. Mochila e `/mercado/` reutilizam os ícones pelos IDs estáveis. O catálogo PostgreSQL marca `rarity='rare'` e `trade_enabled=false`: não existem compra, resgate, posse online ou troca autenticada implementados por esta entrega.

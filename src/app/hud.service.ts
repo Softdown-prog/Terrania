@@ -8,7 +8,7 @@ import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
-import { southRareLootByName } from '../monsters/south/rareLoot.ts';
+import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
