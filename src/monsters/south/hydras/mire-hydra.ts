@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** mire-hydra: ficha da região Sul. */
 export const mireHydra = {

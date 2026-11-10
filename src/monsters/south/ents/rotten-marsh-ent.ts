@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** rotten-marsh-ent: ficha da região Sul. */
 export const rottenMarshEnt = {

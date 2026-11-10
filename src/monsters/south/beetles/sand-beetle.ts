@@ -1,5 +1,5 @@
-import type { CreatureDefinition } from "../types.ts";
-import { southRareDrop } from "../rareLoot.ts";
+import type { CreatureDefinition } from "../../types.ts";
+import { southRareDrop } from "../../rareLoot.ts";
 
 /** Besouro da Areia: habitante de superfície do Sul, níveis 5–18. */
 export const sandBeetle = {

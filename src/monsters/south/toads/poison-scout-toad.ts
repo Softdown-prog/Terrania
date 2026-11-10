@@ -1,4 +1,4 @@
-import type { CreatureDefinition } from "../types.ts";
+import type { CreatureDefinition } from "../../types.ts";
 
 /** poison-scout-toad: ficha da região Sul. */
 export const poisonScoutToad = {
