@@ -56,6 +56,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/inventory-storage.test.ts`](../../tests/inventory-storage.test.ts)
 - [`tests/inventory.test.ts`](../../tests/inventory.test.ts)
 - [`tests/item-catalog.test.ts`](../../tests/item-catalog.test.ts)
+- [`tests/knight-sword-proportions.test.ts`](../../tests/knight-sword-proportions.test.ts)
 - [`tests/knight-swords.test.ts`](../../tests/knight-swords.test.ts)
 - [`tests/landmarks.test.ts`](../../tests/landmarks.test.ts)
 - [`tests/mcp-navigator.test.ts`](../../tests/mcp-navigator.test.ts)

@@ -1,4 +1,5 @@
 import { WEAPONS, type WeaponId } from "../engine/Weapons.ts";
+import { KNIGHT_SWORD_GRIP } from "./heroPose.ts";
 import { clamp01, rgba, TAU } from "./draw.ts";
 
 /** Ten sword silhouettes reconstructed as code from the author's 5×2 sheet.
@@ -19,6 +20,7 @@ const SHAPES: Readonly<Record<WeaponId, {
   tempest:{blade:"#668cd0",shade:"#263e72",glint:"#eff7ff",guard:"#d5ae5d",grip:"#244777",width:4.4,length:43,curved:true,rune:true},
   astral:{blade:"#5878d1",shade:"#212d81",glint:"#b0d4ff",guard:"#e5bd63",grip:"#3c448f",width:5.3,length:44,broad:true,rune:true},
 };
+/** O arco usa a empunhadura como pivô, e não o centro do corpo. */
 function point(ctx:CanvasRenderingContext2D,x:number,y:number,r:number,color:string):void {
   ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
 }
@@ -130,9 +132,10 @@ export function drawKnightTrail(ctx:CanvasRenderingContext2D,weapon:WeaponId,
   facing:number,angles:readonly number[],alpha:number):void {
   if(angles.length<2 || alpha<=.02)return;
   const w=WEAPONS[weapon],opacity=alpha*w.trail.opacity;
-  const range=weapon==="astral"?52:weapon==="starter"?34:44;
-  const inner=weapon==="astral"?19:23;
-  ctx.save();ctx.translate(0,-12);
+  // Raio acompanha a lâmina real; o herói fornece escala e posição da mão.
+  const range=SHAPES[weapon].length-KNIGHT_SWORD_GRIP;
+  const inner=Math.max(9,range*.6);
+  ctx.save();
   for(let layer=0;layer<2;layer++){
     ctx.beginPath();
     for(let i=0;i<angles.length;i++){
