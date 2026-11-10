@@ -1,9 +1,13 @@
+import { monsterPose } from "./monsterMotion.ts";
 import { sandBeetleBuried } from "../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, mix, pill, rgba, softShadow } from "./draw.ts";
 
 export interface SandBeetleVisual {
   readonly hp: number;
   readonly hurtTime?: number;
+  readonly id?: string;
+  readonly motionPhase?: number;
+  readonly moving?: number;
 }
 
 /**
@@ -19,7 +23,10 @@ export function renderSandBeetle(
   ctx.save();
   ctx.translate(sx, sy);
   softShadow(ctx, 0, .2, 4.15, .8, .28);
-  ctx.translate(0, buried ? .65 : Math.sin(time * 6) * .12);
+  const pose=monsterPose({kind:"sand-beetle",...actor},time);
+  ctx.translate(pose.sway*.25,pose.lift*.12+(buried?.65:0));
+  ctx.rotate(pose.tilt*.5);
+  ctx.scale(pose.stretchX,pose.stretchY);
 
   // Seis patas articuladas: permanecem sob as placas de quitina.
   for (const side of [-1, 1]) for (let i = 0; i < 3; i++) {
