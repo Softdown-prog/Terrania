@@ -95,3 +95,6 @@ Cada **um dos 31 monstros regionais** exporta seu próprio `...Behavior` tipado 
 `rareLoot.ts` é a fonte canônica dos dez itens autorais na mesma ordem da cartela de referência (5×2). Cada ficha de espécie contém seu drop raro com probabilidade determinística baixa (1,2% a 3,5%), sem substituir o saque comum. As recompensas entram no `Inventory.addMaterial` da aventura solo, tanto na superfície quanto em cavernas, e sobrevivem ao save.
 
 Os desenhos procedurais são caminhos SVG em `src/app/item-icon.component.ts`; o aplicativo **não carrega a imagem raster como textura**. Mochila e `/mercado/` reutilizam os ícones pelos IDs estáveis. O catálogo PostgreSQL marca `rarity='rare'` e `trade_enabled=false`: não existem compra, resgate, posse online ou troca autenticada implementados por esta entrega.
+
+
+**Identidade visual individual (2026-11-10):** a ficha e o comportamento de cada monstro vivem em `src/monsters/`. Anatomia, cores e função renderizadora próprias vivem no arquivo equivalente em `src/render/creatures/`. Apenas auxiliares genéricos de Canvas ficam compartilhados e o registro central não desenha os monstros.

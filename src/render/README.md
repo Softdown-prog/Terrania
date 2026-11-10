@@ -153,3 +153,10 @@ sincronizadas ao estado real de movimento ainda são trabalhos pendentes.
 a renderização gelatinosa completa, expressões, efeitos e HP. A reexportação
 em `src/render/actors.ts` preserva os imports existentes do jogo. Assim o
 herói e a Slime não precisam mais dividir um arquivo de implementação.
+
+
+## Renderização individual dos monstros (2026-11-10)
+
+As 32 espécies possuem arquivos próprios de anatomia em `src/render/creatures/<região>/<família>/<espécie>.ts`, correspondentes a `src/monsters/`. Cada espécie agora é dona da paleta, do desenho procedural e da função de renderização. Os três arquivos `src/render/creatures/shared/*Frame.ts` contêm apenas composição Canvas comum (pose, sombra, reflexos, indicação de vida), sem selecionar corpos ou cores por monstro.
+
+`src/render/regionalCreatures.ts` é registro tipado que despacha para a espécie correta, sem paleta global ou `switch` de anatomia. `regionalWave2.ts` e `regionalWave3.ts` preservam a API pública antiga, encaminhando ao registro. A Slime e o Besouro da Areia já implementam renderização própria integral. A apresentação nunca decide combate, dano ou loot.

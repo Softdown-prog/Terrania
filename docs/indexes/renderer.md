@@ -2,7 +2,7 @@
 
 > Gerado automaticamente a partir de `architecture/modules.json`. Estado: **active** · Camada: **presentation**
 
-Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
+Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com composição Canvas compartilhada.
 
 **Documentação de manutenção:** [`src/render/README.md`](../../src/render/README.md)
 
@@ -14,8 +14,9 @@ Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
 - [`src/render/cave.ts`](../../src/render/cave.ts)
 - [`src/render/caveDetails.ts`](../../src/render/caveDetails.ts)
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
+- [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (78)
+## Todos os arquivos deste módulo (81)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -47,9 +48,12 @@ Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
 - [`src/render/creatures/north/spirits/frostSpirit.ts`](../../src/render/creatures/north/spirits/frostSpirit.ts)
 - [`src/render/creatures/north/wolves/glacialWolf.ts`](../../src/render/creatures/north/wolves/glacialWolf.ts)
 - [`src/render/creatures/north/yetis/borealYeti.ts`](../../src/render/creatures/north/yetis/borealYeti.ts)
+- [`src/render/creatures/shared/regionalFrame.ts`](../../src/render/creatures/shared/regionalFrame.ts)
 - [`src/render/creatures/shared/regionalGeometry.ts`](../../src/render/creatures/shared/regionalGeometry.ts)
 - [`src/render/creatures/shared/southGeometry.ts`](../../src/render/creatures/shared/southGeometry.ts)
+- [`src/render/creatures/shared/wave2Frame.ts`](../../src/render/creatures/shared/wave2Frame.ts)
 - [`src/render/creatures/shared/wave2Geometry.ts`](../../src/render/creatures/shared/wave2Geometry.ts)
+- [`src/render/creatures/shared/wave3Frame.ts`](../../src/render/creatures/shared/wave3Frame.ts)
 - [`src/render/creatures/south/beetles/sandBeetle.ts`](../../src/render/creatures/south/beetles/sandBeetle.ts)
 - [`src/render/creatures/south/beetles/solarScarab.ts`](../../src/render/creatures/south/beetles/solarScarab.ts)
 - [`src/render/creatures/south/demons/mirageImp.ts`](../../src/render/creatures/south/demons/mirageImp.ts)

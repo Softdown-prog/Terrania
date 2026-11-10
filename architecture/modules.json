@@ -56,10 +56,11 @@
         "src/ui/GameUi.ts",
         "src/render/cave.ts",
         "src/render/caveDetails.ts",
-        "src/render/mounts.ts"
+        "src/render/mounts.ts",
+        "src/render/regionalCreatures.ts"
       ],
       "doc": "src/render/README.md",
-      "description": "Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo."
+      "description": "Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com composição Canvas compartilhada."
     },
     {
       "id": "simulation",
