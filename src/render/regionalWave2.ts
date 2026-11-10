@@ -1,14 +1,14 @@
 import { monsterPose } from "./monsterMotion.ts";
-import { griffin } from "./creatures/wave2/summitGriffin.ts";
-import { salamander } from "./creatures/wave2/magmaSalamander.ts";
-import { ent } from "./creatures/wave2/rottenMarshEnt.ts";
-import { toad } from "./creatures/wave2/poisonScoutToad.ts";
-import { worm } from "./creatures/wave2/carrionSandworm.ts";
-import { mammoth } from "./creatures/wave2/tundraMammoth.ts";
-import { banshee } from "./creatures/wave2/frostBanshee.ts";
-import { bear } from "./creatures/wave2/runicPolarBear.ts";
-import { octopus } from "./creatures/wave2/abyssalOctopus.ts";
-import { triton } from "./creatures/wave2/tideHunterTriton.ts";
+import { griffin } from "./creatures/west/griffins/summitGriffin.ts";
+import { salamander } from "./creatures/west/salamanders/magmaSalamander.ts";
+import { ent } from "./creatures/south/ents/rottenMarshEnt.ts";
+import { toad } from "./creatures/south/toads/poisonScoutToad.ts";
+import { worm } from "./creatures/south/worms/carrionSandworm.ts";
+import { mammoth } from "./creatures/north/mammoths/tundraMammoth.ts";
+import { banshee } from "./creatures/north/banshees/frostBanshee.ts";
+import { bear } from "./creatures/north/bears/runicPolarBear.ts";
+import { octopus } from "./creatures/east/octopuses/abyssalOctopus.ts";
+import { triton } from "./creatures/east/tritons/tideHunterTriton.ts";
 import { CREATURE_CATALOG, type SecondWaveKind } from "../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, hashString, mix, pill, rgba, softShadow, TAU } from "./draw.ts";
 
@@ -21,8 +21,8 @@ export interface Wave2Visual {
   readonly motionPhase?: number;
   readonly moving?: number;
 }
-import type { Ramp } from "./creatures/wave2/geometry.ts";
-import { EDGE, GLINT } from "./creatures/wave2/geometry.ts";
+import type { Ramp } from "./creatures/shared/wave2Geometry.ts";
+import { EDGE, GLINT } from "./creatures/shared/wave2Geometry.ts";
 const PAL: Readonly<Record<SecondWaveKind,Ramp>> = {
   "summit-griffin": { base:"#88909e",dark:"#414957",light:"#d2d6d6",accent:"#d5a24c",eyes:"#ffc866" },
   "magma-salamander": { base:"#5b413a",dark:"#292f38",light:"#a47558",accent:"#ff6a26",eyes:"#ffbd65" },
