@@ -8,6 +8,7 @@ import {
 import { LANDMARKS } from "../world/landmarks.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
 import { BUILDINGS } from "../world/village.ts";
+import { SOUTH_CITY, SOUTH_CITY_PROPS } from "../world/southCity.ts";
 import { generateChunkCanvas } from "./terrain.ts";
 import type { Scenery } from "./scenery.ts";
 interface ChunkVisual {
@@ -176,6 +177,13 @@ export class WorldRenderer {
     for (const b of BUILDINGS)
       if (b.x > left - 60 && b.x < right + 60 && b.y > top - 110 && b.y < bottom + 20)
         result.push({ kind: "house", x: b.x, y: b.y, variant: b.variant });
+    // O custo é fixo e o distrito não existe na câmera de outras regiões.
+    const centerY=(SOUTH_CITY.centerY+.5)*TILE_SIZE;
+    if (Math.abs(cameraX)<1800 && Math.abs(cameraY-centerY)<1800)
+      for (const prop of SOUTH_CITY_PROPS)
+        if (prop.x>left-135&&prop.x<right+135&&prop.y>top-155&&prop.y<bottom+45)
+          result.push({kind:"south-city",cityKind:prop.kind,cityId:prop.id,
+            x:prop.x,y:prop.y,variant:prop.variant});
     for (const prop of LANDMARKS)
       if (
         prop.x > left - 40 &&

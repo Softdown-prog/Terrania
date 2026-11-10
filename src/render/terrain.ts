@@ -9,6 +9,7 @@ import {
 import { hash2, valueNoise } from "../world/random.ts";
 import { ellipse, mix, TAU } from "./draw.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
+import { southCityGround, southCitySafe, SOUTH_CITY_PALETTE } from "../world/southCity.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
@@ -71,7 +72,10 @@ class Grid {
 function drawGround(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number, x: number, y: number, seed: number): void {
   const tile = grid.at(lx, ly);
   const [tx, ty] = grid.global(lx, ly);
-  const p = BIOME_PALETTE[tile.biome] ?? PALETTE[tile.ground];
+  const south = southCityGround(tx,ty)!==null;
+  const p = south ? {lo:tile.ground==="path"?SOUTH_CITY_PALETTE.stone[1]:SOUTH_CITY_PALETTE.sand[2],
+    hi:tile.ground==="path"?SOUTH_CITY_PALETTE.stone[0]:SOUTH_CITY_PALETTE.sand[0]} :
+    BIOME_PALETTE[tile.biome] ?? PALETTE[tile.ground];
   // Ruído em duas escalas: manchas largas e variação fina.
   const n = valueNoise(tx / 6, ty / 6, seed + 17) * 0.65 + valueNoise(tx / 1.8, ty / 1.8, seed + 23) * 0.35;
   let color = mix(p.lo, p.hi, n);
@@ -108,6 +112,16 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
     ctx.fillRect(x + 3 + a * 26, y + 3 + b * 26, 1 + a * 2.6, 1 + b * 1.4);
   }
 
+  if (southCitySafe(tx,ty) && tile.ground==="path") {
+    // Calçamento irregular de Poço Negro: não aplicar ervas das trilhas comuns.
+    for(let row=0;row<3;row++)for(let col=0;col<3;col++){
+      const dx=x+col*11+(row%2)*4,dy=y+row*11;
+      ctx.fillStyle=r(row*3+col+390)>.5?"#5a4a63":"#3a2f45";
+      ctx.fillRect(dx+1,dy+1,9,8);
+      ctx.fillStyle="#78677d60";ctx.fillRect(dx+1,dy+1,9,1);
+    }
+    return;
+  }
   if (tile.ground === "water") {
     const d = grid.shore(lx, ly);
     ctx.strokeStyle = "rgba(160,222,214,.22)";

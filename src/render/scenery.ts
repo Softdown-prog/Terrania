@@ -1,10 +1,14 @@
 import { hash2 } from "../world/random.ts";
+import type { SouthCityPropKind } from "../world/southCity.ts";
+import { paintSouthCity } from "./southCityArt.ts";
 import type { RegionalLandmarkKind } from "../world/regionalLandmarks.ts";
 import { landmarkArtVariant, paintRegionalLandmark } from "./regionalLandmarkArt.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
 
 export interface Scenery {
-  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark";
+  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-city";
+  cityKind?: SouthCityPropKind;
+  cityId?: string;
   landmarkKind?: RegionalLandmarkKind;
   x: number;
   y: number;
@@ -380,7 +384,9 @@ export function renderScenery(
   ctx.translate(sx, sy);
   if (faded) ctx.globalAlpha = 0.36;
   const flip = hash2(Math.floor(prop.x), Math.floor(prop.y), 3) < 0.5 ? -1 : 1;
-  if (prop.kind === "tree") {
+  if (prop.kind === "south-city" && prop.cityKind) {
+    paintSouthCity(ctx,{kind:prop.cityKind,x:prop.x,y:prop.y,variant:prop.variant,id:prop.cityId},time);
+  } else if (prop.kind === "tree") {
     const pine = prop.variant > 0.9;
     const b = pine ? 9 : bucket(prop.variant / 0.9, 9);
     const scale = 0.86 + prop.variant * 0.24;
