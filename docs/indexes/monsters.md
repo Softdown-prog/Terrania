@@ -1,0 +1,58 @@
+# Bestiário por região
+
+> Gerado automaticamente a partir de `architecture/modules.json`. Estado: **active** · Camada: **domain**
+
+Fichas individuais de criaturas classificadas por região; fonte única de atributos e loot, sem duplicar IA nem renderização.
+
+**Documentação de manutenção:** [`src/monsters/README.md`](../../src/monsters/README.md)
+
+## Pontos de entrada
+
+- [`src/monsters/catalog.ts`](../../src/monsters/catalog.ts)
+- [`src/monsters/center/index.ts`](../../src/monsters/center/index.ts)
+- [`src/monsters/north/index.ts`](../../src/monsters/north/index.ts)
+- [`src/monsters/south/index.ts`](../../src/monsters/south/index.ts)
+- [`src/monsters/east/index.ts`](../../src/monsters/east/index.ts)
+- [`src/monsters/west/index.ts`](../../src/monsters/west/index.ts)
+
+## Todos os arquivos deste módulo (39)
+
+- [`src/monsters/README.md`](../../src/monsters/README.md)
+- [`src/monsters/catalog.ts`](../../src/monsters/catalog.ts)
+- [`src/monsters/center/index.ts`](../../src/monsters/center/index.ts)
+- [`src/monsters/center/slime.ts`](../../src/monsters/center/slime.ts)
+- [`src/monsters/east/abyssal-octopus.ts`](../../src/monsters/east/abyssal-octopus.ts)
+- [`src/monsters/east/coral-crab.ts`](../../src/monsters/east/coral-crab.ts)
+- [`src/monsters/east/index.ts`](../../src/monsters/east/index.ts)
+- [`src/monsters/east/storm-serpent.ts`](../../src/monsters/east/storm-serpent.ts)
+- [`src/monsters/east/tide-hunter-triton.ts`](../../src/monsters/east/tide-hunter-triton.ts)
+- [`src/monsters/north/boreal-yeti.ts`](../../src/monsters/north/boreal-yeti.ts)
+- [`src/monsters/north/frost-banshee.ts`](../../src/monsters/north/frost-banshee.ts)
+- [`src/monsters/north/frost-spirit.ts`](../../src/monsters/north/frost-spirit.ts)
+- [`src/monsters/north/glacial-wolf.ts`](../../src/monsters/north/glacial-wolf.ts)
+- [`src/monsters/north/index.ts`](../../src/monsters/north/index.ts)
+- [`src/monsters/north/runic-polar-bear.ts`](../../src/monsters/north/runic-polar-bear.ts)
+- [`src/monsters/north/tundra-mammoth.ts`](../../src/monsters/north/tundra-mammoth.ts)
+- [`src/monsters/south/cactus-sprout.ts`](../../src/monsters/south/cactus-sprout.ts)
+- [`src/monsters/south/carrion-sandworm.ts`](../../src/monsters/south/carrion-sandworm.ts)
+- [`src/monsters/south/carrion-vulture.ts`](../../src/monsters/south/carrion-vulture.ts)
+- [`src/monsters/south/clay-troll.ts`](../../src/monsters/south/clay-troll.ts)
+- [`src/monsters/south/desert-orc.ts`](../../src/monsters/south/desert-orc.ts)
+- [`src/monsters/south/dune-rat.ts`](../../src/monsters/south/dune-rat.ts)
+- [`src/monsters/south/dune-scorpion.ts`](../../src/monsters/south/dune-scorpion.ts)
+- [`src/monsters/south/dune-scout.ts`](../../src/monsters/south/dune-scout.ts)
+- [`src/monsters/south/horned-viper.ts`](../../src/monsters/south/horned-viper.ts)
+- [`src/monsters/south/index.ts`](../../src/monsters/south/index.ts)
+- [`src/monsters/south/mirage-imp.ts`](../../src/monsters/south/mirage-imp.ts)
+- [`src/monsters/south/mire-hydra.ts`](../../src/monsters/south/mire-hydra.ts)
+- [`src/monsters/south/oasis-elf.ts`](../../src/monsters/south/oasis-elf.ts)
+- [`src/monsters/south/poison-scout-toad.ts`](../../src/monsters/south/poison-scout-toad.ts)
+- [`src/monsters/south/rotten-marsh-ent.ts`](../../src/monsters/south/rotten-marsh-ent.ts)
+- [`src/monsters/south/sand-goblin.ts`](../../src/monsters/south/sand-goblin.ts)
+- [`src/monsters/south/solar-scarab.ts`](../../src/monsters/south/solar-scarab.ts)
+- [`src/monsters/types.ts`](../../src/monsters/types.ts)
+- [`src/monsters/west/basalt-golem.ts`](../../src/monsters/west/basalt-golem.ts)
+- [`src/monsters/west/cliff-draconid.ts`](../../src/monsters/west/cliff-draconid.ts)
+- [`src/monsters/west/index.ts`](../../src/monsters/west/index.ts)
+- [`src/monsters/west/magma-salamander.ts`](../../src/monsters/west/magma-salamander.ts)
+- [`src/monsters/west/summit-griffin.ts`](../../src/monsters/west/summit-griffin.ts)

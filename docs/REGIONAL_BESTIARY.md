@@ -17,7 +17,7 @@ Os dois lotes nascem de folhas autorais 5×2 fornecidas pelo criador. O código 
 
 ## Contratos reais
 
-- src/actors/CreatureCatalog.ts: fonte de atributos, habitats e probabilidades.
+- src/monsters/<região>/<espécie>.ts: fonte única de atributos, habitats e probabilidades; src/monsters/catalog.ts apenas agrega as fichas.
 - src/actors/RegionalMonster.ts: perseguição, conjuração, colisão e drops determinísticos.
 - src/render/regionalCreatures.ts: dez desenhos distintos, 100% procedurais.
 - src/engine/CaveRoom.ts: encontros locais, sem ocupar paredes nem saída.
@@ -46,7 +46,7 @@ Verificação: npm run typecheck; npm test; npm run build; Playwright desktop/An
 | 19 | Polvo Abissal dos Recifes | 275 | 29 | Leste, recifes | Caverna das Marés |
 | 20 | Tritão Caçador das Marés | 250 | 36 | Leste, ilhas | Caverna das Marés |
 
-O catálogo de dados em src/actors/CreatureCatalog.ts também define experiência,
+O catálogo de dados em src/monsters/catalog.ts também define experiência,
 natureza, cadência, golpes especiais, duração dos efeitos, cada nome de item e
 probabilidade exata de drop, inclusive tridente raro de 4%, ectoplasma de 35%
 e fragmento de runa de 12%.

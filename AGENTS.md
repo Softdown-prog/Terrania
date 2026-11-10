@@ -38,7 +38,7 @@ Regras que já quebraram uma vez. Valem para a superfície (`OfflineSimulation`)
 
 ## Fronteiras arquiteturais
 
-- `src/engine/`, `src/actors/` e `src/world/`: regras independentes de Angular, Phaser, DOM e rede. O validador impede imports de UI/renderer nessas pastas.
+- `src/engine/`, `src/actors/`, `src/monsters/` e `src/world/`: regras independentes de Angular, Phaser, DOM e rede. O validador impede imports de UI/renderer nessas pastas.
 - `src/app/`: apresenta dados e recebe ações; não contém lógica autoritativa.
 - `src/game/`: orquestrador, não um segundo motor ou autoridade de jogo.
 - `server/`: backend Node atual; `server-go/` e Rust têm componentes experimentais; não promover por suposição.
