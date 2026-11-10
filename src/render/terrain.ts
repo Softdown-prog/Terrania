@@ -15,6 +15,7 @@ import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts
 import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
 import { southRuinsInArea } from "../world/southRuins.ts";
+import { southTowersInArea } from "../world/towers/placement.ts";
 import { caveEntrancesInArea } from "../world/caves.ts";
 
 /** Pares (sombra, luz) por tipo de solo; a mistura segue ruído contínuo. */
@@ -542,6 +543,8 @@ export function drawWorldAtlas(
       mark(cave.tileX,cave.tileY,"#a3f1ce",5);
     for (const ruin of southRuinsInArea(startX,startY,endX,endY,seed))
       mark(ruin.tileX,ruin.tileY,"#d98c5f",4);
+    for (const tower of southTowersInArea(startX,startY,endX,endY,seed))
+      mark(tower.tileX,tower.tileY,"#b985ff",5);
   }
   mark(Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE),
     Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE), "#ffe0a1", 5);

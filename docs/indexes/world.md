@@ -19,7 +19,7 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/mountLocations.ts`](../../src/world/mountLocations.ts)
 - [`src/world/mountQuests.ts`](../../src/world/mountQuests.ts)
 
-## Todos os arquivos deste módulo (21)
+## Todos os arquivos deste módulo (28)
 
 - [`src/world/README.md`](../../src/world/README.md)
 - [`src/world/aelaQuest.ts`](../../src/world/aelaQuest.ts)
@@ -41,4 +41,11 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/southRuins.ts`](../../src/world/southRuins.ts)
 - [`src/world/terrain.ts`](../../src/world/terrain.ts)
 - [`src/world/terrainProfiles.ts`](../../src/world/terrainProfiles.ts)
+- [`src/world/towers/index.ts`](../../src/world/towers/index.ts)
+- [`src/world/towers/placement.ts`](../../src/world/towers/placement.ts)
+- [`src/world/towers/south/index.ts`](../../src/world/towers/south/index.ts)
+- [`src/world/towers/south/miragem.ts`](../../src/world/towers/south/miragem.ts)
+- [`src/world/towers/south/sol-negro.ts`](../../src/world/towers/south/sol-negro.ts)
+- [`src/world/towers/south/vigia-caida.ts`](../../src/world/towers/south/vigia-caida.ts)
+- [`src/world/towers/types.ts`](../../src/world/towers/types.ts)
 - [`src/world/village.ts`](../../src/world/village.ts)

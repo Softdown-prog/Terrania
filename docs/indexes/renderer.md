@@ -15,7 +15,7 @@ Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
 - [`src/render/caveDetails.ts`](../../src/render/caveDetails.ts)
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 
-## Todos os arquivos deste módulo (74)
+## Todos os arquivos deste módulo (79)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -85,6 +85,11 @@ Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
 - [`src/render/sandBeetle.ts`](../../src/render/sandBeetle.ts)
 - [`src/render/scenery.ts`](../../src/render/scenery.ts)
 - [`src/render/sceneryTrunk.ts`](../../src/render/sceneryTrunk.ts)
+- [`src/render/south/towers/common.ts`](../../src/render/south/towers/common.ts)
+- [`src/render/south/towers/index.ts`](../../src/render/south/towers/index.ts)
+- [`src/render/south/towers/miragem.ts`](../../src/render/south/towers/miragem.ts)
+- [`src/render/south/towers/sol-negro.ts`](../../src/render/south/towers/sol-negro.ts)
+- [`src/render/south/towers/vigia-caida.ts`](../../src/render/south/towers/vigia-caida.ts)
 - [`src/render/southCityArt.ts`](../../src/render/southCityArt.ts)
 - [`src/render/southRuinsArt.ts`](../../src/render/southRuinsArt.ts)
 - [`src/render/swords.ts`](../../src/render/swords.ts)
