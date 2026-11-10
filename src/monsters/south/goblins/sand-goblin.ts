@@ -13,3 +13,9 @@ export const sandGoblin = {
 
 /** Movimento, perseguição e retirada próprios de sand-goblin; lidos pelo motor. */
 export const sandGoblinBehavior = { gait: "skitter", pursuit: "flank", cadence: 1.57, weave: 0.23, retreatAt: 0.25 } satisfies SpeciesBehavior;
+
+/** Ao perder 65% do HP, o goblin joga areia e tenta manter distância. 
+ * O motor verifica alcance, visão e recarga; esta regra é só desta espécie. */
+export function sandGoblinCornered(hp:number,maxHp:number):boolean {
+  return hp<=maxHp*.35;
+}

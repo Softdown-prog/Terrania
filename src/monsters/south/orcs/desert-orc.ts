@@ -13,3 +13,10 @@ export const desertOrc = {
 
 /** Movimento, perseguição e retirada próprios de desert-orc; lidos pelo motor. */
 export const desertOrcBehavior = { gait: "stride", pursuit: "rush", cadence: 1.01, weave: 0.09 } satisfies SpeciesBehavior;
+
+/** O terceiro golpe físico bem-sucedido provoca um empurrão com o porrete. 
+ * O motor aplica o deslocamento com colisão, nunca teleporta o herói. */
+export const DESERT_ORC_CLUB_PUSH_DISTANCE = 12;
+export function desertOrcClubKnockback(landedHits:number):boolean {
+  return landedHits>0 && landedHits%3===0;
+}

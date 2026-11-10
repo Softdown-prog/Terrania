@@ -1,5 +1,6 @@
 import type { CreatureDefinition } from "../../types.ts";
 import type { SpeciesBehavior } from "../../behavior.ts";
+import { hash2 } from "../../../world/random.ts";
 import { southRareDrop } from "../../rareLoot.ts";
 
 /** dune-rat: ficha da região Sul. */
@@ -13,3 +14,9 @@ export const duneRat = {
 
 /** Movimento, perseguição e retirada próprios de dune-rat; lidos pelo motor. */
 export const duneRatBehavior = { gait: "skitter", pursuit: "cautious", cadence: 2.16, weave: 0.35, retreatAt: 0.5 } satisfies SpeciesBehavior;
+
+/** A mordida só transmite infecção em 10% dos golpes que acertaram. 
+ * A semente pertence ao monstro e o contador avança por golpe válido. */
+export function duneRatInfectionOnBite(monsterSeed:number,landedHits:number):boolean {
+  return hash2(monsterSeed,landedHits,73021)<.1;
+}
