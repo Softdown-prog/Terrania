@@ -22,3 +22,12 @@ export const drawDraconid = (ctx: CanvasRenderingContext2D, c: ColorRamp, time: 
   headEyes(ctx,[[-4,-49],[5,-49]],c,2.1);
   shard(ctx,0,-38,4,5,c.accent);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#66646a","light":"#b0a499","dark":"#292d3b","accent":"#e38b4f","eye":"#f7bb4d"};
+export function renderCliffDraconidCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawDraconid);
+}

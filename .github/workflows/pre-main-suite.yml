@@ -160,10 +160,16 @@ jobs:
           npm run build --prefix server
           echo "### Web UI and Node: typechecks, tests and builds passed" >> "$GITHUB_STEP_SUMMARY"
 
-  browser-e2e:
-    name: 5/6 Chromium browser desktop and Android
+  # Isolate Playwright projects: 108 browser tests running serially exceeded
+  # the former 20-minute job limit even though the tests were passing.
+  browser-e2e-project:
+    name: Chromium browser ${{ matrix.project }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [desktop, android]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -175,13 +181,13 @@ jobs:
           npm ci --no-audit --no-fund
           npm ci --prefix server --no-audit --no-fund
           npx playwright install --with-deps chromium
-      - name: Playwright browser suites (no VPS)
-        run: npm run test:browser
+      - name: Playwright browser suite (${{ matrix.project }}) (no VPS)
+        run: npm run test:browser -- --project=${{ matrix.project }}
       - name: Procedural art preview for visual review
-        if: always()
+        if: always() && matrix.project == 'desktop'
         run: npm run art:preview
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && matrix.project == 'desktop'
         with:
           name: terrania-pre-main-cave-and-art-previews
           path: |
@@ -192,12 +198,24 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: terrania-pre-main-playwright-failures
+          name: terrania-pre-main-playwright-failures-${{ matrix.project }}
           path: |
             test-results/
             playwright-report/
           if-no-files-found: ignore
           retention-days: 7
+
+  # Preserve the original required check name. Success requires *both* projects.
+  browser-e2e:
+    name: 5/6 Chromium browser desktop and Android
+    runs-on: ubuntu-24.04
+    needs: browser-e2e-project
+    if: always()
+    steps:
+      - name: Require both browser projects to pass
+        env:
+          BROWSER_RESULT: ${{ needs.browser-e2e-project.result }}
+        run: test "$BROWSER_RESULT" = success
 
   capacity-and-containers:
     name: 6/6 Capacity, 1000 WS, local Docker smoke

@@ -24,3 +24,12 @@ export const bear = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   }
   etched(ctx,c,12,0,-26,19,15);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#b3d4d9","dark":"#5b90a4","light":"#eefcff","accent":"#53baf0","eyes":"#365670"};
+export function renderRunicPolarBearCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,bear);
+}

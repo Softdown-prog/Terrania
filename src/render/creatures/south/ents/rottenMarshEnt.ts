@@ -25,3 +25,12 @@ export const ent = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   }
   etched(ctx,c,9,0,-24,9,19);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave2Frame } from "../../shared/wave2Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Ramp = {"base":"#625d49","dark":"#2e463b","light":"#a29b70","accent":"#61a782","eyes":"#7ff7e1"};
+export function renderRottenMarshEntCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave2Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,ent);
+}

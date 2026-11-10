@@ -42,3 +42,12 @@ export const scout = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   ellipse(ctx,29,-21,3,2.2,"#8e7c66");
   freckles(ctx,linen,13,0,-23,7,9);
 };
+
+/** Paleta, anatomia e detalhes visuais desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#aa8e66","light":"#eed9ab","dark":"#605044","accent":"#d9bb80","eye":"#e5cc91","extra":"#87765d"};
+export function renderDuneScoutCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,scout);
+}

@@ -47,3 +47,12 @@ export const elf = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   ellipse(ctx,-28,-74,1.2,2,rgba(GLOW,.6+Math.sin(t*2)*.12));
   freckles(ctx,robe,12,0,-29,8,12);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#d5c4a2","light":"#f9edcf","dark":"#776451","accent":"#bd995f","eye":"#d5ebc1","extra":"#94806c"};
+export function renderOasisElfCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,elf);
+}

@@ -20,3 +20,12 @@ export const drawYeti = (ctx:CanvasRenderingContext2D,c:ColorRamp):void => {
   headEyes(ctx,[[-5,-52],[5,-52]],c,2.3);
   ellipse(ctx,0,-43,3,2.1,OUTLINE);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#8dbed4","light":"#e5f5f0","dark":"#376184","accent":"#9edcf1","eye":"#293750"};
+export function renderBorealYetiCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawYeti);
+}

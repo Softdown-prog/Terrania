@@ -20,3 +20,12 @@ export const drawScarab = (ctx: CanvasRenderingContext2D,c:ColorRamp,time:number
   const glow=.15+.1*Math.sin(time*3);
   ellipse(ctx,0,-21,11,8,rgba(GLINT,glow));
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#ab713d","light":"#eec37d","dark":"#443442","accent":"#f0a859","eye":"#ffe09a"};
+export function renderSolarScarabCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawScarab);
+}

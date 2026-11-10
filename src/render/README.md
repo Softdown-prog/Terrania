@@ -159,3 +159,10 @@ herói e a Slime não precisam mais dividir um arquivo de implementação.
 **Escada que desce (ADR 0018):** `caveStairsDownArt.ts` desenha a descida ao andar de baixo; a de saída segue em `caveDetails.ts`. A planta (`cave.ts`) só chama as duas.
 
 **Espadas procedurais individuais:** `src/render/swords.ts` preserva a API do jogo e despacha para os dez arquivos `src/render/swords/<id>.ts`, cada qual dono de sua silhueta, materiais, ornamentos e efeitos. `src/render/swords/shared.ts` contém somente desenho genérico de cabo, volume, iluminação e fita de ataque. Regras e progressão continuam em `src/engine/character/weapons/swords/<id>.ts`, sem dependência de Canvas no motor.
+
+
+## Renderização individual dos monstros (2026-11-10)
+
+As 32 espécies possuem arquivos próprios de anatomia em `src/render/creatures/<região>/<família>/<espécie>.ts`, correspondentes a `src/monsters/`. Cada espécie agora é dona da paleta, do desenho procedural e da função de renderização. Os três arquivos `src/render/creatures/shared/*Frame.ts` contêm apenas composição Canvas comum (pose, sombra, reflexos, indicação de vida), sem selecionar corpos ou cores por monstro.
+
+`src/render/regionalCreatures.ts` é registro tipado que despacha para a espécie correta, sem paleta global ou `switch` de anatomia. `regionalWave2.ts` e `regionalWave3.ts` preservam a API pública antiga, encaminhando ao registro. A Slime e o Besouro da Areia já implementam renderização própria integral. A apresentação nunca decide combate, dano ou loot.
