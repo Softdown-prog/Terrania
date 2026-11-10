@@ -1,8 +1,8 @@
 /** Arte completa da Slime: forma, movimentação, olhos, mordida, dor e vida. */
-import type { Slime } from "../../../actors/Slime.ts";
-import { CREATURE_CATALOG } from "../../../actors/CreatureCatalog.ts";
-import { blink, slimePose } from "../../animation.ts";
-import { clamp01, ellipse, hashString, mix, pill, rgba, softShadow, TAU } from "../../draw.ts";
+import type { Slime } from "../../../../actors/Slime.ts";
+import { CREATURE_CATALOG } from "../../../../actors/CreatureCatalog.ts";
+import { blink, slimePose } from "../../../animation.ts";
+import { clamp01, ellipse, hashString, mix, pill, rgba, softShadow, TAU } from "../../../draw.ts";
 
 export type SlimeVisual = Pick<Slime, "hp" | "bounce"> & { hurtTime?: number; id?: string };
 /** Contexto opcional de apresentação; nada aqui altera regras ou dano. */
