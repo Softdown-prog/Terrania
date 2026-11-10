@@ -7,9 +7,10 @@ import {
   type Tile,
 } from "../world/terrain.ts";
 import { hash2, valueNoise } from "../world/random.ts";
-import { ellipse, mix, TAU } from "./draw.ts";
+import { ellipse, mix, TAU, blade } from "./draw.ts";
+import { southCityGroundColors, paintSouthCityPaving } from "./southCityArt.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
-import { southCityGround, southCitySafe, SOUTH_CITY_PALETTE } from "../world/southCity.ts";
+import { southCityGround, southCitySafe } from "../world/southCity.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
@@ -73,8 +74,7 @@ function drawGround(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: n
   const tile = grid.at(lx, ly);
   const [tx, ty] = grid.global(lx, ly);
   const south = southCityGround(tx,ty)!==null;
-  const p = south ? {lo:tile.ground==="path"?SOUTH_CITY_PALETTE.stone[1]:SOUTH_CITY_PALETTE.sand[2],
-    hi:tile.ground==="path"?SOUTH_CITY_PALETTE.stone[0]:SOUTH_CITY_PALETTE.sand[0]} :
+  const p = south ? southCityGroundColors(tile.ground) :
     BIOME_PALETTE[tile.biome] ?? PALETTE[tile.ground];
   // Ruído em duas escalas: manchas largas e variação fina.
   const n = valueNoise(tx / 6, ty / 6, seed + 17) * 0.65 + valueNoise(tx / 1.8, ty / 1.8, seed + 23) * 0.35;
@@ -90,15 +90,6 @@ function drawGround(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: n
 
 const DIRS: ReadonlyArray<readonly [number, number]> = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
-function blade(ctx: CanvasRenderingContext2D, x: number, y: number, h: number, lean: number, color: string): void {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.quadraticCurveTo(x + lean * 0.3, y - h * 0.6, x + lean, y - h);
-  ctx.stroke();
-}
-
 function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number, x: number, y: number, seed: number): void {
   const tile = grid.at(lx, ly);
   const [tx, ty] = grid.global(lx, ly);
@@ -113,13 +104,7 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
   }
 
   if (southCitySafe(tx,ty) && tile.ground==="path") {
-    // Calçamento irregular de Poço Negro: não aplicar ervas das trilhas comuns.
-    for(let row=0;row<3;row++)for(let col=0;col<3;col++){
-      const dx=x+col*11+(row%2)*4,dy=y+row*11;
-      ctx.fillStyle=r(row*3+col+390)>.5?"#5a4a63":"#3a2f45";
-      ctx.fillRect(dx+1,dy+1,9,8);
-      ctx.fillStyle="#78677d60";ctx.fillRect(dx+1,dy+1,9,1);
-    }
+    paintSouthCityPaving(ctx,x,y,r);
     return;
   }
   if (tile.ground === "water") {

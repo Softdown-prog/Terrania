@@ -89,7 +89,11 @@ function tower(ctx:CanvasRenderingContext2D,time:number):void{
 }
 function well(ctx:CanvasRenderingContext2D,time:number):void{
   ellipse(ctx,0,4,67,45,C.stone[2]);ellipse(ctx,0,0,60,40,C.stone[0]);
-  ellipse(ctx,0,-2,54,34,C.stone[2]);ellipse(ctx,0,-5,49,30,"#2b3547");
+  ellipse(ctx,0,-2,54,34,C.stone[2]);
+  const water=ctx.createRadialGradient(-16,-20,2,0,-5,60);
+  water.addColorStop(0,C.stone[0]);water.addColorStop(.65,"#2b3547");
+  water.addColorStop(1,C.stone[2]);
+  ctx.fillStyle=water;ctx.beginPath();ctx.ellipse(0,-5,49,30,0,0,Math.PI*2);ctx.fill();
   ellipse(ctx,-8,-8,35,17,"#314052");
   ctx.strokeStyle=C.stone[0];ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,-5,55,35,0,0,Math.PI*2);ctx.stroke();
   ellipse(ctx,-15+Math.sin(time*1.1)*7,-8,10,1.5,"#5a4a6350");
@@ -156,3 +160,21 @@ export function paintSouthCity(ctx:CanvasRenderingContext2D,prop:SouthCityProp,t
       rect(ctx,-14,-28,28,2,C.bone[1]);break;
   }
 }
+
+/** Tons da areia e da rua de pedra; piso usa a mesma paleta da arte vertical. */
+export function southCityGroundColors(ground:string):{lo:string;hi:string}{
+  return ground==="path"
+    ? {lo:C.stone[1],hi:C.stone[0]}
+    : {lo:C.sand[2],hi:C.sand[0]};
+}
+/** Lajes irregulares iluminadas de noroeste; não alteram colisão. */
+export const paintSouthCityPaving = (
+  ctx:CanvasRenderingContext2D,x:number,y:number,noise:(index:number)=>number,
+):void=>{
+  for(let row=0;row<3;row++)for(let col=0;col<3;col++){
+    const dx=x+col*11+(row%2)*4,dy=y+row*11;
+    ctx.fillStyle=noise(row*3+col+390)>.5?C.stone[0]:C.stone[1];
+    ctx.fillRect(dx+1,dy+1,9,8);
+    ctx.fillStyle="#78677d60";ctx.fillRect(dx+1,dy+1,9,1);
+  }
+};

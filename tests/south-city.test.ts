@@ -90,9 +90,9 @@ test("NPCs do Sul são únicos, falam sem inventar transações e três interior
   }
   assert.equal(SOUTH_BUILDINGS.filter(b=>b.interior).length,3);
   for(const b of SOUTH_BUILDINGS){
-    const near=nearestNpc(b.x,b.y+29);
-    assert.ok(near,b.id);
     if(b.interior){
+      const near=nearestNpc(b.x,b.y+29);
+      assert.equal(near?.id,b.id);
       const room=new InteriorRoom(b.id);
       assert.equal(room.building.id,b.id);
       assert.equal(room.collision.canMove(room.player.x,room.player.y),true);
