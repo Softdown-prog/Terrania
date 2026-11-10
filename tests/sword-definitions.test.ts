@@ -71,3 +71,20 @@ test("os perfis visuais pertencem às dez fichas, não ao renderizador",()=>{
   assert.equal(WEAPONS.obsidian.visual.ornament,"magma");
   assert.equal(WEAPONS.marsh.visual.ornament,"venom");
 });
+
+test("rastros elementais pertencem às fichas, não são inferidos pelo ID",()=>{
+  const accents = {
+    dunes:"sand",boreal:"ice-shards",obsidian:"embers",
+    marsh:"venom-drops",tempest:"bolts",astral:"stars",
+  } as const;
+  const renderer=readFileSync("src/render/swords.ts","utf8");
+  assert.ok(renderer.includes("function swordSlashAccent("));
+  for(const id of Object.keys(accents) as (keyof typeof accents)[]) {
+    const accent=accents[id];
+    assert.equal(WEAPONS[id].visual.trailAccent,accent,id);
+    assert.ok(renderer.includes('case "'+accent+'"'),accent+" não desenhado");
+  }
+  for(const id of ["starter","forge","bronze","copper"] as const)
+    assert.equal(WEAPONS[id].visual.trailAccent,undefined,id);
+  assert.equal(renderer.includes('trailAccent==="particles"'),false);
+});

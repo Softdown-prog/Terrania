@@ -22,3 +22,9 @@ Esta pasta contém apenas **dados e regras de domínio**, sem Angular/Canvas. O 
 `visual` acompanha cada ficha: comprimento e espessura, liga/cor de metal, cabo, guarda, geometria da ponta, runas, ornamentos e partículas do golpe. Não há mais dez perfis `SHAPES` dentro do renderizador. A geometria original foi transferida **sem alterar dano, desbloqueio, proporções ou cores**.
 
 O motor possui apenas valores declarativos; `src/render/swords.ts` mantém o algoritmo compartilhado de pintura Canvas e consulta `WEAPONS[id].visual`. A resolução de golpes continua em `SwordCombat.ts`, e os ícones da mochila continuam isolados no Angular.
+
+## Rastros procedurais por material
+
+Cada espada declara a paleta (`trail.first/second/opacity`) e a forma de partículas (`visual.trailAccent`), quando aplicável. O código compartilhado no Canvas desenha seis acabamentos distintos: **sand** (Dunas, poeira), **ice-shards** (Boreal, lascas cristalinas), **embers** (Obsidiana, faíscas), **venom-drops** (Charco, gotas viscosas), **bolts** (Tempestade, relâmpagos) e **stars** (Astral, constelações). As quatro espadas iniciais usam rastro simples, sem partículas elementais.
+
+Os efeitos acompanham o arco físico da ponta e se dissipam no tempo, sem texturas externas, `Math.random` nem relógio. Os testes verificam determinismo, geometria distinta, limites espaciais e que as rotinas de gameplay, dano e cooldown continuam separadas da arte.
