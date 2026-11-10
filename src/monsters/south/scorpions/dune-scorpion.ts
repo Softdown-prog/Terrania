@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 import { southRareDrop } from "../../rareLoot.ts";
 
 /** dune-scorpion: ficha da região Sul. */
@@ -9,3 +10,6 @@ export const duneScorpion = {
     biomes: ["dunes", "ruins"],
     loot: [{ item: "Ferrão Quitinoso", chance: .55 }, { item: "Veneno Destilado", chance: .25 }, { item: "Carapaça Seca", chance: .5 }, southRareDrop("dune-scorpion")],
 } satisfies CreatureDefinition;
+
+/** Passos e abordagem do monstro dune-scorpion, com parâmetros próprios. */
+export const duneScorpionBehavior = { gait: "scuttle", pursuit: "flank", cadence: 1.65, weave: 0.33 } satisfies SpeciesBehavior;

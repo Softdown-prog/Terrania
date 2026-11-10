@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** rotten-marsh-ent: ficha da região Sul. */
 export const rottenMarshEnt = {
@@ -8,3 +9,6 @@ export const rottenMarshEnt = {
     biomes: ["oasis", "ruins"],
     loot: [{ item: "Madeira Encharcada", chance: .80 }, { item: "Cogumelo Luminoso", chance: .50 }, { item: "Seiva Tóxica", chance: .30 }],
 } satisfies CreatureDefinition;
+
+/** Passos e abordagem do monstro rotten-marsh-ent, com parâmetros próprios. */
+export const rottenMarshEntBehavior = { gait: "lumber", pursuit: "direct", cadence: 0.58, weave: 0 } satisfies SpeciesBehavior;
