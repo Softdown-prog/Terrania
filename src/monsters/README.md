@@ -65,6 +65,13 @@ consumidores existentes; **não** contém cópias dos atributos.
 
 **Limite desta reorganização:** anatomia Canvas continua em `src/render/creatures/`, IA e combate em `src/actors/` e `src/engine/`. Não significa que 500 linhas de comportamento exclusivo tenham sido implementadas para cada espécie; isso é uma etapa adicional e testável.
 
+**Arte correspondente:** cada ficha possui arquivo Canvas com a mesma região e
+categoria em `src/render/creatures/<região>/<categoria>/<idEmCamelCase>.ts`.
+Somente helpers de geometria ficam em `src/render/creatures/shared/`.
+O teste `tests/specialized-creature-art.test.ts` confere a correspondência
+das 32 espécies, evitando que desenhadores permaneçam em `wave2/`,
+`regional/` ou na raiz do renderizador.
+
 ## Nova criatura
 
 1. Crie `src/monsters/<região>/<categoria>/<id>.ts`, exportando uma definição que usa `satisfies CreatureDefinition`. Ex.: `south/trolls/clay-troll.ts` ou `south/rats/dune-rat.ts`.

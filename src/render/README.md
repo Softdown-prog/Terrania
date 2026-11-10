@@ -115,14 +115,20 @@ render. Sete delas mantêm a anatomia original enquanto aguardam a mesma
 rodada de acabamento aprofundado das três primeiras. A extração não afirma
 que sete receberam arte nova.
 
-**Anatomia por espécie em todas as regiões:** os 10 desenhos da onda regional
-estão em `src/render/creatures/regional/`, e os 10 da segunda onda em
-`src/render/creatures/wave2/`. Somados aos 10 comuns em `south/`, ao
-`sandBeetle.ts` e ao slime em `actors.ts`, as 32 espécies podem ser localizadas
-por renderizadores específicos sem que a ficha de atributos importe Canvas.
-Arquivos `geometry.ts` compartilham primitivas sem copiar corpos inteiros.
-A extração de 27 espécies **não** é acabamento novo: a arte pré-existente
-continua até ser revisada em novas passagens.
+**Anatomia por região e categoria (10/11):** os **32** arquivos de desenho
+agora espelham a taxonomia canônica das fichas em
+`src/monsters/<região>/<categoria>/<espécie>.ts`. A arte está em
+`src/render/creatures/<região>/<categoria>/<espécieEmCamelCase>.ts`.
+Exemplos: `south/rats/duneRat.ts`, `south/goblins/sandGoblin.ts`,
+`north/wolves/glacialWolf.ts`, `east/serpents/stormSerpent.ts` e
+`center/slimes/slime.ts`. Os 30 desenhos extraídos anteriormente foram
+**movidos**, não reescritos; danos, IA, loot e algoritmo de animação continuam
+os mesmos. O Besouro da Areia também está em `south/beetles/sandBeetle.ts`.
+As três famílias de primitivas continuam reutilizáveis exclusivamente em
+`src/render/creatures/shared/{southGeometry,wave2Geometry,regionalGeometry}.ts`;
+`regionalWave2.ts`, `regionalWave3.ts` e `regionalCreatures.ts` continuam
+despachantes, não repositórios de anatomias. Não há animação ou lógica nova
+inventada: aprofundamento por criatura será trabalho posterior com testes.
 
 ### Montarias separadas por espécie — 10/11/2026
 
@@ -141,7 +147,7 @@ velocidade, colisão, domar ou habilidades do motor foi feita. A avaliação
 de fidelidade artística em Android físico e o aprofundamento de animações
 sincronizadas ao estado real de movimento ainda são trabalhos pendentes.
 
-**Slime em módulo próprio:** `src/render/creatures/center/slime.ts` contém
+**Slime em módulo próprio:** `src/render/creatures/center/slimes/slime.ts` contém
 a renderização gelatinosa completa, expressões, efeitos e HP. A reexportação
 em `src/render/actors.ts` preserva os imports existentes do jogo. Assim o
 herói e a Slime não precisam mais dividir um arquivo de implementação.
