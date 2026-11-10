@@ -37,3 +37,5 @@ subsolo e a interação está desabilitada nas salas online.
 desbloqueios e objetivos para as dez espécies, mas só a missão inicial está
 habilitada. `mountLocations.ts` fixa Eron, as marcas de cascos e o cavalo
 fugitivo no mapa da vila, sem criar terrenos secretos nem colisões novas.
+
+**Camadas (ADR 0016):** `world` fica na base e só importa `world`. O vocabulário das montarias (`mountIds.ts`) mora aqui para que `mountQuests.ts` não dependa de `actors/`; `tests/layering.test.ts` confere. Única exceção hoje: `npcs.ts` (reexportação de `npcs/`), que sai junto com o PR da vila.

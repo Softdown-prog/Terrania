@@ -65,7 +65,9 @@ test('HUD e diálogo da Aela exibem o progresso do jogo e a recompensa é entreg
   await page.addInitScript(() => {
     const mode = new URLSearchParams(location.search).get('modo');
     localStorage.setItem('terrania-origins-v1', JSON.stringify({
-      seed: 842136, x: 16, y: 16, hp: 100, kills: mode === 'classico' ? 5 : 4, defeated: [],
+      seed: 842136, x: 16, y: 16, hp: 100,
+      kills: mode === 'classico' ? 5 : 4,
+      trainingKills: mode === 'classico' ? 5 : 4, defeated: [],
     }));
   });
   const talk = page.locator('#talkButton');
@@ -101,6 +103,15 @@ test('HUD e diálogo da Aela exibem o progresso do jogo e a recompensa é entreg
     const save = JSON.parse(localStorage.getItem('terrania-origins-v1') ?? '{}');
     return save.inventory;
   })).toEqual({ gel: 0, potion: 2, questRewardClaimed: true });
+});
+
+test('abates de slimes na superfície não completam missão da gruta de Aela', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('terrania-origins-v1', JSON.stringify({
+    seed: 842136, x: 16, y: 16, hp: 100, kills: 5, trainingKills: 0, defeated: [],
+  })));
+  await page.goto('/jogar/?modo=solo');
+  await expect(page.locator('#questProgress')).toHaveText('0 / 5 slimes');
+  await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\s*0%/);
 });
 
 test('HUD oferece ler placa, entrar e sair conforme a interação do mundo', async ({ page }, info) => {

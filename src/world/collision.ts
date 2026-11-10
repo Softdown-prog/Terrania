@@ -1,6 +1,7 @@
 import { getTile, isWalkable, TILE_SIZE } from "./terrain.ts";
 import { landmarkBlocks } from "./landmarks.ts";
 import { villageBlocks } from "./village.ts";
+import { southCityBlocks } from "./southCity.ts";
 /** Limite técnico por eixo da colisão, não uma fronteira geográfica desenhada. */
 export const WORLD_EDGE_PIXELS = 1_000_000;
 /** Interface sem dependência de DOM, compartilhada entre navegador e servidor. */
@@ -50,7 +51,8 @@ export function canMoveOnSeed(x: number, y: number, seed: number): boolean {
   )
     return false;
   const radius = 7;
-  if (landmarkBlocks(x, y, radius, seed) || villageBlocks(x, y, radius)) return false;
+  if (landmarkBlocks(x, y, radius, seed) || villageBlocks(x, y, radius) ||
+      southCityBlocks(x,y,radius)) return false;
   return ([
     [-radius, -radius],
     [radius, -radius],

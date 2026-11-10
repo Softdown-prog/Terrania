@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (78)
+## Todos os arquivos deste módulo (81)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -61,6 +61,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/knight-sword-proportions.test.ts`](../../tests/knight-sword-proportions.test.ts)
 - [`tests/knight-swords.test.ts`](../../tests/knight-swords.test.ts)
 - [`tests/landmarks.test.ts`](../../tests/landmarks.test.ts)
+- [`tests/layering.test.ts`](../../tests/layering.test.ts)
 - [`tests/mcp-navigator.test.ts`](../../tests/mcp-navigator.test.ts)
 - [`tests/mobile-controls.test.ts`](../../tests/mobile-controls.test.ts)
 - [`tests/mobile-layout.test.ts`](../../tests/mobile-layout.test.ts)
@@ -88,7 +89,9 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/shop-actions.test.ts`](../../tests/shop-actions.test.ts)
 - [`tests/simulation.test.ts`](../../tests/simulation.test.ts)
 - [`tests/site-theme.test.ts`](../../tests/site-theme.test.ts)
+- [`tests/south-city.test.ts`](../../tests/south-city.test.ts)
 - [`tests/south-common-bestiary.test.ts`](../../tests/south-common-bestiary.test.ts)
+- [`tests/south-rare-loot.test.ts`](../../tests/south-rare-loot.test.ts)
 - [`tests/species-behavior.test.ts`](../../tests/species-behavior.test.ts)
 - [`tests/sword-strike.test.ts`](../../tests/sword-strike.test.ts)
 - [`tests/tap-navigation.test.ts`](../../tests/tap-navigation.test.ts)

@@ -15,7 +15,7 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/east/index.ts`](../../src/monsters/east/index.ts)
 - [`src/monsters/west/index.ts`](../../src/monsters/west/index.ts)
 
-## Todos os arquivos deste módulo (41)
+## Todos os arquivos deste módulo (42)
 
 - [`src/monsters/README.md`](../../src/monsters/README.md)
 - [`src/monsters/behavior.ts`](../../src/monsters/behavior.ts)
@@ -34,6 +34,7 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/north/index.ts`](../../src/monsters/north/index.ts)
 - [`src/monsters/north/runic-polar-bear.ts`](../../src/monsters/north/runic-polar-bear.ts)
 - [`src/monsters/north/tundra-mammoth.ts`](../../src/monsters/north/tundra-mammoth.ts)
+- [`src/monsters/rareLoot.ts`](../../src/monsters/rareLoot.ts)
 - [`src/monsters/south/cactus-sprout.ts`](../../src/monsters/south/cactus-sprout.ts)
 - [`src/monsters/south/carrion-sandworm.ts`](../../src/monsters/south/carrion-sandworm.ts)
 - [`src/monsters/south/carrion-vulture.ts`](../../src/monsters/south/carrion-vulture.ts)

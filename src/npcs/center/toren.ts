@@ -5,5 +5,5 @@ export function torenDialogue({forgeAvailable,completed}:NpcDialogueState):reado
   if(forgeAvailable)return ["Sou Toren, ferreiro da Vila da Travessia.", "Trouxe gel de Slime? Posso trocar por uma espada forjada aqui na vila."];
   return completed
     ? ["Parabéns por proteger a clareira!", "Minha oficina está aberta para visitas. Equipamentos serão adicionados depois."]
-    : ["Sou Toren, ferreiro.", "Chegue perto da porta e pressione E para visitar a oficina.", "Ainda não ofereço comércio."];
+    : ["Sou Toren, ferreiro.", "Aproxime-se da porta e pressione E. Leve a espada à caverna da missão de Aela.", "Ainda não ofereço comércio."];
 }

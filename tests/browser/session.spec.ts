@@ -9,7 +9,8 @@ for (const layout of ['normal', 'paisagem'] as const) {
     page.on('pageerror', error => errors.push(error.message));
     // The Slime naturally spawns at these coordinates. Start within one hit of defeat.
     const save = { seed: 842136, x: -560, y: -1008, hp: 1, experience: 50,
-      kills: 5, defeated: ['old-slime'], inventory: { gel: 9, potion: 2, questRewardClaimed: true } };
+      kills: 5, trainingKills: 5, defeated: ['old-slime'],
+      inventory: { gel: 9, potion: 2, questRewardClaimed: true } };
     await page.addInitScript(value => {
       if (!localStorage.getItem('terrania-origins-v1'))
         localStorage.setItem('terrania-origins-v1', JSON.stringify(value));

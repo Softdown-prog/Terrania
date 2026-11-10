@@ -12,7 +12,7 @@ Implementação Go de regras e paridade; substituição do backend ativo requer 
 - [`server-go/engine/world_regions.go`](../../server-go/engine/world_regions.go)
 - [`server-go/engine/protocol.go`](../../server-go/engine/protocol.go)
 
-## Todos os arquivos deste módulo (23)
+## Todos os arquivos deste módulo (24)
 
 - [`server-go/engine/benchmark_test.go`](../../server-go/engine/benchmark_test.go)
 - [`server-go/engine/engine_test.go`](../../server-go/engine/engine_test.go)
@@ -31,6 +31,7 @@ Implementação Go de regras e paridade; substituição do backend ativo requer 
 - [`server-go/engine/room_state.go`](../../server-go/engine/room_state.go)
 - [`server-go/engine/room_state_test.go`](../../server-go/engine/room_state_test.go)
 - [`server-go/engine/slime.go`](../../server-go/engine/slime.go)
+- [`server-go/engine/south_city_test.go`](../../server-go/engine/south_city_test.go)
 - [`server-go/engine/spatial_bridge_test.go`](../../server-go/engine/spatial_bridge_test.go)
 - [`server-go/engine/spatial_default.go`](../../server-go/engine/spatial_default.go)
 - [`server-go/engine/spatial_rust.go`](../../server-go/engine/spatial_rust.go)

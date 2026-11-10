@@ -39,6 +39,9 @@ test("derrota: subir de nível no abate que matou o herói não o ressuscita", (
   const sim = new OfflineSimulation(SEED);
   sim.update(TICK, STILL, false, null);
   sim.slimes.clear();
+  // Arena de superfície externa: não contornar o bloqueio real da vila para testar explosões.
+  sim.player.x = (44.5) * 32; sim.player.y = (11.5) * 32;
+  sim.player.faceX = 1; sim.player.faceY = 0;
   const scarab = new RegionalMonster("teste:escaravelho", "solar-scarab", sim.player.x + 40, sim.player.y);
   scarab.hp = 1;
   sim.slimes.set(scarab.id, scarab);

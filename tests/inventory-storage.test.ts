@@ -22,19 +22,23 @@ test("localStorage antigo migra para bolsa e a recompensa única sobrevive ao re
     const oldSave = loadLocalSave();
     assert.ok(oldSave);
     assert.equal(oldSave.kills, 5);
+    assert.equal(oldSave.trainingKills, 0, "abates antigos fora da gruta não completam a missão");
     assert.equal(oldSave.experience, 0);
     const originalGame = new OfflineSimulation(oldSave.seed, oldSave);
     assert.equal(originalGame.inventory.potion, 0);
-    assert.equal(originalGame.inventory.claimAelaReward(originalGame.kills), true);
-    saveLocal(originalGame.snapshot());
+    assert.equal(originalGame.inventory.claimAelaReward(originalGame.trainingKills), false);
+    const trainedGame = new OfflineSimulation(oldSave.seed, {...oldSave, trainingKills: 5});
+    assert.equal(trainedGame.inventory.claimAelaReward(trainedGame.trainingKills), true);
+    saveLocal(trainedGame.snapshot());
     const reloaded = loadLocalSave();
     assert.ok(reloaded);
     assert.equal(reloaded.hp, 79);
+    assert.equal(reloaded.trainingKills, 5, "progresso da gruta persiste no navegador");
     assert.deepEqual(reloaded.defeated, ["s1", "s2", "s3"]);
     const nextGame = new OfflineSimulation(reloaded.seed, reloaded);
     assert.equal(nextGame.inventory.potion, 2);
     assert.equal(nextGame.inventory.questRewardClaimed, true);
-    assert.equal(nextGame.inventory.claimAelaReward(nextGame.kills), false);
+    assert.equal(nextGame.inventory.claimAelaReward(nextGame.trainingKills), false);
     const potionState = nextGame.snapshot().inventory;
     assert.equal(potionState?.potion, 2);
     store.set(KEY, JSON.stringify({

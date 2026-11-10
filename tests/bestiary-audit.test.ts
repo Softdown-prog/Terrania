@@ -140,6 +140,6 @@ test("glacial dungeon slows the floor and grants ice wolves their intended speed
   const wolf=new RegionalMonster("wolf-ice","glacial-wolf",0,0);
   const hero=new Player();
   hero.x=100;hero.y=0;
-  wolf.update(1/60,hero,glacial.collision);
+  wolf.update(1/60,hero,glacial.collision,0,false); // arena local, não superfície da vila
   assert.equal(wolf.iceSpeedBoost,true);
 });

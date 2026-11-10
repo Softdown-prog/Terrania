@@ -23,6 +23,8 @@ export interface OfflineSave {
   y: number;
   hp: number;
   kills: number;
+  /** Novo contador independente dos abates externos e da missão de montaria. */
+  trainingKills?: number;
   defeated: string[];
   /** Campos opcionais mantêm compatibilidade com saves antigos. */
   inventory?: InventoryState;
@@ -50,6 +52,8 @@ export class OfflineSimulation {
   readonly collision: SeedCollision;
   readonly seed: number;
   kills = 0;
+  /** Só abates na gruta introdutória avançam a missão de Aela. */
+  trainingKills = 0;
   experience = 0;
   private spawnedChunk = "";
 
@@ -71,6 +75,7 @@ export class OfflineSimulation {
         ? 0 : Number.isFinite(saved.hp) ? Math.min(this.player.maxHp, Math.max(1, saved.hp)) : this.player.maxHp;
       if (this.player.hp > 0) this.player.restoreNutrition(saved.nutrition);
       this.kills = normalizeKills(saved.kills);
+      this.trainingKills = Math.min(5, normalizeKills(saved.trainingKills));
       for (const id of Array.isArray(saved.defeated) ? saved.defeated : [])
         if (typeof id === "string") this.defeated.add(id);
       for (const drop of normalizeDrops(saved.drops)) {
@@ -203,6 +208,7 @@ export class OfflineSimulation {
       y: this.player.y,
       hp: this.player.hp,
       kills: this.kills,
+      trainingKills: this.trainingKills,
       experience: this.experience,
       ...(this.awaitingRespawn ? { awaitingRespawn: true } : {}),
       defeated: [...this.defeated].slice(-2000),
