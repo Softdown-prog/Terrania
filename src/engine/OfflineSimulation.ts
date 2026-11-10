@@ -1,4 +1,4 @@
-import { applySwordImpact, swordHitDamage, swordStrikeTargets } from "./SwordCombat.ts";
+import { resolveSwordStrike, swordStrikeTargets } from "./SwordCombat.ts";
 import { RegionalMonster, regionalSurfaceSpawns, southCommonSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
 import { Player } from "../actors/Player.ts";
 import { MountStable, type MountSave } from "./MountStable.ts";
@@ -178,19 +178,10 @@ export class OfflineSimulation {
       // The astral arc can contact three; every other blade hits one primary.
       const primary=swordStrikeTargets(weapon,this.player,this.slimes.values(),
         this.collision,strikeTargetId);
-      for(const mob of primary){
-        if(mob.hp<=0)continue;
-        const id=mob.id;
-        mob.takeHit(this.player.x,this.player.y,swordHitDamage(weapon,mob));
-        if(mob instanceof RegionalMonster)mob.onSwordHit(this.player,weapon);
-        const secondary=applySwordImpact(weapon,this.player,mob,
-          this.slimes.values(),this.collision).extra;
-        for(const struck of secondary)if(struck.hp<=0){
-          this.registerDefeat(struck.id,struck,defense);
-          changed=true;
-        }
-        if(mob.hp<=0){this.registerDefeat(id,mob,defense);changed=true;}
-      }
+      resolveSwordStrike(weapon,this.player,primary,this.slimes,this.collision,mob=>{
+        this.registerDefeat(mob.id,mob,defense);
+        changed=true;
+      });
     }
     // O jogador recolhe automaticamente o gel ao se aproximar. Se a bolsa
     // estiver cheia, o item permanece visível no chão até haver espaço.

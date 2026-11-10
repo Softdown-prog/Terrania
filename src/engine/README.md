@@ -40,3 +40,5 @@ eventos tipados com controle de objetivos, contagem, estado determinístico
 e normalização de save. `MountStable.ts` consome esse reducer e valida
 nível, Cavalaria, proximidade e recursos, entregando montarias apenas após
 os objetivos reais da quest. Nenhum estado do Angular é autoridade de gameplay.
+
+**Golpe de espada:** `resolveSwordStrike` (`SwordCombat.ts`) é a única resolução de golpe, usada pela superfície e pela caverna: dano com defesa, efeito da lâmina e abates, nessa ordem. Cada cenário só decide o que fazer com cada abate. Auditoria e próximas etapas em [ADR 0014](../../docs/adr/0014-auditoria-da-logica-do-motor.md).
