@@ -1,9 +1,9 @@
-import { renderSandBeetle } from "../../src/render/sandBeetle.ts";
 import { renderDuneRatDetail } from "../../src/render/creatures/south/duneRat.ts";
 import { renderSandGoblinDetail } from "../../src/render/creatures/south/sandGoblin.ts";
 import { renderDesertOrcDetail } from "../../src/render/creatures/south/desertOrc.ts";
 import { renderSandBasiliskDetail } from "../../src/render/creatures/mounts/sandBasilisk.ts";
 import { renderCargoBeetleDetail } from "../../src/render/creatures/mounts/cargoBeetle.ts";
+import { renderSandBeetle } from "../../src/render/sandBeetle.ts";
 import { drawKnightSword } from "../../src/render/swords.ts";
 import { WEAPON_IDS } from "../../src/engine/character/Weapons.ts";
 import { renderWave3Creature } from "../../src/render/regionalWave3.ts";
@@ -22,6 +22,10 @@ import { renderNpc } from "../../src/render/npcs.ts";
 import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
 import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
+import { paintSouthRuin } from "../../src/render/southRuinsArt.ts";
+import { RUIN_NAMES, type RuinVariant } from "../../src/world/southRuins.ts";
+import { paintSouthCity } from "../../src/render/southCityArt.ts";
+import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
@@ -94,6 +98,14 @@ export const ASSETS: ArtAsset[] = [
   ...(["ice-spire", "desert-obelisk", "coast-beacon", "mountain-monolith"] as const satisfies readonly RegionalLandmarkKind[])
     .map<ArtAsset>(kind => ({ id: "marco " + kind, tier: "structure", fn: "paintRegionalLandmark",
       draw: c => paintRegionalLandmark(c, kind, 0) })),
+  ...([0, 1, 2, 3] as const satisfies readonly RuinVariant[]).map<ArtAsset>(variant => ({
+    id: "ruína " + RUIN_NAMES[variant], tier: "structure", fn: "paintSouthRuin",
+    draw: c => paintSouthRuin(c, variant, "all") })),
+  { id: "Poço Negro: portão, muralha, torre e poço", tier: "structure",
+    fn: "paintSouthCity", draw: c => {
+      const kinds:readonly SouthCityPropKind[]=["well","gate","tower","wall","torch","building","tent"];
+      kinds.forEach((kind,i) => paintSouthCity(c,{kind,x:i*80,y:0,variant:i%3},1));
+    } },
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
   ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
     .flatMap<ArtAsset>(theme => [
