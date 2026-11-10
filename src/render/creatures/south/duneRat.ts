@@ -170,3 +170,35 @@ export function renderDuneRatDetail(ctx:CanvasRenderingContext2D,actor:DesertCom
   dust(ctx,moving,phase,seed);
   infection(ctx,actor.casting??0,time);
 }
+import type { Palette } from "./geometry.ts";
+import { body, line, tip, eye, freckles, OUTLINE } from "./geometry.ts";
+import { ellipse, rgba } from "../../draw.ts";
+
+export const rat = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
+  ctx.strokeStyle=OUTLINE;ctx.lineWidth=5;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(9,-10);ctx.bezierCurveTo(23,-6,26,-27,34+Math.sin(t*2)*2,-18);ctx.stroke();
+  ctx.strokeStyle=c.accent;ctx.lineWidth=2.7;ctx.stroke();
+  for(const x of [-9,7]){
+    line(ctx,x,-10,x-4,-2,c,3);
+    line(ctx,x+2,-9,x+8,-1,c,3);
+  }
+  body(ctx,-1,-14,16,10,c);
+  // Coarse tufts on the arched dune-rat back, not a smooth domestic mouse.
+  for(let i=0;i<12;i++){
+    const x=-15+i*2.8,back=-19-Math.sin(i*Math.PI/12)*4;
+    tip(ctx,x,back,2.2+i%3*.25,3.6+i%4*1.1,
+      i%3===0?c.light:c.extra);
+  }
+  body(ctx,-13,-19,10,8,c);
+  for(const x of [-20,-8]){
+    body(ctx,x,-26,5,6,{...c,base:c.accent,light:c.light,dark:c.dark});
+    ellipse(ctx,x,-26,2.5,3,c.accent);
+  }
+  eye(ctx,-17,-21,c,1.8);
+  ellipse(ctx,-23,-16,2,1.5,c.accent);
+  for(const dir of [-1,1]){
+    ctx.strokeStyle=rgba(c.light,.9);ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(-23,-15);ctx.quadraticCurveTo(-30,-15+dir*5,-34,-15+dir*4);ctx.stroke();
+  }
+  freckles(ctx,c,14,-2,-14,10,7);
+};

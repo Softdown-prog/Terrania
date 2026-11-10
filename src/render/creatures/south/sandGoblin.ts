@@ -178,3 +178,53 @@ export function renderSandGoblinDetail(ctx:CanvasRenderingContext2D,actor:Desert
   movingCloth(ctx,actor.motionPhase??0,clamp01(actor.moving??0));
   sandCloud(ctx,actor.casting??0,time);
 }
+import type { Palette } from "./geometry.ts";
+import { body, line, tip, eye, freckles, OUTLINE, GLOW } from "./geometry.ts";
+import { ellipse } from "../../draw.ts";
+
+export const goblin = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
+  const linen:Palette={...c,base:"#b6a17e",light:"#f0dec0",dark:"#7b6958"};
+  for(const side of [-1,1]){
+    line(ctx,side*5,-13,side*9,-1,c,5);
+    body(ctx,side*8,-1,6,3.7,c);
+    line(ctx,side*9,-30,side*17,-17,c,4);
+  }
+  body(ctx,0,-23,12,17,linen);
+  body(ctx,0,-40,11,11,c);
+  // Long ears and pronounced nose give the bandit a readable goblin profile.
+  for(const side of [-1,1]){
+    ctx.fillStyle=c.base;ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(side*10,-41);ctx.lineTo(side*21,-47);
+    ctx.quadraticCurveTo(side*19,-35,side*10,-35);ctx.closePath();ctx.fill();ctx.stroke();
+    ellipse(ctx,side*15,-41,3,1.5,c.accent,side*.1);
+  }
+  body(ctx,1,-35,6.5,4,c);
+  ellipse(ctx,6,-37,5,3,c.light,.2);
+  eye(ctx,-4,-43,c,2.1);eye(ctx,5,-43,c,2.1);
+  for(const side of [-1,1])tip(ctx,side*4,-33,2,4,GLOW);
+  // Wrapped pale turban, folded several times above the green face.
+  body(ctx,0,-51,13,8,linen,.08);
+  for(let i=0;i<5;i++){
+    const y=-56+i*2.4;
+    ctx.strokeStyle=i%2?"#a2927b":"#f3e6cf";ctx.lineWidth=2.3;
+    ctx.beginPath();ctx.moveTo(-10+i%2*2,y);
+    ctx.bezierCurveTo(-4,y-3,5,y+3,10-i%2*2,y);ctx.stroke();
+  }
+  ctx.fillStyle="#b9aa8e";
+  ctx.beginPath();ctx.moveTo(-10,-52);ctx.quadraticCurveTo(-18,-43,-10,-36);
+  ctx.lineTo(-7,-38);ctx.lineTo(-5,-51);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=OUTLINE;ctx.lineWidth=1.1;ctx.stroke();
+  // Short tunic with crossing belt and a stolen copper pouch.
+  ctx.strokeStyle="#77543b";ctx.lineWidth=3.7;
+  ctx.beginPath();ctx.moveTo(-11,-28);ctx.quadraticCurveTo(0,-23,11,-28);ctx.stroke();
+  body(ctx,-14,-19,5.5,7,{...c,base:"#9e7145",light:"#d3a878",dark:"#674d3b"});
+  ellipse(ctx,-14,-20,2,2,c.accent);
+  for(let i=0;i<5;i++)tip(ctx,-9+i*4,-13,1.6,4,linen.light);
+  // Curved rusty dagger: separate curved silhouette and a gold hilt.
+  line(ctx,17,-18,25,-27,{...c,base:"#97745c",light:"#c5a481"},2.7);
+  ctx.strokeStyle="#b9c0c1";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(25,-27);ctx.quadraticCurveTo(34,-38+Math.sin(t*1.6),35,-46);
+  ctx.quadraticCurveTo(40,-42,37,-34);ctx.stroke();
+  ctx.strokeStyle=GLOW;ctx.lineWidth=.9;ctx.stroke();
+  freckles(ctx,c,11,0,-22,7,12);
+};

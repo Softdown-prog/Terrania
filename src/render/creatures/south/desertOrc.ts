@@ -169,3 +169,40 @@ export function renderDesertOrcDetail(ctx:CanvasRenderingContext2D,actor:DesertC
   dust(ctx,clamp01(actor.moving??0),actor.motionPhase??0);
   warCry(ctx,actor.casting??0,time);
 }
+import type { Palette } from "./geometry.ts";
+import { body, line, tip, eye, freckles, GLOW } from "./geometry.ts";
+import { ellipse, rgba } from "../../draw.ts";
+
+export const orc = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
+  for(const s of [-1,1]){
+    line(ctx,s*9,-14,s*11,0,c,8);
+    line(ctx,s*13,-36,s*21,-17,c,7);
+    body(ctx,s*20,-17,6,6,c);
+  }
+  body(ctx,0,-31,18,20,c);
+  // Tribal harness crossing a muscular olive torso; shoulder bone plate.
+  ctx.strokeStyle="#624c3e";ctx.lineWidth=5;
+  ctx.beginPath();ctx.moveTo(-13,-44);ctx.lineTo(13,-21);
+  ctx.moveTo(13,-43);ctx.lineTo(-12,-22);ctx.stroke();
+  ctx.strokeStyle="#b09a73";ctx.lineWidth=1.7;
+  ctx.beginPath();ctx.moveTo(-12,-42);ctx.lineTo(9,-24);ctx.stroke();
+  for(let i=0;i<4;i++)tip(ctx,-18+i*4,-46+i%2*2,3.2,6,"#e2d6bd");
+  body(ctx,0,-54,15,12,c);
+  body(ctx,0,-47,10,5,c);
+  eye(ctx,-6,-57,c,2.1);eye(ctx,6,-57,c,2.1);
+  for(const s of [-1,1])tip(ctx,s*7,-45,3,7,c.light);
+  body(ctx,0,-22,15,5,{...c,base:c.extra,light:c.accent});
+  ctx.strokeStyle=c.dark;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(-10,-30);ctx.lineTo(12,-31);ctx.stroke();
+  line(ctx,23,-22,29,-61,{...c,base:c.extra,light:c.accent},4);
+  // Bone-knobbed desert club, matching the pale weapon in the reference.
+  body(ctx,29,-63,8,9,{...c,base:"#dad1b5",light:"#f5edd4",dark:"#a89b80"});
+  for(const side of [-1,1]){
+    ellipse(ctx,29+side*7,-68,4,3,"#e9ddc4");
+    tip(ctx,29+side*8,-68,3.5,5,"#fff4dc");
+  }
+  freckles(ctx,c,16,0,-33,13,12);
+  ellipse(ctx,-10,-27,2,2,c.accent);
+  ellipse(ctx,10,-27,2,2,c.accent);
+  ellipse(ctx,0,-23,2.5,1.3,rgba(GLOW,.4+Math.sin(t)*.1));
+};
