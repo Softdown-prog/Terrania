@@ -111,8 +111,8 @@ test("fita afilada e raios orientados ao golpe mantêm escala e determinismo",()
     signatures.add(first.signature);
   }
   assert.equal(signatures.size,4,"rastro não segue as quatro direções");
-  const renderer=readFileSync("src/render/swords.ts","utf8");
+  const renderer=readFileSync("src/render/swords/shared.ts","utf8");
   assert.ok(renderer.includes("s.trailThickness"),"largura não veio da ficha");
   assert.ok(renderer.includes("Math.sin(Math.PI*t)"),"falta afilamento nas extremidades");
-  assert.ok(renderer.includes("x-tx*4-nx"),"raio usa coordenada global, não a orientação do golpe");
+  assert.ok(readFileSync("src/render/swords/tempest.ts","utf8").includes("x-tx*4-nx"),"raio usa coordenada global, não a orientação do golpe");
 });

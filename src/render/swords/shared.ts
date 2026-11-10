@@ -39,7 +39,8 @@ function bladeMaterials(ctx:CanvasRenderingContext2D,s:SwordVisualProfile,art:Sw
   ctx.strokeStyle=tone(s.shade);ctx.lineWidth=.72;
   ctx.beginPath();ctx.moveTo(17,0);ctx.lineTo(len-4,0);ctx.stroke();
 
-  art.bladeMaterial(ctx,s,tone);  // Arestas com rampas derivadas do material: fibra, têmpera, cristal e esmalte
+  art.bladeMaterial(ctx,s,tone);
+  // Arestas com rampas derivadas do material: fibra, têmpera, cristal e esmalte
   // recebem três planos de contraste reais, não uma tinta única artificial.
   ctx.strokeStyle=tone(shade(s.blade,-.19));ctx.lineWidth=.85;
   ctx.beginPath();ctx.moveTo(18,w*.69);

@@ -78,11 +78,11 @@ test("rastros elementais pertencem às fichas, não são inferidos pelo ID",()=>
     marsh:"venom-drops",tempest:"bolts",astral:"stars",
   } as const;
   const renderer=readFileSync("src/render/swords.ts","utf8");
-  assert.ok(renderer.includes("function swordSlashAccent("));
+  assert.ok(readFileSync("src/render/swords/shared.ts","utf8").includes("art.slashAccent"),"rastro comum deve delegar à arte da espada");
   for(const id of Object.keys(accents) as (keyof typeof accents)[]) {
     const accent=accents[id];
     assert.equal(WEAPONS[id].visual.trailAccent,accent,id);
-    assert.ok(renderer.includes('case "'+accent+'"'),accent+" não desenhado");
+    assert.ok(readFileSync("src/render/swords/"+id+".ts","utf8").includes("slashAccent("),accent+" não desenhado");
   }
   for(const id of ["starter","forge","bronze","copper"] as const)
     assert.equal(WEAPONS[id].visual.trailAccent,undefined,id);
@@ -102,4 +102,24 @@ test("espessura da fita visual por espada acompanha seu peso sem alterar dano",(
     variants.add(actual);
   }
   assert.equal(variants.size,10,"espessuras não podem ser todas idênticas");
+});
+
+test("pintura procedural da espada pertence a cada arquivo; não existe seletor monolítico",()=>{
+  const directory="src/render/swords";
+  assert.deepEqual(readdirSync(directory).filter(f=>f.endsWith(".ts")).sort(),
+    [...swordFiles,"shared.ts"].sort());
+  const dispatcher=readFileSync("src/render/swords.ts","utf8");
+  const shared=readFileSync(directory+"/shared.ts","utf8");
+  assert.equal(dispatcher.includes("switch("),false);
+  assert.equal(shared.includes("switch(s.motif)"),false);
+  assert.equal(shared.includes("switch(accent)"),false);
+  for(const id of WEAPON_IDS){
+    const art=readFileSync(directory+"/"+id+".ts","utf8");
+    assert.ok(art.includes("bladePath(")&&art.includes("bladeMaterial("),id+" não implementa sua lâmina");
+    assert.ok(dispatcher.includes('from "./swords/'+id+'.ts"'),id+" sem import da arte");
+    assert.ok(dispatcher.includes(id+": "+id.toUpperCase()+"_ARTWORK"),id+" sem despacho");
+  }
+  const astral=readFileSync(directory+"/astral.ts","utf8");
+  assert.ok(astral.includes("slashAccent(")&&astral.includes("star(ctx,x,y,2.2,light)"),
+    "estrelas da espada astral não estão no módulo próprio");
 });

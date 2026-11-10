@@ -15,13 +15,13 @@ As dez espadas têm **uma ficha TypeScript por arquivo**, separada por ID estáv
 | 9 | `tempest.ts` | Sabre Abissal da Tempestade |
 | 10 | `astral.ts` | Espada Astral de Terrania |
 
-Esta pasta contém apenas **dados e regras de domínio**, sem Angular/Canvas. O desenho procedural da espada equipada é responsabilidade de `src/render/swords.ts`, e os ícones do inventário permanecem em `src/app/item-icon.component.ts`. Não misturar ícones com fichas de gameplay; não duplicar a lógica de golpes ou desbloqueio entre espadas. O primeiro item de progressão é sempre `starter.ts` (nível 0). Alterações devem manter `tests/knight-swords.test.ts`, `tests/sword-strike.test.ts` e `tests/sword-definitions.test.ts` verdes.
+Esta pasta contém apenas **dados e regras de domínio**, sem Angular/Canvas. O desenho procedural da espada equipada pertence a `src/render/swords/<id>.ts`, com API pública em `src/render/swords.ts`, e os ícones do inventário permanecem em `src/app/item-icon.component.ts`. Não misturar ícones com fichas de gameplay; não duplicar a lógica de golpes ou desbloqueio entre espadas. O primeiro item de progressão é sempre `starter.ts` (nível 0). Alterações devem manter `tests/knight-swords.test.ts`, `tests/sword-strike.test.ts` e `tests/sword-definitions.test.ts` verdes.
 
 ## Perfil físico independente por espada
 
 `visual` acompanha cada ficha: comprimento e espessura, liga/cor de metal, cabo, guarda, geometria da ponta, runas, ornamentos e partículas do golpe. Não há mais dez perfis `SHAPES` dentro do renderizador. A geometria original foi transferida **sem alterar dano, desbloqueio, proporções ou cores**.
 
-O motor possui apenas valores declarativos; `src/render/swords.ts` mantém o algoritmo compartilhado de pintura Canvas e consulta `WEAPONS[id].visual`. A resolução de golpes continua em `SwordCombat.ts`, e os ícones da mochila continuam isolados no Angular.
+O motor possui apenas valores declarativos; `src/render/swords/shared.ts` mantém o algoritmo compartilhado de pintura Canvas e consulta `WEAPONS[id].visual`. A resolução de golpes continua em `SwordCombat.ts`, e os ícones da mochila continuam isolados no Angular.
 
 ## Rastros procedurais por material
 
