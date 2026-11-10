@@ -25,3 +25,7 @@ consumidores existentes; **não** contém cópias dos atributos.
 **Escopo:** apenas redistribuição de fichas. Dano, spawn, colisão, IA e
 renderização permanecem como estavam. As criaturas de cavernas do brejo
 continuam classificadas no Sul, sem criar uma região nova artificial.
+
+## Identidade de movimento de cada monstro
+
+`behavior.ts` define explicitamente uma estratégia por espécie (locomoção, perseguição, cadência e desvio lateral). `RegionalMonster.ts` usa essa estratégia no deslocamento real por `moveBody` e `monsterMotion.ts` vincula o passo real à animação procedural. Slime permanece com sua rotina exclusiva. Golpes especiais, veneno, magia e recompensas continuam no código existente. Os perfis não simulam voo atravessando paredes ou projéteis reais: são tarefas separadas que exigem novas regras e testes.

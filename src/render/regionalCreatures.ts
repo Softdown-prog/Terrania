@@ -1,3 +1,4 @@
+import { monsterPose } from "./monsterMotion.ts";
 import { renderSandBeetle } from "./sandBeetle.ts";
 import { renderWave3Creature } from "./regionalWave3.ts";
 import { renderWave2Creature } from "./regionalWave2.ts";
@@ -10,6 +11,8 @@ export interface RegionalCreatureVisual {
   readonly id?: string;
   readonly hurtTime?: number;
   readonly casting?: number;
+  readonly motionPhase?: number;
+  readonly moving?: number;
 }
 type ColorRamp = { base: string; light: string; dark: string; accent: string; eye: string };
 const PALETTE: Readonly<Partial<Record<RegionalCreatureKind, ColorRamp>>> = {
@@ -286,8 +289,10 @@ export function renderRegionalCreature(ctx: CanvasRenderingContext2D,
   const flash=clamp01((creature.hurtTime ?? 0)/.24);
   ctx.save();ctx.translate(sx,sy);
   softShadow(ctx,0,3,25,7,.34);
-  const float=creature.kind==="frost-spirit" || creature.kind==="storm-serpent";
-  ctx.translate(0,float?Math.sin(time*2+seed*6)*2:Math.sin(time*2.7+seed*4)*.65);
+  const pose=monsterPose(creature,time);
+  ctx.translate(pose.sway,pose.lift);
+  ctx.rotate(pose.tilt);
+  ctx.scale(pose.stretchX,pose.stretchY);
   if(flash>.01)ctx.globalAlpha=1;
   switch(creature.kind) {
     case "basalt-golem": drawBasaltGolem(ctx,c);break;

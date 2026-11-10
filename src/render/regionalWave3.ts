@@ -1,3 +1,4 @@
+import { monsterPose } from "./monsterMotion.ts";
 import { CREATURE_CATALOG, type SouthCommonKind } from "../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, hashString, mix, pill, rgba, shade, softShadow, TAU } from "./draw.ts";
 
@@ -7,6 +8,8 @@ export interface DesertCommonVisual {
   readonly hp:number;
   readonly hurtTime?:number;
   readonly casting?:number;
+  readonly motionPhase?: number;
+  readonly moving?: number;
   readonly id?:string;
 }
 const C:Readonly<Record<SouthCommonKind,Palette>>={
@@ -433,7 +436,10 @@ export function renderWave3Creature(ctx:CanvasRenderingContext2D,
   const c=C[actor.kind],seed=hashString(actor.id??actor.kind);
   ctx.save();ctx.translate(sx,sy);
   softShadow(ctx,0,3,actor.kind==="clay-troll"||actor.kind==="desert-orc"?24:16,5,.3);
-  ctx.translate(0,Math.sin(time*2.4+seed*TAU)*.65);
+  const pose=monsterPose(actor,time);
+  ctx.translate(pose.sway,pose.lift);
+  ctx.rotate(pose.tilt);
+  ctx.scale(pose.stretchX,pose.stretchY);
   switch(actor.kind){
     case "dune-rat":rat(ctx,c,time);break;
     case "sand-goblin":goblin(ctx,c,time);break;
