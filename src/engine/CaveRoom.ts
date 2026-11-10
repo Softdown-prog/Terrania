@@ -1,4 +1,4 @@
-import { applySwordImpact, swordHitDamage, swordStrikeTargets } from "./SwordCombat.ts";
+import { resolveSwordStrike, swordStrikeTargets } from "./SwordCombat.ts";
 import { SOUTH_COMMON_KINDS } from "../actors/CreatureCatalog.ts";
 import { RegionalMonster, caveMonsterKinds } from "../actors/RegionalMonster.ts";
 import { faceTarget } from "./combat.ts";
@@ -147,15 +147,8 @@ export class CaveRoom {
         this.collision,targetId);
       // O herói encara o alvo principal; os demais do arco astral não giram o golpe.
       if(targets[0])faceTarget(this.player,targets[0]);
-      for(const monster of targets){
-        if(monster.hp<=0)continue;
-        monster.takeHit(this.player.x,this.player.y,swordHitDamage(equipped,monster));
-        monster.onSwordHit(this.player,equipped);
-        const arcs=applySwordImpact(equipped,this.player,monster,
-          this.monsters.values(),this.collision).extra;
-        for(const struck of arcs)if(struck.hp<=0)this.defeat(struck.id,struck as RegionalMonster,defense);
-        if(monster.hp<=0)this.defeat(monster.id,monster,defense);
-      }
+      resolveSwordStrike(equipped,this.player,targets,this.monsters,this.collision,
+        monster=>this.defeat(monster.id,monster,defense));
     }
   }
   /** One kill event even if DOT, direct hit and chained lightning overlap. */

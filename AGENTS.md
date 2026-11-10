@@ -31,7 +31,7 @@ Regras que já quebraram uma vez. Valem para a superfície (`OfflineSimulation`)
 
 - **Herói derrotado só volta por `respawn()`.** Nenhum efeito colateral (subir de nível, comida, poção) tira a vida de zero.
 - **Toda derrota é salva no mesmo passo:** `update` devolve `true` quando o herói cai, seja por contato, veneno, queimadura ou espinhos.
-- **Superfície e caverna aplicam a mesma fórmula** de dano, defesa e alvos. Alcance, cone e número de alvos vêm de `swordArc`; quem é atingido vem de `swordStrikeTargets` (`src/engine/SwordCombat.ts`). Não copiar esses números para outro arquivo.
+- **Superfície e caverna aplicam a mesma fórmula** de dano, defesa e alvos. Alcance, cone e número de alvos vêm de `swordArc`; quem é atingido vem de `swordStrikeTargets` e o dano, o efeito da lâmina e os abates vêm de `resolveSwordStrike` (`src/engine/SwordCombat.ts`). Não copiar esses números nem esse laço para outro arquivo (`tests/sword-strike.test.ts` exige o mesmo abate nos dois cenários).
 - **Golpe com alvo escolhido** exige o alvo ao alcance e à vista; só então a lâmina astral completa o arco com até dois vizinhos. Golpe sem alvo (`null`) não fere ninguém.
 - **Recarga só é gasta por golpe que sai:** herói atordoado não consome o intervalo da arma.
 - **Nada do save vira estado sem normalizar:** números finitos, inteiros e limitados (`normalizeKills`, `normalizeExperience`, `normalizeInventory`...), tanto em `loadLocalSave` quanto no construtor da simulação.

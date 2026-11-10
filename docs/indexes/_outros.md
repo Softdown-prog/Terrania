@@ -60,6 +60,7 @@
 - [`docs/adr/0011-base-postgresql-do-mercado.md`](../../docs/adr/0011-base-postgresql-do-mercado.md)
 - [`docs/adr/0012-retirada-do-multiplayer.md`](../../docs/adr/0012-retirada-do-multiplayer.md)
 - [`docs/adr/0013-decomposicao-do-game.md`](../../docs/adr/0013-decomposicao-do-game.md)
+- [`docs/adr/0014-auditoria-da-logica-do-motor.md`](../../docs/adr/0014-auditoria-da-logica-do-motor.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

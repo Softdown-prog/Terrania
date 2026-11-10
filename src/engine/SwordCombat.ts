@@ -3,6 +3,7 @@ import { clearPath, moveBody, type CollisionMap } from "../world/collision.ts";
 import { hash2 } from "../world/random.ts";
 import { ATTACK_REACH, canStrike } from "./combat.ts";
 import type { Slime } from "../actors/Slime.ts";
+import { RegionalMonster } from "../actors/RegionalMonster.ts";
 import type { Player } from "../actors/Player.ts";
 
 /** Pure target defense formula shared by outdoor and dungeon sword strikes. */
@@ -37,16 +38,16 @@ const seedFor=(id:string):number=>{
   for(let i=0;i<id.length;i++)seed=Math.imul(seed^id.charCodeAt(i),16777619);
   return seed|0;
 };
-export interface SwordImpact {
+export interface SwordImpact<T extends Slime = Slime> {
   /** Additional creatures damaged by a special attack, never repeated targets. */
-  readonly extra: readonly Slime[];
+  readonly extra: readonly T[];
 }
 /** Adds real elemental statuses and secondary hits only after a successful
  * primary sword contact; callers retain authoritative defeat/loot bookkeeping.
  * Never reads DOM, client timestamps or random global state.
  */
-export function applySwordImpact(weapon:WeaponId,hero:Player,target:Slime,
-  others:Iterable<Slime>,world:CollisionMap):SwordImpact {
+export function applySwordImpact<T extends Slime>(weapon:WeaponId,hero:Player,target:Slime,
+  others:Iterable<T>,world:CollisionMap):SwordImpact<T> {
   const spec=WEAPONS[weapon].special;
   if(!spec)return {extra:[]};
   switch(spec){
@@ -84,5 +85,28 @@ export function applySwordImpact(weapon:WeaponId,hero:Player,target:Slime,
       // Larger cone and 25% defense penetration are evaluated by the hit caller
       // and swordHitDamage. Effects here are exclusively graphical.
       return {extra:[]};
+  }
+}
+
+/**
+ * Resolve um golpe já decidido: dano, efeito da lâmina e criaturas abatidas.
+ * Fonte única para a superfície e para a caverna; antes cada uma tinha a sua cópia
+ * do laço, e foi essa divergência que gerou os erros de defesa e de arco astral.
+ *
+ * `pool` é o conjunto vivo de criaturas do cenário (o raio pode saltar para vizinhas).
+ * `onDefeated` recebe cada criatura abatida: primeiro as atingidas pelo efeito
+ * secundário, depois a principal, e quem chama cuida de XP, saque e remoção.
+ * Quem escolhe os alvos (`swordStrikeTargets`) e vira o herói continua sendo o chamador.
+ */
+export function resolveSwordStrike<T extends Slime>(weapon: WeaponId, hero: Player,
+  targets: readonly T[], pool: ReadonlyMap<string, T>, world: CollisionMap,
+  onDefeated: (mob: T) => void): void {
+  for (const mob of targets) {
+    if (mob.hp <= 0) continue;
+    mob.takeHit(hero.x, hero.y, swordHitDamage(weapon, mob));
+    if (mob instanceof RegionalMonster) mob.onSwordHit(hero, weapon);
+    for (const struck of applySwordImpact(weapon, hero, mob, pool.values(), world).extra)
+      if (struck.hp <= 0) onDefeated(struck);
+    if (mob.hp <= 0) onDefeated(mob);
   }
 }
