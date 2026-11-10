@@ -1,18 +1,19 @@
 import { monsterPose } from "../../monsterMotion.ts";
 import { CREATURE_CATALOG } from "../../../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, hashString, mix, pill, rgba, softShadow, TAU } from "../../draw.ts";
-import type { DesertCommonVisual } from "../../regionalWave3.ts";
+import type { RegionalCreatureVisual } from "../../regionalCreatures.ts";
 import type { Palette } from "./southGeometry.ts";
 import { GLOW, OUTLINE } from "./southGeometry.ts";
 /** Animação e indicador visual compartilhados, sem selecionar anatomias. */
 export function renderWave3Frame(ctx:CanvasRenderingContext2D,
- actor:DesertCommonVisual,sx:number,sy:number,time:number,c:Palette,
+ actor:RegionalCreatureVisual,sx:number,sy:number,time:number,c:Palette,
  draw:(ctx:CanvasRenderingContext2D,c:Palette,time:number)=>void):void {
   const seed=hashString(actor.id??actor.kind);
   ctx.save();ctx.translate(sx,sy);
   softShadow(ctx,0,3,actor.kind==="clay-troll"||actor.kind==="desert-orc"?24:16,5,.3);
   const pose=monsterPose(actor,time);ctx.translate(pose.sway,pose.lift);ctx.rotate(pose.tilt);ctx.scale(pose.stretchX,pose.stretchY);
-  draw(ctx,c,time);  // Stable micro-highlights supply material structure even on the smallest actors.
+  draw(ctx,c,time);
+  // Stable micro-highlights supply material structure even on the smallest actors.
   for(let i=0;i<13;i++){
     const x=Math.sin(i*9.31+seed*7)*11,y=-12-Math.abs(Math.cos(i*5.71+seed))*19;
     ellipse(ctx,x,y,1+i%3*.25,.55,rgba(i%2?c.accent:c.light,.64));

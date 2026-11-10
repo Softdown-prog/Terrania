@@ -1,12 +1,12 @@
 import { monsterPose } from "../../monsterMotion.ts";
 import { CREATURE_CATALOG } from "../../../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, hashString, mix, pill, rgba, softShadow, TAU } from "../../draw.ts";
-import type { Wave2Visual } from "../../regionalWave2.ts";
+import type { RegionalCreatureVisual } from "../../regionalCreatures.ts";
 import type { Ramp } from "./wave2Geometry.ts";
 import { EDGE, GLINT } from "./wave2Geometry.ts";
 /** Animação e indicador visual compartilhados, sem selecionar anatomias. */
 export function renderWave2Frame(ctx:CanvasRenderingContext2D,
- actor:Wave2Visual,sx:number,sy:number,time:number,c:Ramp,
+ actor:RegionalCreatureVisual,sx:number,sy:number,time:number,c:Ramp,
  draw:(ctx:CanvasRenderingContext2D,c:Ramp,time:number)=>void):void {
   const seed=hashString(actor.id??actor.kind);
   ctx.save();ctx.translate(sx,sy);
@@ -15,7 +15,8 @@ export function renderWave2Frame(ctx:CanvasRenderingContext2D,
   ctx.translate(pose.sway,pose.lift);
   ctx.rotate(pose.tilt);
   ctx.scale(pose.stretchX,pose.stretchY);
-  draw(ctx,c,time);  // Shared specular accents, deterministic by identity, not Math.random or real time.
+  draw(ctx,c,time);
+  // Shared specular accents, deterministic by identity, not Math.random or real time.
   for(let i=0;i<11;i++){
     const x=Math.sin(i*7.77+seed*23)*15,y=-13-Math.abs(Math.cos(i*17+seed*11))*25;
     ellipse(ctx,x,y,1.05+(i%3)*.25,.55,rgba(i%2?c.light:c.accent,.62));
