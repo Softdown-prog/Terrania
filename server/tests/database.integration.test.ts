@@ -26,7 +26,7 @@ test('PostgreSQL: migration, least privilege, vault invariants and concurrent at
  try{
   const dir=fileURLToPath(new URL('../db/migrations',import.meta.url));
   const expected=gameCatalog().length;
-  assert.equal(expected,34,'24 itens existentes e dez raros do Sul');
+  assert.equal(expected,35,'25 itens existentes (incluindo 11 espadas) e dez raros do Sul');
   assert.equal((await migrate(owner,dir)).catalogItems,expected);
   assert.equal((await migrate(owner,dir)).schemaVersion,1);
   const published=(await readCatalog(app)).items;
