@@ -13,7 +13,7 @@ permissions:
   contents: read
 jobs:
   go-engine:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

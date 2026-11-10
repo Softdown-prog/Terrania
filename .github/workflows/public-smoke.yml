@@ -19,7 +19,7 @@ jobs:
     # Testa o CÓDIGO do PR em um servidor local. A produção só muda no deploy, então testá-la
     # aqui reprovaria toda mudança de contrato antes mesmo de ela ser publicada.
     if: github.event_name == 'pull_request' || inputs.alvo == 'local'
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
 
   producao:
     if: github.event_name == 'workflow_dispatch' && inputs.alvo == 'producao'
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4

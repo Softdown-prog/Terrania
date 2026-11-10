@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   database:
-    runs-on: self-hosted
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
     services:
       postgres:
