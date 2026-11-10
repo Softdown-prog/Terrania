@@ -1,5 +1,7 @@
 /** Arte das dez montarias: formas autorais Canvas, sem reutilizar sprites dos monstros. */
 import type { MountId } from "../actors/MountCatalog.ts";
+import { renderSandBasiliskDetail } from "./creatures/mounts/sandBasilisk.ts";
+import { renderCargoBeetleDetail } from "./creatures/mounts/cargoBeetle.ts";
 import { ellipse, limb, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
 
 type Palette = Readonly<{ base:string; dark:string; light:string; accent:string; tack:string }>;
@@ -214,6 +216,8 @@ export function renderMount(ctx:CanvasRenderingContext2D,
   body(ctx,0,-26,heavy?29:25,heavy?18:14,p);
   decorativeFur(ctx,p,id.length,heavy?25:21,heavy?17:13);
   species(ctx,id,p,time);
+  if(id==="sand-basilisk")renderSandBasiliskDetail(ctx,time);
+  if(id==="cargo-beetle")renderCargoBeetleDetail(ctx,time);
   ctx.restore();
 }
 /** Pequeno cercado real na vila: não acrescenta colisões ocultas. */
