@@ -1,4 +1,9 @@
 import { renderSandBeetle } from "../../src/render/sandBeetle.ts";
+import { renderDuneRatDetail } from "../../src/render/creatures/south/duneRat.ts";
+import { renderSandGoblinDetail } from "../../src/render/creatures/south/sandGoblin.ts";
+import { renderDesertOrcDetail } from "../../src/render/creatures/south/desertOrc.ts";
+import { renderSandBasiliskDetail } from "../../src/render/creatures/mounts/sandBasilisk.ts";
+import { renderCargoBeetleDetail } from "../../src/render/creatures/mounts/cargoBeetle.ts";
 import { drawKnightSword } from "../../src/render/swords.ts";
 import { WEAPON_IDS } from "../../src/engine/character/Weapons.ts";
 import { renderWave3Creature } from "../../src/render/regionalWave3.ts";
@@ -56,6 +61,16 @@ export const ASSETS: ArtAsset[] = [
     id:"montaria "+id,tier:"creature",fn:"renderMount",
     draw:c=>renderMount(c,id,0,0,1),
   })),
+  {id:"acabamento do Rato das Dunas",tier:"creature",fn:"renderDuneRatDetail",
+    draw:c=>renderDuneRatDetail(c,{kind:"dune-rat",hp:35,id:"rat-special",moving:.8,motionPhase:3,casting:.5},2)},
+  {id:"acabamento do Goblin Saqueador",tier:"creature",fn:"renderSandGoblinDetail",
+    draw:c=>renderSandGoblinDetail(c,{kind:"sand-goblin",hp:47,id:"goblin-special",moving:1,motionPhase:3,casting:.4},2)},
+  {id:"acabamento do Orc Nômade",tier:"creature",fn:"renderDesertOrcDetail",
+    draw:c=>renderDesertOrcDetail(c,{kind:"desert-orc",hp:60,id:"orc-special",moving:1,motionPhase:3,casting:.8},2)},
+  {id:"acabamento do Lagarto das Areias",tier:"creature",fn:"renderSandBasiliskDetail",
+    draw:c=>renderSandBasiliskDetail(c,2)},
+  {id:"acabamento do Escaravelho de Carga",tier:"creature",fn:"renderCargoBeetleDetail",
+    draw:c=>renderCargoBeetleDetail(c,2)},
   {id:"cercado de estábulo",tier:"structure",fn:"renderStableFence",
     draw:c=>renderStableFence(c,0,0,true)},
   {id:"pegadas do Garrano",tier:"prop",fn:"renderMountTracks",

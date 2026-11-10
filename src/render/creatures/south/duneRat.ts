@@ -142,7 +142,11 @@ function dust(ctx:CanvasRenderingContext2D,moving:number,phase:number,seed:numbe
   }
 }
 function infection(ctx:CanvasRenderingContext2D,casting:number,time:number):void{
-  if(casting<=.02)return;
+  if(casting<=.02){
+    ellipse(ctx,-24,-10,1.1,2.1,rgba(P.infected,.64));
+    ellipse(ctx,-26,-8,.7,1.2,rgba(P.infected,.36));
+    return;
+  }
   const a=clamp01(casting);
   const g=ctx.createRadialGradient(-21,-12,0,-21,-12,15);
   g.addColorStop(0,rgba(P.infected,.55*a));g.addColorStop(1,rgba(P.infected,0));

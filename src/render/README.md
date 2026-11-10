@@ -84,3 +84,24 @@ enxerga relevo, material e formas regionais, não apenas o piso plano da saída.
 
 ### Arte das montarias
 `mounts.ts` contém silhuetas procedurais diferentes para as dez montarias, além do cercado da vila. `renderMount` e `renderStableFence` estão em `tests/helpers/artAssets.ts` como `creature` e `structure`; sem imagens externas ou novas exceções ao contrato.
+
+
+## Arte de espécies com anatomia própria — 10/11/2026
+
+A diferença entre ficha, IA e desenho é deliberada: as fichas canônicas e o loot
+ficam em `src/monsters/`; colisão/dano em `src/actors/`; arte Canvas em
+`src/render/creatures/`. As espécies prioritárias agora têm arquivos individuais
+de acabamento que são **chamados pelo renderizador do jogo**, não demonstrações
+isoladas: Rato das Dunas, Goblin Saqueador e Orc Nômade; além das montarias
+Lagarto das Areias e Escaravelho de Carga.
+
+O código específico acrescenta volumes, materiais, olhos, boca, cicatrizes,
+vestes, armas, escamas, animação de pose e efeitos condicionais. Usa estados
+verdadeiros (`hp`, `hurtTime`, `moving`, `motionPhase`, `casting`) quando
+disponíveis. Não simula loot em Canvas nem muda os números de combate.
+
+**Incompleto por design:** outras 29 espécies e oito montarias ainda precisam
+do mesmo nível de acabamento em arquivos próprios. Cada atualização deve
+ser medida por diferenças verificáveis de silhueta, legibilidade, reação a
+estados e custo em Canvas real; 500 linhas cheias de repetições não garantem
+qualidade. O lote atual não declara as demais espécies como concluídas.
