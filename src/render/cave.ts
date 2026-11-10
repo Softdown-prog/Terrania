@@ -12,6 +12,7 @@ import type { CaveEntrance } from "../world/caves.ts";
 import type { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { CAVE_EXIT, CAVE_HEIGHT, CAVE_STAIRS_DOWN, CAVE_WIDTH, type CaveFloor } from "../world/caveFloor.ts";
 import { drawCaveDownStair } from "./caveStairsDownArt.ts";
+import { paintTowerFloor } from "./south/towers/interior/floor.ts";
 
 const PALETTE = CAVE_PALETTE;
 
@@ -22,6 +23,8 @@ const GLINT = "#fff6dc";
 
 /** A cave is rock first, a tile grid second: the light/noise must continue across tile edges. */
 function paintFloor(floor: CaveFloor): HTMLCanvasElement {
+  // Andar de torre: laje, tijolo, janelas e lampiões, num pintor próprio por região (ADR 0021).
+  if (floor.entrance.tower) return paintTowerFloor(floor);
   const canvas = document.createElement("canvas");
   canvas.width = CAVE_WIDTH * TILE_SIZE;
   canvas.height = CAVE_HEIGHT * TILE_SIZE;

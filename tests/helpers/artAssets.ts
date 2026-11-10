@@ -61,6 +61,10 @@ import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
 import { paintSouthRuin } from "../../src/render/southRuinsArt.ts";
 import { TOWER_PAINTERS } from "../../src/render/south/towers/index.ts";
 import { TOWERS } from "../../src/world/towers/index.ts";
+import { TOWER_INTERIOR_STYLES } from "../../src/render/south/towers/interior/index.ts";
+import { drawTowerSconce } from "../../src/render/south/towers/interior/sconce.ts";
+import { drawTowerWallFace } from "../../src/render/south/towers/interior/wallFace.ts";
+import { drawTowerWindow } from "../../src/render/south/towers/interior/window.ts";
 import { RUIN_NAMES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
@@ -218,6 +222,18 @@ export const ASSETS: ArtAsset[] = [
   ...TOWERS.map<ArtAsset>(tower => ({ id: "torre " + tower.name, tier: "structure",
     fn: ({ "vigia-caida": "paintTorreDoVigiaCaida", miragem: "paintTorreDaMiragem", "sol-negro": "paintTorreDoSolNegro" } as const)[tower.id],
     draw: c => TOWER_PAINTERS[tower.id](c) })),
+  // Interior das torres (ADR 0021): três peças físicas por torre, cada torre com o seu estilo em render/south/towers/interior/.
+  ...TOWERS.flatMap<ArtAsset>(tower => {
+    const style = TOWER_INTERIOR_STYLES[tower.id];
+    return [
+      ...(["south", "east"] as const).map<ArtAsset>(side => ({ id: `face de tijolo ${tower.name} ${side}`,
+        tier: "prop", fn: "drawTowerWallFace", draw: c => drawTowerWallFace(c, style, 0, 0, side, .61) })),
+      { id: `fresta de janela ${tower.name}`, tier: "prop", fn: "drawTowerWindow",
+        draw: c => drawTowerWindow(c, style, 0, 0, .61) },
+      { id: `lampião de parede ${tower.name}`, tier: "prop", fn: "drawTowerSconce",
+        draw: c => drawTowerSconce(c, style, 0, 0, .61) },
+    ];
+  }),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
   ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
     .flatMap<ArtAsset>(theme => [
