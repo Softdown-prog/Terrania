@@ -122,6 +122,22 @@
       "description": "Fichas individuais de criaturas classificadas por região; fonte única de atributos e loot, sem duplicar IA nem renderização."
     },
     {
+      "id": "npcs",
+      "name": "NPCs por região",
+      "layer": "domain",
+      "status": "active",
+      "roots": [
+        "src/npcs"
+      ],
+      "entrypoints": [
+        "src/npcs/catalog.ts",
+        "src/npcs/center/index.ts",
+        "src/npcs/types.ts"
+      ],
+      "doc": "src/npcs/README.md",
+      "description": "Personagens não jogáveis separados por região, com diálogo e aparência em fichas individuais."
+    },
+    {
       "id": "world",
       "name": "Terreno, colisões e NPCs",
       "layer": "domain",

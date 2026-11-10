@@ -17,7 +17,7 @@ O objetivo é que Claude, ChatGPT/Codex e pessoas entreguem no mesmo padrão, se
 
 - **Arte procedural:** siga [docs/CONTRATO_ARTE_PROCEDURAL.md](docs/CONTRATO_ARTE_PROCEDURAL.md) (nove camadas, rampa de 3 tons, peça de referência em `src/render/reference/barrelReference.ts`). Toda peça nova é registrada em `tests/helpers/artAssets.ts` e passa em `tests/art-contract.test.ts`. **Não baixe pisos nem altere as regras do contrato para passar**; melhore a peça. Entregue a captura de `npm run art:preview`. O teste verde não prova que ficou bom. O checklist qualitativo está em "Padrão obrigatório da arte procedural", abaixo; os dois valem juntos.
 - **Uma microtarefa por entrega,** com teste de regressão que **falhe sem a mudança**. Mostre a saída dos testes; não declare pronto sem ela.
-- **TypeScript:** `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes` estão ligados; não os enfraqueça. Regras de jogo ficam em `src/engine|actors|world`, sem Angular, Phaser, DOM nem rede (conferido por `architecture:check`).
+- **TypeScript:** `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes` estão ligados; não os enfraqueça. Regras de jogo ficam em `src/engine|actors|world|monsters|npcs`, sem Angular, Phaser, DOM nem rede (conferido por `architecture:check`).
 - **Go:** arquivos novos ou alterados devem passar em `gofmt`. Hoje 34 dos 44 arquivos de `cmd`, `engine` e `presence` não passam; reformatar em lote é uma tarefa separada, para não conflitar com trabalho em andamento.
 - **Tamanho:** arquivo `.ts` novo em `src/` ou `server/src/` tem no máximo 400 linhas, e os já grandes (tabela em `tests/file-size-budget.test.ts`) não podem crescer. Passou do limite: divida por responsabilidade, não acrescente código. Regra de jogo vai para `src/engine/`, nunca para `src/game/Game.ts` ([ADR 0013](docs/adr/0013-decomposicao-do-game.md)).
 - **Determinismo:** sem `Math.random`, `Date.now`, `performance.now`, `new Date()` nem `crypto.getRandomValues` em `src/engine`, `src/actors`, `src/world` e `src/render`; variação por semente (`hashString`, `hash2`) e tempo pelo `dt` da simulação. Portão: `tests/quality-gates.test.ts`.
@@ -38,7 +38,7 @@ Regras que já quebraram uma vez. Valem para a superfície (`OfflineSimulation`)
 
 ## Fronteiras arquiteturais
 
-- `src/engine/`, `src/actors/`, `src/monsters/` e `src/world/`: regras independentes de Angular, Phaser, DOM e rede. O validador impede imports de UI/renderer nessas pastas.
+- `src/engine/`, `src/actors/`, `src/monsters/`, `src/npcs/` e `src/world/`: regras independentes de Angular, Phaser, DOM e rede. O validador impede imports de UI/renderer nessas pastas.
 - `src/app/`: apresenta dados e recebe ações; não contém lógica autoritativa.
 - `src/game/`: orquestrador, não um segundo motor ou autoridade de jogo.
 - `server/`: backend Node atual; `server-go/` e Rust têm componentes experimentais; não promover por suposição.

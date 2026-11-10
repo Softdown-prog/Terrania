@@ -2,18 +2,8 @@ import type { Npc } from "../world/npcs.ts";
 import { blink } from "./animation.ts";
 import { clamp01, easeOutBack, ellipse, hashString, limb, mix, rgba, softShadow, TAU } from "./draw.ts";
 
-interface NpcLook {
-  robe: string; trim: string; accent: string; skin: string; hair: string;
-  hairStyle: "long" | "short" | "bald" | "bun";
-  prop: "staff" | "scroll" | "hammer" | "lantern";
-  width: number; beard?: string; apron?: string;
-}
-const LOOKS: Record<string, NpcLook> = {
-  aela: { robe: "#456f4d", trim: "#b9c68b", accent: "#8fe0a8", skin: "#e0b88f", hair: "#b8763d", hairStyle: "long", prop: "staff", width: 1 },
-  mira: { robe: "#4f7c8a", trim: "#d8c58e", accent: "#e9d9a4", skin: "#d9ae86", hair: "#2f2a3a", hairStyle: "short", prop: "scroll", width: 1 },
-  toren: { robe: "#7a5a43", trim: "#a98859", accent: "#ff9a4d", skin: "#c99a73", hair: "#3f2c20", hairStyle: "bald", prop: "hammer", width: 1.14, beard: "#4a3426", apron: "#3d3029" },
-  lina: { robe: "#9a6c66", trim: "#ecdcb9", accent: "#ffd37a", skin: "#e3bb94", hair: "#6c3d2c", hairStyle: "bun", prop: "lantern", width: 1, apron: "#eadfc2" },
-};
+import { NPC_LOOKS } from "../npcs/catalog.ts";
+import type { NpcAppearance as NpcLook } from "../npcs/types.ts";
 const FALLBACK: NpcLook = { robe: "#547561", trim: "#b9a273", accent: "#c6bd87", skin: "#ddb68f", hair: "#443a2d", hairStyle: "short", prop: "staff", width: 1 };
 
 function drawProp(ctx: CanvasRenderingContext2D, look: NpcLook, t: number, hx: number, hy: number): void {
@@ -69,7 +59,7 @@ export function renderNpc(ctx: CanvasRenderingContext2D, npc: Npc,
   sx: number, sy: number, nearby: boolean, time = 0,
   lookX = 0, lookY = 1): void {
   if (npc.kind === "sign" || npc.kind === "door") return;
-  const look = LOOKS[npc.id] ?? FALLBACK;
+  const look = NPC_LOOKS[npc.id] ?? FALLBACK;
   const seed = hashString(npc.id);
   const t = time;
   const len = Math.hypot(lookX, lookY) || 1;

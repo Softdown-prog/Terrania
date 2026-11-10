@@ -9,6 +9,7 @@ COPY server/src ./src
 COPY server/db ./db
 COPY src/actors /work/src/actors
 COPY src/monsters /work/src/monsters
+COPY src/npcs /work/src/npcs
 COPY src/world /work/src/world
 COPY src/engine /work/src/engine
 # smoke-test: o catálogo usa as regras compartilhadas, que precisam ter sido emitidas como ES Modules.
