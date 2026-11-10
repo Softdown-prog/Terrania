@@ -18,11 +18,14 @@ export const SOUTH_COMMON_KINDS = [
   "oasis-elf", "mirage-imp", "horned-viper", "carrion-vulture", "cactus-sprout",
 ] as const;
 export type SouthCommonKind = typeof SOUTH_COMMON_KINDS[number];
+/** Espécie exclusiva da superfície do Sul; não aparece em cavernas. */
+export const SOUTH_SURFACE_KINDS = ["sand-beetle"] as const;
 export const REGIONAL_CREATURE_KINDS = [
   "basalt-golem", "cliff-draconid", "mire-hydra", "dune-scorpion", "solar-scarab",
   "boreal-yeti", "glacial-wolf", "frost-spirit", "coral-crab", "storm-serpent",
   ...SECOND_WAVE_KINDS,
   ...SOUTH_COMMON_KINDS,
+  ...SOUTH_SURFACE_KINDS,
 ] as const;
 export type RegionalCreatureKind = typeof REGIONAL_CREATURE_KINDS[number];
 export type CreatureKind = "slime" | RegionalCreatureKind;
@@ -35,6 +38,11 @@ export const CREATURE_CATALOG: Readonly<Record<CreatureKind, CreatureDefinition>
   ...EAST_MONSTERS,
   ...WEST_MONSTERS,
 });
+
+/** Defesa extra do besouro com HP estritamente abaixo de 20%. */
+export function sandBeetleBuried(hp:number):boolean {
+  return hp>0 && hp<CREATURE_CATALOG["sand-beetle"].maxHp*.2;
+}
 
 export interface CreatureView {
   readonly id: string;

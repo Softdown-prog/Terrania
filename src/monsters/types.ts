@@ -30,4 +30,5 @@ export interface CreatureDefinition {
   readonly biomes: readonly Biome[];
   readonly loot: readonly LootChance[];
   readonly autoLoot?: boolean;
+  readonly recommendedLevels?: readonly [number, number];
 }

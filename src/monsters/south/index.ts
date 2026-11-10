@@ -5,6 +5,7 @@ import { solarScarab } from "./solar-scarab.ts";
 import { rottenMarshEnt } from "./rotten-marsh-ent.ts";
 import { poisonScoutToad } from "./poison-scout-toad.ts";
 import { carrionSandworm } from "./carrion-sandworm.ts";
+import { sandBeetle } from "./sand-beetle.ts";
 import { duneRat } from "./dune-rat.ts";
 import { sandGoblin } from "./sand-goblin.ts";
 import { desertOrc } from "./desert-orc.ts";
@@ -24,6 +25,7 @@ export const SOUTH_MONSTERS = {
   "rotten-marsh-ent": rottenMarshEnt,
   "poison-scout-toad": poisonScoutToad,
   "carrion-sandworm": carrionSandworm,
+  "sand-beetle": sandBeetle,
   "dune-rat": duneRat,
   "sand-goblin": sandGoblin,
   "desert-orc": desertOrc,

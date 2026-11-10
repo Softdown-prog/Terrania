@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readdirSync, readFileSync } from "node:fs";
-import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../src/monsters/catalog.ts";
+import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_SURFACE_KINDS, sandBeetleBuried } from "../src/monsters/catalog.ts";
 import { CENTER_MONSTERS } from "../src/monsters/center/index.ts";
 import { NORTH_MONSTERS } from "../src/monsters/north/index.ts";
 import { SOUTH_MONSTERS } from "../src/monsters/south/index.ts";
@@ -11,10 +11,10 @@ import { WEST_MONSTERS } from "../src/monsters/west/index.ts";
 const regions={center:CENTER_MONSTERS,north:NORTH_MONSTERS,south:SOUTH_MONSTERS,
   east:EAST_MONSTERS,west:WEST_MONSTERS} as const;
 
-test("bestiário: 31 fichas únicas e nenhuma espécie ausente do catálogo",()=>{
+test("bestiário: 32 fichas únicas e nenhuma espécie ausente do catálogo",()=>{
   assert.deepEqual(Object.keys(CREATURE_CATALOG).sort(),["slime",...REGIONAL_CREATURE_KINDS].sort());
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,30);
-  assert.equal(Object.keys(CREATURE_CATALOG).length,31);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,31);
+  assert.equal(Object.keys(CREATURE_CATALOG).length,32);
 });
 
 test("bestiário: uma ficha por arquivo, na pasta correspondente à região",()=>{
@@ -51,4 +51,17 @@ test("bestiário: atributos críticos não mudaram na reorganização",()=>{
 test("empacotamento: a imagem Docker do backend inclui todas as fichas de monstros",()=>{
   const dockerfile=readFileSync("server/Dockerfile","utf8");
   assert.match(dockerfile,/COPY src\/monsters \/work\/src\/monsters/);
+});
+
+test("besouro: ficha original, nível e enterro abaixo de 20% mantidos",()=>{
+  const beetle=CREATURE_CATALOG["sand-beetle"];
+  assert.deepEqual(SOUTH_SURFACE_KINDS,["sand-beetle"]);
+  assert.equal(beetle.region,"south");
+  assert.deepEqual(beetle.caveThemes,[]);
+  assert.deepEqual(beetle.recommendedLevels,[5,18]);
+  assert.equal(beetle.maxHp,40);
+  assert.equal(beetle.contactDamage,7);
+  assert.equal(sandBeetleBuried(8),false);
+  assert.equal(sandBeetleBuried(7),true);
+  assert.equal(sandBeetleBuried(0),false);
 });

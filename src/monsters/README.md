@@ -1,6 +1,6 @@
 # Monstros do Terrania
 
-Cada espécie tem **uma ficha individual**, classificada pela região de origem.
+As 32 espécies têm **uma ficha individual**, classificada pela região de origem.
 O arquivo `src/actors/CreatureCatalog.ts` é somente uma reexportação para os
 consumidores existentes; **não** contém cópias dos atributos.
 
@@ -8,7 +8,7 @@ consumidores existentes; **não** contém cópias dos atributos.
 | --- | --- | ---: |
 | Centro | [`center/`](./center/index.ts) | 1 |
 | Norte | [`north/`](./north/index.ts) | 6 |
-| Sul | [`south/`](./south/index.ts) | 16 |
+| Sul | [`south/`](./south/index.ts) | 17 |
 | Leste | [`east/`](./east/index.ts) | 4 |
 | Oeste | [`west/`](./west/index.ts) | 4 |
 
