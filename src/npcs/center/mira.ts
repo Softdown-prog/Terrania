@@ -4,5 +4,5 @@ export const miraLook={ robe: "#4f7c8a", trim: "#d8c58e", accent: "#e9d9a4", ski
 export function miraDialogue({completed}:NpcDialogueState):readonly string[] {
   return completed
     ? ["Aela me contou sobre sua vitória!", "Há ruínas e cavernas além da floresta. Por enquanto, conheça a vila."]
-    : ["Sou Mira, cartógrafa da Vila da Travessia.", "Siga para leste, leia as placas e conheça os moradores.", "Aela ainda precisa de ajuda com os slimes."];
+    : ["Sou Mira, cartógrafa da Vila da Travessia.", "Siga a avenida até o portão leste. A gruta-escola fica fora da área protegida.", "Aela ainda precisa de ajuda com os slimes."];
 }

@@ -189,7 +189,7 @@ export class Game {
     if (mountStep) { this.hud.setTravelNotice(this.mountAction(mountStep)); return; }
     const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
     if (entrance) { this.enterCave(entrance); return; }
-    const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
+    const npc = nearestNpc(this.sim.player.x, this.sim.player.y, this.timers.clock);
     if (!npc) return;
     this.input.clear();
     if (npc.kind === "door" && BUILDINGS.some(b => b.id === npc.id)) {

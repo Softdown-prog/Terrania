@@ -7,7 +7,7 @@ import type { GearState } from '../engine/Equipment.ts';
 import type { WeaponId } from '../engine/Weapons.ts';
 import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
-import { NPCS, NPC_TALK_RANGE } from '../world/npcs.ts';
+import { NPCS, NPC_TALK_RANGE, npcPositionAt } from '../world/npcs.ts';
 import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
 import { drawInterior } from '../render/interior.ts';
@@ -107,11 +107,12 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   if(leadingHorse)actors.push({y:player.y+11,draw:()=>renderMount(ctx,
     "warhorse",player.x-left-35,player.y-top+11,time)});
   for (const npc of NPCS) {
-    if (Math.abs(npc.x - cameraX) > width / 2 + 40 || Math.abs(npc.y - cameraY) > height / 2 + 65) continue;
-    actors.push({ y: npc.y, draw: () =>
-      renderNpc(ctx, npc, npc.x - left, npc.y - top,
-        Math.hypot(player.x - npc.x, player.y - npc.y) <= NPC_TALK_RANGE, time,
-        player.x - npc.x, player.y - npc.y - 20) });
+    const pos = npcPositionAt(npc,time);
+    if (Math.abs(pos.x - cameraX) > width / 2 + 40 || Math.abs(pos.y - cameraY) > height / 2 + 65) continue;
+    actors.push({ y: pos.y, draw: () =>
+      renderNpc(ctx, npc, pos.x - left, pos.y - top,
+        Math.hypot(player.x - pos.x, player.y - pos.y) <= NPC_TALK_RANGE, time,
+        player.x - pos.x, player.y - pos.y - 20, pos.walking) });
   }
   for (const mob of mobs) if (Math.abs(mob.x - cameraX) < width / 2 + 30 && Math.abs(mob.y - cameraY) < height / 2 + 40) {
     actors.push({ y: mob.y, draw: () => {
