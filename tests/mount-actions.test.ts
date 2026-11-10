@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
-import { experienceForLevel } from "../src/engine/Experience.ts";
-import { runMountAction } from "../src/engine/MountActions.ts";
-import { STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE, sampleMountCaptureLoot } from "../src/engine/MountStable.ts";
+import { experienceForLevel } from "../src/engine/character/Experience.ts";
+import { runMountAction } from "../src/engine/mounts/MountActions.ts";
+import { STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE, sampleMountCaptureLoot } from "../src/engine/mounts/MountStable.ts";
 import { MOUNT_MESSAGES } from "../src/game/messages/mountMessages.ts";
 
 /** Simulação real no ponto indicado, com nível e gel dados. */

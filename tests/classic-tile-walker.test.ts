@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { Player } from "../src/actors/Player.ts";
 import { Slime } from "../src/actors/Slime.ts";
-import { ClassicPursuit, inClassicAttackPosition } from "../src/engine/ClassicPursuit.ts";
-import { ClassicCombat, CLASSIC_ATTACK_INTERVAL } from "../src/engine/ClassicCombat.ts";
-import { canStrike } from "../src/engine/combat.ts";
-import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
-import { TapNavigator } from "../src/engine/TapNavigator.ts";
+import { ClassicPursuit, inClassicAttackPosition } from "../src/engine/combat/ClassicPursuit.ts";
+import { ClassicCombat, CLASSIC_ATTACK_INTERVAL } from "../src/engine/combat/ClassicCombat.ts";
+import { canStrike } from "../src/engine/combat/combat.ts";
+import { ClassicTileWalker } from "../src/engine/movement/ClassicTileWalker.ts";
+import { TapNavigator } from "../src/engine/movement/TapNavigator.ts";
 import type { CollisionMap } from "../src/world/collision.ts";
 
 const OPEN: CollisionMap = { canMove: () => true };

@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (77)
+## Todos os arquivos deste módulo (78)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -45,6 +45,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/cloudflare-deploy.test.ts`](../../tests/cloudflare-deploy.test.ts)
 - [`tests/creature-catalog.test.ts`](../../tests/creature-catalog.test.ts)
 - [`tests/engine-invariants.test.ts`](../../tests/engine-invariants.test.ts)
+- [`tests/engine-layout.test.ts`](../../tests/engine-layout.test.ts)
 - [`tests/experience.test.ts`](../../tests/experience.test.ts)
 - [`tests/file-size-budget.test.ts`](../../tests/file-size-budget.test.ts)
 - [`tests/game-styles.test.ts`](../../tests/game-styles.test.ts)

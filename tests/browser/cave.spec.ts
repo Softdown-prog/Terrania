@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { caveEntranceInCell } from "../../src/world/caves.ts";
-import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH } from "../../src/engine/CaveRoom.ts";
+import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH } from "../../src/engine/rooms/CaveRoom.ts";
 
 test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (desktop/Android)", async ({ page }, info) => {
   const seed = 842136;

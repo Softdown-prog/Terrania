@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { Player } from "../src/actors/Player.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { moveBody, type CollisionMap } from "../src/world/collision.ts";
-import { canStrike } from "../src/engine/combat.ts";
+import { canStrike } from "../src/engine/combat/combat.ts";
 import { Camera } from "../src/render/Camera.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 const floor: CollisionMap = { canMove: () => true };

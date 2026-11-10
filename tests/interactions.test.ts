@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { mountQuestAction, npcOffer, questStepId, surfaceNearbyAction } from "../src/game/interactions.ts";
 import { MOUNT_INTERACT_DISTANCE, STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE } from "../src/world/mountLocations.ts";
-import { FORGE_SWORD_PRICE } from "../src/engine/Weapons.ts";
-import { POTION_GEL_PRICE } from "../src/engine/Inventory.ts";
+import { FORGE_SWORD_PRICE } from "../src/engine/character/Weapons.ts";
+import { POTION_GEL_PRICE } from "../src/engine/character/Inventory.ts";
 
 const far = { x: 5000, y: 5000 };
 

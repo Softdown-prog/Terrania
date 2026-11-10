@@ -1,5 +1,5 @@
-import { clearPath, type CollisionMap } from "../world/collision.ts";
-import { TILE_SIZE } from "../world/terrain.ts";
+import { clearPath, type CollisionMap } from "../../world/collision.ts";
+import { TILE_SIZE } from "../../world/terrain.ts";
 
 export { clearPath };
 

@@ -36,7 +36,7 @@ Links antigos `/?room=...` ou `/?seed=...` são encaminhados para `/jogar/`, pre
 
 **Atualizar frontend e servidor juntos.** As regras físicas, o tempo de ataque e a colisão dos marcos mudaram. O protocolo passa a versão 2; um cliente novo com servidor antigo continua no solo e informa que o servidor precisa ser atualizado.
 
-O Dockerfile inclui `src/engine/combat.ts`, sem copiar renderizador, site ou navegador para o backend. Os lockfiles do frontend e servidor são versionados e o CI usa `npm ci`.
+O Dockerfile inclui `src/engine/combat/combat.ts`, sem copiar renderizador, site ou navegador para o backend. Os lockfiles do frontend e servidor são versionados e o CI usa `npm ci`.
 
 Nenhuma configuração da VPS, Caddy, domínio ou variável do Cloudflare é alterada por esta mudança de código. `VITE_MULTIPLAYER_URL` e `ALLOWED_ORIGINS` continuam seguindo `MULTIPLAYER_VPS.md`. O multiplayer continua sem contas e sem progresso permanente.
 

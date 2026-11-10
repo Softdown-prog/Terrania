@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_GEL } from "../src/actors/MountCatalog.ts";
 import { MountStable, STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE,
-  sampleMountCaptureLoot,normalizeMountSave } from "../src/engine/MountStable.ts";
-import { experienceForLevel, levelForExperience, MAX_LEVEL } from "../src/engine/Experience.ts";
+  sampleMountCaptureLoot,normalizeMountSave } from "../src/engine/mounts/MountStable.ts";
+import { experienceForLevel, levelForExperience, MAX_LEVEL } from "../src/engine/character/Experience.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
-import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
+import { ClassicTileWalker } from "../src/engine/movement/ClassicTileWalker.ts";
 
 test("montarias: dez espécies únicas com atributos, tiers, selas, iscas e quests completas",()=>{
   assert.equal(MOUNT_IDS.length,10);

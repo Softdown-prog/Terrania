@@ -1,4 +1,4 @@
-import type { MountActionResult } from "../../engine/MountStable.ts";
+import type { MountActionResult } from "../../engine/mounts/MountStable.ts";
 
 /** Texto de cada resultado de uma ação de montaria. Só dados; `Record` obriga a cobrir todo resultado novo. */
 export const MOUNT_MESSAGES: Record<MountActionResult, string> = {

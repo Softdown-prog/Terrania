@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { CaveRoom, CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH } from "../src/engine/CaveRoom.ts";
+import { CaveRoom, CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH } from "../src/engine/rooms/CaveRoom.ts";
 import { drawCaveAtlas, drawCaveView } from "../src/render/cave.ts";
 import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../src/render/caveDetails.ts";
 import type { CaveEntrance, CaveTheme } from "../src/world/caves.ts";

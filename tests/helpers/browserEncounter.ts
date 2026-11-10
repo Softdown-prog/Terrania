@@ -1,6 +1,6 @@
 import { Slime, slimeSpawns } from "../../src/actors/Slime.ts";
 import { OfflineSimulation } from "../../src/engine/OfflineSimulation.ts";
-import { clearPath } from "../../src/engine/TapNavigator.ts";
+import { clearPath } from "../../src/engine/movement/TapNavigator.ts";
 import { SeedCollision } from "../../src/world/collision.ts";
 
 export const SEED = 842136;

@@ -1,9 +1,9 @@
 import { OfflineSimulation } from "../engine/OfflineSimulation.ts";
 import { Slime } from "../actors/Slime.ts";
-import { canStrike } from "../engine/combat.ts";
-import { POTION_HEAL, QUEST_REWARD_POTIONS } from "../engine/Inventory.ts";
-import { PICKUP_DISTANCE } from "../engine/loot.ts";
-import type { Point } from "../engine/TapNavigator.ts";
+import { canStrike } from "../engine/combat/combat.ts";
+import { POTION_HEAL, QUEST_REWARD_POTIONS } from "../engine/character/Inventory.ts";
+import { PICKUP_DISTANCE } from "../engine/character/loot.ts";
+import type { Point } from "../engine/movement/TapNavigator.ts";
 
 const STEP = 1 / 60;
 const ZERO: Point = { x: 0, y: 0 };

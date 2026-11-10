@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { OfflineSimulation, type OfflineSave } from "../src/engine/OfflineSimulation.ts";
-import { CaveRoom } from "../src/engine/CaveRoom.ts";
-import { resolveSwordStrike, swordHitDamage } from "../src/engine/SwordCombat.ts";
-import { MAX_EXPERIENCE } from "../src/engine/Experience.ts";
-import type { WeaponId } from "../src/engine/Weapons.ts";
+import { CaveRoom } from "../src/engine/rooms/CaveRoom.ts";
+import { resolveSwordStrike, swordHitDamage } from "../src/engine/combat/SwordCombat.ts";
+import { MAX_EXPERIENCE } from "../src/engine/character/Experience.ts";
+import type { WeaponId } from "../src/engine/character/Weapons.ts";
 import { RegionalMonster } from "../src/actors/RegionalMonster.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { Player } from "../src/actors/Player.ts";

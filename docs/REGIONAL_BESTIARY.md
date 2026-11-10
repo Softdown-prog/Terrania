@@ -20,9 +20,9 @@ Os dois lotes nascem de folhas autorais 5×2 fornecidas pelo criador. O código 
 - src/monsters/<região>/<espécie>.ts: fonte única de atributos, habitats e probabilidades; src/monsters/catalog.ts apenas agrega as fichas.
 - src/actors/RegionalMonster.ts: perseguição, conjuração, colisão e drops determinísticos.
 - src/render/regionalCreatures.ts: dez desenhos distintos, 100% procedurais.
-- src/engine/CaveRoom.ts: encontros locais, sem ocupar paredes nem saída.
+- src/engine/rooms/CaveRoom.ts: encontros locais, sem ocupar paredes nem saída.
 - src/engine/OfflineSimulation.ts: criaturas na superfície, preservando a missão dos slimes.
-- src/engine/Inventory.ts: materiais persistidos no save da aventura solo.
+- src/engine/character/Inventory.ts: materiais persistidos no save da aventura solo.
 
 A chance de drop aplica-se individualmente por morte; o Escaravelho concede experiência extra e poeira dourada automática. A Espada de Coral Rara é por ora um material obtido, não arma equipável inventada sem definição na forja. A UI detalhada dos materiais ainda precisa de uma etapa de apresentação.
 

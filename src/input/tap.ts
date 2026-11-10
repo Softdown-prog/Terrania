@@ -1,5 +1,5 @@
-import { ROOM_HEIGHT, ROOM_WIDTH } from "../engine/InteriorRoom.ts";
-import type { Point } from "../engine/TapNavigator.ts";
+import { ROOM_HEIGHT, ROOM_WIDTH } from "../engine/rooms/InteriorRoom.ts";
+import type { Point } from "../engine/movement/TapNavigator.ts";
 
 /** Eventos de ponteiro em CSS pixels, sem assumir zoom do navegador = 1. */
 export function isShortTap(distance: number, elapsedMs: number): boolean {

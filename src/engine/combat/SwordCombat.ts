@@ -1,10 +1,10 @@
-import { WEAPONS, type WeaponId } from "./Weapons.ts";
-import { clearPath, moveBody, type CollisionMap } from "../world/collision.ts";
-import { hash2 } from "../world/random.ts";
+import { WEAPONS, type WeaponId } from "../character/Weapons.ts";
+import { clearPath, moveBody, type CollisionMap } from "../../world/collision.ts";
+import { hash2 } from "../../world/random.ts";
 import { ATTACK_REACH, canStrike } from "./combat.ts";
-import type { Slime } from "../actors/Slime.ts";
-import { RegionalMonster } from "../actors/RegionalMonster.ts";
-import type { Player } from "../actors/Player.ts";
+import type { Slime } from "../../actors/Slime.ts";
+import { RegionalMonster } from "../../actors/RegionalMonster.ts";
+import type { Player } from "../../actors/Player.ts";
 
 /** Pure target defense formula shared by outdoor and dungeon sword strikes. */
 export function swordHitDamage(weapon: WeaponId, target: Slime): number {

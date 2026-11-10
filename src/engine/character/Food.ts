@@ -1,4 +1,4 @@
-import { MAX_STACK } from "./Limits.ts";
+import { MAX_STACK } from "../Limits.ts";
 
 /** Alimentação da vocação inicial (Cavaleiro) no jogo solo. */
 export const FOODS = {

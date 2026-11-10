@@ -1,5 +1,5 @@
 import { renderHero } from "./actors.ts";
-import { ROOM_HEIGHT, ROOM_WIDTH, type Furniture, type InteriorRoom } from "../engine/InteriorRoom.ts";
+import { ROOM_HEIGHT, ROOM_WIDTH, type Furniture, type InteriorRoom } from "../engine/rooms/InteriorRoom.ts";
 import { ellipse, mix, rgba, softShadow } from "./draw.ts";
 import { hash2 } from "../world/random.ts";
 
