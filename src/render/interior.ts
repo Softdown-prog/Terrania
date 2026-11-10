@@ -96,11 +96,13 @@ function drawFurniture(ctx: CanvasRenderingContext2D, f: Furniture, wood: string
 
 /** Cada sala tem decoração própria e usa a mobília da mesma simulação que calcula colisões. */
 export function drawInterior(ctx: CanvasRenderingContext2D, room: InteriorRoom, time = 0): void {
-  const palette = [
-    { wall: "#586b5c", floor: "#8e7859", wood: "#b39a6c" },
-    { wall: "#69645a", floor: "#6c685e", wood: "#a68a6b" },
-    { wall: "#765e50", floor: "#a08160", wood: "#c5a07a" },
-  ][room.building.variant] ?? { wall: "#586b5c", floor: "#8e7859", wood: "#b39a6c" };
+  const palette = room.building.id.startsWith("south-")
+    ? {wall:"#a8683e",floor:"#5a4a63",wood:"#b97a2a"}
+    : ([
+        { wall: "#586b5c", floor: "#8e7859", wood: "#b39a6c" },
+        { wall: "#69645a", floor: "#6c685e", wood: "#a68b6b" },
+        { wall: "#765e50", floor: "#a08160", wood: "#c5a07a" },
+      ][room.building.variant] ?? { wall: "#586b5c", floor: "#8e7859", wood: "#b39a6c" });
   ctx.fillStyle = "#172a26"; ctx.fillRect(-16, -16, ROOM_WIDTH + 32, ROOM_HEIGHT + 32);
   // piso de tábuas com variação individual de tom
   ctx.fillStyle = palette.floor; ctx.fillRect(0, 0, ROOM_WIDTH, ROOM_HEIGHT);

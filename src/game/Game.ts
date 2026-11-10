@@ -16,6 +16,7 @@ import { InteriorRoom } from "../engine/InteriorRoom.ts";
 import { CaveRoom } from "../engine/CaveRoom.ts";
 import { caveEntranceNear, type CaveEntrance } from "../world/caves.ts";
 import { BUILDINGS } from "../world/village.ts";
+import { SOUTH_BUILDINGS } from "../world/southCity.ts";
 import { nearestCombatCreature } from "../engine/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { MountAction } from "../engine/MountStable.ts";
@@ -192,7 +193,8 @@ export class Game {
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y, this.timers.clock);
     if (!npc) return;
     this.input.clear();
-    if (npc.kind === "door" && BUILDINGS.some(b => b.id === npc.id)) {
+    if (npc.kind === "door" && (BUILDINGS.some(b => b.id === npc.id) ||
+        SOUTH_BUILDINGS.some(b => b.id === npc.id && b.interior))) {
       this.travel.combat.cancel();
       this.travel.pursuit.reset();
       this.hud.setCombatTarget(null);
