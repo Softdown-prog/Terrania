@@ -2,6 +2,7 @@ import { MAX_KILLS } from "./Limits.ts";
 export { MAX_KILLS } from "./Limits.ts";
 import { resolveSwordStrike, swordStrikeTargets } from "./combat/SwordCombat.ts";
 import { RegionalMonster, regionalSurfaceSpawns, southCommonSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
+import { southSiteSpawns } from "../actors/southSiteSpawns.ts";
 import { Player } from "../actors/Player.ts";
 import { MountStable, type MountSave } from "./mounts/MountStable.ts";
 import { Slime, slimeSpawns } from "../actors/Slime.ts";
@@ -109,7 +110,7 @@ export class OfflineSimulation {
     for (let cy = y0 - 2; cy <= y0 + 2; cy++)
       for (let cx = x0 - 2; cx <= x0 + 2; cx++) {
         for (const slime of [...slimeSpawns(cx, cy, this.seed), ...regionalSurfaceSpawns(cx, cy, this.seed),
-          ...southCommonSpawns(cx,cy,this.seed)]) {
+          ...southCommonSpawns(cx,cy,this.seed),...southSiteSpawns(cx,cy,this.seed)]) {
           if (!this.defeated.has(slime.id) && !this.slimes.has(slime.id))
             this.slimes.set(slime.id, slime);
         }

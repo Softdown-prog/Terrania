@@ -15,7 +15,7 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/east/index.ts`](../../src/monsters/east/index.ts)
 - [`src/monsters/west/index.ts`](../../src/monsters/west/index.ts)
 
-## Todos os arquivos deste módulo (42)
+## Todos os arquivos deste módulo (46)
 
 - [`src/monsters/README.md`](../../src/monsters/README.md)
 - [`src/monsters/behavior.ts`](../../src/monsters/behavior.ts)
@@ -35,6 +35,10 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/north/wolves/glacial-wolf.ts`](../../src/monsters/north/wolves/glacial-wolf.ts)
 - [`src/monsters/north/yetis/boreal-yeti.ts`](../../src/monsters/north/yetis/boreal-yeti.ts)
 - [`src/monsters/rareLoot.ts`](../../src/monsters/rareLoot.ts)
+- [`src/monsters/sites/south/index.ts`](../../src/monsters/sites/south/index.ts)
+- [`src/monsters/sites/south/lake-dwellers.ts`](../../src/monsters/sites/south/lake-dwellers.ts)
+- [`src/monsters/sites/south/ruin-dwellers.ts`](../../src/monsters/sites/south/ruin-dwellers.ts)
+- [`src/monsters/sites/south/types.ts`](../../src/monsters/sites/south/types.ts)
 - [`src/monsters/south/beetles/sand-beetle.ts`](../../src/monsters/south/beetles/sand-beetle.ts)
 - [`src/monsters/south/beetles/solar-scarab.ts`](../../src/monsters/south/beetles/solar-scarab.ts)
 - [`src/monsters/south/demons/mirage-imp.ts`](../../src/monsters/south/demons/mirage-imp.ts)

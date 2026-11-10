@@ -8,9 +8,9 @@ import {WEAPON_IDS} from '../../src/engine/character/Weapons.ts';
 import {databasePool,databaseStatus} from '../src/db/database.ts';
 import {marketHttp} from '../src/db/http.ts';
 
-test('catalogue exposes the ten actual Knight swords alongside existing game items',()=>{
- const items=gameCatalog();assert.equal(items.length,34);
- assert.equal(new Set(items.map(i=>i.id)).size,34);
+test('catalogue exposes the eleven actual Knight swords alongside existing game items',()=>{
+ const items=gameCatalog();assert.equal(items.length,35);
+ assert.equal(new Set(items.map(i=>i.id)).size,35);
  const swordIds=items.filter(i=>i.category==='weapon').map(i=>i.id);
  assert.deepEqual(swordIds, WEAPON_IDS.map(id=>'sword-'+id));
  assert.ok(items.find(i=>i.id==='sword-forge'));

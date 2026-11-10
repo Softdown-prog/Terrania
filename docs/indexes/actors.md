@@ -13,7 +13,7 @@ Estado e comportamento do herói e das criaturas; catálogo inicial de espécies
 - [`src/actors/CreatureCatalog.ts`](../../src/actors/CreatureCatalog.ts)
 - [`src/actors/MountCatalog.ts`](../../src/actors/MountCatalog.ts)
 
-## Todos os arquivos deste módulo (16)
+## Todos os arquivos deste módulo (17)
 
 - [`src/actors/CreatureCatalog.ts`](../../src/actors/CreatureCatalog.ts)
 - [`src/actors/MountCatalog.ts`](../../src/actors/MountCatalog.ts)
@@ -31,3 +31,4 @@ Estado e comportamento do herói e das criaturas; catálogo inicial de espécies
 - [`src/actors/mounts/silverUnicorn.ts`](../../src/actors/mounts/silverUnicorn.ts)
 - [`src/actors/mounts/tidalHippocampus.ts`](../../src/actors/mounts/tidalHippocampus.ts)
 - [`src/actors/mounts/warhorse.ts`](../../src/actors/mounts/warhorse.ts)
+- [`src/actors/southSiteSpawns.ts`](../../src/actors/southSiteSpawns.ts)
