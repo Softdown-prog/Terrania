@@ -59,10 +59,67 @@ func starterCaveTrail(tx, ty int) bool {
 	return tx >= 39 && tx <= 46 && ty >= 10 && ty <= 12
 }
 
+// Mesmo contrato de src/world/southCity.ts, sem dependência do frontend.
+const southCityY=15500
+func southCitySafe(tx,ty int) bool {
+	x,y:=tx,ty-southCityY
+	return x>-28 && x<27 && y>-24 && y<23
+}
+func southCityGround(tx,ty int) string {
+	x,y:=tx,ty-southCityY
+	if x>=-28 && x<=27 && y>=-24 && y<=23 {
+		road:=absInt(x)<=2 || absInt(y)<=2 ||
+			(absInt(x)<=19 && (y==-10||y==11)) ||
+			(absInt(y)<=16 && (x==-12||x==12)) ||
+			(absInt(x)<=6 && absInt(y)<=6)
+		if road {return "path"};return "sand"
+	}
+	if absInt(x)<=2 && y>=-66 && y<=55 {return "path"}
+	if y>=26 && y<=27 && absInt(x)<=73 {return "path"}
+	if x>=55 && x<=57 && y>=-6 && y<=27{return "path"}
+	if x<=-55 && x>=-57 && y>=-6 && y<=27{return "path"}
+	return ""
+}
+var southCityBuildings = [][2]float64{
+	{(-17+.5)*32,(southCityY-12+.5)*32},
+	{(-17+.5)*32,(southCityY+10+.5)*32},
+	{(-6+.5)*32,(southCityY+12+.5)*32},
+	{(16+.5)*32,(southCityY-12+.5)*32},
+	{(22+.5)*32,(southCityY-5+.5)*32},
+	{(15+.5)*32,(southCityY+8+.5)*32},
+	{(8+.5)*32,(southCityY+16+.5)*32},
+	{(-20+.5)*32,(southCityY+18+.5)*32},
+	{(-23+.5)*32,(southCityY-2+.5)*32},
+	{(-8+.5)*32,(southCityY-15+.5)*32},
+	{(4+.5)*32,(southCityY-15+.5)*32},
+	{(22+.5)*32,(southCityY+15+.5)*32},
+}
+func southCityWall(tx,ty int) bool {
+	x,y:=tx,ty-southCityY
+	if x < -28 || x > 27 || y < -24 || y > 23 {return false}
+	if x==-28||x==27{return true}
+	return (y==-24||y==23)&&absInt(x)>2
+}
+func southCityBlocks(x,y,r float64) bool {
+	if math.Abs(x)>1600||math.Abs(y-(southCityY+.5)*32)>1700{return false}
+	for _,dx:=range []float64{-r,r} {for _,dy:=range []float64{-r,r} {
+		if southCityWall(int(math.Floor((x+dx)/32)),int(math.Floor((y+dy)/32))) {return true}
+	}}
+	if math.Hypot(x-16,y-(southCityY+.5)*32)<52+r{return true}
+	for _,b:=range southCityBuildings {
+		if math.Abs(x-b[0])<41+r && y>b[1]-57-r && y<b[1]+8+r{return true}
+	}
+	return false
+}
 func absInt(v int) int { if v < 0 { return -v }; return v }
 
 func (w World) Tile(tx,ty int) Tile {
     detail:=Hash2(tx,ty,w.Seed+31)
+    south:=southCityGround(tx,ty)
+    if south!="" {
+        biome:="ruins";if south=="path"{biome="trail"}
+        return Tile{Ground:south,Biome:biome}
+    }
     village:=villageGround(tx,ty)
     if village=="" && starterCaveTrail(tx,ty) { village="path" }
     if village!="" {
@@ -157,7 +214,7 @@ func (w World) CanMove(x,y float64) bool {
 	if math.IsNaN(x)||math.IsInf(x,0)||math.IsNaN(y)||math.IsInf(y,0)||
 		math.Abs(x)>1_000_000||math.Abs(y)>1_000_000 { return false }
 	const radius=7.
-	if landmarkBlocks(x,y,radius)||w.regionalLandmarkBlocks(x,y,radius)||villageBlocks(x,y,radius) { return false }
+	if landmarkBlocks(x,y,radius)||w.regionalLandmarkBlocks(x,y,radius)||villageBlocks(x,y,radius)||southCityBlocks(x,y,radius) { return false }
 	for _,ox:=range []float64{-radius,radius} {
 		for _,oy:=range []float64{-radius,radius} {
 			if !w.Walkable(int(math.Floor((x+ox)/TileSize)),int(math.Floor((y+oy)/TileSize))) { return false }

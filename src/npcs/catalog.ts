@@ -1,4 +1,6 @@
 import { BUILDINGS, SIGNS } from "../world/village.ts";
+import { SOUTH_BUILDINGS, SOUTH_SIGNS } from "../world/southCity.ts";
+import { SOUTH_NPCS, SOUTH_NPC_LOOKS, SOUTH_DIALOGUES } from "./south/index.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { CENTER_NPCS, CENTER_NPC_LOOKS, CENTER_NPC_DIALOGUES } from "./center/index.ts";
 import { aelaDialogue } from "./center/aela.ts";
@@ -8,6 +10,7 @@ export const NPC_TALK_RANGE=82;
 /** Patrulhas curtas: Aela e Eron ficam fixos para as missões. */
 const PATROLS: Readonly<Record<string, { x: number; y: number }>> = {
   mira: { x: 65, y: 0 }, toren: { x: 35, y: 0 }, lina: { x: 0, y: 36 },
+  "south-hesh":{x:48,y:0}, "south-zinha":{x:22,y:0},
 };
 export function npcPositionAt(npc: Npc, time = 0): { x: number; y: number; walking: boolean } {
   const route = PATROLS[npc.id];
@@ -19,11 +22,18 @@ export function npcPositionAt(npc: Npc, time = 0): { x: number; y: number; walki
 }
 /** Somente os cinco NPCs reais; placas e portas não são NPCs. */
 export const NPC_CHARACTERS:readonly Npc[]=CENTER_NPCS;
-export const NPC_LOOKS:Readonly<Record<string,NpcAppearance>>=CENTER_NPC_LOOKS;
+export const NPC_LOOKS:Readonly<Record<string,NpcAppearance>>={
+  ...CENTER_NPC_LOOKS,...SOUTH_NPC_LOOKS,
+};
 export const NPCS:readonly Npc[]=[
   ...NPC_CHARACTERS,
   ...SIGNS.map(s=>({...s,kind:"sign" as const,role:"Aviso da vila"})),
   ...BUILDINGS.map(b=>({id:b.id,name:b.name,role:"Interior",x:b.x,y:b.y+29,kind:"door" as const})),
+  ...SOUTH_NPCS,
+  ...SOUTH_SIGNS.map(s=>({...s,kind:"sign" as const,role:"Rotas dos Ermos do Sul"})),
+  ...SOUTH_BUILDINGS.filter(b=>b.interior).map(b=>({
+    id:b.id,name:b.name,role:"Interior",x:b.x,y:b.y+29,kind:"door" as const,
+  })),
 ];
 /** Sem alterar alcance, ordem nem restrição frontal das portas. */
 export function nearestNpc(x:number,y:number,time=0):Npc|null {
@@ -44,6 +54,12 @@ export function npcDialogue(npc:Npc,kills:number,forgeAvailable=false):readonly 
   const state:NpcDialogueState={defeated,goal,completed,forgeAvailable};
   const dialogue=CENTER_NPC_DIALOGUES[npc.id];
   if(dialogue)return dialogue(state);
+  const south=SOUTH_DIALOGUES[npc.id];
+  if(south)return south;
+  if(npc.id==="south-north-sign")return ["Portão das Presas — Estrada da Travessia ao norte.", "Dentro das muralhas vigora a paz de Gorrak."];
+  if(npc.id==="south-south-sign")return ["Portão dos Ossos — deserto aberto, sem proteção contra monstros.", "Estrada das Ruínas e trilhas de caravanas ao sul."];
+  if(npc.id==="south-well-sign")return ["Poço Negro. A água está escura e ninguém sabe a causa.", "Gorrak, Khemet e Sylrael conhecem três histórias diferentes."];
+  if(npc.id==="south-obelisk-sign")return ["Leste: trilha do Obelisco Soterrado.", "A oeste ficam os antigos oásis; só os portões norte e sul cruzam as muralhas."];
   if(npc.id==="entrance")return ["Vila da Travessia — área protegida contra monstros.", "Da praça, siga para leste até a gruta de treinamento."];
   if(npc.id==="square")return ["Aela precisa de cinco slimes derrotados na primeira gruta a leste.", "Os caminhos ligam hospedaria, mercado, arquivo, curandeiros e armazém."];
   if(npc.id==="market-sign")return ["Mercado da Travessia. Barracas e abastecimento em expansão.", "As lojas serão ativadas em etapas posteriores."];

@@ -15,7 +15,8 @@ export interface NpcAppearance {
   readonly skin:string;
   readonly hair:string;
   readonly hairStyle:"long"|"short"|"bald"|"bun";
-  readonly prop:"staff"|"scroll"|"hammer"|"lantern";
+  readonly prop:"staff"|"scroll"|"hammer"|"lantern"|"dagger"|"scales"|"vial"|"whip";
+  readonly species?:"orc"|"goblin"|"troll"|"imp"|"elf";
   readonly width:number;
   readonly beard?:string;
   readonly apron?:string;
