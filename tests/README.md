@@ -29,3 +29,8 @@ pela escada; CI verde sem esse cenário não comprova que a navegação está co
 `file-size-budget.test.ts` percorre os arquivos TypeScript de `src/` e `server/src/`, excluindo declarações `.d.ts`. Até 400 linhas é tamanho preferencial; 401 a 800 emite aviso; acima de 800 recomenda revisão de arquitetura. Fontes com cabeçalho de geração são registradas separadamente. **Nenhum arquivo falha exclusivamente por ter mais linhas.** Os avisos aparecem nos diagnósticos do teste Node e servem para a revisão do PR, não para obrigar divisão arbitrária.
 
 A orientação é dividir por responsabilidade, e não por contagem: mantenha funções coesas e confira a direção das dependências, o typecheck, testes de regressão e Playwright quando alterar jogabilidade. Os portões em `quality-gates.test.ts` continuam obrigatórios.
+
+
+### Capacidade por pasta e organização modular
+
+`folder-capacity.test.ts` verifica até **200 arquivos diretos em cada pasta** do código-fonte, testes e automações (não a soma da árvore inteira). Diretórios gerados como `node_modules` e `dist` são ignorados. Novas categorias e subpastas são permitidas por responsabilidade; `engine-layout.test.ts` evita manifestos de nomes imutáveis e mantém apenas contratos essenciais, inclusive uma ficha por espada cadastrada. Os checks de importação, tipagem e integridade do catálogo continuam obrigatórios.
