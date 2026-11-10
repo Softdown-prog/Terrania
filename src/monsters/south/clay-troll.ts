@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../types.ts";
+import { southRareDrop } from "../rareLoot.ts";
 
 /** clay-troll: ficha da região Sul. */
 export const clayTroll = {
@@ -6,5 +7,5 @@ export const clayTroll = {
     nature: "physical", special: "clay-clod", speed: 30, range: 108, interval: 2.35,
     status: null, statusSeconds: 0, region: "south", caveThemes: ["marsh", "desert"],
     biomes: ["oasis", "ruins"],
-    loot: [{ item: "Argila Ressecada", chance: .75 }, { item: "Tora de Madeira Seca", chance: .45 }, { item: "Pedra Bruta", chance: .60 }],
+    loot: [{ item: "Argila Ressecada", chance: .75 }, { item: "Tora de Madeira Seca", chance: .45 }, { item: "Pedra Bruta", chance: .60 }, southRareDrop("clay-troll")],
 } satisfies CreatureDefinition;
