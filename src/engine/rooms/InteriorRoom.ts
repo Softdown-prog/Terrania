@@ -12,7 +12,7 @@ export interface Furniture {
   readonly height: number;
   readonly kind: FurnitureKind;
 }
-/** Três interiores distintos, sem itens, recompensas ou dependências de navegador. */
+/** Interiores das fachadas: sem comércio simulado antes da economia estar pronta. */
 export const ROOM_FURNITURE: Readonly<Record<Building["id"], readonly Furniture[]>> = {
   council: [
     { x: 118, y: 103, width: 124, height: 43, kind: "table" },
@@ -28,6 +28,26 @@ export const ROOM_FURNITURE: Readonly<Record<Building["id"], readonly Furniture[
     { x: 28, y: 78, width: 77, height: 79, kind: "bed" },
     { x: 259, y: 78, width: 73, height: 79, kind: "bed" },
     { x: 139, y: 105, width: 83, height: 39, kind: "table" },
+  ],
+  market: [
+    { x: 30, y: 85, width: 75, height: 44, kind: "shelf" },
+    { x: 249, y: 85, width: 76, height: 44, kind: "shelf" },
+    { x: 129, y: 105, width: 99, height: 43, kind: "table" },
+  ],
+  archive: [
+    { x: 26, y: 78, width: 65, height: 90, kind: "shelf" },
+    { x: 272, y: 78, width: 61, height: 90, kind: "shelf" },
+    { x: 131, y: 105, width: 98, height: 41, kind: "table" },
+  ],
+  clinic: [
+    { x: 30, y: 79, width: 75, height: 76, kind: "bed" },
+    { x: 256, y: 79, width: 75, height: 76, kind: "bed" },
+    { x: 137, y: 105, width: 86, height: 40, kind: "table" },
+  ],
+  granary: [
+    { x: 30, y: 83, width: 76, height: 64, kind: "shelf" },
+    { x: 254, y: 83, width: 76, height: 64, kind: "shelf" },
+    { x: 137, y: 104, width: 86, height: 35, kind: "table" },
   ],
 };
 /** A lógica de colisão recebe os mesmos objetos que o Canvas desenha. */

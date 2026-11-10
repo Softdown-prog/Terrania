@@ -111,7 +111,7 @@ export class Game {
       tileY: Math.floor(player.y / TILE_SIZE),
       progression: experienceProgress(this.sim.experience),
       awaitingRespawn: player.hp <= 0,
-    }, aelaQuestProgress(kills));
+    }, aelaQuestProgress(this.sim.trainingKills));
     this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateGear(inventory.gear);
@@ -189,7 +189,7 @@ export class Game {
     if (mountStep) { this.hud.setTravelNotice(this.mountAction(mountStep)); return; }
     const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
     if (entrance) { this.enterCave(entrance); return; }
-    const npc = nearestNpc(this.sim.player.x, this.sim.player.y);
+    const npc = nearestNpc(this.sim.player.x, this.sim.player.y, this.timers.clock);
     if (!npc) return;
     this.input.clear();
     if (npc.kind === "door" && BUILDINGS.some(b => b.id === npc.id)) {
@@ -201,10 +201,10 @@ export class Game {
       this.interior = new InteriorRoom(npc.id);
       this.timers.accumulator = 0;
     } else {
-      const rewarded = npc.id === "aela" && this.sim.inventory.claimAelaReward(this.sim.kills);
+      const rewarded = npc.id === "aela" && this.sim.inventory.claimAelaReward(this.sim.trainingKills);
       if (rewarded) this.save();
       const offer = npcOffer(npc.id);
-      const lines = npcDialogue(npc, this.sim.kills, offer?.item === "sword");
+      const lines = npcDialogue(npc, this.sim.trainingKills, offer?.item === "sword");
       this.hud.showNpcDialogue(npc.name, npc.role, rewarded
         ? [...lines, `Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`]
         : lines, offer);
