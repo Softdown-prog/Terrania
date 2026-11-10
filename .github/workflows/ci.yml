@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   validar:
-    runs-on: ubuntu-24.04
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
