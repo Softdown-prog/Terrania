@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
-import { POTION_GEL_PRICE } from "../src/engine/character/Inventory.ts";
+import { INN_REST_GEL_PRICE, POTION_GEL_PRICE } from "../src/engine/character/Inventory.ts";
 import { FORGE_SWORD_PRICE } from "../src/engine/character/Weapons.ts";
 import { experienceForLevel } from "../src/engine/character/Experience.ts";
 import { NPCS } from "../src/world/npcs.ts";
-import { buyFood, buySword, eatFood, equipGear, equipWeapon, tradeGelForPotion, usePotion,
+import { buyFood, buySword, eatFood, equipGear, equipWeapon, restAtInn, tradeGelForPotion, usePotion,
   type ShopContext } from "../src/game/actions/shopActions.ts";
 import { INVENTORY_FEEDBACK } from "../src/game/messages/inventoryFeedback.ts";
 
@@ -93,4 +93,41 @@ test("loja: usa o herói de quem age (caverna) para cura e comida, e o da simula
   caveHero.hp = 5;
   assert.equal(usePotion(w.context({ hero: caveHero })).message, INVENTORY_FEEDBACK.healed);
   assert.ok(caveHero.hp > 5, "curou o herói da caverna");
+});
+
+test("hospedaria do Poço Negro: o descanso custa gel, cura tudo e limpa os status, só ao lado de Madame Víbora", () => {
+  const w = world({}, INN_REST_GEL_PRICE);
+  w.sim.player.hp = 12;
+  w.sim.player.applyStatus("poison", 6);
+  w.sim.player.applyStatus("burn", 4);
+  const refused = { message: INVENTORY_FEEDBACK["too-far-from-inn"], changed: false };
+  assert.deepEqual(restAtInn(w.context()), refused, "longe de Madame");
+  w.goTo("south-madame");
+  assert.deepEqual(restAtInn(w.context({ menuOpen: false })), refused, "menu fechado");
+  assert.deepEqual(restAtInn(w.context({ inInterior: true })), refused, "dentro de um interior");
+  assert.equal(w.sim.inventory.gel, INN_REST_GEL_PRICE, "as recusas não cobraram nada");
+  assert.equal(w.sim.player.hp, 12);
+  assert.deepEqual(restAtInn(w.context()), { message: INVENTORY_FEEDBACK.rested, changed: true });
+  assert.equal(w.sim.player.hp, w.sim.player.maxHp, "vida completa");
+  assert.ok(Object.values(w.sim.player.debuffs).every(seconds => seconds === 0), "sem nenhum status");
+  assert.equal(w.sim.inventory.gel, 0, "o preço foi pago");
+});
+
+test("hospedaria do Poço Negro: sem gel não cura, e quem já está bem não paga nada", () => {
+  const w = world({}, INN_REST_GEL_PRICE - 1);
+  w.goTo("south-madame");
+  w.sim.player.hp = 20;
+  assert.deepEqual(restAtInn(w.context()), { message: INVENTORY_FEEDBACK["insufficient-rest-gel"], changed: false });
+  assert.equal(w.sim.player.hp, 20, "sem gel a vida não muda");
+  assert.equal(w.sim.inventory.gel, INN_REST_GEL_PRICE - 1);
+  w.sim.inventory.addGel();
+  w.sim.player.hp = w.sim.player.maxHp;
+  assert.deepEqual(restAtInn(w.context()), { message: INVENTORY_FEEDBACK["rest-not-needed"], changed: false });
+  assert.equal(w.sim.inventory.gel, INN_REST_GEL_PRICE, "vida cheia e sem status: não cobra");
+  w.sim.player.applyStatus("poison", 3);
+  assert.equal(restAtInn(w.context()).changed, true, "só o veneno já justifica o descanso");
+  w.sim.player.hp = 0;
+  w.sim.inventory.addGel();
+  assert.deepEqual(restAtInn(w.context()), { message: INVENTORY_FEEDBACK.unavailable, changed: false }, "herói caído só volta por respawn");
+  assert.equal(w.sim.player.hp, 0);
 });

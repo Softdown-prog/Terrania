@@ -197,6 +197,7 @@ export class HudService implements GameUi {
   private newWorldCallback: () => void = () => {};
   private talkCallback: () => void = () => {};
   private potionTradeCallback: () => string = () => '';
+  private innRestCallback: () => string = () => '';
   private potionCallback: () => string = () => '';
   private foodCallback: (id: FoodId) => string = () => '';
   private foodTradeCallback: (id: FoodId) => string = () => '';
@@ -236,6 +237,7 @@ export class HudService implements GameUi {
   onFoodUse(callback: (id: FoodId) => string): void { this.foodCallback = callback; }
   onFoodTrade(callback: (id: FoodId) => string): void { this.foodTradeCallback = callback; }
   onSwordPurchase(callback: () => string): void { this.swordPurchaseCallback = callback; }
+  onInnRest(callback: () => string): void { this.innRestCallback = callback; }
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void { this.gearEquipCallback = callback; }
   onRespawn(callback: () => void): void { this.respawnCallback = callback; }
@@ -263,6 +265,7 @@ export class HudService implements GameUi {
   newWorld(): void { this.newWorldCallback(); }
   talk(): void { this.talkCallback(); }
   tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
+  restAtInn(): void { this.npcTradeFeedback.set(this.innRestCallback()); }
   usePotion(): void {
     const message = this.potionCallback();
     this.inventoryFeedback.set(message);

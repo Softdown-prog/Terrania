@@ -37,9 +37,13 @@ A arena é somente cenário nesta etapa.
 - Apenas **Fortaleza, Fornalha e Hospedaria** possuem interiores caminháveis,
   usando a mesma simulação e teclado/toque do restante do jogo.
 
+## Serviço existente
+- **Hospedaria Sombra do Escorpião:** Madame Víbora cobra **4 de gel** por um descanso que
+  cura toda a vida e remove os status (ADR 0022). Não cobra de quem já está bem.
+
 ## O que NÃO foi implementado
 - Venda/compra de loot raro no Bazar e Ossuário;
-- Alquimia, cura e comércio na hospedaria;
+- Alquimia e comércio de itens na hospedaria (o **descanso pago** existe: ver abaixo);
 - Montarias lagarto ou escaravelho no estábulo;
 - Cultos, missões de corrupção do poço, combate de arena;
 - Uma caverna fixa de brejo junto ao muro (o bioma de brejo fica na

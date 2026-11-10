@@ -47,7 +47,7 @@ export const SOUTH_DIALOGUES:Readonly<Record<string,readonly string[]>>={
     "Dente Dourado, Élitro Prismático e Ferrão de Cristal Rubro são raridades cobiçadas.",
     "O Bazar ainda não compra itens: estamos organizando preços e estoque antes das trocas."],
   "south-madame":["Bem-vindo à Sombra do Escorpião. Aqui há um teto seguro, mesmo para um inimigo de ontem.",
-    "Pode visitar os quartos. Descanso pago virá quando a hospedaria tiver uma economia real.",
+    "Pode visitar os quartos. Um descanso custa 4 de gel: vida completa e sem veneno nem queimadura.",
     "Se procurar histórias, a água do poço mudou de cor numa noite sem lua."],
   "south-pip":["Sou Pip. A Estrada da Travessia chega pelo Portão das Presas, ao norte.",
     "O Portão dos Ossos leva às ruínas e às dunas. À leste há rastros do Obelisco Soterrado.",

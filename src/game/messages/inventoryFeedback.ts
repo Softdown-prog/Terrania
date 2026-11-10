@@ -1,4 +1,4 @@
-import { POTION_GEL_PRICE, POTION_HEAL, type InventoryOutcome } from "../../engine/character/Inventory.ts";
+import { INN_REST_GEL_PRICE, POTION_GEL_PRICE, POTION_HEAL, type InventoryOutcome } from "../../engine/character/Inventory.ts";
 import { FORGE_SWORD_PRICE, WEAPONS } from "../../engine/character/Weapons.ts";
 
 /**
@@ -28,6 +28,10 @@ export const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "already-equipped": "Essa espada já está equipada.",
   "level-too-low": "Seu nível ainda não permite equipar essa espada.",
   "not-owned": "Você ainda não possui essa espada.",
+  "rested": "Madame Víbora serviu o descanso: vida completa e sem veneno nem queimadura.",
+  "insufficient-rest-gel": `Você precisa de ${INN_REST_GEL_PRICE} unidades de gel para pagar o descanso.`,
+  "too-far-from-inn": "Aproxime-se de Madame Víbora, na Hospedaria Sombra do Escorpião, para descansar.",
+  "rest-not-needed": "Você já está descansado: vida completa e sem nenhum mal.",
   "gear-equipped": "Item equipado.",
   "gear-removed": "Item guardado na bolsa.",
   "gear-unchanged": "O espaço já está assim.",
