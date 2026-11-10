@@ -1,3 +1,6 @@
+import { drawBasaltGolem } from "../src/render/creatures/west/golems/basaltGolem.ts";
+import { drawHydra } from "../src/render/creatures/south/hydras/mireHydra.ts";
+import { drawDraconid } from "../src/render/creatures/west/draconids/cliffDraconid.ts";
 import { drawWolf } from "../src/render/creatures/north/wolves/glacialWolf.ts";
 import { drawScorpion } from "../src/render/creatures/south/scorpions/duneScorpion.ts";
 import { drawCrab } from "../src/render/creatures/east/crabs/coralCrab.ts";
@@ -260,5 +263,52 @@ test("seis renderizadores especializados usam estado visual sem alterar ficha ou
     assert.notEqual(rest.signature,action.signature,kind+" perdeu estado de movimento/ataque");
     assert.equal(action.saves,action.restores,kind+" desequilibrou Canvas");
     assert.equal(base.hp,CREATURE_CATALOG[kind].maxHp,kind+" alterou ficha de combate");
+  }
+});
+
+/** O segundo lote responde à simulação na geometria própria de cada espécie. */
+test("golem, hidra e draconídeo articulam deslocamento e ataque na anatomia, sem efeitos globais",()=>{
+  const palette={base:"#68737b",light:"#e2d4b7",dark:"#2c3446",accent:"#a6b75f",eye:"#ffe196"};
+  type Anatomy=(ctx:CanvasRenderingContext2D,c:typeof palette,
+    time:number,phase:number,moving:number,casting:number)=>void;
+  const species: ReadonlyArray<{kind:"basalt-golem"|"mire-hydra"|"cliff-draconid";draw:Anatomy}>=[
+    {kind:"basalt-golem",draw:drawBasaltGolem},
+    {kind:"mire-hydra",draw:drawHydra},
+    {kind:"cliff-draconid",draw:drawDraconid},
+  ];
+  const signatures=new Set<string>();
+  for(const {kind,draw} of species){
+    const at=(phase:number,moving:number,casting:number)=>{
+      return capture(ctx=>draw(ctx,palette,1.7,phase,moving,casting));
+    };
+    const rest=at(0,0,0);
+    const still=at(3.4,0,0);
+    const step=at(2.1,1,0);
+    const windup=at(0,0,.95);
+    assert.ok(rest.paintOps>45,kind+" ficou sem materiais e anatomia suficientes");
+    assert.ok(rest.paintOps<550,kind+" excedeu o orçamento básico de Canvas");
+    assert.ok(rest.curves>12,kind+" ficou sem curvas e partes anatômicas");
+    assert.equal(rest.saves,rest.restores,kind+" desbalanceou o contexto Canvas");
+    assert.equal(rest.signature,still.signature,kind+" animou a passada sem deslocamento real");
+    assert.notEqual(rest.signature,step.signature,kind+" não reage à passada real");
+    assert.notEqual(rest.signature,windup.signature,kind+" não prepara o ataque na anatomia");
+    assert.ok(windup.paintOps>rest.paintOps,kind+" não ganhou detalhes durante a preparação");
+    assert.equal(rest.signature,at(0,0,0).signature,kind+" não é determinístico em repouso");
+    assert.equal(step.signature,at(2.1,1,0).signature,kind+" não é determinístico em movimento");
+    assert.ok(!signatures.has(rest.signature),kind+" compartilha silhueta com outra espécie");
+    signatures.add(rest.signature);
+  }
+});
+
+test("segundo lote preserva contrato público, vida, combate e determinismo",()=>{
+  for(const kind of ["basalt-golem","mire-hydra","cliff-draconid"] as const){
+    const hp=CREATURE_CATALOG[kind].maxHp;
+    const actor={kind,hp,id:"render-test:"+kind,moving:1,motionPhase:2.1,casting:.85};
+    const a=capture(ctx=>renderRegionalCreature(ctx,actor,30,48,1.7));
+    const b=capture(ctx=>renderRegionalCreature(ctx,actor,30,48,1.7));
+    assert.ok(a.paintOps>45,kind+" não é desenhado via registro público");
+    assert.equal(a.saves,a.restores,kind+" mudou o estado do Canvas externo");
+    assert.equal(a.signature,b.signature,kind+" perdeu reprodução determinística");
+    assert.equal(actor.hp,hp,kind+" modificou atributos fora do render");
   }
 });

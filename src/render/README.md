@@ -187,3 +187,20 @@ loot não foram alterados. A separação dos **32 arquivos** continua íntegra;
 **isso não significa que as outras 26 espécies já tenham esse acabamento**.
 As seis são auditadas em `tests/specialized-creature-art.test.ts` diretamente
 no desenho anatômico (sem depender dos efeitos genéricos do frame).
+
+
+### Segundo lote de animações específicas: rocha, pântano e penhascos
+
+O Golem de Basalto (west/golems/basaltGolem.ts) agora tem lajes facetadas,
+fissuras, passos pesados, ombros e punhos independentes, com preparo de golpe
+derivado de casting. A Hidra do Pântano (south/hydras/mireHydra.ts)
+possui três pescoços com oscilações distintas, cristas, mandíbulas e veneno
+visível somente durante a preparação. O Draconídeo dos Penhascos
+(west/draconids/cliffDraconid.ts) ganhou membranas com nervuras, asas
+que se abrem, garras, cauda e brasa no focinho durante conjuração.
+
+As rotinas recebem motionPhase, moving e casting da entidade;
+as articulações de deslocamento ficam estacionárias quando moving=0.
+Nenhuma alteração foi feita no catálogo de combate, colisão ou loot.
+Os dois testes do segundo lote em tests/specialized-creature-art.test.ts
+auditam diretamente as anatomias e a API de renderização.
