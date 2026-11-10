@@ -123,6 +123,22 @@
       "description": "Fichas individuais de criaturas classificadas por região; fonte única de atributos e loot, sem duplicar IA nem renderização."
     },
     {
+      "id": "dungeons",
+      "name": "Masmorras por região",
+      "layer": "domain",
+      "status": "active",
+      "roots": [
+        "src/dungeons"
+      ],
+      "entrypoints": [
+        "src/dungeons/index.ts",
+        "src/dungeons/types.ts",
+        "src/dungeons/south/index.ts"
+      ],
+      "doc": "src/dungeons/README.md",
+      "description": "Masmorras de vários andares: nome de cada andar, moradores e chefe, uma masmorra por arquivo na pasta da sua região. Só dados; a planta fica em world e o povoamento em engine."
+    },
+    {
       "id": "npcs",
       "name": "NPCs por região",
       "layer": "domain",

@@ -4,7 +4,7 @@ import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/character/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/character/Equipment.ts';
-import type { CaveFloor } from '../engine/rooms/CaveRoom.ts';
+import type { CaveFloor } from '../world/caveFloor.ts';
 import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 
 export interface Preferences {
@@ -23,9 +23,14 @@ export interface HeroHudState {
   readonly awaitingRespawn: boolean;
 }
 
-export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave' | 'tracks' | 'tame';
+export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave' | 'ascend' | 'descend' | 'tracks' | 'tame';
 export interface CaveMapState {
   readonly floor: CaveFloor;
+  /** 1 = o andar da entrada. Cavernas comuns têm um andar só. */
+  readonly floorIndex: number;
+  readonly floorCount: number;
+  /** Nome do andar (masmorra) ou o da própria caverna. */
+  readonly floorName: string;
   readonly tileX: number;
   readonly tileY: number;
 }

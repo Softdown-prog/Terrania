@@ -11,7 +11,7 @@ const nav = createNavigator();
 
 test("MCP lista catálogo real e não confunde produção com laboratório", () => {
   const all = nav.list_modules();
-  assert.equal(all.total, 18);
+  assert.equal(all.total, 19);
   assert.equal(all.modules.find(m=>m.id==="npcs")?.status,"active");
   assert.equal(all.modules.find(m => m.id === "monsters")?.status, "active");
   assert.equal(all.modules.find(m => m.id === "node-server")?.status, "active");

@@ -67,7 +67,7 @@ for (const p of paths) {
 }
 
 // Enforce the most important architectural boundary with no new dependencies.
-for (const p of paths.filter(p => /^src\/(engine|actors|world|monsters|npcs)\/.*\.tsx?$/.test(p))) {
+for (const p of paths.filter(p => /^src\/(engine|actors|world|monsters|npcs|dungeons)\/.*\.tsx?$/.test(p))) {
   const contents = readText(p);
   const imported = /\bfrom\s*["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']/g;
   for (const match of contents.matchAll(imported)) {

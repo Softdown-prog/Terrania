@@ -66,6 +66,7 @@ import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
+import { drawCaveDownStair } from "../../src/render/caveStairsDownArt.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
 import type { RegionalLandmarkKind } from "../../src/world/regionalLandmarks.ts";
 import { NPCS } from "../../src/world/npcs.ts";
@@ -224,6 +225,8 @@ export const ASSETS: ArtAsset[] = [
         draw: c => drawCaveFormation(c, theme, 0, 0, .61) },
       { id: "escada subterrânea " + theme, tier: "prop", fn: "drawCaveExitStair",
         draw: c => drawCaveExitStair(c, theme, 0, 0) },
+      { id: "escada de descida " + theme, tier: "prop", fn: "drawCaveDownStair",
+        draw: c => drawCaveDownStair(c, theme, 0, 0) },
       ...(["south", "east"] as const).map<ArtAsset>(side => ({
         id: "face rochosa " + theme + " " + side,
         tier: "prop", fn: "drawCaveWallFace",

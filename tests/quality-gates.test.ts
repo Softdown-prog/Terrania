@@ -25,7 +25,7 @@ function offenders(paths: readonly string[], pattern: RegExp): string[] {
     .flatMap((line, index) => pattern.test(line) ? [`${path}:${index + 1}: ${line.trim()}`] : []));
 }
 
-const DETERMINISTIC_ROOTS = ["src/engine", "src/actors", "src/world", "src/render", "src/monsters", "src/npcs"];
+const DETERMINISTIC_ROOTS = ["src/engine", "src/actors", "src/world", "src/render", "src/monsters", "src/npcs", "src/dungeons"];
 const NONDETERMINISM = /\bMath\.random\b|\bDate\.now\b|\bperformance\.now\b|\bnew Date\s*\(|\bcrypto\.getRandomValues\b/;
 
 test("qualidade: o detector ignora comentários e enxerga o código", () => {

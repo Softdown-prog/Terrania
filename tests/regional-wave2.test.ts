@@ -1,3 +1,4 @@
+import { caveFloorCount } from "../src/dungeons/index.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { SECOND_WAVE_KINDS, REGIONAL_CREATURE_KINDS, CREATURE_CATALOG } from "../src/actors/CreatureCatalog.ts";
@@ -51,12 +52,15 @@ test("cavernas: segunda onda participa de encontros e a entrada continua transit
     for(const seed of seeds)for(let i=0;i<18;i++){
       const entry:CaveEntrance={id:"wave2:"+theme+":"+seed+":"+i,seed,theme,
         tileX:i*117,tileY:seed%13+i*37,x:0,y:0,name:theme,kind:"hole"};
-      const floor=new CaveRoom(entry);
-      assert.ok(floor.monsters.size>0);
-      for(const m of floor.monsters.values()){
-        assert.ok(floor.collision.canMove(m.x,m.y));
-        assert.ok(CREATURE_CATALOG[m.kind].caveThemes.includes(theme));
-        seen.add(m.kind);
+      // Masmorras de vários andares espalham as espécies por andar: confere todos eles.
+      for(let index=1;index<=caveFloorCount(entry);index++){
+        const floor=new CaveRoom(entry,100,100,new Set(),{floorIndex:index});
+        assert.ok(floor.monsters.size>0);
+        for(const m of floor.monsters.values()){
+          assert.ok(floor.collision.canMove(m.x,m.y));
+          assert.ok(CREATURE_CATALOG[m.kind].caveThemes.includes(theme));
+          seen.add(m.kind);
+        }
       }
     }
     for(const kind of SECOND_WAVE_KINDS.filter(k=>CREATURE_CATALOG[k].caveThemes.includes(theme)))
