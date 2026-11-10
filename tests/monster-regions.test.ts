@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../src/monsters/catalog.ts";
 import { CENTER_MONSTERS } from "../src/monsters/center/index.ts";
 import { NORTH_MONSTERS } from "../src/monsters/north/index.ts";
@@ -46,4 +46,9 @@ test("bestiário: atributos críticos não mudaram na reorganização",()=>{
   assert.deepEqual([CREATURE_CATALOG["boreal-yeti"].maxHp,CREATURE_CATALOG["boreal-yeti"].contactDamage],[380,36]);
   assert.deepEqual([CREATURE_CATALOG["coral-crab"].maxHp,CREATURE_CATALOG["coral-crab"].contactDamage],[240,21]);
   assert.deepEqual([CREATURE_CATALOG["basalt-golem"].maxHp,CREATURE_CATALOG["basalt-golem"].contactDamage],[320,28]);
+});
+
+test("empacotamento: a imagem Docker do backend inclui todas as fichas de monstros",()=>{
+  const dockerfile=readFileSync("server/Dockerfile","utf8");
+  assert.match(dockerfile,/COPY src\/monsters \/work\/src\/monsters/);
 });
