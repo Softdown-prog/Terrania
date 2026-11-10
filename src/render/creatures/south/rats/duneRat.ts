@@ -4,10 +4,10 @@
  * Referência: roedor de dunas, pelagem áspera, mordida infecciosa e fuga rápida.
  * Não decide acerto, dano ou loot: usa apenas dados reais da simulação.
  */
-import type { DesertCommonVisual } from "../../regionalWave3.ts";
-import { clamp01, ellipse, hashString, rgba, TAU } from "../../draw.ts";
-import type { Palette } from "./geometry.ts";
-import { body, line, tip, eye, freckles, OUTLINE } from "./geometry.ts";
+import type { DesertCommonVisual } from "../../../regionalWave3.ts";
+import { clamp01, ellipse, hashString, rgba, TAU } from "../../../draw.ts";
+import type { Palette } from "../../shared/southGeometry.ts";
+import { body, line, tip, eye, freckles, OUTLINE } from "../../shared/southGeometry.ts";
 const P = {
   fur:"#97806a", ridge:"#5b4b40", highlight:"#ead5ad", shadow:"#322d2b",
   undercoat:"#d2b98a", ear:"#cc8b82", inner:"#7c4a48",

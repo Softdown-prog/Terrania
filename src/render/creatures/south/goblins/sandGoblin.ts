@@ -2,10 +2,10 @@
  * Goblin Saqueador da Areia — acabamento de equipamento, expressão e estados
  * para leitura a 1x/2x zoom. O motor continua sendo fonte de dano e tempo.
  */
-import type { DesertCommonVisual } from "../../regionalWave3.ts";
-import { clamp01, ellipse, hashString, rgba, TAU } from "../../draw.ts";
-import type { Palette } from "./geometry.ts";
-import { body, line, tip, eye, freckles, OUTLINE, GLOW } from "./geometry.ts";
+import type { DesertCommonVisual } from "../../../regionalWave3.ts";
+import { clamp01, ellipse, hashString, rgba, TAU } from "../../../draw.ts";
+import type { Palette } from "../../shared/southGeometry.ts";
+import { body, line, tip, eye, freckles, OUTLINE, GLOW } from "../../shared/southGeometry.ts";
 const C={
   leather:"#563e35",leatherLight:"#a67a4f",bronze:"#d1a15d",verdigris:"#63875e",
   linen:"#e3cfab",shadow:"#26322b",eye:"#f5ce69",glint:"#fff4d8",

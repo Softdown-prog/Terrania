@@ -2,10 +2,10 @@
  * Orc Nômade do Deserto — volumes de carne, correias, osso, clube de guerra e
  * reação a ferimentos. Materiais não dependem de bitmap nem de horário real.
  */
-import type { DesertCommonVisual } from "../../regionalWave3.ts";
-import { clamp01, ellipse, hashString, rgba, TAU } from "../../draw.ts";
-import type { Palette } from "./geometry.ts";
-import { body, line, tip, eye, freckles, GLOW } from "./geometry.ts";
+import type { DesertCommonVisual } from "../../../regionalWave3.ts";
+import { clamp01, ellipse, hashString, rgba, TAU } from "../../../draw.ts";
+import type { Palette } from "../../shared/southGeometry.ts";
+import { body, line, tip, eye, freckles, GLOW } from "../../shared/southGeometry.ts";
 const C={
   leather:"#71513d",rawhide:"#ad8258",steel:"#666e69",bone:"#e8d9b6",
   bronze:"#d3aa61",skin:"#89967a",skinLight:"#c4c9a2",skinDark:"#394c40",

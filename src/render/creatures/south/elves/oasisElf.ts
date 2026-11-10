@@ -1,7 +1,7 @@
 /** Silhueta procedural da espécie, separada das fichas de domínio. */
-import type { Palette } from "./geometry.ts";
-import { body, line, tip, eye, freckles, OUTLINE, GLOW } from "./geometry.ts";
-import { ellipse, rgba } from "../../draw.ts";
+import type { Palette } from "../../shared/southGeometry.ts";
+import { body, line, tip, eye, freckles, OUTLINE, GLOW } from "../../shared/southGeometry.ts";
+import { ellipse, rgba } from "../../../draw.ts";
 
 export const elf = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   const robe:Palette={...c,base:"#d7c5a4",light:"#f4ecd6",dark:"#85715a"};

@@ -1,7 +1,7 @@
 /** Silhueta procedural da espécie, separada das fichas de domínio. */
-import type { Palette } from "./geometry.ts";
-import { body, line, eye, freckles, OUTLINE } from "./geometry.ts";
-import { ellipse } from "../../draw.ts";
+import type { Palette } from "../../shared/southGeometry.ts";
+import { body, line, eye, freckles, OUTLINE } from "../../shared/southGeometry.ts";
+import { ellipse } from "../../../draw.ts";
 
 export const scout = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   const linen:Palette={...c,base:"#b5a17b",light:"#f0ddb0",dark:"#6d5d4d"};

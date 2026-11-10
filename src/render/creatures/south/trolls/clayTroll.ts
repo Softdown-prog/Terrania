@@ -1,7 +1,7 @@
 /** Silhueta procedural da espécie, separada das fichas de domínio. */
-import type { Palette } from "./geometry.ts";
-import { body, line, tip, eye, freckles } from "./geometry.ts";
-import { ellipse } from "../../draw.ts";
+import type { Palette } from "../../shared/southGeometry.ts";
+import { body, line, tip, eye, freckles } from "../../shared/southGeometry.ts";
+import { ellipse } from "../../../draw.ts";
 
 export const troll = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   for(const s of [-1,1]){
