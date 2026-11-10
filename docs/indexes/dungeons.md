@@ -12,11 +12,14 @@ Masmorras de vários andares: nome de cada andar, moradores e chefe, uma masmorr
 - [`src/dungeons/types.ts`](../../src/dungeons/types.ts)
 - [`src/dungeons/south/index.ts`](../../src/dungeons/south/index.ts)
 
-## Todos os arquivos deste módulo (6)
+## Todos os arquivos deste módulo (9)
 
 - [`src/dungeons/README.md`](../../src/dungeons/README.md)
 - [`src/dungeons/index.ts`](../../src/dungeons/index.ts)
 - [`src/dungeons/south/cripta-das-dunas.ts`](../../src/dungeons/south/cripta-das-dunas.ts)
 - [`src/dungeons/south/index.ts`](../../src/dungeons/south/index.ts)
 - [`src/dungeons/south/masmorra-do-brejo.ts`](../../src/dungeons/south/masmorra-do-brejo.ts)
+- [`src/dungeons/south/torre-miragem.ts`](../../src/dungeons/south/torre-miragem.ts)
+- [`src/dungeons/south/torre-sol-negro.ts`](../../src/dungeons/south/torre-sol-negro.ts)
+- [`src/dungeons/south/torre-vigia-caida.ts`](../../src/dungeons/south/torre-vigia-caida.ts)
 - [`src/dungeons/types.ts`](../../src/dungeons/types.ts)

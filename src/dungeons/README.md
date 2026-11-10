@@ -17,3 +17,5 @@ Uma **masmorra** é uma caverna de vários andares. Aqui ficam só os **dados**:
 4. Só o último andar tem `boss`. Escadas, andares e chefe são tratados pelo motor sem código novo.
 
 Limites: cavernas sem masmorra têm um andar só e o comportamento de sempre. A arte da escada para baixo está em `src/render/caveStairsDownArt.ts`.
+
+**Torres (ADR 0020):** cada torre do Sul tem a sua masmorra em `south/torre-*.ts`, ligada à ficha da torre pelo campo `tower`. A porta da torre vira um `CaveEntrance` (`world/towers/entrance.ts`) e os andares usam o mesmo motor das cavernas; `dungeonFor` escolhe pela torre e, para caverna comum, ignora as masmorras de torre.

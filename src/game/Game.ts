@@ -15,7 +15,8 @@ import { QUEST_REWARD_POTIONS } from "../engine/character/Inventory.ts";
 import { InteriorRoom } from "../engine/rooms/InteriorRoom.ts";
 import { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { nearbyStairsMove, roomAfterMove } from "../engine/rooms/caveStairs.ts";
-import { caveEntranceNear, type CaveEntrance } from "../world/caves.ts";
+import type { CaveEntrance } from "../world/caves.ts";
+import { dungeonEntranceNear } from "../world/entrances.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { SOUTH_BUILDINGS } from "../world/southCity.ts";
 import { nearestCombatCreature } from "../engine/combat/ClassicCombat.ts";
@@ -192,7 +193,7 @@ export class Game {
     }
     const mountStep = mountQuestAction(this.sim.player.x, this.sim.player.y, questStepId(this.sim.mounts.quest));
     if (mountStep) { this.hud.setTravelNotice(this.mountAction(mountStep)); return; }
-    const entrance = caveEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
+    const entrance = dungeonEntranceNear(this.sim.player.x, this.sim.player.y, this.sim.seed);
     if (entrance) { this.enterCave(entrance); return; }
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y, this.timers.clock);
     if (!npc) return;
@@ -246,7 +247,7 @@ export class Game {
     this.sim.mounts.dismount();
     this.cave=new CaveRoom(entrance,this.sim.player.hp,this.sim.player.maxHp,this.sim.defeated);
     this.cave.player.syncAdventureStateFrom(this.sim.player);
-    this.hud.setTravelNotice("Você desceu para "+entrance.name+(this.cave.floorCount>1
+    this.hud.setTravelNotice((entrance.tower ? "Você entrou em " : "Você desceu para ")+entrance.name+(this.cave.floorCount>1
       ? ". Andar 1 de "+this.cave.floorCount+": "+this.cave.floorName+"."
       : ". O mapa agora acompanha o primeiro andar da caverna."));
   }
