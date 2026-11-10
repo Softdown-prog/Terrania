@@ -25,3 +25,12 @@ export const troll = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   freckles(ctx,c,19,0,-32,17,18);
   ellipse(ctx,0,-42,3+Math.sin(t)*.3,1.5,c.accent);
 };
+
+/** Paleta, anatomia e detalhes visuais desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#ac8864","light":"#d7b88e","dark":"#6e5643","accent":"#c79972","eye":"#eac778","extra":"#857c64"};
+export function renderClayTrollCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,troll);
+}
