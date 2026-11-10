@@ -57,7 +57,7 @@ function computeEntrance(cx:number,cy:number,seed:number):CaveEntrance|null {
   // The first accessible cave is deliberately near, but outside, the starter village.
   const starter = cx === 0 && cy === 0;
   if (!starter && hash2(cx, cy, seed + 1889) > .32) return null;
-  const baseX = starter ? 23 : cx * CAVE_CELL_TILES + 17 + Math.floor(hash2(cx, cy, seed + 1901) * 57);
+  const baseX = starter ? 44 : cx * CAVE_CELL_TILES + 17 + Math.floor(hash2(cx, cy, seed + 1901) * 57);
   const baseY = starter ? 11 : cy * CAVE_CELL_TILES + 17 + Math.floor(hash2(cx, cy, seed + 1907) * 57);
   // Fixed probing order prevents map/renderer/discovery from disagreeing.
   for (let i = 0; i < 36; i++) {
@@ -73,7 +73,7 @@ function computeEntrance(cx:number,cy:number,seed:number):CaveEntrance|null {
     const kind = kinds[Math.floor(hash2(cx, cy, seed + 1919) * kinds.length)]!;
     return { id: `cave:${seed}:${cx}:${cy}`, tileX: tx, tileY: ty,
       x: (tx + .5) * TILE_SIZE, y: (ty + .5) * TILE_SIZE,
-      seed, theme, kind, name: THEMES[theme] };
+      seed, theme, kind, name: starter ? "Gruta dos Slimes — Treinamento" : THEMES[theme] };
   }
   return null;
 }
