@@ -34,7 +34,7 @@ export interface CaveMapState {
   readonly tileX: number;
   readonly tileY: number;
 }
-export type NpcOffer = { item: 'potion' | 'sword' | 'stable'; price: number };
+export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest'; price: number };
 
 /** Data and commands exchanged between the game coordinator and the HUD. */
 export interface GameUi {
@@ -48,6 +48,7 @@ export interface GameUi {
   onFoodUse(callback: (id: FoodId) => string): void;
   onFoodTrade(callback: (id: FoodId) => string): void;
   onSwordPurchase(callback: () => string): void;
+  onInnRest(callback: () => string): void;
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void;
   onRespawn(callback: () => void): void;

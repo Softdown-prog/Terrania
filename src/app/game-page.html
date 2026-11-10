@@ -521,6 +521,10 @@
                 [disabled]="hud.gel() < item.gelPrice || hud.food()[id] >= 99"
                 (click)="hud.tradeFood(id)">Comprar {{ item.name }} · {{ item.gelPrice }} gel</button>
             }
+          } @else if (offer.item === 'rest') {
+            <p class="dialog-note">Gel {{ hud.gel() }} · Vida {{ hud.hp() }} / {{ hud.maxHp() }}</p>
+            <button id="innRest" (click)="hud.restAtInn()" class="secondary-button" type="button"
+              [disabled]="hud.gel() < offer.price">Descansar na hospedaria · {{ offer.price }} de gel</button>
           } @else if (offer.item === 'sword') {
             <p class="dialog-note">Gel {{ hud.gel() }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes · {{ hud.weapons.forge.windup * 1000 }} ms até o impacto</p>
             <button [disabled]="hud.loadout()?.forged" (click)="hud.buySword()" class="secondary-button" type="button">{{ hud.loadout()?.forged ? "Espada já adquirida" : "Comprar " + hud.weapons.forge.name + " por " + offer.price + " de gel" }}</button>

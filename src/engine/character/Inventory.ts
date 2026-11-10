@@ -14,11 +14,14 @@ import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, ty
 export const QUEST_REWARD_POTIONS = 2;
 export const POTION_HEAL = 35;
 export const POTION_GEL_PRICE = 3;
+/** Descanso numa hospedaria (ADR 0022): cura toda a vida e limpa os status. O gel é a moeda do jogo. */
+export const INN_REST_GEL_PRICE = 4;
 export type PotionTradeResult = "traded" | "insufficient-gel" | "potions-full";
 export type SwordPurchaseResult = "purchased" | "already-owned" | "insufficient-sword-gel" | "too-far-from-forge" | "unavailable";
+export type InnRestResult = "rested" | "insufficient-rest-gel" | "too-far-from-inn" | "rest-not-needed";
 export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned" | "level-too-low";
 /** Tudo que uma ação da bolsa pode responder; a interface traduz cada valor em uma mensagem. */
-export type InventoryOutcome = PotionTradeResult | SwordPurchaseResult | SwordEquipResult | GearResult |
+export type InventoryOutcome = PotionTradeResult | InnRestResult | SwordPurchaseResult | SwordEquipResult | GearResult |
   FoodTradeResult | FoodUseResult | "healed" | "full-health" | "no-potion" | "too-far";
 
 export interface InventoryState {
@@ -144,6 +147,18 @@ export class Inventory {
     this.gelCount -= POTION_GEL_PRICE;
     this.potionCount++;
     return "traded";
+  }
+
+  /** Paga o descanso: vida cheia e sem status. Não cobra se o herói já está bem. */
+  restAtInn(hero: { hp: number; maxHp: number; cleanse?: () => void; debuffs?: Readonly<Record<string, number>> }): InnRestResult {
+    if (!Number.isFinite(hero.hp) || !Number.isFinite(hero.maxHp) || hero.hp <= 0) return "rest-not-needed";
+    const afflicted = Object.values(hero.debuffs ?? {}).some(seconds => seconds > 0);
+    if (hero.hp >= hero.maxHp && !afflicted) return "rest-not-needed";
+    if (this.gelCount < INN_REST_GEL_PRICE) return "insufficient-rest-gel";
+    this.gelCount -= INN_REST_GEL_PRICE;
+    hero.hp = hero.maxHp;
+    hero.cleanse?.();
+    return "rested";
   }
 
   tradeGelForFood(id: FoodId): FoodTradeResult {

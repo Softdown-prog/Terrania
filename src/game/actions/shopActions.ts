@@ -27,6 +27,7 @@ export interface ShopResult {
 
 const say = (outcome: keyof typeof INVENTORY_FEEDBACK, changed = false): ShopResult =>
   ({ message: INVENTORY_FEEDBACK[outcome], changed });
+const nearMadame = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === "south-madame";
 const nearLina = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === "lina";
 
 export function usePotion({ sim, hero, caveHeroDown }: ShopContext): ShopResult {
@@ -41,6 +42,14 @@ export function tradeGelForPotion({ sim, inInterior, menuOpen }: ShopContext): S
   if (!nearLina(sim)) return say("too-far");
   const result = sim.inventory.tradeGelForPotion();
   return say(result, result === "traded");
+}
+
+/** Descanso pago na Hospedaria Sombra do Escorpião (Poço Negro): só ao lado de Madame Víbora, com o diálogo aberto. */
+export function restAtInn({ sim, hero, inInterior, menuOpen }: ShopContext): ShopResult {
+  if (inInterior || !menuOpen || !nearMadame(sim)) return say("too-far-from-inn");
+  if (sim.awaitingRespawn || hero.hp <= 0) return say("unavailable");
+  const result = sim.inventory.restAtInn(hero);
+  return say(result, result === "rested");
 }
 
 export function eatFood({ sim, hero }: ShopContext, id: FoodId): ShopResult {
