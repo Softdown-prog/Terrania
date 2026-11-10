@@ -23,6 +23,8 @@ import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
 import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
 import { paintSouthRuin } from "../../src/render/southRuinsArt.ts";
+import { TOWER_PAINTERS } from "../../src/render/south/towers/index.ts";
+import { TOWERS } from "../../src/world/towers/index.ts";
 import { RUIN_NAMES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
@@ -106,6 +108,10 @@ export const ASSETS: ArtAsset[] = [
       const kinds:readonly SouthCityPropKind[]=["well","gate","tower","wall","torch","building","tent"];
       kinds.forEach((kind,i) => paintSouthCity(c,{kind,x:i*80,y:0,variant:i%3},1));
     } },
+  // Uma peça por torre, cada uma com o nome do seu próprio pintor (um arquivo por torre em render/south/towers/).
+  ...TOWERS.map<ArtAsset>(tower => ({ id: "torre " + tower.name, tier: "structure",
+    fn: ({ "vigia-caida": "paintTorreDoVigiaCaida", miragem: "paintTorreDaMiragem", "sol-negro": "paintTorreDoSolNegro" } as const)[tower.id],
+    draw: c => TOWER_PAINTERS[tower.id](c) })),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
   ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
     .flatMap<ArtAsset>(theme => [
