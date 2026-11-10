@@ -104,7 +104,7 @@ function face(ctx:CanvasRenderingContext2D,seed:number,time:number,hp:number):vo
 }
 function club(ctx:CanvasRenderingContext2D,time:number,casting:number):void{
   const windup=clamp01(casting),lift=windup*7;
-  ctx.save();ctx.translate(29,-61-lift);ctx.rotate(windup*.23);
+  ctx.save();ctx.translate(29,-61-lift);ctx.rotate(windup*.23+Math.sin(time*.8)*.01);
   ctx.strokeStyle=C.shadow;ctx.lineWidth=7;
   ctx.beginPath();ctx.moveTo(0,40);ctx.lineTo(0,0);ctx.stroke();
   ctx.strokeStyle=C.rawhide;ctx.lineWidth=4.5;ctx.stroke();

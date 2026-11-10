@@ -2,7 +2,7 @@
  * Lagarto das Areias — montaria reptiliana, NÃO um cavalo re-colorido.
  * Carapaça áspera, membranas, escamas com direção, crista e sela rígida.
  */
-import { ellipse, rgba, TAU, clamp01 } from "../../draw.ts";
+import { ellipse, rgba, TAU } from "../../draw.ts";
 const C={
   deep:"#2c4238",base:"#83995f",lit:"#c3d7a1",gold:"#d6aa6d",
   copper:"#b87942",leather:"#774c36",bone:"#efe0b5",black:"#202c2b",

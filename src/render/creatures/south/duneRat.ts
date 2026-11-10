@@ -5,7 +5,7 @@
  * Não decide acerto, dano ou loot: usa apenas dados reais da simulação.
  */
 import type { DesertCommonVisual } from "../../regionalWave3.ts";
-import { clamp01, ellipse, hashString, mix, rgba, TAU } from "../../draw.ts";
+import { clamp01, ellipse, hashString, rgba, TAU } from "../../draw.ts";
 const P = {
   fur:"#97806a", ridge:"#5b4b40", highlight:"#ead5ad", shadow:"#322d2b",
   undercoat:"#d2b98a", ear:"#cc8b82", inner:"#7c4a48",
