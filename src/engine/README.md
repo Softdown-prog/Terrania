@@ -47,4 +47,4 @@ os objetivos reais da quest. Nenhum estado do Angular é autoridade de gameplay.
 
 **Andares de caverna (ADR 0018):** `CaveRoom` conhece o andar (`floorIndex`, `floorCount`, `floorName`) e povoa pela tabela do andar em `src/dungeons`. `rooms/caveStairs.ts` decide descer, subir ou sair e cria o andar de destino; a planta e as escadas vêm de `world/caveFloor.ts`.
 
-**Espadas em arquivos separados:** as dez fichas autoritativas de nível, dano, recarga, efeitos e rastro ficam individualmente em `character/weapons/swords/` (primeira `starter.ts`). `character/Weapons.ts` agrega sem duplicar definições nem alterar o contrato antigo. Render e ícones permanecem em seus módulos de apresentação; ver `character/weapons/swords/README.md`.
+**Espadas em arquivos separados:** as onze fichas autoritativas de nível, dano, recarga, efeitos e rastro ficam individualmente em `character/weapons/swords/` (primeira `starter.ts`). `character/Weapons.ts` agrega sem duplicar definições nem alterar o contrato antigo. Render e ícones permanecem em seus módulos de apresentação; ver `character/weapons/swords/README.md`.

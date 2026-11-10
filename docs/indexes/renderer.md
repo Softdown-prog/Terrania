@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (102)
+## Todos os arquivos deste módulo (103)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -109,6 +109,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/swords/astral.ts`](../../src/render/swords/astral.ts)
 - [`src/render/swords/boreal.ts`](../../src/render/swords/boreal.ts)
 - [`src/render/swords/bronze.ts`](../../src/render/swords/bronze.ts)
+- [`src/render/swords/common.ts`](../../src/render/swords/common.ts)
 - [`src/render/swords/copper.ts`](../../src/render/swords/copper.ts)
 - [`src/render/swords/dunes.ts`](../../src/render/swords/dunes.ts)
 - [`src/render/swords/forge.ts`](../../src/render/swords/forge.ts)

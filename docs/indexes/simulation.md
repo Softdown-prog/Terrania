@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (34)
+## Todos os arquivos deste módulo (35)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -35,6 +35,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/weapons/swords/astral.ts`](../../src/engine/character/weapons/swords/astral.ts)
 - [`src/engine/character/weapons/swords/boreal.ts`](../../src/engine/character/weapons/swords/boreal.ts)
 - [`src/engine/character/weapons/swords/bronze.ts`](../../src/engine/character/weapons/swords/bronze.ts)
+- [`src/engine/character/weapons/swords/common.ts`](../../src/engine/character/weapons/swords/common.ts)
 - [`src/engine/character/weapons/swords/copper.ts`](../../src/engine/character/weapons/swords/copper.ts)
 - [`src/engine/character/weapons/swords/dunes.ts`](../../src/engine/character/weapons/swords/dunes.ts)
 - [`src/engine/character/weapons/swords/forge.ts`](../../src/engine/character/weapons/swords/forge.ts)
