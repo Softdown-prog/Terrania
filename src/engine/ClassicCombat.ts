@@ -3,6 +3,7 @@ import type { Player } from "../actors/Player.ts";
 import type { CollisionMap } from "../world/collision.ts";
 import { canStrike, faceTarget } from "./combat.ts";
 import { WEAPONS, type WeaponId } from "./Weapons.ts";
+import { swordArc } from "./SwordCombat.ts";
 
 /** Terrania's original classic-RPG prototype: target-and-wait, not an action combo.
  * Shared by the solo simulation and the authoritative Node room.
@@ -72,11 +73,12 @@ export class ClassicCombat {
     const mob = mobs.get(this.selected);
     if (!mob || mob.hp <= 0) { this.cancel(); return false; }
     if (player.hp <= 0 || !isPoint(mob) || !isPoint(player)) return false;
-    if (this.remaining > 0 || player.attackCooldown > 0) return false;
+    // Atordoado, o herói não inicia golpe: não gastar a recarga nem o alvo do golpe.
+    if (this.remaining > 0 || player.attackCooldown > 0 || player.stunned) return false;
     const facing = { x: player.x, y: player.y, faceX: player.faceX, faceY: player.faceY };
     faceTarget(facing, mob);
-    const astral = weapon === "astral";
-    if (!canStrike(facing, mob, collision, astral ? 72 : 52, astral ? -0.5 : -0.1)) return false;
+    const arc = swordArc(weapon);
+    if (!canStrike(facing, mob, collision, arc.reach, arc.cone)) return false;
     player.faceX = facing.faceX;
     player.faceY = facing.faceY;
     this.swingTarget = mob.id;

@@ -20,8 +20,21 @@ O objetivo é que Claude, ChatGPT/Codex e pessoas entreguem no mesmo padrão, se
 - **TypeScript:** `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes` estão ligados; não os enfraqueça. Regras de jogo ficam em `src/engine|actors|world`, sem Angular, Phaser, DOM nem rede (conferido por `architecture:check`).
 - **Go:** arquivos novos ou alterados devem passar em `gofmt`. Hoje 34 dos 44 arquivos de `cmd`, `engine` e `presence` não passam; reformatar em lote é uma tarefa separada, para não conflitar com trabalho em andamento.
 - **Tamanho:** arquivo `.ts` novo em `src/` ou `server/src/` tem no máximo 400 linhas, e os já grandes (tabela em `tests/file-size-budget.test.ts`) não podem crescer. Passou do limite: divida por responsabilidade, não acrescente código. Regra de jogo vai para `src/engine/`, nunca para `src/game/Game.ts` ([ADR 0013](docs/adr/0013-decomposicao-do-game.md)).
-- **Determinismo:** sem `Math.random`/`Date.now` no render; variação por semente (`hashString`, `hash2`).
+- **Determinismo:** sem `Math.random`, `Date.now`, `performance.now`, `new Date()` nem `crypto.getRandomValues` em `src/engine`, `src/actors`, `src/world` e `src/render`; variação por semente (`hashString`, `hash2`) e tempo pelo `dt` da simulação. Portão: `tests/quality-gates.test.ts`.
+- **Sem atalhos para ficar verde:** nada de `@ts-ignore`, `@ts-nocheck`, `@ts-expect-error` ou `any` em `src/` e `server/src/`, nem `test.only`/`test.skip`/`todo` nos testes. Pulo condicional por ambiente só entra na lista `CONDITIONAL_SKIPS` de `tests/quality-gates.test.ts`, com motivo.
+- **Invariantes do motor:** quem mexe em combate, derrota, experiência ou save confere a lista "Invariantes do motor", abaixo; cada uma tem regressão em `tests/engine-invariants.test.ts`. Bug corrigido vira invariante com teste, na mesma entrega.
 - **Texto e docs em português;** identificadores e nomes de arquivo como o módulo já usa.
+
+## Invariantes do motor
+
+Regras que já quebraram uma vez. Valem para a superfície (`OfflineSimulation`) e para a caverna (`CaveRoom`).
+
+- **Herói derrotado só volta por `respawn()`.** Nenhum efeito colateral (subir de nível, comida, poção) tira a vida de zero.
+- **Toda derrota é salva no mesmo passo:** `update` devolve `true` quando o herói cai, seja por contato, veneno, queimadura ou espinhos.
+- **Superfície e caverna aplicam a mesma fórmula** de dano, defesa e alvos. Alcance, cone e número de alvos vêm de `swordArc`; quem é atingido vem de `swordStrikeTargets` (`src/engine/SwordCombat.ts`). Não copiar esses números para outro arquivo.
+- **Golpe com alvo escolhido** exige o alvo ao alcance e à vista; só então a lâmina astral completa o arco com até dois vizinhos. Golpe sem alvo (`null`) não fere ninguém.
+- **Recarga só é gasta por golpe que sai:** herói atordoado não consome o intervalo da arma.
+- **Nada do save vira estado sem normalizar:** números finitos, inteiros e limitados (`normalizeKills`, `normalizeExperience`, `normalizeInventory`...), tanto em `loadLocalSave` quanto no construtor da simulação.
 
 ## Fronteiras arquiteturais
 

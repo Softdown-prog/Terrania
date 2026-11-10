@@ -1,6 +1,7 @@
 import { WEAPONS, type WeaponId } from "./Weapons.ts";
 import { clearPath, moveBody, type CollisionMap } from "../world/collision.ts";
 import { hash2 } from "../world/random.ts";
+import { ATTACK_REACH, canStrike } from "./combat.ts";
 import type { Slime } from "../actors/Slime.ts";
 import type { Player } from "../actors/Player.ts";
 
@@ -9,6 +10,27 @@ export function swordHitDamage(weapon: WeaponId, target: Slime): number {
   const definition=WEAPONS[weapon];
   const effectiveArmor=Math.floor(target.defense*(weapon==="astral"?.75:1));
   return Math.max(1,definition.damage-effectiveArmor);
+}
+/** Alcance, cone e número de alvos do golpe: única fonte para o solo, a caverna e o alvo clássico. */
+export function swordArc(weapon: WeaponId): { readonly reach: number; readonly cone: number; readonly targets: number } {
+  return weapon==="astral" ? {reach:72,cone:-.5,targets:3} : {reach:ATTACK_REACH,cone:-.1,targets:1};
+}
+/** Quem o golpe atinge, do mais próximo ao mais distante.
+ * `targetId` indefinido: arco manual legado. `null`: golpe sem alvo, não fere ninguém.
+ * Texto: o alvo escolhido precisa estar ao alcance; ele vem primeiro e só a lâmina
+ * astral completa o arco com os vizinhos, sem atravessar paredes.
+ */
+export function swordStrikeTargets<T extends Slime>(weapon: WeaponId,
+  hero: { x: number; y: number; faceX: number; faceY: number },
+  mobs: Iterable<T>, world: CollisionMap, targetId?: string | null): T[] {
+  if(targetId===null)return [];
+  const arc=swordArc(weapon);
+  const distance=(mob:T):number=>Math.hypot(mob.x-hero.x,mob.y-hero.y);
+  const inArc=[...mobs].filter(mob=>mob.hp>0 && canStrike(hero,mob,world,arc.reach,arc.cone))
+    .sort((a,b)=>distance(a)-distance(b) || a.id.localeCompare(b.id));
+  if(targetId===undefined)return inArc.slice(0,arc.targets);
+  const chosen=inArc.find(mob=>mob.id===targetId);
+  return chosen ? [chosen,...inArc.filter(mob=>mob!==chosen)].slice(0,arc.targets) : [];
 }
 const seedFor=(id:string):number=>{
   let seed=2166136261;
