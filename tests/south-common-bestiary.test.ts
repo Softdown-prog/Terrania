@@ -11,14 +11,14 @@ import { caveThemeAt, type CaveEntrance } from "../src/world/caves.ts";
 import { TILE_SIZE, CHUNK_TILES, getTile } from "../src/world/terrain.ts";
 
 const profiles=[
-  ["dune-rat",35,6,3,[.5,.4,.1]],
-  ["sand-goblin",65,11,3,[.85,.15,.6]],
-  ["desert-orc",110,17,4,[.55,.25,.5,.4]],
-  ["clay-troll",145,15,3,[.75,.45,.6]],
+  ["dune-rat",35,6,4,[.5,.4,.1,.035]],
+  ["sand-goblin",65,11,4,[.85,.15,.6,.025]],
+  ["desert-orc",110,17,5,[.55,.25,.5,.4,.025]],
+  ["clay-troll",145,15,4,[.75,.45,.6,.018]],
   ["dune-scout",75,12,4,[.5,.65,.35,.5]],
-  ["oasis-elf",90,16,3,[.5,.6,.18]],
-  ["mirage-imp",55,14,1,[.45]],
-  ["horned-viper",45,10,2,[.5,.4]],
+  ["oasis-elf",90,16,4,[.5,.6,.18,.025]],
+  ["mirage-imp",55,14,2,[.45,.025]],
+  ["horned-viper",45,10,3,[.5,.4,.035]],
   ["carrion-vulture",50,9,2,[.7,.3]],
   ["cactus-sprout",60,8,3,[.4,.65,.55]],
 ] as const;
@@ -155,7 +155,7 @@ test("miragem: status diminui acerto; saques são reproduzíveis sem drop obriga
   assert.ok(hero.debuffs.blind>0);
   for(const kind of SOUTH_COMMON_KINDS)
     assert.deepEqual(rollCreatureLoot(kind,kind+":123"),rollCreatureLoot(kind,kind+":123"));
-  assert.deepEqual(CREATURE_CATALOG["mirage-imp"].loot.map(x=>x.chance),[.45]);
+  assert.deepEqual(CREATURE_CATALOG["mirage-imp"].loot.map(x=>x.chance),[.45,.025]);
   const inv=new Inventory();
   for(const item of CREATURE_CATALOG["dune-rat"].loot)assert.ok(inv.addMaterial(item.item));
   assert.equal(inv.materials["Rabo de Rato"],1);

@@ -13,3 +13,5 @@
 **Verificação:** `tests/presence.test.ts`, `tests/play-presence.test.ts`, `tests/item-catalog.test.ts` e `server/tests/http.test.ts`.
 
 **Limites:** o contador é informativo. Quem controla o navegador pode inventar ids até o limite do servidor (5.000 abas simultâneas). Nenhum dado de jogo (posição, vida, itens) sai do navegador.
+
+**Raros do Sul:** `catalogItems` já reconhece `rarity: 'rare'`. O backend agora publica no PostgreSQL os dez saques reais de `src/monsters/south/rareLoot.ts`, todos sem comércio habilitado. Consultar o catálogo não equivale a sincronizar posse do jogo solo com um cofre online.

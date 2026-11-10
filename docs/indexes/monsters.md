@@ -15,7 +15,7 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/east/index.ts`](../../src/monsters/east/index.ts)
 - [`src/monsters/west/index.ts`](../../src/monsters/west/index.ts)
 
-## Todos os arquivos deste módulo (41)
+## Todos os arquivos deste módulo (42)
 
 - [`src/monsters/README.md`](../../src/monsters/README.md)
 - [`src/monsters/behavior.ts`](../../src/monsters/behavior.ts)
@@ -48,6 +48,7 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/south/mire-hydra.ts`](../../src/monsters/south/mire-hydra.ts)
 - [`src/monsters/south/oasis-elf.ts`](../../src/monsters/south/oasis-elf.ts)
 - [`src/monsters/south/poison-scout-toad.ts`](../../src/monsters/south/poison-scout-toad.ts)
+- [`src/monsters/south/rareLoot.ts`](../../src/monsters/south/rareLoot.ts)
 - [`src/monsters/south/rotten-marsh-ent.ts`](../../src/monsters/south/rotten-marsh-ent.ts)
 - [`src/monsters/south/sand-beetle.ts`](../../src/monsters/south/sand-beetle.ts)
 - [`src/monsters/south/sand-goblin.ts`](../../src/monsters/south/sand-goblin.ts)
