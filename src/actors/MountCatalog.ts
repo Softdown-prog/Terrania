@@ -1,9 +1,7 @@
 /** Montarias são companheiras do jogo SOLO, não monstros nem entidades de rede. */
-export const MOUNT_IDS = [
-  "warhorse", "mountain-goat", "imperial-elk", "fire-lion", "sand-basilisk",
-  "cavern-bear", "silver-unicorn", "dark-griffin", "cargo-beetle", "tidal-hippocampus",
-] as const;
-export type MountId = typeof MOUNT_IDS[number];
+import { MOUNT_IDS, type MountId } from "../world/mountIds.ts";
+export { MOUNT_IDS };
+export type { MountId };
 export type RidingTier = 1 | 2 | 3;
 export type MountRegion = "west" | "northwest" | "north" | "south" | "east" | "west-north" | "east-west";
 export type MountAbility = "charge" | "climb" | "forest" | "fire-aura" | "desert" |

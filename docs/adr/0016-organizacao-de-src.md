@@ -1,6 +1,6 @@
 # ADR 0016 — Organização de `src/`
 
-**Estado:** em andamento. Sessão 1 (`src/engine` em subpastas) entregue em 2026-11-10; as demais abaixo.
+**Estado:** em andamento. Sessão 1 (`src/engine` em subpastas) e sessão 3a (ciclo `actors ↔ world`) entregues em 2026-11-10; as demais abaixo.
 
 ## Contexto
 
@@ -37,7 +37,10 @@ Só se moveu e se reescreveu `import`. **Prova:** das 88 `.ts`/`.mjs` alteradas,
 ## Próximas sessões (cada uma, um PR)
 
 - **Sessão 2 — legibilidade sem teto artificial:** o tamanho passou a ser um diagnóstico não bloqueante: até 400 linhas preferível, 401–800 aviso e acima de 800 revisão recomendada, conforme `tests/file-size-budget.test.ts`. Em vez de tetos por linhas ou bytes, avaliar instruções comprimidas e largura de linha em revisão de legibilidade, sem reprovar o CI apenas por tamanho. Os portões reais de arquitetura, tipagem e testes permanecem.
-- **Sessão 3 — ciclos pequenos:** remover `world/npcs.ts` (importar de `npcs/`) e tirar `mountQuests` de `world/` ou inverter o tipo; mover `CaveFloor` (geração do mapa) para `world/` (ADR 0014, sessão 3).
+- **Sessão 3 — ciclos pequenos**, em três partes:
+  - **3a (feita):** `actors ↔ world` desfeito. O vocabulário das montarias (`MOUNT_IDS`, `MountId`) foi para `world/mountIds.ts`; `world/mountQuests.ts` importa de lá e `actors/MountCatalog.ts` reexporta os mesmos nomes (nenhum outro arquivo mudou). `tests/layering.test.ts` trava a regra: `world` só importa `world`; `monsters` e `npcs` só importam a si mesmas e `world`.
+  - **3b (espera o PR #126):** remover `world/npcs.ts` (reexportação de `npcs/` que fecha `npcs ↔ world`) e apagar a exceção em `tests/layering.test.ts`.
+  - **3c (espera o PR #126):** mover `CaveFloor` (geração do mapa) de `engine/rooms/CaveRoom.ts` para `world/` (ADR 0014, sessão 3). 3b e 3c ficam para depois porque o #126 altera `world/npcs.ts`, `npcs/catalog.ts` e `CaveRoom.ts`.
 - **Sessão 4 — camada de regras sob os atores:** `Weapons`, `Food`, `Experience`, `Equipment` e as constantes de `combat.ts` são regras puras usadas por `actors/Player.ts`; devem ficar abaixo de `actors`, para que `engine` dependa de `actors` e não o contrário. **Só depois do bestiário**, pois mexe nos imports de `Player`/`RegionalMonster`.
 - **Sessão 5 — `render/` e `ui/`:** subpastas (`hero`, `world`, `fx`, `mounts`, `monsters` por último), dividir `render/actors.ts` (585) em herói e slime, e levar `CanvasScene.ts` para `render/`, deixando `ui/` só com a ponte do Angular.
 - **Sessão 6 — `app/`:** separar `app/site/` (páginas) de `app/game/` (HUD, ícones, tela do jogo) e dividir `hud.service.ts` por assunto.
