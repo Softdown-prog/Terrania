@@ -1,7 +1,7 @@
 /** Silhueta procedural da espécie, separada das fichas de domínio. */
-import type { Palette } from "./geometry.ts";
-import { body, line, eye, freckles } from "./geometry.ts";
-import { ellipse, rgba } from "../../draw.ts";
+import type { Palette } from "../../shared/southGeometry.ts";
+import { body, line, eye, freckles } from "../../shared/southGeometry.ts";
+import { ellipse, rgba } from "../../../draw.ts";
 
 const flameLick = (ctx:CanvasRenderingContext2D,x:number,y:number,size:number,
   direction:number,phase:number,outer:string,inner:string):void => {

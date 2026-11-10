@@ -1,7 +1,7 @@
 /** Silhueta procedural da espécie, separada das fichas de domínio. */
-import type { Palette } from "./geometry.ts";
-import { body, tip, eye, freckles, OUTLINE } from "./geometry.ts";
-import { ellipse } from "../../draw.ts";
+import type { Palette } from "../../shared/southGeometry.ts";
+import { body, tip, eye, freckles, OUTLINE } from "../../shared/southGeometry.ts";
+import { ellipse } from "../../../draw.ts";
 
 export const viper = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   ctx.strokeStyle=OUTLINE;ctx.lineWidth=15;ctx.lineCap="round";

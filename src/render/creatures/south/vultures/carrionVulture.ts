@@ -1,7 +1,7 @@
 /** Silhueta procedural da espécie, separada das fichas de domínio. */
-import type { Palette } from "./geometry.ts";
-import { body, line, tip, eye, freckles, OUTLINE } from "./geometry.ts";
-import { ellipse } from "../../draw.ts";
+import type { Palette } from "../../shared/southGeometry.ts";
+import { body, line, tip, eye, freckles, OUTLINE } from "../../shared/southGeometry.ts";
+import { ellipse } from "../../../draw.ts";
 
 export const vulture = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   const wood:Palette={...c,base:"#847052",light:"#b69a72",dark:"#554735"};
