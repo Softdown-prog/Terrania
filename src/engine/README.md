@@ -12,6 +12,8 @@
 
 **Progressão:** XP é a fonte para nível e vida máxima. A simulação solo e a sala Node creditam a recompensa do catálogo no abate e compartilham a curva de `Experience.ts`.
 
+**Tempo de volta dos monstros (ADR 0029):** o relógio da aventura (`time`, só anda enquanto se joga) e a hora de volta de cada derrotado (`respawnAt`) vão no save. O prazo (`combat/respawn.ts`) é 60 s + 1,5 × experiência da espécie (de 60 s a 10 min), 30 min para o chefe, e nunca para o treino da gruta de Aela. Na superfície o monstro só volta com o herói a mais de 700 px; nas masmorras, ao entrar ou trocar de andar.
+
 **Derrota no solo:** dano letal encerra o tick antes de ataque ou coleta. Com vida zerada, a simulação aguarda o comando de retorno. O herói reaparece na Vila da Travessia com a vida máxima do seu nível. XP, missão, bolsa e itens no chão permanecem no mesmo mundo. Subir de nível no mesmo passo da queda aumenta só a vida máxima: o herói continua derrotado. Toda queda (contato, veneno, queimadura, espinhos ou explosão) faz `update` devolver `true`, para o jogo salvar na hora. As regressões estão em `tests/engine-invariants.test.ts`.
 
 **Verificação:** npm test; Playwright ao afetar movimento/seleção.

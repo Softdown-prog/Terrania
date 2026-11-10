@@ -76,6 +76,7 @@
 - [`docs/adr/0026-bazar-e-ossuario.md`](../../docs/adr/0026-bazar-e-ossuario.md)
 - [`docs/adr/0027-moradores-dos-lagos-e-das-ruinas.md`](../../docs/adr/0027-moradores-dos-lagos-e-das-ruinas.md)
 - [`docs/adr/0028-montarias-do-deserto-no-poco-negro.md`](../../docs/adr/0028-montarias-do-deserto-no-poco-negro.md)
+- [`docs/adr/0029-tempo-de-volta-dos-monstros.md`](../../docs/adr/0029-tempo-de-volta-dos-monstros.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

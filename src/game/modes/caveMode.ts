@@ -21,6 +21,7 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
       host.sim.inventory.loadout.equipped,host.sim.inventory.defense,
       classicStrike ? host.travel.combat.strikeTargetId : undefined);
     host.input.acknowledgeMovement();
+    host.sim.advanceClock(dt); // o tempo de volta dos monstros também anda dentro da masmorra (ADR 0029)
     const changed = applyCaveVictories(host.sim, cave);
     if(changed)host.save();
   }

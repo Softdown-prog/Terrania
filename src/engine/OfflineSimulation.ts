@@ -15,6 +15,8 @@ import type { ClassicTileWalker, WalkDirection } from "./movement/ClassicTileWal
 import { Inventory, type InventoryState } from "./character/Inventory.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./character/loot.ts";
 import { rollCoinDrop } from "./character/coins/index.ts";
+import { LEGACY_RESPAWN_SECONDS, respawnSecondsForId } from "./combat/respawn.ts";
+import type { CreatureKind } from "../actors/CreatureCatalog.ts";
 import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./character/Experience.ts";
 import { hasNutrition, type NutritionState } from "./character/Food.ts";
 
@@ -35,6 +37,10 @@ export interface OfflineSave {
   experience?: number;
   awaitingRespawn?: true;
   mounts?: MountSave;
+  /** Relógio da aventura, em segundos de jogo (ADR 0029). */
+  time?: number;
+  /** Quando cada criatura derrotada volta, em segundos do relógio. */
+  respawnAt?: Record<string, number>;
 }
 
 /** Contagem de abates vinda de um save: inteira, não negativa e limitada (missões dependem disso). */
@@ -42,6 +48,9 @@ export function normalizeKills(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value)
     ? Math.max(0, Math.min(MAX_KILLS, Math.floor(value))) : 0;
 }
+
+/** Distância mínima do herói (px) para um derrotado voltar: fora da tela, sem aparecer do nada. */
+const RESPAWN_MIN_DISTANCE = 700;
 
 /** Motor puro: nenhuma dependência de Canvas, DOM, UI, rede ou localStorage. */
 export class OfflineSimulation {
@@ -58,6 +67,11 @@ export class OfflineSimulation {
   trainingKills = 0;
   experience = 0;
   private spawnedChunk = "";
+  /** Segundos de jogo desde o começo da aventura; só anda enquanto se joga (ADR 0029). */
+  private clock = 0;
+  /** Quando cada derrotado volta (segundos do relógio). Quem nunca volta não entra. */
+  private readonly respawnAt = new Map<string, number>();
+  private nextRespawnScan = 0;
 
   constructor(seed: number, saved?: OfflineSave) {
     this.seed = seed;
@@ -78,13 +92,55 @@ export class OfflineSimulation {
       if (this.player.hp > 0) this.player.restoreNutrition(saved.nutrition);
       this.kills = normalizeKills(saved.kills);
       this.trainingKills = Math.min(5, normalizeKills(saved.trainingKills));
+      this.clock = typeof saved.time === "number" && Number.isFinite(saved.time) && saved.time > 0 ? saved.time : 0;
       for (const id of Array.isArray(saved.defeated) ? saved.defeated : [])
         if (typeof id === "string") this.defeated.add(id);
+      // Hora de volta: a do save, quando válida; save antigo (sem ela) volta LEGACY_RESPAWN_SECONDS depois do carregamento.
+      const savedAt = saved.respawnAt && typeof saved.respawnAt === "object" && !Array.isArray(saved.respawnAt) ? saved.respawnAt : {};
+      for (const id of this.defeated) {
+        const raw = savedAt[id];
+        if (typeof raw === "number" && Number.isFinite(raw) && raw >= 0) this.respawnAt.set(id, Math.min(raw, this.clock + 7_200));
+        else {
+          const seconds = respawnSecondsForId(id);
+          if (seconds !== null) this.respawnAt.set(id, this.clock + LEGACY_RESPAWN_SECONDS);
+        }
+      }
       for (const drop of normalizeDrops(saved.drops)) {
         // Não carregar itens incompatíveis com a lista de monstros derrotados (as moedas levam ":coin" no id).
         if (this.defeated.has(drop.id.replace(/:coin$/, ""))) this.drops.set(drop.id, drop);
       }
     }
+  }
+
+  /** Segundos de jogo desde o começo da aventura. */
+  get time(): number { return this.clock; }
+  /** Faz o relógio andar fora da superfície (na caverna, por exemplo); só valores positivos e finitos. */
+  advanceClock(dt: number): void {
+    if (Number.isFinite(dt) && dt > 0) this.clock += Math.min(dt, 0.1);
+  }
+  /** Anota quando a criatura derrotada volta (ou que nunca volta). */
+  noteDefeat(id: string, kind: CreatureKind): void {
+    const seconds = respawnSecondsForId(id, kind);
+    if (seconds === null) this.respawnAt.delete(id);
+    else this.respawnAt.set(id, this.clock + seconds);
+  }
+  /** Quem volta neste instante: o prazo passou. */
+  private due(id: string): boolean {
+    const at = this.respawnAt.get(id);
+    return at !== undefined && this.clock >= at;
+  }
+  private release(id: string): void {
+    this.defeated.delete(id);
+    this.respawnAt.delete(id);
+    // O que a criatura deixou no chão some junto com ela voltar.
+    this.drops.delete(id);
+    this.drops.delete(id + ":coin");
+  }
+  /** Devolve ao mundo todos os derrotados cujo prazo passou (usado ao entrar numa masmorra). Devolve quantos. */
+  expireDefeats(): number {
+    let count = 0;
+    for (const id of [...this.respawnAt.keys()]) if (this.due(id)) { this.release(id); count++; }
+    return count;
   }
 
   get awaitingRespawn(): boolean {
@@ -111,6 +167,9 @@ export class OfflineSimulation {
       for (let cx = x0 - 2; cx <= x0 + 2; cx++) {
         for (const slime of [...slimeSpawns(cx, cy, this.seed), ...regionalSurfaceSpawns(cx, cy, this.seed),
           ...southCommonSpawns(cx,cy,this.seed),...southSiteSpawns(cx,cy,this.seed)]) {
+          // O derrotado volta quando o prazo passa e o herói está longe (não aparece na tela): ADR 0029.
+          if (this.defeated.has(slime.id) && this.due(slime.id) &&
+              Math.hypot(slime.x - this.player.x, slime.y - this.player.y) > RESPAWN_MIN_DISTANCE) this.release(slime.id);
           if (!this.defeated.has(slime.id) && !this.slimes.has(slime.id))
             this.slimes.set(slime.id, slime);
         }
@@ -121,6 +180,7 @@ export class OfflineSimulation {
     if(this.defeated.has(id))return;
     this.slimes.delete(id);
     this.defeated.add(id);
+    this.noteDefeat(id, slime.kind);
     if(slime.kind==="slime")this.kills=Math.min(MAX_KILLS,this.kills+1);
     if(slime instanceof RegionalMonster){
       slime.deathBurst(this.player,this.collision,defense);
@@ -159,6 +219,12 @@ export class OfflineSimulation {
     else this.player.update(dt, typeof direction === "function" ? direction() : direction, collision);
     const dx=this.player.x-beforeX,dy=this.player.y-beforeY;
     this.mounts.update(dt,{x:dx,y:dy},Math.hypot(dx,dy)>.01);
+    this.clock += dt;
+    // A cada 5 s, se alguém já pode voltar, o povoamento do entorno é refeito (só aí o morto reaparece).
+    if (this.respawnAt.size > 0 && this.clock >= this.nextRespawnScan) {
+      this.nextRespawnScan = this.clock + 5;
+      for (const id of this.respawnAt.keys()) if (this.due(id)) { this.spawnedChunk = ""; break; }
+    }
     this.spawnNearby();
     const defense = this.inventory.defense;
     let changed = false;
@@ -222,6 +288,8 @@ export class OfflineSimulation {
       trainingKills: this.trainingKills,
       experience: this.experience,
       ...(this.awaitingRespawn ? { awaitingRespawn: true } : {}),
+      time: Math.round(this.clock * 100) / 100,
+      ...(this.respawnAt.size ? { respawnAt: Object.fromEntries([...this.respawnAt].slice(-2000)) } : {}),
       defeated: [...this.defeated].slice(-2000),
       inventory: this.inventory.snapshot(),
       ...(Object.keys(this.mounts.snapshot()).length ? { mounts: this.mounts.snapshot() } : {}),

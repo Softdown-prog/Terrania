@@ -247,6 +247,7 @@ export class Game {
     this.hud.setCombatTarget(null);
     this.hud.setBattleCreatures([],null);
     this.sim.mounts.dismount();
+    this.sim.expireDefeats(); // quem já podia voltar volta antes de a masmorra ser povoada (ADR 0029)
     this.cave=new CaveRoom(entrance,this.sim.player.hp,this.sim.player.maxHp,this.sim.defeated);
     this.cave.player.syncAdventureStateFrom(this.sim.player);
     this.hud.setTravelNotice((entrance.tower ? "Você entrou em " : "Você desceu para ")+entrance.name+(this.cave.floorCount>1
@@ -255,6 +256,7 @@ export class Game {
   }
   private changeCaveFloor(move:"descend"|"ascend"):void {
     if(!this.cave) return;
+    this.sim.expireDefeats();
     const next=roomAfterMove(this.cave,move,this.sim.defeated);
     this.travel.stopAll();
     this.input.clear();

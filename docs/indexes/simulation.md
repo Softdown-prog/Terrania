@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (44)
+## Todos os arquivos deste módulo (45)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -56,6 +56,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/combat/ClassicPursuit.ts`](../../src/engine/combat/ClassicPursuit.ts)
 - [`src/engine/combat/SwordCombat.ts`](../../src/engine/combat/SwordCombat.ts)
 - [`src/engine/combat/combat.ts`](../../src/engine/combat/combat.ts)
+- [`src/engine/combat/respawn.ts`](../../src/engine/combat/respawn.ts)
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/mounts/MountQuestState.ts`](../../src/engine/mounts/MountQuestState.ts)
 - [`src/engine/mounts/MountStable.ts`](../../src/engine/mounts/MountStable.ts)
