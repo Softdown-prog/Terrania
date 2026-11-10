@@ -29,6 +29,19 @@ export const MARSH_ARTWORK: SwordArtwork = {
       ctx.beginPath();ctx.ellipse(x,y+1,.65,1.5,0,0,TAU);ctx.fill();
     }
   },
+  animate(ctx,s,tone,time) {
+    // Veneno percorre os sulcos da lâmina; nada é criado no mundo físico.
+    ctx.save();
+    ctx.globalAlpha=.28+.22*(.5+.5*Math.sin(time*2.2));
+    ctx.fillStyle=tone(s.accent);
+    for(let i=0;i<3;i++){
+      const x=23+i*5;
+      const y=.9*Math.sin(time*1.7+i*2)+.5;
+      ctx.beginPath();ctx.ellipse(x,y,.56,.98,-.3,0,TAU);ctx.fill();
+    }
+    point(ctx,26,.4,.48,tone(s.glint));
+    ctx.restore();
+  },
   slashAccent(ctx,args) {
     const { x, y, angle, alpha, first, second, glow } = args;
     const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;

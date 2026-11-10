@@ -30,7 +30,7 @@ test("espada: mão do cavaleiro e cabo permanecem juntos na cintura, em todas as
   }
 });
 
-test("arte: dez espadas renderizam dentro da escala do cavaleiro com equipamento",()=>{
+test("arte: onze espadas renderizam dentro da escala do cavaleiro com equipamento",()=>{
   assert.ok(KNIGHT_SWORD_SCALE<=.65);
   for(const equippedWeapon of WEAPON_IDS)for(const direction of directions)
     for(const attackTime of [0,ATTACK_DURATION]){
@@ -72,7 +72,7 @@ test("animação: preparo, contato e rastro respeitam o tempo de todas as espada
 });
 
 test("acabamento animado usa o tempo do jogo, é determinístico e não altera lâminas comuns",()=>{
-  for(const weapon of ["obsidian","tempest","astral"] as const){
+  for(const weapon of ["dunes","boreal","obsidian","marsh","tempest","astral"] as const){
     const first=new Recorder(),again=new Recorder(),later=new Recorder();
     drawKnightSword(first.ctx,weapon,0,c=>c,.25);
     drawKnightSword(again.ctx,weapon,0,c=>c,.25);
@@ -83,7 +83,7 @@ test("acabamento animado usa o tempo do jogo, é determinístico e não altera l
     assert.equal(later.metrics().saves,later.metrics().restores,weapon+" não restaura o Canvas");
     assert.ok(later.metrics().width<100 && later.metrics().height<80,weapon+" extrapolou a silhueta");
   }
-  for(const weapon of ["starter","forge","bronze","copper"] as const){
+  for(const weapon of ["starter","forge","common","bronze","copper"] as const){
     const first=new Recorder(),later=new Recorder();
     drawKnightSword(first.ctx,weapon,0,c=>c,.25);
     drawKnightSword(later.ctx,weapon,0,c=>c,1.1);
@@ -116,6 +116,36 @@ test("rastros materiais: seis geometrias distintas e determinísticas, sem desvi
     drawKnightTrail(r.ctx,weapon,0,[],0);
     assert.equal(r.metrics().paintOps,0,weapon+" desenha sem ataque");
   }
+});
+
+test("rastros físicos individuais seguem o giro, dissipam e não geram magia em repouso",()=>{
+  const physical=["starter","forge","common","bronze","copper"] as const;
+  const angles=[-1.1,-.8,-.5,-.2,0] as const;
+  const signatures=new Set<string>();
+  for(const weapon of physical){
+    assert.equal(WEAPONS[weapon].nature,"physical",weapon);
+    assert.equal(WEAPONS[weapon].visual.trailAccent,undefined,weapon);
+    const art=readFileSync("src/render/swords/"+weapon+".ts","utf8");
+    assert.ok(art.includes("slashAccent("),weapon+" sem rastro individual");
+    const idle=new Recorder();
+    drawKnightTrail(idle.ctx,weapon,0,angles,0);
+    assert.equal(idle.metrics().paintOps,0,weapon+" desenhou sem ataque");
+    for(const facing of [0,Math.PI/2,Math.PI,-Math.PI/2]){
+      const a=new Recorder(),b=new Recorder();
+      drawKnightTrail(a.ctx,weapon,facing,angles,.78);
+      drawKnightTrail(b.ctx,weapon,facing,angles,.78);
+      const first=a.metrics(),second=b.metrics();
+      assert.equal(first.signature,second.signature,weapon+" rastro não determinístico");
+      assert.equal(first.saves,first.restores,weapon+" alterou o estado Canvas");
+      assert.ok(first.paintOps>=9,weapon+" não adicionou acabamento físico ao golpe");
+      assert.ok(first.usesAlpha,weapon+" sem dissipação do movimento");
+      assert.ok(first.width<100&&first.height<100,weapon+" rastro extrapola a mão");
+      if(facing===0)signatures.add(first.signature);
+    }
+  }
+  assert.equal(signatures.size,physical.length,"golpes físicos reutilizam o mesmo desenho");
+  const shared=readFileSync("src/render/swords/shared.ts","utf8");
+  assert.ok(shared.includes("if(art.slashAccent)"),"o compositor ignorou as espadas físicas");
 });
 
 test("fita afilada e raios orientados ao golpe mantêm escala e determinismo",()=>{

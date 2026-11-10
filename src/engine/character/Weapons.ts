@@ -1,5 +1,6 @@
 import { STARTER_SWORD } from "./weapons/swords/starter.ts";
 import { FORGE_SWORD } from "./weapons/swords/forge.ts";
+import { COMMON_SWORD } from "./weapons/swords/common.ts";
 import { BRONZE_SWORD } from "./weapons/swords/bronze.ts";
 import { COPPER_SWORD } from "./weapons/swords/copper.ts";
 import { DUNES_SWORD } from "./weapons/swords/dunes.ts";
@@ -9,9 +10,9 @@ import { MARSH_SWORD } from "./weapons/swords/marsh.ts";
 import { TEMPEST_SWORD } from "./weapons/swords/tempest.ts";
 import { ASTRAL_SWORD } from "./weapons/swords/astral.ts";
 
-/** Catalog for the Knight's ten illustrated sword tiers. The legacy `forge`
+/** Catalog for the Knight's eleven illustrated sword tiers. The legacy `forge`
  * ID is deliberately reused as iron, so preexisting saved purchases survive. */
-export const WEAPON_IDS = ["starter","forge","bronze","copper","dunes","boreal","obsidian","marsh","tempest","astral"] as const;
+export const WEAPON_IDS = ["starter","forge","common","bronze","copper","dunes","boreal","obsidian","marsh","tempest","astral"] as const;
 export type WeaponId = typeof WEAPON_IDS[number];
 export type SwordSpecial = "push" | "bleed" | "ice" | "fire" | "poison" | "lightning" | "astral";
 /** Visual de cada arma, declarativo e independente do Canvas.
@@ -63,11 +64,12 @@ export interface WeaponLoadout {
   readonly equipped: WeaponId;
 }
 
-/** Catálogo canônico composto pelas dez fichas individuais em weapons/swords.
+/** Catálogo canônico composto pelas onze fichas individuais em weapons/swords.
  * Mantém IDs estáveis, progressão e compatibilidade do save. */
 export const WEAPONS: Readonly<Record<WeaponId, WeaponDefinition>> = {
   starter: STARTER_SWORD,
   forge: FORGE_SWORD,
+  common: COMMON_SWORD,
   bronze: BRONZE_SWORD,
   copper: COPPER_SWORD,
   dunes: DUNES_SWORD,

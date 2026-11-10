@@ -502,7 +502,7 @@ test('mapa no inventário não intercepta toques do mundo no Android', async ({ 
   await expect(world).toBeVisible();
 });
 
-test('arsenal exibe dez espadas sem permitir equipar as bloqueadas', async ({ page }) => {
+test('arsenal exibe onze espadas sem permitir equipar as bloqueadas', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('terrania-origins-v1', JSON.stringify({
     seed:842136,x:16,y:16,hp:100,experience:0,kills:0,defeated:[],
     inventory:{gel:0,potion:0,questRewardClaimed:false,
@@ -515,14 +515,16 @@ test('arsenal exibe dez espadas sem permitir equipar as bloqueadas', async ({ pa
   const equipmentTab=page.locator('#inventoryTabEquipment');
   if(await equipmentTab.isVisible())await equipmentTab.click();
   const swords=page.locator('.weapon-picker [data-sword-id]');
-  await expect(swords).toHaveCount(10);
+  await expect(swords).toHaveCount(11);
   await expect(page.locator('[data-sword-id="starter"]')).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('[data-sword-id="starter"]')).toBeDisabled();
   await expect(page.locator('[data-sword-id="forge"]')).toBeDisabled();
   await expect(page.locator('[data-sword-id="forge"]')).toContainText('Toren');
+  await expect(page.locator('[data-sword-id="common"]')).toBeDisabled();
+  await expect(page.locator('[data-sword-id="common"]')).toContainText('Nível 15');
   await expect(page.locator('[data-sword-id="astral"]')).toBeDisabled();
   await expect(page.locator('[data-sword-id="astral"]')).toContainText('Nível 100');
-  for(const id of ['starter','forge','bronze','copper','dunes','boreal','obsidian','marsh','tempest','astral'])
+  for(const id of ['starter','forge','common','bronze','copper','dunes','boreal','obsidian','marsh','tempest','astral'])
     await expect(page.locator('[data-sword-id="'+id+'"] app-item-icon'))
       .toHaveAttribute('data-icon','sword-'+id);
   const noOverflow=await page.locator('#inventoryDialog')

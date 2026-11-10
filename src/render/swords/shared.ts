@@ -201,7 +201,9 @@ export function paintSwordTrail(ctx:CanvasRenderingContext2D,w:WeaponDefinition,
     if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
   });
   ctx.strokeStyle=rgba(w.trail.second,opacity);ctx.lineWidth=s.trailLineWidth??2;ctx.stroke();
-  if(s.trailAccent && art.slashAccent){
+  // Espadas físicas também podem definir riscos de movimento, sem motivos mágicos.
+  // O motivo elemental permanece na ficha; a anatomia do risco pertence à espada.
+  if(art.slashAccent){
     for(let i=1;i<angles.length;i++){
       const a=facing+angles[i]!,x=Math.cos(a)*(range+3),y=Math.sin(a)*(range+3);
       // O começo do golpe se dissipa primeiro; a ponta recente fica legível.
