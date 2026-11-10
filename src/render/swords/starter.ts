@@ -1,4 +1,5 @@
 import type { SwordArtwork } from "./shared.ts";
+import { rgba } from "../draw.ts";
 
 /** Arte específica; dados de combate continuam na ficha da espada. */
 export const STARTER_ARTWORK: SwordArtwork = {
@@ -31,5 +32,17 @@ export const STARTER_ARTWORK: SwordArtwork = {
     ctx.beginPath();ctx.ellipse(23.5,.6,2,1,.12,0,Math.PI*2);ctx.stroke();
     ctx.strokeStyle=tone(s.trim);ctx.lineWidth=.5;
     ctx.beginPath();ctx.moveTo(21,.65);ctx.quadraticCurveTo(23,.1,26,.9);ctx.stroke();
+  },
+  slashAccent(ctx,args) {
+    const {x,y,angle,alpha,first,second}=args;
+    const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;
+    // Dois riscos de ar/poeira: madeira leve, sem faíscas ou aura mágica.
+    ctx.strokeStyle=rgba(first,alpha*.58);ctx.lineWidth=.72;
+    ctx.beginPath();ctx.moveTo(x-tx*3+nx*1.4,y-ty*3+ny*1.4);
+    ctx.quadraticCurveTo(x-tx*.8+nx*1.7,y-ty*.8+ny*1.7,x+tx*.5+nx,y+ty*.5+ny);
+    ctx.stroke();
+    ctx.strokeStyle=rgba(second,alpha*.38);ctx.lineWidth=.5;
+    ctx.beginPath();ctx.moveTo(x-tx*2-nx*1.4,y-ty*2-ny*1.4);
+    ctx.lineTo(x+tx*.7-nx*.9,y+ty*.7-ny*.9);ctx.stroke();
   },
 };

@@ -1,4 +1,5 @@
 import type { SwordArtwork } from "./shared.ts";
+import { rgba } from "../draw.ts";
 
 /** Arte específica; dados de combate continuam na ficha da espada. */
 export const COPPER_ARTWORK: SwordArtwork = {
@@ -33,5 +34,17 @@ export const COPPER_ARTWORK: SwordArtwork = {
     }
     ctx.strokeStyle=tone(s.glint);ctx.lineWidth=.65;
     ctx.beginPath();ctx.moveTo(18,-w*.86);ctx.lineTo(24,-w);ctx.stroke();
+  },
+  slashAccent(ctx,args) {
+    const {x,y,angle,alpha,first,second}=args;
+    const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;
+    // Peso do montante: duas faixas paralelas, assimétricas e curtas.
+    ctx.strokeStyle=rgba(first,alpha*.69);ctx.lineWidth=1.25;
+    ctx.beginPath();ctx.moveTo(x-tx*3.9+nx*2.25,y-ty*3.9+ny*2.25);
+    ctx.quadraticCurveTo(x-tx*.6+nx*2.9,y-ty*.6+ny*2.9,x+tx*1.75+nx*.8,y+ty*1.75+ny*.8);
+    ctx.stroke();
+    ctx.strokeStyle=rgba(second,alpha*.55);ctx.lineWidth=.78;
+    ctx.beginPath();ctx.moveTo(x-tx*2.7-nx*2,y-ty*2.7-ny*2);
+    ctx.lineTo(x+tx*.65-nx*1.4,y+ty*.65-ny*1.4);ctx.stroke();
   },
 };

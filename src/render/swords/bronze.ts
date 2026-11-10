@@ -1,5 +1,6 @@
 import type { SwordArtwork } from "./shared.ts";
 import { point } from "./shared.ts";
+import { rgba } from "../draw.ts";
 
 /** Arte específica; dados de combate continuam na ficha da espada. */
 export const BRONZE_ARTWORK: SwordArtwork = {
@@ -27,5 +28,17 @@ export const BRONZE_ARTWORK: SwordArtwork = {
     ctx.strokeStyle=tone(s.glint);ctx.lineWidth=.52;
     ctx.beginPath();ctx.moveTo(20,-1);ctx.lineTo(23,.65);ctx.stroke();
     point(ctx,23,1.1,.6,tone(s.accent));
+  },
+  slashAccent(ctx,args) {
+    const {x,y,angle,alpha,first,second}=args;
+    const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;
+    // Meia-lua curta de bronze, curva para acompanhar o fio temperado.
+    ctx.strokeStyle=rgba(first,alpha*.62);ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x-tx*3+nx*2,y-ty*3+ny*2);
+    ctx.quadraticCurveTo(x+nx*2.5,y+ny*2.5,x+tx*2+nx*.5,y+ty*2+ny*.5);
+    ctx.stroke();
+    ctx.strokeStyle=rgba(second,alpha*.43);ctx.lineWidth=.62;
+    ctx.beginPath();ctx.moveTo(x-tx*1-nx*.95,y-ty*1-ny*.95);
+    ctx.lineTo(x+tx*1.6-nx*.55,y+ty*1.6-ny*.55);ctx.stroke();
   },
 };
