@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (78)
+## Todos os arquivos deste módulo (79)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -61,6 +61,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/knight-sword-proportions.test.ts`](../../tests/knight-sword-proportions.test.ts)
 - [`tests/knight-swords.test.ts`](../../tests/knight-swords.test.ts)
 - [`tests/landmarks.test.ts`](../../tests/landmarks.test.ts)
+- [`tests/layering.test.ts`](../../tests/layering.test.ts)
 - [`tests/mcp-navigator.test.ts`](../../tests/mcp-navigator.test.ts)
 - [`tests/mobile-controls.test.ts`](../../tests/mobile-controls.test.ts)
 - [`tests/mobile-layout.test.ts`](../../tests/mobile-layout.test.ts)
