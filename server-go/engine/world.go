@@ -44,19 +44,31 @@ func SeedFromRoom(value string) uint32 {
 }
 
 func villageGround(tx, ty int) string {
-	if tx < 6 || tx > 21 || ty < -7 || ty > 9 { return "" }
-	if absInt(ty) <= 1 || (tx >= 13 && tx <= 14 && ty >= -4 && ty <= 6) { return "path" }
+	if tx < 0 || tx > 38 || ty < -12 || ty > 18 { return "" }
+	avenue := absInt(ty) <= 1 || (tx >= 13 && tx <= 14 && ty >= -10 && ty <= 15) ||
+		(tx >= 27 && tx <= 28 && ty >= -10 && ty <= 15) ||
+		(tx >= 21 && tx <= 22 && ty >= 9 && ty <= 16)
+	cross := (ty >= -8 && ty <= -7 && tx >= 9 && tx <= 34) ||
+		(ty >= 10 && ty <= 11 && tx >= 13)
+	if avenue || cross { return "path" }
 	return "grass"
+}
+
+// O corredor do tutorial é transitável, mas fica fora da proteção urbana.
+func starterCaveTrail(tx, ty int) bool {
+	return tx >= 39 && tx <= 46 && ty >= 10 && ty <= 12
 }
 
 func absInt(v int) int { if v < 0 { return -v }; return v }
 
 func (w World) Tile(tx,ty int) Tile {
     detail:=Hash2(tx,ty,w.Seed+31)
-    if v:=villageGround(tx,ty);v!="" {
+    village:=villageGround(tx,ty)
+    if village=="" && starterCaveTrail(tx,ty) { village="path" }
+    if village!="" {
         biome:="meadow"
-        if v=="path" { biome="trail" }
-        return Tile{Ground:v,Biome:biome}
+        if village=="path" { biome="trail" }
+        return Tile{Ground:village,Biome:biome}
     }
     x,y:=float64(tx),float64(ty)
     p:=getTerrainProfile(x,y,w.Seed)
@@ -109,10 +121,13 @@ func (w World) Walkable(tx,ty int) bool {
 	return t.Ground!="water"&&!t.Tree&&!t.Rock
 }
 
-var buildings = [][2]float64{{352,-72},{544,-72},{448,176}}
+var buildings = [][2]float64{
+	{352,-72},{544,-72},{448,176},{800,-96},{1040,-96},{1056,304},{944,448},
+}
 var landmarks = []struct{kind string; x,y float64}{
 	{"arch",-176,-96},{"sign",128,-16},{"fire",176,-112},
 	{"sign",240,64},{"sign",448,48},
+	{"sign",864,48},{"sign",1200,304},{"arch",1216,368},
 }
 
 func villageBlocks(x,y,r float64) bool {

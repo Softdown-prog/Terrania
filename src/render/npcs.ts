@@ -57,7 +57,7 @@ function drawProp(ctx: CanvasRenderingContext2D, look: NpcLook, t: number, hx: n
  */
 export function renderNpc(ctx: CanvasRenderingContext2D, npc: Npc,
   sx: number, sy: number, nearby: boolean, time = 0,
-  lookX = 0, lookY = 1): void {
+  lookX = 0, lookY = 1, walking = false): void {
   if (npc.kind === "sign" || npc.kind === "door") return;
   const look = NPC_LOOKS[npc.id] ?? FALLBACK;
   const seed = hashString(npc.id);
@@ -70,11 +70,12 @@ export function renderNpc(ctx: CanvasRenderingContext2D, npc: Npc,
   ctx.save();
   ctx.translate(sx, sy);
   softShadow(ctx, 0, 3.5, 13 * w, 4.6, 0.38);
-  ctx.translate(0, breath * 0.35);
+  ctx.translate(0, walking ? Math.abs(Math.sin(t * 7 + seed)) * -1.6 : breath * 0.35);
   ctx.lineJoin = "round";
   // botas
-  ellipse(ctx, -4.4 * w, 0.4, 4.2, 2.3, "#46362b");
-  ellipse(ctx, 4.4 * w, 0.4, 4.2, 2.3, "#46362b");
+  const stride = walking ? Math.sin(t * 7 + seed) * 2.1 : 0;
+  ellipse(ctx, -4.4 * w + stride, 0.4, 4.2, 2.3, "#46362b");
+  ellipse(ctx, 4.4 * w - stride, 0.4, 4.2, 2.3, "#46362b");
   // túnica/vestido com bainha que balança
   const robe = ctx.createLinearGradient(-12 * w, 0, 12 * w, 0);
   robe.addColorStop(0, mix(look.robe, "#ffffff", 0.18)); robe.addColorStop(0.5, look.robe); robe.addColorStop(1, mix(look.robe, "#0b1d22", 0.38));
