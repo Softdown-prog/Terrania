@@ -117,7 +117,7 @@ export class Game {
       progression: experienceProgress(this.sim.experience),
       awaitingRespawn: player.hp <= 0,
     }, aelaQuestProgress(this.sim.trainingKills));
-    this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials);
+    this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateGear(inventory.gear);
     this.hud.updateMount(this.sim.mounts.view(kills));

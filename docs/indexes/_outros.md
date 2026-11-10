@@ -70,6 +70,7 @@
 - [`docs/adr/0020-interior-das-torres-do-sul.md`](../../docs/adr/0020-interior-das-torres-do-sul.md)
 - [`docs/adr/0021-arte-do-interior-das-torres.md`](../../docs/adr/0021-arte-do-interior-das-torres.md)
 - [`docs/adr/0022-hospedaria-paga-do-poco-negro.md`](../../docs/adr/0022-hospedaria-paga-do-poco-negro.md)
+- [`docs/adr/0023-moedas-e-carteira.md`](../../docs/adr/0023-moedas-e-carteira.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

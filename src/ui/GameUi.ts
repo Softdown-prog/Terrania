@@ -55,7 +55,7 @@ export interface GameUi {
   onMountAction(callback: (action: MountAction) => string): void;
   updateMount(view: MountView): void;
   updateInventory(gel: number, potions: number, food: FoodCounts,
-    materials?: Readonly<Record<string,number>>): void;
+    materials?: Readonly<Record<string,number>>, coins?: number): void;
   updateLoadout(loadout: WeaponLoadout | null): void;
   updateGear(gear: GearState | null): void;
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void;
