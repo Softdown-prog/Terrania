@@ -31,6 +31,16 @@ export const ASTRAL_ARTWORK: SwordArtwork = {
     for(let i=0;i<4;i++)star(ctx,23+i*5,i%2?2:-1,1.5,tone(s.accent));
     point(ctx,15,0,1.3,tone(s.glint));
   },
+  animate(ctx,s,tone,time) {
+    const travel=.5+.5*Math.sin(time*1.85);
+    const x=21+(s.length-29)*travel;
+    ctx.save();
+    ctx.globalAlpha=.42+.24*(.5+.5*Math.sin(time*3.1));
+    star(ctx,x,-s.width*.34,1.6,tone(s.glint));
+    ctx.strokeStyle=tone(s.accent);ctx.lineWidth=.62;
+    ctx.beginPath();ctx.arc(x,-s.width*.34,2.6,0,TAU);ctx.stroke();
+    ctx.restore();
+  },
   slashAccent(ctx,args) {
     const { x, y, alpha, second, glow } = args;
     const light=rgba(second,alpha);

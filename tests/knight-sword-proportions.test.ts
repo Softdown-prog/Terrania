@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { WEAPON_IDS, WEAPONS } from "../src/engine/character/Weapons.ts";
 import { ATTACK_DURATION } from "../src/engine/combat/combat.ts";
 import { attackBody, KNIGHT_SWORD_GRIP, KNIGHT_SWORD_SCALE, swordMount, swordSwing, swingTrail } from "../src/render/heroPose.ts";
-import { drawKnightTrail } from "../src/render/swords.ts";
+import { drawKnightSword, drawKnightTrail } from "../src/render/swords.ts";
 import { renderHero } from "../src/render/actors.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
 
@@ -69,6 +69,29 @@ test("animação: preparo, contato e rastro respeitam o tempo de todas as espada
     assert.ok(swingTrail(hitTime,weapon).angles.length>0,weapon);
     assert.equal(swingTrail(0,weapon).alpha,0);
   }
+});
+
+test("acabamento animado usa o tempo do jogo, é determinístico e não altera lâminas comuns",()=>{
+  for(const weapon of ["obsidian","tempest","astral"] as const){
+    const first=new Recorder(),again=new Recorder(),later=new Recorder();
+    drawKnightSword(first.ctx,weapon,0,c=>c,.25);
+    drawKnightSword(again.ctx,weapon,0,c=>c,.25);
+    drawKnightSword(later.ctx,weapon,0,c=>c,1.1);
+    assert.equal(first.metrics().signature,again.metrics().signature,weapon+" perdeu determinismo");
+    assert.notEqual(first.metrics().signature,later.metrics().signature,weapon+" não anima com o tempo");
+    assert.equal(first.metrics().saves,first.metrics().restores,weapon+" desbalanceia o Canvas");
+    assert.equal(later.metrics().saves,later.metrics().restores,weapon+" não restaura o Canvas");
+    assert.ok(later.metrics().width<100 && later.metrics().height<80,weapon+" extrapolou a silhueta");
+  }
+  for(const weapon of ["starter","forge","bronze","copper"] as const){
+    const first=new Recorder(),later=new Recorder();
+    drawKnightSword(first.ctx,weapon,0,c=>c,.25);
+    drawKnightSword(later.ctx,weapon,0,c=>c,1.1);
+    assert.equal(first.metrics().signature,later.metrics().signature,weapon+" ganhou efeitos mágicos indevidos");
+  }
+  const hero=readFileSync("src/render/actors.ts","utf8");
+  assert.ok(hero.includes("drawKnightSword(ctx,weapon,impact,tone,time)"),
+    "o tempo deve vir do renderHero usado no jogo e na prévia");
 });
 
 test("rastros materiais: seis geometrias distintas e determinísticas, sem desvio do cavaleiro",()=>{

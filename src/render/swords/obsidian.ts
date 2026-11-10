@@ -32,6 +32,16 @@ export const OBSIDIAN_ARTWORK: SwordArtwork = {
     ctx.beginPath();ctx.moveTo(20,0);ctx.lineTo(25,-2);
     ctx.lineTo(30,1.6);ctx.lineTo(len-5,-1);ctx.stroke();
   },
+  animate(ctx,s,tone,time) {
+    const ember=.23+.34*(.5+.5*Math.sin(time*3.2));
+    ctx.save();
+    ctx.globalAlpha=ember;
+    ctx.strokeStyle=tone(s.accent);ctx.lineWidth=.95;
+    ctx.beginPath();ctx.moveTo(21,-.4);ctx.lineTo(25,-1.7);
+    ctx.lineTo(30,1.1);ctx.lineTo(s.length-7,-.8);ctx.stroke();
+    point(ctx,s.length-7,-.8,.68,tone(s.glint));
+    ctx.restore();
+  },
   slashAccent(ctx,args) {
     const { x, y, angle, alpha, first, second, glow } = args;
     const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;

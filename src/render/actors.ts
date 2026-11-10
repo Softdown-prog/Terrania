@@ -40,12 +40,12 @@ function renderTrail(ctx: CanvasRenderingContext2D, player: HeroVisual, frame: S
 }
 
 function renderWeapon(ctx: CanvasRenderingContext2D, frame: SwordMountFrame, player: HeroVisual,
-  tone: (c: string) => string, impact: number): void {
+  tone: (c: string) => string, impact: number, time: number): void {
   const weapon=frame.attacking ? player.attackWeapon ?? "starter" :
     player.equippedWeapon ?? player.attackWeapon ?? "starter";
   ctx.save();ctx.translate(frame.ox,frame.oy);ctx.rotate(frame.rot);
   ctx.scale(frame.scale, frame.scale);
-  drawKnightSword(ctx,weapon,impact,tone);
+  drawKnightSword(ctx,weapon,impact,tone,time);
   ctx.restore();
 }
 
@@ -163,7 +163,7 @@ export function renderHero(
   ctx.translate(0, g.bob + breath * 0.45);
   ctx.lineJoin = "round";
 
-  if (back) renderWeapon(ctx, frame, player, tone, atk.impact);
+  if (back) renderWeapon(ctx, frame, player, tone, atk.impact, t);
 
   // --- pernas, ordenadas por profundidade -------------------------------
   const leftFoot = { hip: -3.6 * wf, x: -3.6 * wf + g.a.along * mvx, y: g.a.along * mvy * 0.55 - g.a.lift, lift: g.a.lift };
@@ -313,7 +313,7 @@ export function renderHero(
     ctx.fill(); ctx.strokeStyle = tone("#d7b581"); ctx.lineWidth = 0.9; ctx.stroke();
     ctx.fillStyle = tone("#c0a577"); ctx.fillRect(-2.2 * wf, -21, 4.4 * wf, 2.2);
   }
-  if (!back) { swordArm(); renderWeapon(ctx, frame, player, tone, atk.impact); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); }
+  if (!back) { swordArm(); renderWeapon(ctx, frame, player, tone, atk.impact, t); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); }
   const tailDir = side !== 0 ? -side : 1;
   const tailSway = Math.sin(t * 2.4 + seed * 4) * 0.8 + Math.sin(player.walkTime * 2) * g.moving * 2.4 - mvx * g.moving * 3;
   // rabo-de-cavalo/mecha traseira
