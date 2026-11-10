@@ -26,12 +26,16 @@ test('PostgreSQL: migration, least privilege, vault invariants and concurrent at
  try{
   const dir=fileURLToPath(new URL('../db/migrations',import.meta.url));
   const expected=gameCatalog().length;
-  assert.equal(expected,24,'ten knight sword IDs plus existing 14 items');
+  assert.equal(expected,34,'24 itens existentes e dez raros do Sul');
   assert.equal((await migrate(owner,dir)).catalogItems,expected);
   assert.equal((await migrate(owner,dir)).schemaVersion,1);
   const published=(await readCatalog(app)).items;
   assert.equal(published.length,expected);
   assert.ok(published.some(i=>i.id==='sword-astral'),'migration must publish the level-100 sword');
+  const rares=published.filter(i=>i.rarity==='rare');
+  assert.equal(rares.length,10,'raros publicáveis no catálogo');
+  assert.ok(rares.every(i=>!i.tradeEnabled),'sem negociação sem posse autenticada');
+  assert.equal(published.find(i=>i.id==='rare-ruby-stinger')?.category,'collectible');
   for(const sql of ['SELECT * FROM market.accounts','CREATE TABLE public.bad(id int)',
    "UPDATE market.item_catalog SET name='bad'",'SELECT market.confirm_trade(gen_random_uuid(),gen_random_uuid(),1)'])
    await assert.rejects(app.query(sql),(e:unknown)=>(e as {code:string}).code==='42501');
