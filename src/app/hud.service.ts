@@ -9,6 +9,7 @@ import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
 import { southRareLootByName } from '../monsters/rareLoot.ts';
+import { COIN_TIERS, coinBreakdown } from '../engine/character/coins/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
@@ -26,7 +27,7 @@ const KIT_IDS = Object.keys(GEAR) as GearId[];
 /** Somente a visualização da bolsa; quantidades e propriedade vêm do motor. */
 export interface BackpackItemView {
   readonly id: string;
-  readonly kind: 'material' | 'potion' | 'food' | 'gear' | 'weapon';
+  readonly kind: 'material' | 'potion' | 'food' | 'gear' | 'weapon' | 'coin';
   readonly name: string;
   readonly description: string;
   readonly icon: ItemIconId;
@@ -80,6 +81,8 @@ export class HudService implements GameUi {
   readonly cave = signal<CaveMapState | null>(null, {equal:(a,b)=> a===b ||
     (a!==null && b!==null && a.floor===b.floor && a.floorIndex===b.floorIndex && a.tileX===b.tileX && a.tileY===b.tileY)});
   readonly gel = signal(0);
+  /** Dinheiro em Terrania Gold; as moedas maiores são calculadas por `coinBreakdown`. */
+  readonly coins = signal(0);
   readonly creatureMaterials = signal<Readonly<Record<string,number>>>({}, {
     equal: (a,b) => a===b || (Object.keys(a).length===Object.keys(b).length &&
       Object.entries(a).every(([key,quantity])=>b[key]===quantity)),
@@ -115,6 +118,12 @@ export class HudService implements GameUi {
       { id: 'potion', kind: 'potion', name: 'Poção de cura', icon: 'potion', quantity: this.potions(),
         description: 'Recupera 35 HP imediatamente, sem ultrapassar a vida máxima.' },
     ];
+    // Moedas (ADR 0023): só aparecem as que o total forma; a Terrania Gold fica sempre, mesmo zerada.
+    for (const { id, count } of coinBreakdown(this.coins())) {
+      if (count <= 0 && id !== 'terrania-gold') continue;
+      const coin = COIN_TIERS.find(tier => tier.id === id)!;
+      result.push({ id: 'coin-' + id, kind: 'coin', name: coin.name, icon: id, quantity: count, description: coin.description });
+    }
     for (const [name,quantity] of Object.entries(this.creatureMaterials()).sort(([a],[b])=>a.localeCompare(b))) {
       if (quantity <= 0) continue;
       const rare=southRareLootByName(name);
@@ -167,7 +176,7 @@ export class HudService implements GameUi {
   readonly canUseSelectedBagItem = computed(() => {
     const item = this.selectedBagItem();
     if (!item || this.hp() <= 0) return false;
-    if (item.kind === 'material') return false;
+    if (item.kind === 'material' || item.kind === 'coin') return false;
     if (item.kind === 'potion') return item.quantity > 0 && this.hp() < this.maxHp();
     if (item.kind === 'food') {
       return item.quantity > 0 && this.nutrition().cooldown <= 0 &&
@@ -307,8 +316,9 @@ export class HudService implements GameUi {
   }
   respawn(): void { this.respawnCallback(); }
   updateInventory(gel: number, potions: number, food: FoodCounts,
-    materials: Readonly<Record<string,number>> = {}): void {
+    materials: Readonly<Record<string,number>> = {}, coins = 0): void {
     this.gel.set(gel); this.potions.set(potions); this.food.set(food);
+    this.coins.set(coins);
     this.creatureMaterials.set(materials);
   }
   updateLoadout(loadout: WeaponLoadout | null): void { this.loadout.set(loadout); }

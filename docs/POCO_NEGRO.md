@@ -40,6 +40,8 @@ A arena é somente cenário nesta etapa.
 ## Serviço existente
 - **Hospedaria Sombra do Escorpião:** Madame Víbora cobra **4 de gel** por um descanso que
   cura toda a vida e remove os status (ADR 0022). Não cobra de quem já está bem.
+  O gel é só um primeiro pagamento: o plano é cobrar em **moedas** (Terrania Gold, Cripta Coin,
+  Eclipse Crown; ADR 0023).
 
 ## O que NÃO foi implementado
 - Venda/compra de loot raro no Bazar e Ossuário;

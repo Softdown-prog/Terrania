@@ -282,7 +282,9 @@
                   (click)="hud.selectBagItem(item.id)">
                   <span class="backpack-icon" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" /></span>
                   <span class="backpack-name">{{ item.name }}</span>
-                  @if (item.kind === 'material' || item.kind === 'potion' || item.kind === 'food') {
+                  @if (item.kind === 'coin') {
+                    <b class="backpack-quantity" [attr.id]="'coinCount-' + item.id">{{ item.quantity }}</b>
+                  } @else if (item.kind === 'material' || item.kind === 'potion' || item.kind === 'food') {
                     <b class="backpack-quantity"
                       [attr.id]="item.kind === 'material' ? 'gelCount' : item.kind === 'potion' ? 'potionCount' : 'foodCount-' + item.foodId">{{ item.quantity }} / 99</b>
                   } @else { <b class="backpack-quantity">1</b> }
@@ -305,7 +307,7 @@
                 @if (item.kind === 'weapon') {
                   <p id="bagItemComparison">Dano do item: {{ item.damage }} · Dano da arma equipada: {{ item.comparedDamage }}</p>
                 }
-                @if (item.kind !== 'material') {
+                @if (item.kind !== 'material' && item.kind !== 'coin') {
                   <button class="primary-button" type="button"
                     [attr.id]="item.kind === 'food' ? 'eat-' + item.foodId : item.kind === 'potion' ? 'usePotion' : 'equip-' + item.id"
                     [disabled]="!hud.canUseSelectedBagItem()" (click)="hud.useSelectedBagItem()">

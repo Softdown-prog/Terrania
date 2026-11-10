@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (94)
+## Todos os arquivos deste módulo (96)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -34,6 +34,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/classic-battle-list.spec.ts`](../../tests/browser/classic-battle-list.spec.ts)
 - [`tests/browser/classic-combat.spec.ts`](../../tests/browser/classic-combat.spec.ts)
 - [`tests/browser/classic-tiles.spec.ts`](../../tests/browser/classic-tiles.spec.ts)
+- [`tests/browser/coins.spec.ts`](../../tests/browser/coins.spec.ts)
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/browser/session.spec.ts`](../../tests/browser/session.spec.ts)
 - [`tests/browser/south-inn.spec.ts`](../../tests/browser/south-inn.spec.ts)
@@ -48,6 +49,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/classic-pursuit.test.ts`](../../tests/classic-pursuit.test.ts)
 - [`tests/classic-tile-walker.test.ts`](../../tests/classic-tile-walker.test.ts)
 - [`tests/cloudflare-deploy.test.ts`](../../tests/cloudflare-deploy.test.ts)
+- [`tests/coins.test.ts`](../../tests/coins.test.ts)
 - [`tests/creature-catalog.test.ts`](../../tests/creature-catalog.test.ts)
 - [`tests/dungeons.test.ts`](../../tests/dungeons.test.ts)
 - [`tests/engine-invariants.test.ts`](../../tests/engine-invariants.test.ts)
