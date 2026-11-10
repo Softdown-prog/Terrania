@@ -90,7 +90,7 @@ test("rato: infecção leve tem aproximadamente 10% de chance por mordida e dura
   for(let i=0;i<240;i++){
     const h=new Player();h.x=20;h.y=0;
     const rat=new RegionalMonster("infection-rate:"+i,"dune-rat",0,0);
-    rat.update(1/60,h,collision);
+    rat.update(1/60,h,collision,0,false);
     if(h.debuffs.infection>0){
       infected++;
       assert.equal(h.debuffs.infection,3);
@@ -114,14 +114,14 @@ test("víbora: toxina fraca causa dois HP por segundo sem usar veneno cumulativo
 test("goblin: só tenta arremessar areia quando a vida está baixa",()=>{
   const hero=new Player();hero.x=100;hero.y=0;
   const goblin=new RegionalMonster("goblin-run","sand-goblin",0,0);
-  goblin.update(1/60,hero,collision);
+  goblin.update(1/60,hero,collision,0,false);
   assert.equal(goblin.casting,0);
-  goblin.hp=20;goblin.update(1/60,hero,collision);
+  goblin.hp=20;goblin.update(1/60,hero,collision,0,false);
   assert.ok(goblin.casting>0);
   const nearHero=new Player();nearHero.x=45;nearHero.y=0;
   const fleeing=new RegionalMonster("fleeing","sand-goblin",0,0);
   fleeing.hp=18;
-  fleeing.update(.1,nearHero,collision);
+  fleeing.update(.1,nearHero,collision,0,false);
   assert.ok(fleeing.x<0,"goblin should retreat when wounded and approached");
 });
 
@@ -130,26 +130,30 @@ test("troll: recupera um HP por segundo somente após afastar-se do combate",()=
   const hero=new Player();hero.x=400;hero.y=400;
   troll.takeHit(0,0,30);
   const wounded=troll.hp;
-  for(let i=0;i<54;i++)troll.update(.1,hero,collision);
+  for(let i=0;i<54;i++)troll.update(.1,hero,collision,0,false);
   assert.ok(troll.hp>wounded);
   assert.ok(troll.hp<=wounded+2);
 });
 
 test("cacto: apenas espada curta provoca contra-ataque fixo de dois HP",()=>{
   const hero=new Player(),cactus=new RegionalMonster("thorns","cactus-sprout",0,0);
+  hero.x=-600;hero.y=-600; // unidade de combate fora da região protegida
   cactus.onSwordHit(hero,"starter");
   assert.equal(hero.hp,100);
   cactus.onSwordHit(hero,"forge");
   assert.equal(hero.hp,98);
   cactus.onSwordHit(hero,"forge");
   assert.equal(hero.hp,96);
+  hero.x=16;hero.y=16;
+  cactus.onSwordHit(hero,"forge");
+  assert.equal(hero.hp,96,"a proteção da vila impede dano refletido");
 });
 
 test("miragem: status diminui acerto; saques são reproduzíveis sem drop obrigatório",()=>{
   const hero=new Player(),imp=new RegionalMonster("imp","mirage-imp",0,0);
   hero.x=90;hero.y=0;
   for(let i=0;i<150&&hero.debuffs.blind<=0;i++){
-    imp.update(1/60,hero,collision);
+    imp.update(1/60,hero,collision,0,false);
     hero.update(1/60,{x:0,y:0},collision);
   }
   assert.ok(hero.debuffs.blind>0);
@@ -165,7 +169,7 @@ test("miragem: status diminui acerto; saques são reproduzíveis sem drop obriga
 test("elfo: lança solar adiciona dois de fogo ao dano de contato",()=>{
   const hero=new Player(),elf=new RegionalMonster("sun-lance","oasis-elf",0,0);
   hero.x=20;hero.y=0;
-  elf.update(1/60,hero,collision);
+  elf.update(1/60,hero,collision,0,false);
   assert.equal(hero.hp,82);
 });
 
@@ -174,8 +178,8 @@ test("abutre: velocidade realmente aumenta contra uma vítima abaixo da metade d
   healthy.x=weak.x=100;healthy.y=weak.y=0;weak.hp=40;
   const calm=new RegionalMonster("vulture-a","carrion-vulture",0,0);
   const aggressive=new RegionalMonster("vulture-b","carrion-vulture",0,0);
-  calm.update(.1,healthy,collision);
-  aggressive.update(.1,weak,collision);
+  calm.update(.1,healthy,collision,0,false);
+  aggressive.update(.1,weak,collision,0,false);
   assert.ok(aggressive.x>calm.x*1.3);
 });
 
@@ -185,7 +189,7 @@ test("orc: terceiro golpe bem-sucedido causa um único empurrão leve",()=>{
   for(let i=0;i<49;i++){
     hero.update(.1,{x:0,y:0},collision);
     hero.x=25;hero.y=0;
-    orc.update(.1,hero,collision);
+    orc.update(.1,hero,collision,0,false);
     if(hero.x>25.5)pushed++;
   }
   assert.equal(pushed,1);

@@ -1,6 +1,6 @@
 import type { WeaponId } from "../engine/character/Weapons.ts";
 import { Slime } from "./Slime.ts";
-import { pursuitStep, SPECIES_BEHAVIORS } from "../monsters/behavior.ts";
+import { pursuitStep, SPECIES_BEHAVIORS, speciesRetreats } from "../monsters/behavior.ts";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_COMMON_KINDS, SOUTH_SURFACE_KINDS,
   sandBeetleBuried, type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
 import { moveBody, clearPath, canMoveOnSeed, type CollisionMap } from "../world/collision.ts";
@@ -10,7 +10,7 @@ import { caveThemeAt, type CaveTheme } from "../world/caves.ts";
 import { CHUNK_TILES, TILE_SIZE, getTile } from "../world/terrain.ts";
 import { hash2 } from "../world/random.ts";
 import type { Player } from "./Player.ts";
-import { villageGround } from "../world/village.ts";
+import { protectedSurfaceTile } from "../world/village.ts";
 
 /** Instância viva do bestiário, compatível com a Battle List e o motor solo. */
 export class RegionalMonster extends Slime {
@@ -46,12 +46,13 @@ export class RegionalMonster extends Slime {
     this.regenElapsed=0;
   }
   /** Reflected damage is a consequence of a landed short-sword strike. */
-  onSwordHit(hero: Player, weapon: WeaponId): void {
+  onSwordHit(hero: Player, weapon: WeaponId, protectVillage = true): void {
+    if(protectVillage && protectedSurfaceTile(Math.floor(hero.x/TILE_SIZE),Math.floor(hero.y/TILE_SIZE)))return;
     if(this.definition.special==="thorns" && weapon==="forge")
       hero.receiveThorns(2);
   }
   /** Aviso visual do golpe à distância, respeitando linha de visão e recarga. */
-  override update(dt: number, hero: Player, world: CollisionMap, defense = 0): void {
+  override update(dt: number, hero: Player, world: CollisionMap, defense = 0, protectVillage = true): void {
     if (this.hp <= 0 || hero.hp <= 0 || !Number.isFinite(dt) || dt <= 0) return;
     dt = Math.min(dt, .1);
     this.tickSwordStatuses(dt);
@@ -70,6 +71,18 @@ export class RegionalMonster extends Slime {
     this.hurtTime = Math.max(0, this.hurtTime - dt);
     this.contactCooldown = Math.max(0, this.contactCooldown - dt);
     this.cooldown = Math.max(0, this.cooldown - dt);
+    // Mesmo contrato do Slime comum; não aplicar coordenadas da vila em salas de caverna.
+    if (protectVillage && (
+      protectedSurfaceTile(Math.floor(hero.x / TILE_SIZE), Math.floor(hero.y / TILE_SIZE)) ||
+      protectedSurfaceTile(Math.floor(this.x / TILE_SIZE), Math.floor(this.y / TILE_SIZE)))) {
+      this.windup = 0;
+      return;
+    }
+    const monsterWorld: CollisionMap = protectVillage ? {
+      canMove: (x, y) => !protectedSurfaceTile(Math.floor(x / TILE_SIZE), Math.floor(y / TILE_SIZE)) &&
+        world.canMove(x, y),
+      speedAt: (x, y) => world.speedAt?.(x, y) ?? 1,
+    } : world;
     const dx = hero.x - this.x, dy = hero.y - this.y, d = Math.hypot(dx, dy);
     const ability = this.definition;
     if ((ability.special === "fire" || ability.special === "lava-burst") && this.hp < ability.maxHp * .5) this.enraged = 1;
@@ -77,29 +90,32 @@ export class RegionalMonster extends Slime {
       (world.speedAt?.(this.x, this.y) ?? 1) < 1 ? 1.3 : 1;
     this.frozenFloor = speedBoost > 1;
     // Não ultrapassar paredes nem caçar alvos de outras áreas do mundo.
-    const frightened=ability.special==="sand-throw" && this.hp<=ability.maxHp*.35;
+    const retreating=speciesRetreats(this.kind,this.hp,ability.maxHp);
+    const frightened=retreating || (ability.special==="sand-throw" && this.hp<=ability.maxHp*.35);
+    if(retreating)this.windup=0;
     const keepRange=ability.range > 32 && (ability.nature === "magical" ||
       ability.special === "ink" || ability.special === "tidal-lightning" ||
       ability.special === "spore-cloud" || ability.special === "lava-burst" ||
       ability.special === "sling" || frightened);
     const beforeX=this.x,beforeY=this.y;
-    if(frightened && d>0.001 && d<70 && this.hurtTime<=0) {
+    if(frightened && d>0.001 && d<(retreating ? 170 : 70) && this.hurtTime<=0) {
       // Fuga da espécie, sem ultrapassar colisão nem ignorar a física.
       const flee=pursuitStep(this.kind,this.phase,-dx,-dy,d);
       moveBody(this,flee.x*ability.speed*dt*flee.pace,
-        flee.y*ability.speed*dt*flee.pace,world);
+        flee.y*ability.speed*dt*flee.pace,monsterWorld);
     } else if (d < 245 && d > (keepRange ? 70 : 22) &&
         this.hurtTime <= 0 && d > .001) {
       const vultureRage=ability.special==="carrion-dive" && hero.hp < hero.maxHp*.5 ? 1.45 : 1;
       const speed = ability.speed * this.swordSpeedMultiplier * speedBoost * vultureRage * (1 + .18 * this.enraged);
       const step=pursuitStep(this.kind,this.phase,dx,dy,d);
-      moveBody(this,step.x*speed*step.pace*dt,step.y*speed*step.pace*dt,world);
+      moveBody(this,step.x*speed*step.pace*dt,step.y*speed*step.pace*dt,monsterWorld);
     }
     const traveled=Math.hypot(this.x-beforeX,this.y-beforeY);
     if(traveled>.001){
       this.moving=Math.min(1,traveled/Math.max(.001,ability.speed*dt));
       this.motionPhase+=traveled/TILE_SIZE*SPECIES_BEHAVIORS[this.kind].cadence*Math.PI*2;
     }
+    if(retreating)return;
     const inSight = d <= ability.range && d > .001 && clearPath(this, hero, world);
     if (this.windup > 0) {
       this.windup = Math.max(0, this.windup - dt);
@@ -158,7 +174,8 @@ export class RegionalMonster extends Slime {
     if (d.special === "lava-burst") hero.applyStatus("burn",4);
   }
   /** O Escaravelho explode uma única vez ao morrer. */
-  deathBurst(hero: Player, world: CollisionMap, defense = 0): void {
+  deathBurst(hero: Player, world: CollisionMap, defense = 0, protectVillage = true): void {
+    if (protectVillage && protectedSurfaceTile(Math.floor(hero.x/TILE_SIZE),Math.floor(hero.y/TILE_SIZE)))return;
     if (this.definition.special === "solar-burst" &&
         Math.hypot(hero.x - this.x, hero.y - this.y) < 72 &&
         clearPath(this, hero, world))
@@ -176,7 +193,7 @@ export function regionalSurfaceSpawns(cx: number, cy: number, seed: number): Reg
     const sx = cx * CHUNK_TILES + Math.floor(hash2(cx + n * 13, cy, seed + 469) * CHUNK_TILES);
     const sy = cy * CHUNK_TILES + Math.floor(hash2(cx, cy + n * 17, seed + 479) * CHUNK_TILES);
     const region=getWorldRegion(sx,sy);
-    if (region==="center" || villageGround(sx,sy) ||
+    if (region==="center" || protectedSurfaceTile(sx,sy) ||
         !canMoveOnSeed((sx + .5) * TILE_SIZE, (sy + .5) * TILE_SIZE, seed)) continue;
     const biome=getBiomeAt(sx,sy,seed);
     const marsh=caveThemeAt(sx,sy)==="marsh";
@@ -224,7 +241,7 @@ export function southCommonSpawns(cx:number,cy:number,seed:number): RegionalMons
   for(let i=0;i<count;i++){
     const tx=cx*CHUNK_TILES+Math.floor(hash2(cx*17+i*5,cy,seed+23341)*CHUNK_TILES);
     const ty=cy*CHUNK_TILES+Math.floor(hash2(cx,cy*19+i*7,seed+23343)*CHUNK_TILES);
-    if(getWorldRegion(tx,ty)!=="south" || villageGround(tx,ty) ||
+    if(getWorldRegion(tx,ty)!=="south" || protectedSurfaceTile(tx,ty) ||
        !canMoveOnSeed((tx+.5)*TILE_SIZE,(ty+.5)*TILE_SIZE,seed))continue;
     const theme=caveThemeAt(tx,ty),biome=getBiomeAt(tx,ty,seed);
     const eligible=[...SOUTH_COMMON_KINDS,...SOUTH_SURFACE_KINDS].filter(kind=>{

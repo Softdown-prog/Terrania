@@ -7,8 +7,10 @@ import {
   type Tile,
 } from "../world/terrain.ts";
 import { hash2, valueNoise } from "../world/random.ts";
-import { ellipse, mix, TAU } from "./draw.ts";
+import { ellipse, mix, TAU, blade } from "./draw.ts";
+import { southCityGroundColors, paintSouthCityPaving } from "./southCityArt.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
+import { southCityGround, southCitySafe } from "../world/southCity.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
@@ -71,7 +73,9 @@ class Grid {
 function drawGround(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number, x: number, y: number, seed: number): void {
   const tile = grid.at(lx, ly);
   const [tx, ty] = grid.global(lx, ly);
-  const p = BIOME_PALETTE[tile.biome] ?? PALETTE[tile.ground];
+  const south = southCityGround(tx,ty)!==null;
+  const p = south ? southCityGroundColors(tile.ground) :
+    BIOME_PALETTE[tile.biome] ?? PALETTE[tile.ground];
   // Ruído em duas escalas: manchas largas e variação fina.
   const n = valueNoise(tx / 6, ty / 6, seed + 17) * 0.65 + valueNoise(tx / 1.8, ty / 1.8, seed + 23) * 0.35;
   let color = mix(p.lo, p.hi, n);
@@ -86,15 +90,6 @@ function drawGround(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: n
 
 const DIRS: ReadonlyArray<readonly [number, number]> = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
-function blade(ctx: CanvasRenderingContext2D, x: number, y: number, h: number, lean: number, color: string): void {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.quadraticCurveTo(x + lean * 0.3, y - h * 0.6, x + lean, y - h);
-  ctx.stroke();
-}
-
 function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number, x: number, y: number, seed: number): void {
   const tile = grid.at(lx, ly);
   const [tx, ty] = grid.global(lx, ly);
@@ -108,6 +103,10 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
     ctx.fillRect(x + 3 + a * 26, y + 3 + b * 26, 1 + a * 2.6, 1 + b * 1.4);
   }
 
+  if (southCitySafe(tx,ty) && tile.ground==="path") {
+    paintSouthCityPaving(ctx,x,y,r);
+    return;
+  }
   if (tile.ground === "water") {
     const d = grid.shore(lx, ly);
     ctx.strokeStyle = "rgba(160,222,214,.22)";
