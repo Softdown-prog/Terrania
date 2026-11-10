@@ -215,14 +215,30 @@
                   @let current = hud.weapons[loadout.equipped];
                   <strong id="equippedWeapon">{{ current.name }}</strong>
                   <p>{{ current.damage }} de dano · {{ current.interval }} s entre golpes · {{ current.windup * 1000 }} ms de preparo</p>
-                  <div class="weapon-picker" role="group" aria-label="Espadas desbloqueadas">
-                    @for (id of hud.availableWeapons(); track id) {
-                      @if (id !== loadout.equipped) {
-                        <button type="button" class="secondary-button"
-                          [attr.id]="'equip-slot-weapon-' + id"
-                          (click)="hud.equipWeapon(id)">Equipar {{ hud.weapons[id].name }}
-                          ({{ hud.weapons[id].damage }} dano · nível {{ hud.weapons[id].level }})</button>
-                      }
+                  <p class="weapon-roster-caption">Arsenal do cavaleiro · 10 espadas · progressão completa</p>
+                  <div class="weapon-picker" role="group" aria-label="Arsenal com dez espadas">
+                    @for (id of hud.swordIds; track id) {
+                      @let sword = hud.weapons[id];
+                      @let unlocked = hud.availableWeapons().includes(id);
+                      <button type="button" class="sword-choice"
+                        [attr.id]="'equip-slot-weapon-' + id"
+                        [attr.data-sword-id]="id"
+                        [attr.aria-pressed]="loadout.equipped === id"
+                        [attr.title]="sword.name + ' · nível ' + sword.level + ' · dano ' + sword.damage"
+                        [class.is-equipped]="loadout.equipped === id"
+                        [class.is-locked]="!unlocked"
+                        [disabled]="!unlocked || loadout.equipped === id"
+                        (click)="hud.equipWeapon(id)">
+                        <app-item-icon class="sword-choice-icon" [name]="hud.weaponIcon(id)" />
+                        <strong class="sword-choice-name">{{ sword.name }}</strong>
+                        <small class="sword-choice-stats">Nível {{ sword.level }} · {{ sword.damage }} dano</small>
+                        <span class="sword-choice-status">
+                          @if (loadout.equipped === id) { Equipada }
+                          @else if (unlocked) { Equipar }
+                          @else if (id === 'forge' && !loadout.forged) { Comprar com Toren }
+                          @else { Bloqueada }
+                        </span>
+                      </button>
                     }
                   </div>
                   @if (!loadout.forged) {

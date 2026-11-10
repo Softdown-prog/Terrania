@@ -90,6 +90,9 @@ export class HudService implements GameUi {
   readonly inventoryFeedback = signal('');
   readonly quickPotionFeedback = signal('');
   readonly weapons = WEAPONS;
+  /** Os dez modelos ficam visíveis mesmo quando o jogador ainda não pode equipá-los. */
+  readonly swordIds = WEAPON_IDS;
+  weaponIcon(id: WeaponId): ItemIconId { return weaponItemIcon(id); }
   readonly availableWeapons = computed<readonly WeaponId[]>(() => {
     const level=this.progression()?.level ?? 1;
     const forged=this.loadout()?.forged ?? false;
