@@ -1,3 +1,9 @@
+import { drawWolf } from "../src/render/creatures/north/wolves/glacialWolf.ts";
+import { drawScorpion } from "../src/render/creatures/south/scorpions/duneScorpion.ts";
+import { drawCrab } from "../src/render/creatures/east/crabs/coralCrab.ts";
+import { drawSerpent } from "../src/render/creatures/east/serpents/stormSerpent.ts";
+import { bear } from "../src/render/creatures/north/bears/runicPolarBear.ts";
+import { salamander } from "../src/render/creatures/west/salamanders/magmaSalamander.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Recorder, withFakeDocument } from "./helpers/recordingContext.ts";
@@ -206,5 +212,53 @@ test("render de monstros: registro apenas delega a paleta e função exclusivas 
   for(const part of ["wave2Frame","wave3Frame","regionalFrame"]){
     const shared=readFileSync("src/render/creatures/shared/"+part+".ts","utf8");
     assert.ok(!shared.includes("switch("),part+" contém seleção de espécie");
+  }
+});
+
+/**
+ * Direto na anatomia, sem o Frame compartilhado: prova que são as articulações
+ * e os efeitos exclusivos da espécie que reagem à simulação (e não apenas
+ * sombra, escala ou o círculo genérico de conjuração).
+ */
+test("seis anatomias especializadas animam passada e conjuração reais, com saída determinística",()=>{
+  const regional={base:"#687f99",light:"#f0e5cc",dark:"#27364b",accent:"#d59d67",eye:"#fdf0a3"};
+  const bulky={base:"#a4a9ad",dark:"#344351",light:"#edf8f7",accent:"#ff9955",eyes:"#f6d181"};
+  type Detail=(ctx:CanvasRenderingContext2D,phase:number,moving:number,casting:number)=>void;
+  const species:ReadonlyArray<{kind:string;draw:Detail}>=[
+    {kind:"glacial-wolf",draw:(c,p,m,a)=>drawWolf(c,regional,1.3,p,m,a)},
+    {kind:"dune-scorpion",draw:(c,p,m,a)=>drawScorpion(c,regional,1.3,p,m,a)},
+    {kind:"coral-crab",draw:(c,p,m,a)=>drawCrab(c,regional,1.3,p,m,a)},
+    {kind:"storm-serpent",draw:(c,p,m,a)=>drawSerpent(c,regional,1.3,p,m,a)},
+    {kind:"runic-polar-bear",draw:(c,p,m,a)=>bear(c,bulky,1.3,p,m,a)},
+    {kind:"magma-salamander",draw:(c,p,m,a)=>salamander(c,bulky,1.3,p,m,a)},
+  ];
+  const signatures=new Set<string>();
+  for(const {kind,draw} of species){
+    const idle=capture(c=>draw(c,0,0,0));
+    const walk=capture(c=>draw(c,2.1,1,0));
+    const prepare=capture(c=>draw(c,0,0,.95));
+    assert.ok(idle.paintOps>=35,kind+" sem volume anatômico mínimo");
+    assert.ok(idle.paintOps<650,kind+" excedeu orçamento básico de operações Canvas");
+    assert.ok(idle.curves>=14,kind+" sem traços anatômicos suficientes");
+    assert.equal(idle.saves,idle.restores,kind+" desequilibrou estado do contexto");
+    assert.notEqual(idle.signature,walk.signature,kind+" não articula locomoção");
+    assert.notEqual(idle.signature,prepare.signature,kind+" não prepara ataque em sua anatomia");
+    assert.equal(idle.signature,capture(c=>draw(c,0,0,0)).signature,kind+" não determinístico");
+    assert.equal(walk.signature,capture(c=>draw(c,2.1,1,0)).signature,kind+" passada não determinística");
+    assert.ok(!signatures.has(idle.signature),kind+" desenho idêntico ao de outra espécie");
+    signatures.add(idle.signature);
+  }
+});
+
+test("seis renderizadores especializados usam estado visual sem alterar ficha ou loot",()=>{
+  for(const kind of ["glacial-wolf","dune-scorpion","coral-crab",
+    "storm-serpent","runic-polar-bear","magma-salamander"] as const){
+    const base={kind,hp:CREATURE_CATALOG[kind].maxHp,id:"visual-reaction:"+kind};
+    const rest=capture(c=>renderRegionalCreature(c,{...base,moving:0,motionPhase:0,casting:0},0,0,1.3));
+    const action=capture(c=>renderRegionalCreature(c,{...base,moving:1,motionPhase:2.1,casting:.9},0,0,1.3));
+    assert.ok(action.paintOps>=rest.paintOps,kind+" perdeu detalhes na ação");
+    assert.notEqual(rest.signature,action.signature,kind+" perdeu estado de movimento/ataque");
+    assert.equal(action.saves,action.restores,kind+" desequilibrou Canvas");
+    assert.equal(base.hp,CREATURE_CATALOG[kind].maxHp,kind+" alterou ficha de combate");
   }
 });

@@ -164,3 +164,26 @@ herói e a Slime não precisam mais dividir um arquivo de implementação.
 As 32 espécies possuem arquivos próprios de anatomia em `src/render/creatures/<região>/<família>/<espécie>.ts`, correspondentes a `src/monsters/`. Cada espécie agora é dona da paleta, do desenho procedural e da função de renderização. Os três arquivos `src/render/creatures/shared/*Frame.ts` contêm apenas composição Canvas comum (pose, sombra, reflexos, indicação de vida), sem selecionar corpos ou cores por monstro.
 
 `src/render/regionalCreatures.ts` é registro tipado que despacha para a espécie correta, sem paleta global ou `switch` de anatomia. `regionalWave2.ts` e `regionalWave3.ts` preservam a API pública antiga, encaminhando ao registro. A Slime e o Besouro da Areia já implementam renderização própria integral. A apresentação nunca decide combate, dano ou loot.
+
+
+### Anatomias e animações específicas — primeiro lote após a separação
+
+Seis monstros receberam aprofundamento **no próprio arquivo de espécie**:
+`north/wolves/glacialWolf.ts` (galope, dedos, mandíbula e geada),
+`south/scorpions/duneScorpion.ts` (oito patas em contrafase, pinças e ferrão),
+`east/crabs/coralCrab.ts` (passada lateral, pinças e colônias de coral),
+`east/serpents/stormSerpent.ts` (coluna ondulante, escamas e eletricidade),
+`north/bears/runicPolarBear.ts` (peso, garras e runas) e
+`west/salamanders/magmaSalamander.ts` (cauda, crosta rachada e brasas).
+
+A intensidade de locomoção, a fase da passada e a preparação de ataque vêm
+exclusivamente do estado visual `moving`, `motionPhase` e `casting`. Sem
+movimento real não se dispara o ciclo de patas; sem conjuração não aparecem
+os efeitos especiais de ataque. Tempo e geometria são determinísticos,
+sem `Math.random` ou novos assets externos.
+
+A composição global, o registro de espécies, os atributos de combate e o
+loot não foram alterados. A separação dos **32 arquivos** continua íntegra;
+**isso não significa que as outras 26 espécies já tenham esse acabamento**.
+As seis são auditadas em `tests/specialized-creature-art.test.ts` diretamente
+no desenho anatômico (sem depender dos efeitos genéricos do frame).
