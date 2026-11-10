@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../types.ts";
+import { southRareDrop } from "./rareLoot.ts";
 
 /** dune-rat: ficha da região Sul. */
 export const duneRat = {
@@ -6,5 +7,5 @@ export const duneRat = {
     nature: "physical", special: "infected-bite", speed: 90, range: 24, interval: .62,
     status: "infection", statusSeconds: 3, region: "south", caveThemes: ["desert"],
     biomes: ["oasis", "ruins", "dunes"],
-    loot: [{ item: "Rabo de Rato", chance: .50 }, { item: "Carne Magra", chance: .40 }, { item: "Queijo Seco", chance: .10 }],
+    loot: [{ item: "Rabo de Rato", chance: .50 }, { item: "Carne Magra", chance: .40 }, { item: "Queijo Seco", chance: .10 }, southRareDrop("dune-rat")],
 } satisfies CreatureDefinition;
