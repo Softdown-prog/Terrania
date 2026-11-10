@@ -18,3 +18,12 @@ export const drawWolf = (ctx:CanvasRenderingContext2D,c:ColorRamp,time:number):v
   headEyes(ctx,[[21,-39],[30,-37]],c,1.9);
   ellipse(ctx,36,-29,2.2,1.6,OUTLINE);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#368cc4","light":"#a0f0fd","dark":"#24436e","accent":"#5bccf9","eye":"#e9fcfc"};
+export function renderGlacialWolfCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawWolf);
+}

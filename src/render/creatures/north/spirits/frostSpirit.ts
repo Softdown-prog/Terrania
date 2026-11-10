@@ -20,3 +20,12 @@ export const drawSpirit = (ctx:CanvasRenderingContext2D,c:ColorRamp,time:number)
     ctx.beginPath();ctx.arc(0,-40,14+k*3,Math.PI*.14,Math.PI*.83);ctx.stroke();
   }
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#519bcc","light":"#dcf7ff","dark":"#205c8e","accent":"#83e4ff","eye":"#cffaff"};
+export function renderFrostSpiritCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawSpirit);
+}
