@@ -31,7 +31,7 @@ test("engine: cada arquivo mora na pasta do seu assunto", () => {
     movement: ["ClassicTileWalker.ts", "TapNavigator.ts"],
     character: ["Equipment.ts", "Experience.ts", "Food.ts", "Inventory.ts", "Weapons.ts", "loot.ts"],
     mounts: ["MountActions.ts", "MountQuestState.ts", "MountStable.ts"],
-    rooms: ["CaveRewards.ts", "CaveRoom.ts", "InteriorRoom.ts"],
+    rooms: ["CaveRewards.ts", "CaveRoom.ts", "InteriorRoom.ts", "caveStairs.ts"],
   };
   for (const [folder, names] of Object.entries(expected))
     assert.deepEqual(list(join(ENGINE, folder)), [...names].sort(), folder);

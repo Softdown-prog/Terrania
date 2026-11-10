@@ -7,6 +7,7 @@ import { dirname, join, normalize } from "node:path";
  * Camadas de `src/` (ADR 0016): as pastas de dados do mundo ficam EMBAIXO e não importam as de cima.
  *   world  →  só `world`
  *   monsters, npcs  →  só a si mesmas e `world`
+ *   dungeons  →  a si mesma, `monsters` e `world` (dados de masmorra citam espécies)
  * Antes, `world/mountQuests.ts` importava `actors/` e fechava o ciclo `actors ↔ world`.
  * Exceção conhecida e com prazo: `world/npcs.ts` reexporta `npcs/` (some quando o PR da vila entrar).
  */
@@ -14,6 +15,7 @@ const ALLOWED: Readonly<Record<string, readonly string[]>> = {
   world: ["world"],
   monsters: ["monsters", "world"],
   npcs: ["npcs", "world"],
+  dungeons: ["dungeons", "monsters", "world"],
 };
 const KNOWN_EXCEPTIONS: ReadonlySet<string> = new Set(["src/world/npcs.ts -> npcs"]);
 

@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (22)
+## Todos os arquivos deste módulo (23)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -44,3 +44,4 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 - [`src/engine/rooms/CaveRoom.ts`](../../src/engine/rooms/CaveRoom.ts)
 - [`src/engine/rooms/InteriorRoom.ts`](../../src/engine/rooms/InteriorRoom.ts)
+- [`src/engine/rooms/caveStairs.ts`](../../src/engine/rooms/caveStairs.ts)

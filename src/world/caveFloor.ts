@@ -10,6 +10,8 @@ import type { CaveEntrance, CaveTheme } from "./caves.ts";
 export const CAVE_WIDTH = 42;
 export const CAVE_HEIGHT = 30;
 export const CAVE_EXIT = { x: 21, y: 26 } as const;
+/** Escada para o andar de baixo: a câmara do fundo, no mesmo lugar em todo andar que tem escada. */
+export const CAVE_STAIRS_DOWN = { x: 8, y: 8 } as const;
 export type CaveCell = 0 | 1 | 2; // wall, floor, deep water
 export class CaveFloor {
   readonly cells = new Uint8Array(CAVE_WIDTH * CAVE_HEIGHT);
@@ -18,12 +20,22 @@ export class CaveFloor {
   readonly theme: CaveTheme;
   readonly name: string;
   readonly id: string;
-  constructor(entrance: CaveEntrance) {
+  /** 1 = o andar da entrada, ligado à superfície; os de baixo se ligam ao de cima pela mesma escada de saída. */
+  readonly floorIndex: number;
+  readonly floorCount: number;
+  /** Há escada para baixo em todo andar, menos no último. */
+  readonly hasStairsDown: boolean;
+  constructor(entrance: CaveEntrance, floorIndex = 1, floorCount = 1) {
     this.entrance = entrance;
     this.theme = entrance.theme;
     this.name = entrance.name;
-    this.id = entrance.id + ":floor:1";
-    const salt = entrance.seed ^ Math.imul(entrance.tileX, 31337) ^ Math.imul(entrance.tileY, 991);
+    this.floorIndex = floorIndex;
+    this.floorCount = floorCount;
+    this.hasStairsDown = floorIndex < floorCount;
+    this.id = entrance.id + ":floor:" + floorIndex;
+    // O andar 1 mantém o sal de sempre (os mapas existentes não mudam); os de baixo ganham o seu.
+    const salt = (entrance.seed ^ Math.imul(entrance.tileX, 31337) ^ Math.imul(entrance.tileY, 991)) ^
+      (floorIndex === 1 ? 0 : Math.imul(floorIndex, 7919));
     const carve = (x: number,y: number,cell: CaveCell = 1): void => {
       if (x > 1 && y > 1 && x < CAVE_WIDTH-2 && y < CAVE_HEIGHT-2)
         this.cells[y*CAVE_WIDTH+x] = cell;
@@ -61,6 +73,10 @@ export class CaveFloor {
     for(let i=1;i<rooms.length;i++) corridor(rooms[i-1]!.x,rooms[i-1]!.y,rooms[i]!.x,rooms[i]!.y);
     for(let y=CAVE_EXIT.y-5;y<=CAVE_EXIT.y+1;y++)
       for(let x=CAVE_EXIT.x-2;x<=CAVE_EXIT.x+2;x++)carve(x,y);
+    // A escada para baixo cabe numa clareira de 7x5 tiles, sempre ligada pelos corredores.
+    if(this.hasStairsDown)
+      for(let y=CAVE_STAIRS_DOWN.y-2;y<=CAVE_STAIRS_DOWN.y+2;y++)
+        for(let x=CAVE_STAIRS_DOWN.x-3;x<=CAVE_STAIRS_DOWN.x+3;x++)carve(x,y);
     this.collision = {
       canMove: (x:number,y:number):boolean => {
         if(!Number.isFinite(x)||!Number.isFinite(y))return false;
