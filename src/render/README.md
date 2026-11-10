@@ -121,3 +121,20 @@ por renderizadores específicos sem que a ficha de atributos importe Canvas.
 Arquivos `geometry.ts` compartilham primitivas sem copiar corpos inteiros.
 A extração de 27 espécies **não** é acabamento novo: a arte pré-existente
 continua até ser revisada em novas passagens.
+
+### Montarias separadas por espécie — 10/11/2026
+
+O renderizador `mounts.ts` agora seleciona cada um dos **dez** módulos de
+`src/render/creatures/mounts/`. O arquivo `geometry.ts` guarda apenas
+primitivas de volume, membros, textura, olhos e acessórios. Silhuetas,
+cabeças, chifres, crinas, asas, penas, cauda, escamas e nadadeiras ficam
+nos próprios arquivos, com movimento temporal determinístico. As fichas
+individuais foram movidas para `src/actors/mounts/` e continuam
+consumidas pelo contrato público `MountCatalog.ts`.
+
+O primeiro acabamento aprofundado de Lagarto das Areias e Escaravelho
+de Carga permanece; as outras oito montarias ganharam desenhos individuais
+com materiais e movimentos característicos. Nenhuma mudança de loot,
+velocidade, colisão, domar ou habilidades do motor foi feita. A avaliação
+de fidelidade artística em Android físico e o aprofundamento de animações
+sincronizadas ao estado real de movimento ainda são trabalhos pendentes.

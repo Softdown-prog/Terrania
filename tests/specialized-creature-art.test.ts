@@ -111,3 +111,36 @@ test("32 criaturas possuem corpo procedural específico, e não só ficha de atr
   assert.ok(readFileSync("src/render/actors.ts","utf8").includes("function renderSlime") ||
     readFileSync("src/render/actors.ts","utf8").includes("export function renderSlime"));
 });
+
+
+test("dez montarias possuem arquivo visual único, além de ficha de atributos própria",async()=>{
+  const { MOUNT_IDS }=await import("../src/actors/MountCatalog.ts");
+  const { existsSync,readFileSync }=await import("node:fs");
+  const names: Record<string,string>={
+    "warhorse":"warhorse","mountain-goat":"mountainGoat",
+    "imperial-elk":"imperialElk","fire-lion":"fireLion",
+    "sand-basilisk":"sandBasilisk","cavern-bear":"cavernBear",
+    "silver-unicorn":"silverUnicorn","dark-griffin":"darkGriffin",
+    "cargo-beetle":"cargoBeetle","tidal-hippocampus":"tidalHippocampus",
+  };
+  assert.equal(MOUNT_IDS.length,10);
+  const signatures=new Set<string>();
+  for(const id of MOUNT_IDS){
+    const filename=names[id];
+    const art=`src/render/creatures/mounts/${filename}.ts`;
+    const stats=`src/actors/mounts/${filename}.ts`;
+    assert.ok(existsSync(art),id+" sem desenho individual");
+    assert.ok(existsSync(stats),id+" sem ficha individual");
+    assert.ok(readFileSync(art,"utf8").length>1500,id+" sem anatomia detalhada");
+    const first=capture(c=>renderMount(c,id,0,0,2.2));
+    const moving=capture(c=>renderMount(c,id,0,0,3.5));
+    assert.ok(first.paintOps>55,id+" ainda desenhado por formas insuficientes");
+    assert.ok(first.gradients>=3,id+" sem material volumétrico");
+    assert.ok(first.curves>35,id+" sem curvas anatômicas");
+    assert.equal(first.saves,first.restores,id+" contexto Canvas desbalanceado");
+    assert.notEqual(first.signature,moving.signature,id+" sem reação temporal");
+    assert.equal(first.signature,capture(c=>renderMount(c,id,0,0,2.2)).signature,id+" não determinístico");
+    assert.ok(!signatures.has(first.signature),id+" compartilha a mesma silhueta/traçado");
+    signatures.add(first.signature);
+  }
+});
