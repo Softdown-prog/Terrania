@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (71)
+## Todos os arquivos deste módulo (76)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -47,6 +47,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/engine-invariants.test.ts`](../../tests/engine-invariants.test.ts)
 - [`tests/experience.test.ts`](../../tests/experience.test.ts)
 - [`tests/file-size-budget.test.ts`](../../tests/file-size-budget.test.ts)
+- [`tests/game-styles.test.ts`](../../tests/game-styles.test.ts)
 - [`tests/helpers/artAssets.ts`](../../tests/helpers/artAssets.ts)
 - [`tests/helpers/browserEncounter.ts`](../../tests/helpers/browserEncounter.ts)
 - [`tests/helpers/recordingContext.ts`](../../tests/helpers/recordingContext.ts)
@@ -62,9 +63,11 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/mcp-navigator.test.ts`](../../tests/mcp-navigator.test.ts)
 - [`tests/mobile-controls.test.ts`](../../tests/mobile-controls.test.ts)
 - [`tests/mobile-layout.test.ts`](../../tests/mobile-layout.test.ts)
+- [`tests/monster-regions.test.ts`](../../tests/monster-regions.test.ts)
 - [`tests/mount-actions.test.ts`](../../tests/mount-actions.test.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 - [`tests/mounts.test.ts`](../../tests/mounts.test.ts)
+- [`tests/npc-regions.test.ts`](../../tests/npc-regions.test.ts)
 - [`tests/npcs.test.ts`](../../tests/npcs.test.ts)
 - [`tests/phaser-install.test.ts`](../../tests/phaser-install.test.ts)
 - [`tests/physics.test.ts`](../../tests/physics.test.ts)

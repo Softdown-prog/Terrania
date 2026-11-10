@@ -1,0 +1,118 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readdirSync, readFileSync } from "node:fs";
+import { NPCS, NPC_CHARACTERS, NPC_LOOKS, NPC_TALK_RANGE, npcDialogue, nearestNpc } from "../src/npcs/catalog.ts";
+import { NPCS as legacyNPCS } from "../src/world/npcs.ts";
+import { CENTER_NPCS, CENTER_NPC_LOOKS } from "../src/npcs/center/index.ts";
+import { BUILDINGS, SIGNS } from "../src/world/village.ts";
+
+test("NPCs: cinco personagens únicos na vila central, sem NPCs inventados nas outras regiões",()=>{
+  assert.equal(NPC_TALK_RANGE,82);
+  assert.deepEqual(NPC_CHARACTERS.map(n=>n.id),["aela","mira","toren","lina","stablemaster"]);
+  assert.deepEqual(NPC_CHARACTERS.map(n=>[n.x,n.y]),[[80,-16],[304,16],[538,32],[448,250],[384,112]]);
+  assert.equal(new Set(NPC_CHARACTERS.map(n=>n.id)).size,5);
+  assert.strictEqual(NPC_CHARACTERS,CENTER_NPCS);
+  assert.strictEqual(NPC_LOOKS,CENTER_NPC_LOOKS);
+  assert.deepEqual(Object.keys(NPC_LOOKS),["aela","mira","toren","lina"]);
+  for(const region of ["north","south","east","west"])
+    assert.deepEqual(readdirSync("src/npcs/"+region),["README.md"]);
+});
+test("NPCs: cada personagem tem ficha única e objetos de vila mantêm ordem",()=>{
+  const files=readdirSync("src/npcs/center").filter(f=>f.endsWith(".ts")&&f!=="index.ts").sort();
+  assert.deepEqual(files,["aela.ts","eron.ts","lina.ts","mira.ts","toren.ts"]);
+  assert.strictEqual(NPCS,legacyNPCS);
+  assert.equal(NPCS.length,5+SIGNS.length+BUILDINGS.length);
+  assert.deepEqual(NPCS.slice(0,5),NPC_CHARACTERS);
+  assert.equal(NPCS[5]?.kind,"sign");
+  assert.equal(NPCS[NPCS.length-1]?.kind,"door");
+  assert.equal(nearestNpc(16,16)?.id,"aela");
+  assert.equal(nearestNpc(Number.NaN,0),null);
+  assert.equal(nearestNpc(Infinity,0),null);
+  assert.equal(nearestNpc(80+NPC_TALK_RANGE+.01,-16),null);
+});
+test("NPCs: falas originais independentes de reexportações e aliases",()=>{
+  const npc=(id:string)=>NPCS.find(n=>n.id===id)!;
+  const scenarios:ReadonlyArray<readonly [string,number,boolean,readonly string[]]>=[
+    ["aela",0,false,[
+      "Saudações, viajante! Sou Aela, a guardiã desta clareira.",
+      "Os slimes estão se espalhando pela floresta. Preciso de ajuda para afastar cinco deles.",
+      "Siga as trilhas além do arco de pedra, mas cuide da sua vida. Volte aqui para contar seus feitos!",
+    ]],
+    ["aela",2,false,[
+      "Vejo que já começou a proteger a clareira. Continue firme!",
+      "Você derrotou 2 de 5 slimes. Explore as trilhas fora do círculo de pedras.",
+      "Use a espada com Espaço ou J; no celular, toque no botão ATACAR.",
+    ]],
+    ["aela",5,false,[
+      "Você conseguiu! Cinco slimes derrotados. A clareira pode descansar por enquanto.",
+      "Além das árvores há trilhas antigas e ruínas. Esta terra guarda muitos segredos.",
+      "Volte quando quiser conversar. Novas missões chegarão com a expansão do mundo.",
+    ]],
+    ["mira",0,false,[
+      "Sou Mira, cartógrafa da Vila da Travessia.",
+      "Siga para leste, leia as placas e conheça os moradores.",
+      "Aela ainda precisa de ajuda com os slimes.",
+    ]],
+    ["mira",5,false,[
+      "Aela me contou sobre sua vitória!",
+      "Há ruínas e cavernas além da floresta. Por enquanto, conheça a vila.",
+    ]],
+    ["toren",0,false,[
+      "Sou Toren, ferreiro.",
+      "Chegue perto da porta e pressione E para visitar a oficina.",
+      "Ainda não ofereço comércio.",
+    ]],
+    ["toren",5,false,[
+      "Parabéns por proteger a clareira!",
+      "Minha oficina está aberta para visitas. Equipamentos serão adicionados depois.",
+    ]],
+    ["toren",2,true,[
+      "Sou Toren, ferreiro da Vila da Travessia.",
+      "Trouxe gel de Slime? Posso trocar por uma espada forjada aqui na vila.",
+    ]],
+    ["lina",0,false,[
+      "Sou Lina, anfitriã da Travessia.",
+      "Entre na hospedaria pela porta atrás de mim.",
+      "Por enquanto não há serviço de descanso.",
+    ]],
+    ["lina",5,false,[
+      "Obrigado por ajudar Aela!",
+      "Visite a hospedaria. Mais histórias e tarefas chegarão depois.",
+    ]],
+    ["stablemaster",0,false,[
+      "Sou Eron, guardião das montarias da Travessia. Antes de montar, construa o cercado e treine sua Cavalaria.",
+      "Slimes romperam a cerca e o cavalo da guarnição fugiu ferido ao Bosque Oeste. O carpinteiro reparou o cercado, mas precisamos de sua ajuda.",
+      "Depois de reconstruir o cercado e treinar Cavalaria I, entregarei a Maçã Silvestre Doce. Siga os cascos, afaste os slimes e traga o Garrano de volta.",
+      "Cada montaria tem nível, sela e região próprios. As criaturas selvagens precisam de missões especiais.",
+    ]],
+    ["entrance",0,false,[
+      "Vila da Travessia — bem-vindo!",
+      "Ao leste fica a praça. Ao sul, a hospedaria.",
+    ]],
+    ["square",0,false,[
+      "Aviso: cuidado com os monstros fora da vila!",
+      "Ajude Aela na clareira. Outras tarefas virão em etapas futuras.",
+    ]],
+  ];
+  for(const [id,kills,forge,expected] of scenarios)
+    assert.deepEqual(npcDialogue(npc(id),kills,forge),expected,`Falas alteradas: ${id}, kills=${kills}, forge=${forge}`);
+  assert.match(npcDialogue(npc("forge"),0).join(" "),/Use E perto da porta/i);
+});
+
+test("NPCs: aparência da vila mantém paletas, acessórios e proporções anteriores",()=>{
+  assert.deepEqual(
+    Object.entries(NPC_LOOKS).map(([id,look])=>[id,look.robe,look.prop,look.hairStyle,look.width]),
+    [
+      ["aela","#456f4d","staff","long",1],
+      ["mira","#4f7c8a","scroll","short",1],
+      ["toren","#7a5a43","hammer","bald",1.14],
+      ["lina","#9a6c66","lantern","bun",1],
+    ],
+  );
+  assert.equal(NPC_LOOKS.toren?.apron,"#3d3029");
+  assert.equal(NPC_LOOKS.lina?.apron,"#eadfc2");
+});
+
+test("NPCs: Docker do backend empacota src/npcs",()=>{
+  assert.match(readFileSync("server/Dockerfile","utf8"),/COPY src\/npcs \/work\/src\/npcs/);
+});

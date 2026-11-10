@@ -1,0 +1,123 @@
+/* Inventário do Cavaleiro: mochila por toque e equipamento em torno do herói real. */
+#inventoryDialog { width: min(940px, calc(100% - 24px)); max-height: calc(100dvh - 24px);
+  padding: 28px; overscroll-behavior: contain; }
+#inventoryDialog h1 { margin: 8px 0 12px; }
+.inventory-overview { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.inventory-overview span { background: #102522; border: 1px solid #b4a27355; border-radius: 6px;
+  padding: 5px 9px; color: #e6d5a8; font: 11px system-ui; }
+.inventory-mobile-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px; margin-bottom: 12px; }
+.inventory-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 18px; }
+.inventory-panel { min-width: 0; background: #102522b8; border: 1px solid #9f98714f;
+  border-radius: 12px; padding: 12px; }
+.inventory-panel h2 { margin: 0; color: #f1e5cd; font: 19px Georgia, serif; }
+.equipment-heading, .backpack-heading { display: flex; justify-content: space-between;
+  align-items: center; gap: 8px; margin-bottom: 12px; }
+.equipment-heading span, .backpack-heading span { font: 11px system-ui; color: #b6d3c1; }
+.equipment-grid { display: grid; grid-template-columns: minmax(70px, 1fr) minmax(105px, 1.45fr) minmax(70px, 1fr);
+  grid-template-rows: repeat(5, minmax(58px, 1fr)); gap: 5px; }
+.equipment-slot { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  gap: 3px; min-width: 0; min-height: 58px; padding: 4px; color: #e3e6d2;
+  background: linear-gradient(180deg, #243b33, #1a2d27); border: 1px solid #7d967a77; border-radius: 7px; text-align: center;
+  box-shadow: inset 0 1px 0 #ffffff14, inset 0 -3px 6px #0000003d; }
+.equipment-slot.equipped { background: linear-gradient(180deg, #34513f, #25402f); border-color: #c4ab6ccc; }
+.equipment-slot.equipped::after { content: ""; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px;
+  border-radius: 50%; background: #e9c46a; box-shadow: 0 0 5px #e9c46a99; }
+.equipment-slot[aria-pressed="true"] { border-color: #efd8a3; box-shadow: inset 0 0 0 2px #efd8a355; }
+.equipment-symbol { font-size: 30px; line-height: 1; filter: grayscale(1) brightness(.62) opacity(.5);
+  transition: filter .15s; }
+.equipment-slot.equipped .equipment-symbol { filter: drop-shadow(0 2px 2px #0007); }
+.equipment-slot strong { font: 10px system-ui; }
+.equipment-slot small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: #c9d4c2; font: 9px system-ui; }
+.equipment-slot:nth-child(1) { grid-area: 1 / 1; }
+.equipment-slot:nth-child(2) { grid-area: 1 / 3; }
+.equipment-slot:nth-child(3) { grid-area: 2 / 1; }
+.equipment-slot:nth-child(4) { grid-area: 2 / 3; }
+.equipment-slot:nth-child(5) { grid-area: 3 / 1; }
+.equipment-slot:nth-child(6) { grid-area: 3 / 3; }
+.equipment-slot:nth-child(7) { grid-area: 4 / 1; }
+.equipment-slot:nth-child(8) { grid-area: 4 / 3; }
+.equipment-slot:nth-child(9) { grid-area: 5 / 1; }
+.equipment-slot:nth-child(10) { grid-area: 5 / 3; }
+.hero-preview { grid-area: 1 / 2 / span 5 / span 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: space-around; border: 1px solid #99875d66;
+  border-radius: 8px; min-width: 0; overflow: hidden;
+  background: radial-gradient(ellipse 46% 7% at 50% 81%, #0000007a, #0000 100%),
+    radial-gradient(ellipse at 50% 42%, #3f6c55aa, #0b201d 74%); }
+.preview-eyebrow { color: #e3d2ab; font: 9px system-ui; letter-spacing: 1.4px; padding-top: 6px; }
+#inventoryHero { display: block; width: min(100%, 160px); height: auto; aspect-ratio: 160 / 208; }
+.preview-rotate { min-height: 38px; padding: 5px 12px; border-radius: 6px;
+  border: 1px solid #a79361; background: #142b29; color: #f0dcad; margin-bottom: 5px; }
+.equipment-detail { border-top: 1px solid #9f987158; padding-top: 10px; margin-top: 12px; }
+.equipment-detail h3, .backpack-details h3 { margin: 0 0 7px; color: #f1e3bf; font: 18px Georgia, serif; }
+.equipment-detail > strong { color: #edf3e0; }
+.equipment-detail p { margin: 6px 0; font-size: 12px; line-height: 1.5; }
+.weapon-picker { display: grid; grid-template-columns: repeat(auto-fit,minmax(165px,1fr)); gap: 7px;
+  max-height: 192px; padding: 4px 2px; overflow-y: auto; overscroll-behavior: contain; }
+.weapon-picker .secondary-button { width: 100%; text-align: left; white-space: normal; }
+
+.backpack-filters { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.backpack-filters button, .inventory-mobile-tabs button { min-height: 38px; padding: 6px 9px;
+  border: 1px solid #647d6d; border-radius: 6px; background: #19322c; color: #dfddc8; font: 11px system-ui; }
+.backpack-filters button[aria-pressed="true"], .inventory-mobile-tabs button[aria-pressed="true"] {
+  background: #3e5541; border-color: #e4c993; color: #fff0cc; }
+.backpack-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.backpack-cell { display: flex; flex-direction: column; align-items: center; justify-content: space-around;
+  min-height: 98px; min-width: 0; padding: 7px 3px; text-align: center;
+  background: #1a302a; color: #e7e3cb; border: 1px solid #64867677; border-radius: 7px; }
+.backpack-cell.is-empty { opacity: .72; }
+.backpack-cell.is-selected { border-color: #ecd195; background: #2e4a3c; box-shadow: inset 0 0 0 2px #e5c27a55; }
+.backpack-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 8px;
+  font-size: 32px; background: #284c40; border: 1px solid #0000004d;
+  box-shadow: inset 0 1px 0 #ffffff26, inset 0 -4px 8px #00000040; }
+.backpack-icon app-item-icon { filter: drop-shadow(0 2px 2px #0006); }
+.backpack-icon[data-kind="potion"] { background: #4f3446; }
+.backpack-icon[data-kind="food"] { background: #4d3d2a; }
+.backpack-icon[data-kind="material"] { background: #1d4a3e; }
+.backpack-icon[data-kind="weapon"], .backpack-icon[data-kind="gear"] { background: #3f4636; }
+.backpack-icon.large { width: 60px; height: 60px; font-size: 44px; flex: none; }
+.backpack-cell.is-empty .backpack-icon app-item-icon { filter: grayscale(.6) brightness(.85) opacity(.7); }
+.backpack-details-head { display: flex; align-items: center; gap: 12px; }
+.backpack-details-head h3 { margin: 0; }
+.backpack-name { width: 100%; color: #f0e8d0; font: 10px/1.25 system-ui; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.backpack-quantity { color: #e6f0d8; font: 600 10px system-ui; font-variant-numeric: tabular-nums;
+  background: #0a1a17a0; border-radius: 4px; padding: 1px 6px; }
+.backpack-cell.is-empty .backpack-quantity { color: #aab9a8; font-weight: 400; }
+.backpack-details { margin-top: 12px; min-height: 124px; padding: 12px; background: #1c3830;
+  border: 1px solid #79958180; border-radius: 8px; }
+.backpack-details .dialog-kicker { display: block; font-size: 10px; margin-bottom: 5px; }
+.backpack-details p { font-size: 12px; line-height: 1.5; margin: 7px 0; }
+.backpack-details button { width: 100%; }
+.food-status { display: grid; gap: 3px; margin-top: 12px; padding-top: 9px; color: #d5dfbf;
+  border-top: 1px solid #748c7255; font: 11px system-ui; }
+.food-status small { color: #c1cdaf; font-size: 11px; }
+.food-status p { margin: 2px 0 0; font-size: 11px; line-height: 1.5; }
+#inventoryDialog .primary-button, #inventoryDialog .secondary-button { min-height: 44px; }
+#inventoryFeedback:not(:empty) { margin: 14px 0; min-height: 1.5em; color: #efd6a0; }
+.equipment-slot:focus-visible, .backpack-cell:focus-visible, .backpack-filters button:focus-visible,
+.inventory-mobile-tabs button:focus-visible, .preview-rotate:focus-visible { outline: 3px solid #f8e1a5; outline-offset: 2px; }
+@media (max-width: 680px) {
+  #inventoryDialog { width: min(460px, calc(100% - 14px)); max-height: calc(100dvh - 14px);
+    padding: 26px 12px 16px; }
+  #inventoryDialog h1 { font-size: 24px; }
+  .inventory-mobile-tabs { gap: 5px; }
+  .inventory-mobile-tabs button { min-height: 44px; padding: 6px 3px; font-size: 11px; }
+  .inventory-columns { display: block; }
+  .inventory-panel.mobile-hidden { display: none; }
+  .inventory-panel { padding: 9px; }
+  .backpack-filters button { min-height: 42px; }
+  .backpack-cell { min-height: 92px; }
+  .backpack-icon { width: 40px; height: 40px; font-size: 29px; }
+}
+@media (max-width: 360px) {
+  .backpack-grid { gap: 4px; }
+  .backpack-cell { padding: 5px 2px; min-height: 86px; }
+  .backpack-icon { width: 34px; height: 34px; font-size: 25px; }
+  .backpack-name { font-size: 9px; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  #inventoryDialog { max-height: calc(100dvh - 8px); padding: 22px 12px 10px; }
+}
+
