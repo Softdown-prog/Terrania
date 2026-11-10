@@ -53,3 +53,43 @@ test("cada primeiro andar tem câmaras conectadas, paredes sólidas e saída tra
     assert.equal(room.reachedExit,true);
   }
 });
+
+test("caverna de treino fica fora da vila, contém cinco slimes e premia só uma vez", async () => {
+  const { villageGround } = await import("../src/world/village.ts");
+  const { OfflineSimulation } = await import("../src/engine/OfflineSimulation.ts");
+  const { applyCaveVictories } = await import("../src/engine/CaveRewards.ts");
+  for (const seed of [42,842136,987654321]) {
+    const entry=caveEntranceInCell(0,0,seed);
+    assert.ok(entry);
+    assert.equal(entry.tileX,44);
+    assert.equal(entry.tileY,11);
+    assert.equal(villageGround(entry.tileX,entry.tileY),null);
+    const cave=new CaveRoom(entry);
+    assert.ok(cave.monsters.size>=5,"a gruta deve conter cinco slimes de treinamento");
+    assert.ok([...cave.monsters.values()].every(m=>m.kind==="slime"));
+    const total=cave.monsters.size;
+    const sim=new OfflineSimulation(seed);
+    for(const mob of [...cave.monsters.values()].slice(0,5))mob.hp=0;
+    cave.update(1/60,{x:0,y:0});
+    assert.equal(applyCaveVictories(sim,cave),true);
+    assert.equal(sim.trainingKills,5);
+    assert.equal(sim.inventory.claimAelaReward(sim.trainingKills),true);
+    assert.equal(applyCaveVictories(sim,cave),false);
+    const revisit=new CaveRoom(entry,100,100,sim.defeated);
+    assert.equal(revisit.monsters.size,total-5);
+  }
+});
+test("abates na superfície não contam no tutorial, mas preservam a progressão geral", async () => {
+  const { OfflineSimulation } = await import("../src/engine/OfflineSimulation.ts");
+  const sim=new OfflineSimulation(842136);
+  sim.update(1/60,{x:0,y:0},false);
+  sim.slimes.clear();
+  sim.player.x=16; sim.player.y=16;
+  assert.equal(sim.trainingKills,0);
+  const original=sim.snapshot();
+  assert.equal(original.trainingKills,0);
+  const restored=new OfflineSimulation(sim.seed,{...original,kills:4,trainingKills:0});
+  assert.equal(restored.kills,4);
+  assert.equal(restored.trainingKills,0);
+  assert.equal(restored.inventory.claimAelaReward(restored.trainingKills),false);
+});
