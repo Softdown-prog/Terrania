@@ -331,7 +331,7 @@ export class HudService implements GameUi {
   setCave(location:CaveMapState|null):void {
     this.cave.set(location);
     if(location) {
-      this.coords.set("Subsolo · X "+location.tileX+" · Y "+location.tileY);
+      this.coords.set((location.floor.entrance.tower ? "Torre" : "Subsolo")+" · X "+location.tileX+" · Y "+location.tileY);
       this.quest.set(location.floor.name);
       this.questProgress.set(location.floorCount > 1
         ? "Andar " + location.floorIndex + " de " + location.floorCount + " · " + location.floorName

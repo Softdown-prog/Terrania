@@ -42,6 +42,8 @@ fugitivo no mapa da vila, sem criar terrenos secretos nem colisões novas.
 
 **Torres do Sul (ADR 0019):** `towers/placement.ts` coloca as torres (uma por célula de 224 tiles, fora da cidade, das ruínas e do marco regional) e dá a colisão pelos blocos de cada ficha. Cada torre tem o seu arquivo de ficha em `towers/south/` (Norte, Leste e Oeste ganham pastas próprias); `towers/index.ts` só agrega. Não é espelhado no Go; `tests/south-towers.test.ts` cobre a colocação e a colisão.
 
+**Interior das torres (ADR 0020):** `towers/entrance.ts` transforma a porta da torre num `CaveEntrance` (com o campo `tower`), `entrances.ts` junta as buscas de caverna e de torre, e `towers/floorLayout.ts` desenha a planta de salões retos que `CaveFloor` usa quando a entrada é de torre. `tests/south-tower-interior.test.ts` cobre o interior.
+
 **Camadas (ADR 0016):** `world` fica na base e só importa `world`. O vocabulário das montarias (`mountIds.ts`) mora aqui para que `mountQuests.ts` não dependa de `actors/`; `tests/layering.test.ts` confere. Única exceção hoje: `npcs.ts` (reexportação de `npcs/`), que sai junto com o PR da vila.
 
 **Planta de andar (ADR 0018):** `caveFloor.ts` gera as paredes, a água funda, a colisão e as escadas de um andar de caverna; não sabe nada de criaturas. As entradas continuam em `caves.ts`.

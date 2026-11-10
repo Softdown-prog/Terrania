@@ -33,7 +33,7 @@
           </div>
         </div>
         <div class="quest">
-          <span class="stat-heading">{{ hud.cave() ? "EXPLORAÇÃO · SUBSOLO" : "MISSÃO DA CLAREIRA" }}</span
+          <span class="stat-heading">{{ hud.cave() ? (hud.cave()!.floor.entrance.tower ? "EXPLORAÇÃO · TORRE" : "EXPLORAÇÃO · SUBSOLO") : "MISSÃO DA CLAREIRA" }}</span
           ><b id="quest">{{ hud.quest() }}</b>
           <div class="quest-bottom">
             <div class="quest-meter"><div id="questFill" [style.width.%]="hud.questPercent()"></div></div>

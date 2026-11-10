@@ -2,6 +2,7 @@ import type { CollisionMap } from "./collision.ts";
 import { TILE_SIZE } from "./terrain.ts";
 import { hash2 } from "./random.ts";
 import type { CaveEntrance, CaveTheme } from "./caves.ts";
+import { carveTowerFloor } from "./towers/floorLayout.ts";
 
 /**
  * Planta de um andar de caverna: paredes, água funda e colisão, sem nenhuma criatura.
@@ -40,6 +41,26 @@ export class CaveFloor {
       if (x > 1 && y > 1 && x < CAVE_WIDTH-2 && y < CAVE_HEIGHT-2)
         this.cells[y*CAVE_WIDTH+x] = cell;
     };
+    if (entrance.tower) carveTowerFloor(carve, salt);
+    else this.carveCaverns(carve, salt);
+    for(let y=CAVE_EXIT.y-5;y<=CAVE_EXIT.y+1;y++)
+      for(let x=CAVE_EXIT.x-2;x<=CAVE_EXIT.x+2;x++)carve(x,y);
+    // A escada para baixo cabe numa clareira de 7x5 tiles, sempre ligada pelos corredores.
+    if(this.hasStairsDown)
+      for(let y=CAVE_STAIRS_DOWN.y-2;y<=CAVE_STAIRS_DOWN.y+2;y++)
+        for(let x=CAVE_STAIRS_DOWN.x-3;x<=CAVE_STAIRS_DOWN.x+3;x++)carve(x,y);
+    this.collision = {
+      canMove: (x:number,y:number):boolean => {
+        if(!Number.isFinite(x)||!Number.isFinite(y))return false;
+        const r=7;
+        return ([-r,r] as const).every(dx=>([-r,r] as const).every(dy=>
+          this.at(Math.floor((x+dx)/TILE_SIZE),Math.floor((y+dy)/TILE_SIZE))===1));
+      },
+      speedAt: ():number => this.theme === "marsh" ? 0.85 : this.theme === "glacial" ? 0.88 : 1,
+    };
+  }
+  /** A planta de caverna de sempre, intacta: salas ovais, corredores de 3 tiles e poças nos temas úmidos. */
+  private carveCaverns(carve: (x: number, y: number, cell?: CaveCell) => void, salt: number): void {
     const rooms = [
       {x:21,y:24,rx:7,ry:5},
       {x:12+Math.floor(hash2(1,2,salt)*4),y:16,rx:7,ry:5},
@@ -71,21 +92,6 @@ export class CaveFloor {
     }
     // Preserve the same connected corridors after wet-pocket decoration.
     for(let i=1;i<rooms.length;i++) corridor(rooms[i-1]!.x,rooms[i-1]!.y,rooms[i]!.x,rooms[i]!.y);
-    for(let y=CAVE_EXIT.y-5;y<=CAVE_EXIT.y+1;y++)
-      for(let x=CAVE_EXIT.x-2;x<=CAVE_EXIT.x+2;x++)carve(x,y);
-    // A escada para baixo cabe numa clareira de 7x5 tiles, sempre ligada pelos corredores.
-    if(this.hasStairsDown)
-      for(let y=CAVE_STAIRS_DOWN.y-2;y<=CAVE_STAIRS_DOWN.y+2;y++)
-        for(let x=CAVE_STAIRS_DOWN.x-3;x<=CAVE_STAIRS_DOWN.x+3;x++)carve(x,y);
-    this.collision = {
-      canMove: (x:number,y:number):boolean => {
-        if(!Number.isFinite(x)||!Number.isFinite(y))return false;
-        const r=7;
-        return ([-r,r] as const).every(dx=>([-r,r] as const).every(dy=>
-          this.at(Math.floor((x+dx)/TILE_SIZE),Math.floor((y+dy)/TILE_SIZE))===1));
-      },
-      speedAt: ():number => this.theme === "marsh" ? 0.85 : this.theme === "glacial" ? 0.88 : 1,
-    };
   }
   at(tx:number,ty:number): CaveCell {
     if(!Number.isInteger(tx)||!Number.isInteger(ty)||tx<0||ty<0||tx>=CAVE_WIDTH||ty>=CAVE_HEIGHT)return 0;

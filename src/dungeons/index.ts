@@ -8,9 +8,11 @@ export type { DungeonDefinition, DungeonFloorDefinition } from "./types.ts";
 /** Todas as masmorras, por região. Norte, Leste e Oeste entram aqui, cada uma na sua pasta. */
 export const DUNGEONS: readonly DungeonDefinition[] = [...SOUTH_DUNGEONS];
 
-/** A masmorra a que esta caverna pertence, ou nada: cavernas sem masmorra têm um andar só. */
+/** A masmorra a que esta caverna (ou porta de torre) pertence, ou nada: cavernas sem masmorra têm um andar só. */
 export function dungeonFor(entrance: CaveEntrance): DungeonDefinition | null {
-  return DUNGEONS.find(dungeon => dungeon.theme === entrance.theme) ?? null;
+  // Porta de torre: manda a ficha da torre. Caverna comum: manda o tema, ignorando as masmorras de torre.
+  if (entrance.tower) return DUNGEONS.find(dungeon => dungeon.tower === entrance.tower) ?? null;
+  return DUNGEONS.find(dungeon => !dungeon.tower && dungeon.theme === entrance.theme) ?? null;
 }
 
 /** Os andares desta caverna, na ordem. A versão curta é sorteada pela posição da entrada. */

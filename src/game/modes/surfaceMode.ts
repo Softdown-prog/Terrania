@@ -1,5 +1,5 @@
 import { currentMountQuestStep } from "../../engine/mounts/MountQuestState.ts";
-import { caveEntranceNear } from "../../world/caves.ts";
+import { dungeonEntranceNear } from "../../world/entrances.ts";
 import { nearestNpc } from "../../world/npcs.ts";
 import { questStepId, surfaceNearbyAction } from "../interactions.ts";
 import type { Frame, ModeHost } from "./types.ts";
@@ -72,7 +72,7 @@ export function tickSurface(host: ModeHost, frame: Frame): void {
   host.hud.setCombatTarget(focusedLabel && following
     ? focusedLabel + " · seguindo" : focusedLabel);
   const npc = nearestNpc(host.sim.player.x, host.sim.player.y, timers.clock);
-  const portal = caveEntranceNear(host.sim.player.x,host.sim.player.y,host.sim.seed);
+  const portal = dungeonEntranceNear(host.sim.player.x,host.sim.player.y,host.sim.seed);
   host.hud.setNearbyAction(surfaceNearbyAction({
     x: host.sim.player.x, y: host.sim.player.y, stepId: questStepId(host.sim.mounts.quest),
     caveEntrance: portal !== null, npc,
