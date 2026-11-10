@@ -2,37 +2,60 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { WEAPON_IDS } from "../src/engine/character/Weapons.ts";
 
 /**
- * Organização de `src/engine` (ADR 0016): a raiz só guarda a simulação e os limites;
- * cada assunto tem a sua pasta. Arquivo novo vai para a pasta do assunto, não para a raiz.
+ * O motor organiza códigos por responsabilidade, não por um manifesto fechado
+ * de arquivos. Novas categorias e subpastas são permitidas quando coesas.
+ * A capacidade geral por diretório é validada em folder-capacity.test.ts.
  */
 const ENGINE = "src/engine";
-const ROOT_FILES = ["Limits.ts", "OfflineSimulation.ts"];
-const SUBFOLDERS = ["character", "combat", "mounts", "movement", "rooms"];
-
+const REQUIRED_ROOT_FILES = ["Limits.ts", "OfflineSimulation.ts"];
+const REQUIRED_TOPICS = ["character", "combat", "mounts", "movement", "rooms"];
 const list = (dir: string): string[] => readdirSync(dir).sort();
+const isFolder = (dir: string): boolean => statSync(dir).isDirectory();
+const sourceCount = (dir: string): number => list(dir).reduce((count, name) => {
+  const path = join(dir, name);
+  return count + (isFolder(path) ? sourceCount(path) : name.endsWith(".ts") ? 1 : 0);
+}, 0);
 
-test("engine: a raiz tem só a simulação, os limites e o README", () => {
-  const files = list(ENGINE).filter(name => statSync(join(ENGINE, name)).isFile());
-  assert.deepEqual(files, [...ROOT_FILES, "README.md"].sort(),
-    "arquivo novo do motor vai para a pasta do seu assunto (combat, movement, character, mounts, rooms)");
+test("engine: a raiz reserva os pontos de entrada; regras novas ficam em subpastas", () => {
+  const files = list(ENGINE).filter(name => !isFolder(join(ENGINE,name)));
+  assert.deepEqual(files, [...REQUIRED_ROOT_FILES,"README.md"].sort(),
+    "raiz do motor só mantém simulação/limites; regras novas pertencem aos assuntos");
 });
 
-test("engine: as pastas de assunto são exatamente estas e nenhuma está vazia", () => {
-  const folders = list(ENGINE).filter(name => statSync(join(ENGINE, name)).isDirectory());
-  assert.deepEqual(folders, SUBFOLDERS);
-  for (const folder of folders) assert.ok(list(join(ENGINE, folder)).some(name => name.endsWith(".ts")), folder + " está vazia");
+test("engine: assuntos obrigatórios existem, sem limitar novos assuntos", () => {
+  const folders=list(ENGINE).filter(name=>isFolder(join(ENGINE,name)));
+  for (const required of REQUIRED_TOPICS)
+    assert.ok(folders.includes(required),"assunto essencial ausente: "+required);
+  for (const folder of folders) {
+    assert.match(folder,/^[a-z][a-z0-9-]*$/,"nome de assunto inválido");
+    assert.ok(sourceCount(join(ENGINE,folder))>0,"assunto sem fonte TypeScript: "+folder);
+  }
 });
 
-test("engine: cada arquivo mora na pasta do seu assunto", () => {
-  const expected: Readonly<Record<string, readonly string[]>> = {
-    combat: ["ClassicBattleList.ts", "ClassicCombat.ts", "ClassicPursuit.ts", "SwordCombat.ts", "combat.ts"],
-    movement: ["ClassicTileWalker.ts", "TapNavigator.ts"],
-    character: ["Equipment.ts", "Experience.ts", "Food.ts", "Inventory.ts", "Weapons.ts", "loot.ts"],
-    mounts: ["MountActions.ts", "MountQuestState.ts", "MountStable.ts"],
-    rooms: ["CaveRewards.ts", "CaveRoom.ts", "InteriorRoom.ts", "caveStairs.ts"],
-  };
-  for (const [folder, names] of Object.entries(expected))
-    assert.deepEqual(list(join(ENGINE, folder)), [...names].sort(), folder);
+test("engine: subpastas de domínio admitem novos módulos sem nomes pré-aprovados", () => {
+  for(const topic of REQUIRED_TOPICS) {
+    const directory=join(ENGINE,topic);
+    for(const name of list(directory)) {
+      const path=join(directory,name);
+      if(isFolder(path)) {
+        assert.match(name,/^[a-z][a-z0-9-]*$/,"subpasta de assunto inválida: "+name);
+        assert.ok(sourceCount(path)>0,"subpasta vazia: "+path);
+      } else {
+        assert.match(name,/^(?:[A-Za-z][A-Za-z0-9-]*\.(?:ts|json)|README\.md)$/,
+          "arquivo de domínio fora dos formatos esperados: "+path);
+      }
+    }
+  }
+});
+
+test("engine: weapons/swords tem uma ficha real por ID de espada do catálogo", () => {
+  const folder=join(ENGINE,"character","weapons","swords");
+  assert.ok(isFolder(folder),"caminho weapons/swords ausente");
+  const files=list(folder).filter(name=>name.endsWith(".ts"));
+  assert.deepEqual(files,WEAPON_IDS.map(id=>id+".ts").sort(),
+    "toda espada do catálogo exige arquivo individual; nenhuma ficha órfã");
+  assert.equal(WEAPON_IDS.length,10,"progressão atual das dez espadas");
 });

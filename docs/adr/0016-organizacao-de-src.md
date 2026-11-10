@@ -52,3 +52,10 @@ Fora de escopo: mudar regra de jogo, balanceamento, protocolo, servidor ou qualq
 ## Compatibilidade com a política de tamanho do PR #124
 
 A consolidação com o PR #124 remove o limite rígido de 400 linhas e os tetos dos arquivos antigos. A antiga proposta de adicionar teto de bytes foi substituída por avisos não bloqueantes e revisão por responsabilidade. A sessão 1 continua limitada à reorganização física e à atualização de imports, sem mudar a jogabilidade.
+
+
+## Adendo — capacidade de pastas e novas categorias (10/11/2026)
+
+Os testes antigos verificavam **listas exatas de nomes** em `engine/character/`, o que reprovava uma subpasta nova de armas apesar de respeitar as fronteiras do domínio. Isso não representava uma limitação de 200 arquivos. A política atual usa **200 arquivos diretos por pasta** (`tests/folder-capacity.test.ts`) para fontes `src`, `server`, Go, Rust, testes, scripts e workflows, sem somar arquivos de todas as subpastas nem bloquear novas categorias de assunto.
+
+`tests/engine-layout.test.ts` continua exigindo entradas canônicas na raiz e os cinco assuntos do motor, mas **aceita novos arquivos e categorias** em subpastas, validando fonte TypeScript, ausência de pastas de código vazias e fichas de espada coerentes com `WEAPON_IDS`. O número de arquivos não substitui regras de imports, tipagem, cobertura de testes e fronteiras do `architecture:check`. A separação `character/weapons/swords/` é reconhecida como categoria de domínio, não ícones Angular.
