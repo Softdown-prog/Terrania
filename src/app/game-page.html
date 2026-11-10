@@ -215,8 +215,8 @@
                   @let current = hud.weapons[loadout.equipped];
                   <strong id="equippedWeapon">{{ current.name }}</strong>
                   <p>{{ current.damage }} de dano · {{ current.interval }} s entre golpes · {{ current.windup * 1000 }} ms de preparo</p>
-                  <p class="weapon-roster-caption">Arsenal do cavaleiro · 10 espadas · progressão completa</p>
-                  <div class="weapon-picker" role="group" aria-label="Arsenal com dez espadas">
+                  <p class="weapon-roster-caption">Arsenal do cavaleiro · 11 espadas · progressão completa</p>
+                  <div class="weapon-picker" role="group" aria-label="Arsenal com onze espadas">
                     @for (id of hud.swordIds; track id) {
                       @let sword = hud.weapons[id];
                       @let unlocked = hud.availableWeapons().includes(id);
