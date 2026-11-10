@@ -1,7 +1,7 @@
 import { stickVector } from "./joystick.ts";
 import { isShortTap } from "./tap.ts";
-import { tileDirection } from "../engine/ClassicTileWalker.ts";
-import type { Point } from "../engine/TapNavigator.ts";
+import { tileDirection } from "../engine/movement/ClassicTileWalker.ts";
+import type { Point } from "../engine/movement/TapNavigator.ts";
 
 /** Teclado e controles Android usam o mesmo vetor de movimento da simulação. */
 export class Input {

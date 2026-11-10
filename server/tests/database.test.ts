@@ -4,7 +4,7 @@ import {createServer} from 'node:http';
 import {once} from 'node:events';
 import type {Pool} from 'pg';
 import {gameCatalog} from '../src/db/catalog.ts';
-import {WEAPON_IDS} from '../../src/engine/Weapons.ts';
+import {WEAPON_IDS} from '../../src/engine/character/Weapons.ts';
 import {databasePool,databaseStatus} from '../src/db/database.ts';
 import {marketHttp} from '../src/db/http.ts';
 

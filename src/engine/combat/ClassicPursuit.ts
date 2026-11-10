@@ -1,9 +1,9 @@
-import type { Player } from "../actors/Player.ts";
-import type { CreatureView } from "../actors/CreatureCatalog.ts";
-import type { CollisionMap } from "../world/collision.ts";
-import { TILE_SIZE } from "../world/terrain.ts";
+import type { Player } from "../../actors/Player.ts";
+import type { CreatureView } from "../../actors/CreatureCatalog.ts";
+import type { CollisionMap } from "../../world/collision.ts";
+import { TILE_SIZE } from "../../world/terrain.ts";
 import { ATTACK_REACH, TARGET_OVERLAP_DISTANCE, canStrike, faceTarget } from "./combat.ts";
-import { TapNavigator } from "./TapNavigator.ts";
+import { TapNavigator } from "../movement/TapNavigator.ts";
 
 /** CLASSIC-002: local-only follow logic for a single manually selected target.
  * It proposes movement vectors; Player.update remains the sole movement and

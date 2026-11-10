@@ -34,7 +34,7 @@ O Go experimental agora reproduz a geração regional em `server-go/engine/world
 ## Primeira etapa subterrânea (modo solo)
 A geração é separada da superfície: `src/world/caves.ts` define
 entradas por célula/seed, incluindo um acesso nas cercanias da vila;
-`src/engine/CaveRoom.ts` possui a planta transitável de um primeiro andar
+`src/engine/rooms/CaveRoom.ts` possui a planta transitável de um primeiro andar
 e a colisão local. `src/render/cave.ts` desenha o tema correspondente
 (norte glacial, sul desértico, leste marítimo, oeste rochoso, sudeste
 pantanoso, centro com raízes), a boca da caverna e a cartografia interna

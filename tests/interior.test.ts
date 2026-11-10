@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { InteriorRoom, ROOM_FURNITURE, ROOM_HEIGHT, ROOM_WIDTH } from "../src/engine/InteriorRoom.ts";
+import { InteriorRoom, ROOM_FURNITURE, ROOM_HEIGHT, ROOM_WIDTH } from "../src/engine/rooms/InteriorRoom.ts";
 import { BUILDINGS } from "../src/world/village.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 

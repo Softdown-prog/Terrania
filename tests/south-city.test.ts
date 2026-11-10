@@ -10,7 +10,7 @@ import { Player } from "../src/actors/Player.ts";
 import { RegionalMonster, southCommonSpawns, regionalSurfaceSpawns } from "../src/actors/RegionalMonster.ts";
 import { SOUTH_NPCS, SOUTH_NPC_LOOKS, SOUTH_DIALOGUES } from "../src/npcs/south/index.ts";
 import { nearestNpc, npcDialogue } from "../src/npcs/catalog.ts";
-import { InteriorRoom } from "../src/engine/InteriorRoom.ts";
+import { InteriorRoom } from "../src/engine/rooms/InteriorRoom.ts";
 
 test("Poço Negro é uma cidade maior que Travessia, inserida nos Ermos do Sul",async()=>{
   const { getWorldRegion }=await import("../src/world/regions.ts");

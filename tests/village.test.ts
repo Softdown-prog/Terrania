@@ -73,7 +73,7 @@ test("criaturas não atacam viajantes na vila e não nascem na praça", async ()
 });
 
 test("portão separa proteção da gruta e interiores acessíveis em todas as fachadas", async () => {
-  const { InteriorRoom } = await import("../src/engine/InteriorRoom.ts");
+  const { InteriorRoom } = await import("../src/engine/rooms/InteriorRoom.ts");
   assert.equal(villageGround(38, 11), "path");
   assert.equal(villageGround(44, 11), null);
   assert.equal(starterCaveTrail(44, 11), true);

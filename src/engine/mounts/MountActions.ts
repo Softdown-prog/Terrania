@@ -1,5 +1,5 @@
-import type { OfflineSimulation } from "./OfflineSimulation.ts";
-import { levelForExperience } from "./Experience.ts";
+import type { OfflineSimulation } from "../OfflineSimulation.ts";
+import { levelForExperience } from "../character/Experience.ts";
 import { sampleMountCaptureLoot, type MountAction, type MountActionResult } from "./MountStable.ts";
 
 /** Resultados que alteram o que o jogador possui ou o progresso da missão e, por isso, exigem salvar. */

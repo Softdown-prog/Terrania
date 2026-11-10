@@ -2,11 +2,11 @@ import type { DebuffKind } from "./CreatureCatalog.ts";
 import { moveBody, type CollisionMap } from "../world/collision.ts";
 import {
   ATTACK_DURATION,
-} from "../engine/combat.ts";
-import { BASE_MAX_HP } from "../engine/Experience.ts";
-import { WEAPONS, type WeaponId } from "../engine/Weapons.ts";
+} from "../engine/combat/combat.ts";
+import { BASE_MAX_HP } from "../engine/character/Experience.ts";
+import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
 import { FOODS, FOOD_EAT_COOLDOWN, FOOD_HEAL_INTERVAL, MAX_NUTRITION,
-  normalizeNutrition, type FoodId, type FoodUseResult, type NutritionState } from "../engine/Food.ts";
+  normalizeNutrition, type FoodId, type FoodUseResult, type NutritionState } from "../engine/character/Food.ts";
 export class Player {
   x = 16;
   y = 16;

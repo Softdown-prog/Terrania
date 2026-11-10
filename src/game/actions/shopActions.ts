@@ -1,10 +1,10 @@
 import type { Player } from "../../actors/Player.ts";
 import type { OfflineSimulation } from "../../engine/OfflineSimulation.ts";
-import type { FoodId } from "../../engine/Food.ts";
-import type { GearId, GearSlot } from "../../engine/Equipment.ts";
-import type { WeaponId } from "../../engine/Weapons.ts";
-import { FOODS } from "../../engine/Food.ts";
-import { experienceProgress } from "../../engine/Experience.ts";
+import type { FoodId } from "../../engine/character/Food.ts";
+import type { GearId, GearSlot } from "../../engine/character/Equipment.ts";
+import type { WeaponId } from "../../engine/character/Weapons.ts";
+import { FOODS } from "../../engine/character/Food.ts";
+import { experienceProgress } from "../../engine/character/Experience.ts";
 import { nearestNpc } from "../../world/npcs.ts";
 import { INVENTORY_FEEDBACK } from "../messages/inventoryFeedback.ts";
 

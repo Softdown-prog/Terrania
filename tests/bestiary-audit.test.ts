@@ -7,9 +7,9 @@ import { getWorldRegion } from "../src/world/regions.ts";
 import { getBiomeAt } from "../src/world/biomes.ts";
 import { caveThemeAt } from "../src/world/caves.ts";
 import { TILE_SIZE, CHUNK_TILES } from "../src/world/terrain.ts";
-import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
-import { CaveRoom } from "../src/engine/CaveRoom.ts";
-import { Inventory } from "../src/engine/Inventory.ts";
+import { ClassicTileWalker } from "../src/engine/movement/ClassicTileWalker.ts";
+import { CaveRoom } from "../src/engine/rooms/CaveRoom.ts";
+import { Inventory } from "../src/engine/character/Inventory.ts";
 import type { CaveEntrance } from "../src/world/caves.ts";
 
 const empty={x:0,y:0};

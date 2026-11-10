@@ -1,6 +1,6 @@
-import type { Player } from "../actors/Player.ts";
-import { moveBody, type CollisionMap } from "../world/collision.ts";
-import { TILE_SIZE } from "../world/terrain.ts";
+import type { Player } from "../../actors/Player.ts";
+import { moveBody, type CollisionMap } from "../../world/collision.ts";
+import { TILE_SIZE } from "../../world/terrain.ts";
 import { clearPath } from "./TapNavigator.ts";
 
 type Point = Readonly<{ x: number; y: number }>;

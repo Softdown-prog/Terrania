@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { experienceForLevel } from "../../src/engine/Experience.ts";
+import { experienceForLevel } from "../../src/engine/character/Experience.ts";
 
 /** Test real mobile/desktop clicks against the stable NPC, not a mocked callback. */
 test("Estábulo: construir, treinar e iniciar quest na UI Android/desktop", async ({page},info)=>{

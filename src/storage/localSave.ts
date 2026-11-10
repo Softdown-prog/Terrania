@@ -1,9 +1,9 @@
 import { normalizeKills, type OfflineSave } from '../engine/OfflineSimulation.ts';
-import { normalizeInventory } from '../engine/Inventory.ts';
-import { normalizeDrops } from '../engine/loot.ts';
-import { maxHpForExperience, normalizeExperience } from '../engine/Experience.ts';
-import { hasNutrition, normalizeNutrition } from '../engine/Food.ts';
-import { normalizeMountSave } from '../engine/MountStable.ts';
+import { normalizeInventory } from '../engine/character/Inventory.ts';
+import { normalizeDrops } from '../engine/character/loot.ts';
+import { maxHpForExperience, normalizeExperience } from '../engine/character/Experience.ts';
+import { hasNutrition, normalizeNutrition } from '../engine/character/Food.ts';
+import { normalizeMountSave } from '../engine/mounts/MountStable.ts';
 
 const SAVE_KEY = 'terrania-origins-v1';
 /** Adaptador de persistência do navegador. Não deve ser usado no backend. */

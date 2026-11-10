@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { MOUNT_IDS, MOUNTS } from "../src/actors/MountCatalog.ts";
 import { MOUNT_QUESTS } from "../src/world/mountQuests.ts";
 import { advanceMountQuest, currentMountQuestStep, mountQuestHint,
-  normalizeMountQuest, startMountQuest, synchronizeQuestKills } from "../src/engine/MountQuestState.ts";
+  normalizeMountQuest, startMountQuest, synchronizeQuestKills } from "../src/engine/mounts/MountQuestState.ts";
 import { MountStable, STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE,
-  normalizeMountSave } from "../src/engine/MountStable.ts";
+  normalizeMountSave } from "../src/engine/mounts/MountStable.ts";
 
 test("contrato: as dez quests têm roteiro próprio, região, gatilho e ordem válida",()=>{
   assert.deepEqual(Object.keys(MOUNT_QUESTS).sort(),[...MOUNT_IDS].sort());

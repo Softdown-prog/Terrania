@@ -44,7 +44,7 @@ try {
   // Comparative six-region sheet: representative *real* CaveRoom floors, not concept art.
   const caveBundle = await build({
     stdin: { contents: [
-      "import { CaveRoom } from './src/engine/CaveRoom.ts';",
+      "import { CaveRoom } from './src/engine/rooms/CaveRoom.ts';",
       "import { drawCaveView, drawCaveAtlas } from './src/render/cave.ts';",
       "globalThis.CAVES = { CaveRoom, drawCaveView, drawCaveAtlas };",
     ].join("\n"), resolveDir: root, loader: 'ts' },

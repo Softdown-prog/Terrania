@@ -1,6 +1,6 @@
-import { MAX_KILLS } from "./Limits.ts";
-import { MOUNT_IDS, type MountId } from "../actors/MountCatalog.ts";
-import { MOUNT_QUESTS, type QuestEventKind, type MountQuestStep } from "../world/mountQuests.ts";
+import { MAX_KILLS } from "../Limits.ts";
+import { MOUNT_IDS, type MountId } from "../../actors/MountCatalog.ts";
+import { MOUNT_QUESTS, type QuestEventKind, type MountQuestStep } from "../../world/mountQuests.ts";
 
 /** Reducer determinístico: eventos só completam o objetivo corrente. */
 export interface MountQuestProgress {

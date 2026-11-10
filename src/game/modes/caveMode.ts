@@ -1,5 +1,5 @@
-import { applyCaveVictories } from "../../engine/CaveRewards.ts";
-import type { CaveRoom } from "../../engine/CaveRoom.ts";
+import { applyCaveVictories } from "../../engine/rooms/CaveRewards.ts";
+import type { CaveRoom } from "../../engine/rooms/CaveRoom.ts";
 import { TILE_SIZE } from "../../world/terrain.ts";
 import type { Frame, ModeHost } from "./types.ts";
 

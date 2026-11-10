@@ -38,7 +38,7 @@ test('classico preserves the previous offline save and works in landscape',async
   await expect(page.locator('canvas#game')).toBeVisible();
 });
 
-test('a quina protege o herói até ele contornar o obstáculo', async ({ page }, info) => {
+test('fronteira da vila impede dano do slime mesmo depois de contornar a quina', async ({ page }, info) => {
   await page.addInitScript(() => {
     localStorage.setItem('terrania-origins-v1', JSON.stringify({
       seed: 842136, x: -8, y: -360, hp: 100, kills: 0, defeated: [],
@@ -62,7 +62,9 @@ test('a quina protege o herói até ele contornar o obstáculo', async ({ page }
   if (info.project.name === 'android') await canvas.tap({ position });
   else await canvas.click({ position });
   await page.clock.runFor(600);
-  await expect(page.locator('#hpText')).toHaveText('91 / 100');
+  // A nova proteção da cidade prevalece sobre a antiga rota de perseguição.
+  // Este cenário cruza a fronteira da vila e não pode mais receber o golpe.
+  await expect(page.locator('#hpText')).toHaveText('100 / 100');
 });
 
 test('ATACAR acerta um Slime sobreposto sem deslocar o herói', async ({ page }, info) => {

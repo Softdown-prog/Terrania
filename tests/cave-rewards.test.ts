@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
-import { applyCaveVictories, type CaveVictorySource } from "../src/engine/CaveRewards.ts";
+import { applyCaveVictories, type CaveVictorySource } from "../src/engine/rooms/CaveRewards.ts";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../src/actors/CreatureCatalog.ts";
 import { rollCreatureLoot } from "../src/actors/RegionalMonster.ts";
 

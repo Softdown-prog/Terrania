@@ -1,15 +1,15 @@
 import { renderRegionalCreature } from "./regionalCreatures.ts";
 import { renderSlime } from "./actors.ts";
 import { RegionalMonster } from "../actors/RegionalMonster.ts";
-import type { GearState } from "../engine/Equipment.ts";
-import type { WeaponId } from "../engine/Weapons.ts";
+import type { GearState } from "../engine/character/Equipment.ts";
+import type { WeaponId } from "../engine/character/Weapons.ts";
 import { renderHero } from "./actors.ts";
 import { ellipse, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
 import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "./caveDetails.ts";
 import { hash2, valueNoise } from "../world/random.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { CaveEntrance } from "../world/caves.ts";
-import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH, type CaveFloor, type CaveRoom } from "../engine/CaveRoom.ts";
+import { CAVE_EXIT, CAVE_HEIGHT, CAVE_WIDTH, type CaveFloor, type CaveRoom } from "../engine/rooms/CaveRoom.ts";
 
 const PALETTE = CAVE_PALETTE;
 

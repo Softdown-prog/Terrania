@@ -1,10 +1,10 @@
 import { RegionalMonster } from "../actors/RegionalMonster.ts";
 import { renderRegionalCreature } from "../render/regionalCreatures.ts";
 import type { Player } from '../actors/Player.ts';
-import type { BattleViewport } from '../engine/ClassicBattleList.ts';
+import type { BattleViewport } from '../engine/combat/ClassicBattleList.ts';
 import type { Slime } from '../actors/Slime.ts';
-import type { GearState } from '../engine/Equipment.ts';
-import type { WeaponId } from '../engine/Weapons.ts';
+import type { GearState } from '../engine/character/Equipment.ts';
+import type { WeaponId } from '../engine/character/Weapons.ts';
 import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
 import { NPCS, NPC_TALK_RANGE, npcPositionAt } from '../world/npcs.ts';
@@ -17,15 +17,15 @@ import { STABLE_MASTER, WILD_WARHORSE, WILD_HOOFPRINTS } from '../world/mountLoc
 import type { MountId } from '../actors/MountCatalog.ts';
 import { caveEntrancesInArea } from '../world/caves.ts';
 import { TILE_SIZE } from '../world/terrain.ts';
-import type { CaveRoom } from '../engine/CaveRoom.ts';
-import { ROOM_WIDTH, ROOM_HEIGHT, type InteriorRoom } from '../engine/InteriorRoom.ts';
+import type { CaveRoom } from '../engine/rooms/CaveRoom.ts';
+import { ROOM_WIDTH, ROOM_HEIGHT, type InteriorRoom } from '../engine/rooms/InteriorRoom.ts';
 import type { Effects } from '../render/Effects.ts';
 import type { Camera } from '../render/Camera.ts';
-import type { Point } from '../engine/TapNavigator.ts';
+import type { Point } from '../engine/movement/TapNavigator.ts';
 import { screenToWorld, screenToInterior } from '../input/tap.ts';
 import { clamp01, rgba, softShadow } from '../render/draw.ts';
 
-import type { LootDrop } from '../engine/loot.ts';
+import type { LootDrop } from '../engine/character/loot.ts';
 
 /** Cristal de gel procedural, independente de sprite ou imagem externa. */
 function renderGel(ctx: CanvasRenderingContext2D, x: number, y: number, time: number): void {

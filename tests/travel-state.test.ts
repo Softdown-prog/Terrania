@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { TravelState } from "../src/game/TravelState.ts";
-import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
-import { ClassicPursuit } from "../src/engine/ClassicPursuit.ts";
-import { ClassicTileWalker } from "../src/engine/ClassicTileWalker.ts";
-import { TapNavigator } from "../src/engine/TapNavigator.ts";
+import { ClassicCombat } from "../src/engine/combat/ClassicCombat.ts";
+import { ClassicPursuit } from "../src/engine/combat/ClassicPursuit.ts";
+import { ClassicTileWalker } from "../src/engine/movement/ClassicTileWalker.ts";
+import { TapNavigator } from "../src/engine/movement/TapNavigator.ts";
 
 /** Dublês que só anotam quem foi chamado, na ordem. */
 function spied() {

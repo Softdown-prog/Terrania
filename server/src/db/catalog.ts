@@ -1,7 +1,7 @@
-import { GEAR } from '../../../src/engine/Equipment.ts';
-import { FOODS } from '../../../src/engine/Food.ts';
-import { WEAPONS } from '../../../src/engine/Weapons.ts';
-import { MAX_STACK, POTION_HEAL } from '../../../src/engine/Inventory.ts';
+import { GEAR } from '../../../src/engine/character/Equipment.ts';
+import { FOODS } from '../../../src/engine/character/Food.ts';
+import { WEAPONS } from '../../../src/engine/character/Weapons.ts';
+import { MAX_STACK, POTION_HEAL } from '../../../src/engine/character/Inventory.ts';
 
 /** Existing game data only: no speculative rares, prices or player possessions. */
 export function gameCatalog() {

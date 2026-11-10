@@ -1,12 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { WEAPONS, WEAPON_IDS, weaponUnlocked, isWeaponId } from "../src/engine/Weapons.ts";
-import { MAX_LEVEL, MAX_EXPERIENCE, experienceForLevel, levelForExperience } from "../src/engine/Experience.ts";
-import { Inventory } from "../src/engine/Inventory.ts";
+import { WEAPONS, WEAPON_IDS, weaponUnlocked, isWeaponId } from "../src/engine/character/Weapons.ts";
+import { MAX_LEVEL, MAX_EXPERIENCE, experienceForLevel, levelForExperience } from "../src/engine/character/Experience.ts";
+import { Inventory } from "../src/engine/character/Inventory.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { Player } from "../src/actors/Player.ts";
-import { applySwordImpact, swordHitDamage } from "../src/engine/SwordCombat.ts";
-import { ClassicCombat } from "../src/engine/ClassicCombat.ts";
+import { applySwordImpact, swordHitDamage } from "../src/engine/combat/SwordCombat.ts";
+import { ClassicCombat } from "../src/engine/combat/ClassicCombat.ts";
 import { drawKnightSword, drawKnightTrail } from "../src/render/swords.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
 

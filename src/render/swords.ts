@@ -1,4 +1,4 @@
-import { WEAPONS, type WeaponId } from "../engine/Weapons.ts";
+import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
 import { KNIGHT_SWORD_GRIP } from "./heroPose.ts";
 import { clamp01, rgba, TAU } from "./draw.ts";
 

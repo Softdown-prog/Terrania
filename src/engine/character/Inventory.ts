@@ -1,12 +1,12 @@
-import { MAX_STACK } from "./Limits.ts";
-export { MAX_STACK } from "./Limits.ts";
-import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../actors/CreatureCatalog.ts";
-import { MOUNT_IDS, MOUNTS } from "../actors/MountCatalog.ts";
-import { aelaQuestProgress } from "../world/aelaQuest.ts";
-import type { Player } from "../actors/Player.ts";
+import { MAX_STACK } from "../Limits.ts";
+export { MAX_STACK } from "../Limits.ts";
+import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../../actors/CreatureCatalog.ts";
+import { MOUNT_IDS, MOUNTS } from "../../actors/MountCatalog.ts";
+import { aelaQuestProgress } from "../../world/aelaQuest.ts";
+import type { Player } from "../../actors/Player.ts";
 import { FOODS, emptyFoodCounts, normalizeFoodCounts, type FoodCounts, type FoodId,
   type FoodTradeResult, type FoodUseResult } from "./Food.ts";
-import { nearestNpc } from "../world/npcs.ts";
+import { nearestNpc } from "../../world/npcs.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 

@@ -1,11 +1,11 @@
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
-import type { BattleCreature } from '../engine/ClassicBattleList.ts';
-import type { ExperienceProgress } from '../engine/Experience.ts';
-import type { FoodCounts, FoodId, NutritionState } from '../engine/Food.ts';
-import type { WeaponId, WeaponLoadout } from '../engine/Weapons.ts';
-import type { GearId, GearSlot, GearState } from '../engine/Equipment.ts';
-import type { CaveFloor } from '../engine/CaveRoom.ts';
-import type { MountAction, MountView } from '../engine/MountStable.ts';
+import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
+import type { ExperienceProgress } from '../engine/character/Experience.ts';
+import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
+import type { WeaponId, WeaponLoadout } from '../engine/character/Weapons.ts';
+import type { GearId, GearSlot, GearState } from '../engine/character/Equipment.ts';
+import type { CaveFloor } from '../engine/rooms/CaveRoom.ts';
+import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 
 export interface Preferences {
   zoom: number;

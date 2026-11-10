@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ClassicCombat, CLASSIC_ATTACK_INTERVAL } from "../src/engine/ClassicCombat.ts";
+import { ClassicCombat, CLASSIC_ATTACK_INTERVAL } from "../src/engine/combat/ClassicCombat.ts";
 import { Player } from "../src/actors/Player.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";

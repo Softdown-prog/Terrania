@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../src/actors/CreatureCatalog.ts";
 import { regionalSurfaceSpawns, caveMonsterKinds, rollCreatureLoot, RegionalMonster } from "../src/actors/RegionalMonster.ts";
-import { CaveRoom } from "../src/engine/CaveRoom.ts";
+import { CaveRoom } from "../src/engine/rooms/CaveRoom.ts";
 import type { CaveEntrance, CaveTheme } from "../src/world/caves.ts";
 import { getWorldRegion } from "../src/world/regions.ts";
 import { Player } from "../src/actors/Player.ts";

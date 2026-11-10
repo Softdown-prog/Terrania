@@ -4,7 +4,7 @@ import { hash2, seedFromText } from "../../src/world/random.ts";
 import { getTile } from "../../src/world/terrain.ts";
 import { slimeSpawns } from "../../src/actors/Slime.ts";
 import { getRegionalLandmarkForCell } from "../../src/world/regionalLandmarks.ts";
-import { canStrike } from "../../src/engine/combat.ts";
+import { canStrike } from "../../src/engine/combat/combat.ts";
 
 const seed=842136;
 const world=new SeedCollision(seed);

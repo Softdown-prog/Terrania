@@ -3,7 +3,7 @@ import type { Camera } from "../../render/Camera.ts";
 import type { Effects } from "../../render/Effects.ts";
 import type { WorldRenderer } from "../../render/WorldRenderer.ts";
 import type { OfflineSimulation } from "../../engine/OfflineSimulation.ts";
-import type { visibleBattleCreatures } from "../../engine/ClassicBattleList.ts";
+import type { visibleBattleCreatures } from "../../engine/combat/ClassicBattleList.ts";
 import type { CanvasScene } from "../../ui/CanvasScene.ts";
 import type { GameUi } from "../../ui/GameUi.ts";
 import type { TravelState } from "../TravelState.ts";

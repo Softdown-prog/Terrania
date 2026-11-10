@@ -23,3 +23,9 @@ pela escada; CI verde sem esse cenário não comprova que a navegação está co
 
 ### Invariantes do motor e portões de qualidade
 `engine-invariants.test.ts` guarda as regressões dos bugs de combate, derrota e save já corrigidos (lista em "Invariantes do motor" no `AGENTS.md`); cada teste falha se a correção correspondente for desfeita. `quality-gates.test.ts` reprova acaso global ou relógio de parede nas regras e no render, TypeScript estrito enfraquecido (`@ts-ignore`, `any`) e testes pulados ou isolados fora da lista de exceções.
+
+### Tamanho de arquivos (aconselhamento, não reprovação)
+
+`file-size-budget.test.ts` percorre os arquivos TypeScript de `src/` e `server/src/`, excluindo declarações `.d.ts`. Até 400 linhas é tamanho preferencial; 401 a 800 emite aviso; acima de 800 recomenda revisão de arquitetura. Fontes com cabeçalho de geração são registradas separadamente. **Nenhum arquivo falha exclusivamente por ter mais linhas.** Os avisos aparecem nos diagnósticos do teste Node e servem para a revisão do PR, não para obrigar divisão arbitrária.
+
+A orientação é dividir por responsabilidade, e não por contagem: mantenha funções coesas e confira a direção das dependências, o typecheck, testes de regressão e Playwright quando alterar jogabilidade. Os portões em `quality-gates.test.ts` continuam obrigatórios.
