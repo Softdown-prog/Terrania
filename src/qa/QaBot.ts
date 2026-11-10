@@ -63,6 +63,24 @@ export interface QaBotOptions {
 const distance = (a: Point, b: Point): number => Math.hypot(a.x - b.x, a.y - b.y);
 const position = (point: Point): Point => ({ x: point.x, y: point.y });
 
+/**
+ * Uma caminhada longa usa trechos curtos, respeitando o limite de 650px
+ * do A* local do jogo. A escolha sempre exige caminho real sem teleporte.
+ */
+function relayPoint(from: Point, target: Point, collision: OfflineSimulation["collision"]): Point | null {
+  const d=distance(from,target);
+  if(d<110)return null;
+  const vx=(target.x-from.x)/d,vy=(target.y-from.y)/d;
+  for(const stride of [420,340,270,180]){
+    for(const side of [0,80,-80,160,-160]){
+      const p={x:from.x+vx*stride-vy*side,y:from.y+vy*stride+vx*side};
+      if(distance(p,target)>=d-75 || !collision.canMove(p.x,p.y))continue;
+      if(findWalkingPath(from,p,collision))return p;
+    }
+  }
+  return null;
+}
+
 
 /**
  * Placas e marcos são sólidos: interagir significa chegar perto, não pisar
@@ -144,6 +162,18 @@ export function runQaBot(options: QaBotOptions = {}): QaBotReport {
     markTile();
   };
 
+  /** Caminhada física em subtrechos, usando as mesmas colisões do jogador. */
+  const walkTo=(destination:Point,limit:number):boolean=>{
+    if(distance(sim.player,destination)<=ARRIVAL_DISTANCE)return true;
+    if(!navigator.go(sim.player,destination,sim.collision))return false;
+    while(ticks<limit && navigator.target &&
+      distance(sim.player,destination)>ARRIVAL_DISTANCE){
+      advance(navigator.direction(sim.player,STEP_SECONDS));
+    }
+    navigator.cancel();
+    return distance(sim.player,destination)<=ARRIVAL_DISTANCE;
+  };
+
   while (goals.length) {
     goals.sort((a, b) => distance(sim.player, a) - distance(sim.player, b) ||
       a.id.localeCompare(b.id));
@@ -155,23 +185,25 @@ export function runQaBot(options: QaBotOptions = {}): QaBotReport {
         addCheck(remaining, "navigation", "skipped", "Limite global de ticks atingido");
       break;
     }
-    const destination = approachPoint(sim, npc);
+    let destination=region==="south" && distance(sim.player,npc)>570
+      ? null : approachPoint(sim,npc);
+    // A cidade é maior que o raio do A*: relays apenas pelo terreno transitável.
+    // Se o NPC continuar inacessível, a falha será registrada (não simular sucesso).
+    for(let leg=0;region==="south" && !destination && leg<8 && ticks<maxTicks;leg++){
+      const relay=relayPoint(sim.player,npc,sim.collision);
+      if(!relay || !walkTo(relay,Math.min(maxTicks,ticks+PER_GOAL_TICKS)))break;
+      destination=distance(sim.player,npc)<=570 ? approachPoint(sim,npc) : null;
+    }
     if (!destination) {
       addCheck(npc, "navigation", "failed", "Nenhum ponto caminhável com interação disponível");
       continue;
     }
-    if (distance(sim.player, destination) > ARRIVAL_DISTANCE) {
-      if (!navigator.go(sim.player, destination, sim.collision)) {
-        addCheck(npc, "navigation", "failed", "Não foi encontrada rota caminhável");
-        continue;
-      }
-      const goalDeadline = Math.min(maxTicks, ticks + PER_GOAL_TICKS);
-      while (ticks < goalDeadline && navigator.target &&
-             distance(sim.player, destination) > ARRIVAL_DISTANCE) {
-        advance(navigator.direction(sim.player, STEP_SECONDS));
-      }
+    if (!walkTo(destination,Math.min(maxTicks,ticks+PER_GOAL_TICKS))) {
+      const exhausted=ticks>=maxTicks;
+      addCheck(npc,"navigation",exhausted?"skipped":"failed",
+        exhausted?"Orçamento de ticks esgotado antes de chegar":"Rota interrompida por bloqueio");
+      continue;
     }
-    navigator.cancel();
     const remainingDistance = distance(sim.player, destination);
     if (remainingDistance > ARRIVAL_DISTANCE) {
       const exhausted = ticks >= maxTicks;
