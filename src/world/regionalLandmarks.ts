@@ -1,6 +1,7 @@
 import { hash2 } from "./random.ts";
 import { getWorldRegion, type WorldRegion } from "./regions.ts";
 import { isWalkable, TILE_SIZE } from "./terrain.ts";
+import { southCitySafe } from "./southCity.ts";
 
 /** Marcos geográficos reais, sem missões ou entradas de dungeon fictícias. */
 export const LANDMARK_CELL_TILES = 256;
@@ -40,7 +41,7 @@ export function getRegionalLandmarkForCell(cellX: number, cellY: number, seed: n
   const point = candidate(cellX, cellY, seed);
   if (!point) return null;
   const region = getWorldRegion(point.tx, point.ty);
-  if (region === "center") return null;
+  if (region === "center" || southCitySafe(point.tx,point.ty)) return null;
   // Local real e transitável, com ao menos uma faixa de passagem em torno do marco.
   for (let dy = -1; dy <= 1; dy++)
     for (let dx = -1; dx <= 1; dx++)

@@ -1,5 +1,6 @@
 import { hash2, valueNoise } from './random.ts';
-import { villageGround } from './village.ts';
+import { villageGround, starterCaveTrail } from './village.ts';
+import { southCityGround, SOUTH_CITY } from './southCity.ts';
 import { classifyBiome, type Biome } from './biomes.ts';
 import { getTerrainProfile } from './terrainProfiles.ts';
 export const TILE_SIZE = 32;
@@ -10,8 +11,12 @@ export interface Tile { ground: Ground; biome: Biome; tree: boolean; rock: boole
 /** Lagos negros dos Ermos do Sul: manchas de água escura, só longe do centro (ADR 0017).
  * Ruído de duas escalas dá margem irregular; o limiar deixa ~2,6% do Sul alagado.
  */
+/** Poço Negro e suas estradas ficam livres de lago e de ruína: 80 tiles de cada lado e do norte ao sul das estradas. */
+export function nearSouthCity(tx: number, ty: number): boolean {
+  return Math.abs(tx - SOUTH_CITY.centerX) < 80 && ty > SOUTH_CITY.centerY - 70 && ty < SOUTH_CITY.centerY + 60;
+}
 export function isBlackLake(tx: number, ty: number, seed: number, southWeight: number): boolean {
-  if (southWeight < 0.62) return false;
+  if (southWeight < 0.62 || nearSouthCity(tx, ty)) return false;
   const n = valueNoise(tx / 40 + 7.3, ty / 40 - 2.9, seed + 5003) * 0.78 +
     valueNoise(tx / 12 + 1.1, ty / 12 + 4.4, seed + 5009) * 0.22;
   return n > 0.82;
@@ -19,7 +24,10 @@ export function isBlackLake(tx: number, ty: number, seed: number, southWeight: n
 /** Gerador compartilhado por servidor, colisão, render e atlas. Sem dependências gráficas. */
 export function getTile(tx: number, ty: number, seed: number): Tile {
   const detail = hash2(tx, ty, seed + 31);
-  const village = villageGround(tx, ty);
+  const south = southCityGround(tx,ty);
+  if (south) return { ground:south, biome:south==='path'?'trail':'ruins',
+    tree:false,rock:false,decoration:detail };
+  const village = villageGround(tx, ty) ?? (starterCaveTrail(tx, ty) ? 'path' : null);
   if (village) return { ground: village, biome: village === 'path' ? 'trail' : 'meadow',
     tree: false, rock: false, decoration: detail };
   const p = getTerrainProfile(tx, ty, seed);

@@ -23,10 +23,11 @@ export async function migrate(pool:Pool,directory=resolve('db/migrations')) {
    await client.query(sql);
    await client.query('INSERT INTO market.schema_migrations(version,checksum) VALUES(1,$1)',[checksum]);
   }
-  for(const item of gameCatalog())await client.query(`INSERT INTO market.item_catalog(id,name,category,max_stack,attributes)
-   VALUES($1,$2,$3,$4,$5) ON CONFLICT(id) DO UPDATE SET name=EXCLUDED.name,category=EXCLUDED.category,
+  for(const item of gameCatalog())await client.query(`INSERT INTO market.item_catalog(id,name,category,rarity,max_stack,attributes)
+   VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO UPDATE SET name=EXCLUDED.name,category=EXCLUDED.category,
    max_stack=EXCLUDED.max_stack,attributes=EXCLUDED.attributes,updated_at=now()
-   WHERE market.item_catalog.rarity='common'`,[item.id,item.name,item.category,item.maxStack,JSON.stringify(item.attributes)]);
+   WHERE market.item_catalog.rarity='common' AND market.item_catalog.rarity=EXCLUDED.rarity`,
+   [item.id,item.name,item.category,item.rarity,item.maxStack,JSON.stringify(item.attributes)]);
   await client.query('COMMIT');return {schemaVersion:1,catalogItems:gameCatalog().length};
  }catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}
 }

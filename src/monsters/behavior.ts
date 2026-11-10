@@ -11,6 +11,8 @@ export interface SpeciesBehavior {
   readonly pursuit: Pursuit;
   readonly cadence: number;
   readonly weave: number;
+  /** Vida relativa que dispara recuo; ausente = combate até a morte. */
+  readonly retreatAt?: number;
 }
 
 export const SPECIES_BEHAVIORS: Readonly<Record<RegionalCreatureKind, SpeciesBehavior>> = Object.freeze({
@@ -27,22 +29,22 @@ export const SPECIES_BEHAVIORS: Readonly<Record<RegionalCreatureKind, SpeciesBeh
   "summit-griffin": { gait: "flap", pursuit: "rush", cadence: 1.49, weave: 0.12 },
   "magma-salamander": { gait: "crawl", pursuit: "direct", cadence: 1.26, weave: 0.14 },
   "rotten-marsh-ent": { gait: "lumber", pursuit: "direct", cadence: 0.58, weave: 0 },
-  "poison-scout-toad": { gait: "hop", pursuit: "cautious", cadence: 1.52, weave: 0.21 },
+  "poison-scout-toad": { gait: "hop", pursuit: "cautious", cadence: 1.52, weave: 0.21, retreatAt: 0.25 },
   "carrion-sandworm": { gait: "burrow", pursuit: "rush", cadence: 1.02, weave: 0.15 },
   "tundra-mammoth": { gait: "stomp", pursuit: "direct", cadence: 0.75, weave: 0.01 },
   "frost-banshee": { gait: "hover", pursuit: "cautious", cadence: 1.17, weave: 0.35 },
   "runic-polar-bear": { gait: "gallop", pursuit: "rush", cadence: 1.33, weave: 0.06 },
   "abyssal-octopus": { gait: "float", pursuit: "flank", cadence: 1.47, weave: 0.39 },
   "tide-hunter-triton": { gait: "stride", pursuit: "cautious", cadence: 1.08, weave: 0.11 },
-  "dune-rat": { gait: "skitter", pursuit: "cautious", cadence: 2.16, weave: 0.35 },
-  "sand-goblin": { gait: "skitter", pursuit: "flank", cadence: 1.57, weave: 0.23 },
+  "dune-rat": { gait: "skitter", pursuit: "cautious", cadence: 2.16, weave: 0.35, retreatAt: 0.5 },
+  "sand-goblin": { gait: "skitter", pursuit: "flank", cadence: 1.57, weave: 0.23, retreatAt: 0.25 },
   "desert-orc": { gait: "stride", pursuit: "rush", cadence: 1.01, weave: 0.09 },
   "clay-troll": { gait: "lumber", pursuit: "direct", cadence: 0.68, weave: 0.07 },
-  "dune-scout": { gait: "stride", pursuit: "cautious", cadence: 1.73, weave: 0.2 },
+  "dune-scout": { gait: "stride", pursuit: "cautious", cadence: 1.73, weave: 0.2, retreatAt: 0.45 },
   "oasis-elf": { gait: "stride", pursuit: "flank", cadence: 1.43, weave: 0.18 },
   "mirage-imp": { gait: "float", pursuit: "flank", cadence: 1.85, weave: 0.3 },
   "horned-viper": { gait: "slither", pursuit: "flank", cadence: 1.76, weave: 0.31 },
-  "carrion-vulture": { gait: "hop", pursuit: "cautious", cadence: 1.15, weave: 0.09 },
+  "carrion-vulture": { gait: "hop", pursuit: "cautious", cadence: 1.15, weave: 0.09, retreatAt: 0.25 },
   "cactus-sprout": { gait: "hop", pursuit: "direct", cadence: 0.84, weave: 0.07 },
   "sand-beetle": { gait: "scuttle", pursuit: "cautious", cadence: 1.98, weave: 0.3 },
 });
@@ -69,4 +71,11 @@ export function pursuitStep(kind: RegionalCreatureKind, elapsed: number,
   const x=dx/length-dy/length*weave,y=dy/length+dx/length*weave;
   const norm=Math.hypot(x,y);
   return {x:x/norm,y:y/norm,pace:gaitPace[spec.gait]*pursuitPace};
+}
+
+/** Recuo por espécie, determinístico e independente de animação/DOM. */
+export function speciesRetreats(kind: RegionalCreatureKind, hp: number, maxHp: number): boolean {
+  const threshold = SPECIES_BEHAVIORS[kind].retreatAt;
+  return threshold !== undefined && Number.isFinite(hp) && Number.isFinite(maxHp) &&
+    maxHp > 0 && hp > 0 && hp / maxHp <= threshold;
 }

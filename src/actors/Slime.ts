@@ -1,7 +1,7 @@
 import { clearPath, moveBody, type CollisionMap } from "../world/collision.ts";
 import { hash2 } from "../world/random.ts";
 import { CHUNK_TILES, TILE_SIZE } from "../world/terrain.ts";
-import { villageGround } from "../world/village.ts";
+import { protectedSurfaceTile } from "../world/village.ts";
 import { getRegionDifficulty } from "../world/regionDifficulty.ts";
 import type { Player } from "./Player.ts";
 import { CREATURE_CATALOG, type CreatureKind, type CreatureView } from "./CreatureCatalog.ts";
@@ -63,24 +63,27 @@ export class Slime implements CreatureView {
     this.x = x;
     this.y = y;
   }
-  update(dt: number, player: Player, world: CollisionMap, defense = 0): void {
+  update(dt: number, player: Player, world: CollisionMap, defense = 0, protectVillage = true): void {
     this.tickSwordStatuses(dt);
     if(this.hp<=0)return;
     this.pulse += dt * 5;
     this.hurtTime = Math.max(0, this.hurtTime - dt);
-    moveBody(this, this.knockX * dt, this.knockY * dt, world);
+    const monsterWorld: CollisionMap = protectVillage ? {
+      canMove: (x, y) => !protectedSurfaceTile(Math.floor(x / TILE_SIZE), Math.floor(y / TILE_SIZE)) && world.canMove(x, y),
+    } : world;
+    moveBody(this, this.knockX * dt, this.knockY * dt, monsterWorld);
     this.knockX *= Math.exp(-10 * dt);
     this.knockY *= Math.exp(-10 * dt);
     this.contactCooldown = Math.max(0, this.contactCooldown - dt);
     // A cidade inicial é segura também na simulação autoritativa do servidor.
-    if (villageGround(Math.floor(player.x / TILE_SIZE), Math.floor(player.y / TILE_SIZE))) return;
+    if (protectVillage && protectedSurfaceTile(Math.floor(player.x / TILE_SIZE), Math.floor(player.y / TILE_SIZE))) return;
     const dx = player.x - this.x,
       dy = player.y - this.y,
       d = Math.hypot(dx, dy);
     if (d < 230 && d > 16) {
       const speed = 38 * this.swordSpeedMultiplier * (0.65 + 0.35 * Math.max(0, Math.sin(this.pulse)));
       if (this.hurtTime <= 0)
-        moveBody(this, (dx / d) * speed * dt, (dy / d) * speed * dt, world);
+        moveBody(this, (dx / d) * speed * dt, (dy / d) * speed * dt, monsterWorld);
     }
     if (d < 24 && this.contactCooldown === 0 && clearPath(this, player, world)) {
       player.takeDamage(Math.max(1, CREATURE_CATALOG[this.kind].contactDamage - defense), this.x, this.y);
@@ -111,7 +114,7 @@ export function slimeSpawns(cx: number, cy: number, seed: number): Slime[] {
     const ty =
       cy * CHUNK_TILES +
       Math.floor(hash2(cx, cy * 4 + index, seed + 97) * CHUNK_TILES);
-    if (Math.hypot(tx, ty) < 9 || villageGround(tx, ty) || !worldTileWalkable(tx, ty, seed)) continue;
+    if (Math.hypot(tx, ty) < 9 || protectedSurfaceTile(tx, ty) || !worldTileWalkable(tx, ty, seed)) continue;
     result.push(
       new Slime(
         cx + "," + cy + "," + index,

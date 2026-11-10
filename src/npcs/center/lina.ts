@@ -4,5 +4,5 @@ export const linaLook={ robe: "#9a6c66", trim: "#ecdcb9", accent: "#ffd37a", ski
 export function linaDialogue({completed}:NpcDialogueState):readonly string[] {
   return completed
     ? ["Obrigado por ajudar Aela!", "Visite a hospedaria. Mais histórias e tarefas chegarão depois."]
-    : ["Sou Lina, anfitriã da Travessia.", "Entre na hospedaria pela porta atrás de mim.", "Por enquanto não há serviço de descanso."];
+    : ["Sou Lina, anfitriã da Travessia.", "Entre na hospedaria pela porta atrás de mim.", "A hospedaria é um ponto seguro; monstros não cruzam a vila."];
 }

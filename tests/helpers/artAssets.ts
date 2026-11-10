@@ -19,6 +19,8 @@ import { renderBarrelReference } from "../../src/render/reference/barrelReferenc
 import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
 import { paintSouthRuin } from "../../src/render/southRuinsArt.ts";
 import { RUIN_NAMES, type RuinVariant } from "../../src/world/southRuins.ts";
+import { paintSouthCity } from "../../src/render/southCityArt.ts";
+import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
@@ -84,6 +86,11 @@ export const ASSETS: ArtAsset[] = [
   ...([0, 1, 2, 3] as const satisfies readonly RuinVariant[]).map<ArtAsset>(variant => ({
     id: "ruína " + RUIN_NAMES[variant], tier: "structure", fn: "paintSouthRuin",
     draw: c => paintSouthRuin(c, variant, "all") })),
+  { id: "Poço Negro: portão, muralha, torre e poço", tier: "structure",
+    fn: "paintSouthCity", draw: c => {
+      const kinds:readonly SouthCityPropKind[]=["well","gate","tower","wall","torch","building","tent"];
+      kinds.forEach((kind,i) => paintSouthCity(c,{kind,x:i*80,y:0,variant:i%3},1));
+    } },
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
   ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
     .flatMap<ArtAsset>(theme => [

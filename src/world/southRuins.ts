@@ -1,7 +1,7 @@
 import { hash2 } from "./random.ts";
 import { getRegionWeights } from "./regions.ts";
 import { getRegionalLandmarkForCell, LANDMARK_CELL_TILES } from "./regionalLandmarks.ts";
-import { CHUNK_TILES, getTile, TILE_SIZE } from "./terrain.ts";
+import { CHUNK_TILES, getTile, nearSouthCity, TILE_SIZE } from "./terrain.ts";
 
 /**
  * Ruínas abandonadas dos Ermos do Sul (ADR 0017). Sistema próprio, separado dos marcos regionais:
@@ -131,7 +131,7 @@ function locate(cellX: number, cellY: number, seed: number, origin: Base): South
     if (mod(tx, CHUNK_TILES) < 4 || mod(tx, CHUNK_TILES) > 11 ||
         mod(ty, CHUNK_TILES) < 4 || mod(ty, CHUNK_TILES) > 11) continue;
     if (Math.floor(tx / RUIN_CELL_TILES) !== cellX || Math.floor(ty / RUIN_CELL_TILES) !== cellY) continue;
-    if (getRegionWeights(tx, ty).south < SOUTH_WEIGHT) continue;
+    if (getRegionWeights(tx, ty).south < SOUTH_WEIGHT || nearSouthCity(tx, ty)) continue;
     if (!clearOfLandmark(tx, ty, seed) || !footprintClear(tx, ty, seed)) continue;
     const variant = Math.min(3, Math.floor(hash2(cellX, cellY, seed + 6131) * 4)) as RuinVariant;
     return { id: `south-ruin:${seed}:${cellX}:${cellY}`, kind: "desert-ruins", name: RUIN_NAMES[variant],

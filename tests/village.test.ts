@@ -4,11 +4,12 @@ import { getTile } from "../src/world/terrain.ts";
 import { canMoveOnSeed } from "../src/world/collision.ts";
 import { NPCS, nearestNpc, npcDialogue } from "../src/world/npcs.ts";
 import { aelaQuestProgress } from "../src/world/aelaQuest.ts";
-import { BUILDINGS, SIGNS } from "../src/world/village.ts";
+import { BUILDINGS, SIGNS, villageGround, starterCaveTrail } from "../src/world/village.ts";
+import { npcPositionAt } from "../src/npcs/catalog.ts";
 
 test("praça sem água, rochas e árvores em diferentes seeds", () => {
   for (const seed of [0, 42, 842136, 4294967295])
-    for (let tx = 6; tx <= 21; tx++) for (let ty = -7; ty <= 9; ty++) {
+    for (let tx = 0; tx <= 38; tx++) for (let ty = -12; ty <= 18; ty++) {
       const tile = getTile(tx, ty, seed);
       assert.equal(tile.tree, false);
       assert.equal(tile.rock, false);
@@ -30,7 +31,8 @@ test("portas só podem ser acionadas diante da entrada, nunca pela parede latera
   }
 });
 test("moradores e placas respondem perto sem recompensas novas", () => {
-  assert.equal(SIGNS.length, 2);
+  assert.equal(SIGNS.length, 4);
+  assert.equal(BUILDINGS.length, 7);
   for (const id of ["aela", "mira", "toren", "lina"]) {
     const npc = NPCS.find(n => n.id === id);
     assert.ok(npc);
@@ -67,5 +69,46 @@ test("criaturas não atacam viajantes na vila e não nascem na praça", async ()
     for (let cx = 0; cx <= 1; cx++)
       for (let cy = -1; cy <= 1; cy++)
         for (const mob of slimeSpawns(cx, cy, seed))
-          assert.equal(mob.x >= 192 && mob.x < 704 && mob.y >= -224 && mob.y < 320, false);
+          assert.equal(villageGround(Math.floor(mob.x / 32), Math.floor(mob.y / 32)), null);
+});
+
+test("portão separa proteção da gruta e interiores acessíveis em todas as fachadas", async () => {
+  const { InteriorRoom } = await import("../src/engine/rooms/InteriorRoom.ts");
+  assert.equal(villageGround(38, 11), "path");
+  assert.equal(villageGround(44, 11), null);
+  assert.equal(starterCaveTrail(44, 11), true);
+  for (const building of BUILDINGS) {
+    const room = new InteriorRoom(building.id);
+    assert.ok(room.furniture.length >= 2);
+    assert.ok(room.collision.canMove(room.player.x, room.player.y));
+  }
+});
+test("moradores patrulham, Aela e Eron continuam nos locais de missão", () => {
+  const mira = NPCS.find(n => n.id === "mira")!;
+  const aela = NPCS.find(n => n.id === "aela")!;
+  const eron = NPCS.find(n => n.id === "stablemaster")!;
+  const sign = NPCS.find(n => n.id === "square")!;
+  assert.notDeepEqual(npcPositionAt(mira, 5), npcPositionAt(mira, 0));
+  assert.deepEqual(npcPositionAt(aela, 5), npcPositionAt(aela, 0));
+  assert.deepEqual(npcPositionAt(eron, 5), npcPositionAt(eron, 0));
+  assert.deepEqual(npcPositionAt(sign, 5), npcPositionAt(sign, 0));
+  const moved = npcPositionAt(mira, 5);
+  assert.equal(nearestNpc(moved.x, moved.y, 5)?.id, "mira");
+});
+test("slimes e criaturas regionais não ferem herói nem invadem a zona protegida", async () => {
+  const { RegionalMonster } = await import("../src/actors/RegionalMonster.ts");
+  const { Slime } = await import("../src/actors/Slime.ts");
+  const { Player } = await import("../src/actors/Player.ts");
+  const hero = new Player(); hero.x = 1200; hero.y = 368;
+  for (const mob of [new Slime("normal",1200,380),
+    new RegionalMonster("regional","glacial-wolf",1200,380)]) {
+    for(let i=0;i<120;i++)mob.update(1/60,hero,{canMove:()=>true});
+    assert.equal(hero.hp,hero.maxHp);
+  }
+  // Um monstro perseguindo alguém dentro da vila para na fronteira leste.
+  const hunter = new Slime("limite",1280,368);
+  const inside = new Player(); inside.x=1200; inside.y=368;
+  for(let i=0;i<120;i++)hunter.update(1/60,inside,{canMove:()=>true});
+  assert.ok(hunter.x>=1248);
+  assert.equal(inside.hp,inside.maxHp);
 });

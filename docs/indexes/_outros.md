@@ -32,6 +32,7 @@
 - [`docs/MOUNTS.md`](../../docs/MOUNTS.md)
 - [`docs/MULTIPLAYER_VPS.md`](../../docs/MULTIPLAYER_VPS.md)
 - [`docs/PHASER_4_LAB.md`](../../docs/PHASER_4_LAB.md)
+- [`docs/POCO_NEGRO.md`](../../docs/POCO_NEGRO.md)
 - [`docs/POSTGRES-OPERACAO.md`](../../docs/POSTGRES-OPERACAO.md)
 - [`docs/QA_ANDROID.md`](../../docs/QA_ANDROID.md)
 - [`docs/QA_BOT.md`](../../docs/QA_BOT.md)

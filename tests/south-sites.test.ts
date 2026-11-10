@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { canMoveOnSeed } from "../src/world/collision.ts";
-import { getTile, isBlackLake, isWalkable, TILE_SIZE } from "../src/world/terrain.ts";
+import { getTile, isBlackLake, isWalkable, nearSouthCity, TILE_SIZE } from "../src/world/terrain.ts";
+import { SOUTH_CITY } from "../src/world/southCity.ts";
 import { getRegionWeights, getWorldRegion } from "../src/world/regions.ts";
 import { getRegionalLandmarkForCell } from "../src/world/regionalLandmarks.ts";
 import { caveEntrancesInArea } from "../src/world/caves.ts";
@@ -25,8 +26,8 @@ const allRuins = (seed = SEED): SouthRuin[] => {
 test("paridade com o Go: as amostras de tile e de marco regional não mudaram", () => {
   const tiles = [[0, 0], [1, 1], [-3, 5], [12, -8], [40, 18], [-19, -12], [200, 50]]
     .map(([x, y]) => { const t = getTile(x!, y!, SEED); return [t.ground, t.tree, t.rock]; });
-  assert.deepEqual(tiles, [["path", false, false], ["grass", false, false], ["grass", false, false],
-    ["water", false, false], ["water", false, false], ["forest", false, false], ["forest", false, false]]);
+  assert.deepEqual(tiles, [["path", false, false], ["path", false, false], ["grass", false, false],
+    ["path", false, false], ["water", false, false], ["forest", false, false], ["forest", false, false]]);
   const landmarks = [[0, -70], [0, -71], [0, 70], [0, 71], [70, 0], [71, 0], [-70, 0], [-71, 0]]
     .map(([cx, cy]) => { const l = getRegionalLandmarkForCell(cx!, cy!, SEED); return l ? [l.kind, l.tileX, l.tileY] : null; });
   assert.deepEqual(landmarks, [["ice-spire", 175, -17797], null, null, ["desert-obelisk", 93, 18294], null, null, null,
@@ -133,4 +134,15 @@ test("ruínas: peças sólidas bloqueiam, o vão e o entorno livre não, e o cen
     assert.ok(seen.has(cj * cols + ci), `${RUIN_NAMES[variant]}: o interior precisa ser alcançável a pé`);
   }
   void TILE_SIZE;
+});
+
+test("Poço Negro: nenhuma ruína nem lago negro na cidade, nas estradas e na margem de 80 tiles", () => {
+  assert.equal(nearSouthCity(0, SOUTH_CITY.centerY), true);
+  assert.equal(nearSouthCity(0, SOUTH_CITY.centerY - 71), false);
+  for (let ty = SOUTH_CITY.centerY - 69; ty < SOUTH_CITY.centerY + 60; ty += 2) for (let tx = -79; tx <= 79; tx += 2)
+    assert.notEqual(getTile(tx, ty, SEED).biome, "black-lake", `lago negro junto à cidade em ${tx},${ty}`);
+  for (let cy = 90; cy <= 104; cy++) for (let cx = -1; cx <= 0; cx++) {
+    const ruin = getSouthRuinForCell(cx, cy, SEED);
+    if (ruin) assert.equal(nearSouthCity(ruin.tileX, ruin.tileY), false, ruin.id + " dentro da zona da cidade");
+  }
 });

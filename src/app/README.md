@@ -45,3 +45,5 @@ não duplica folhas nem altera o motor. Novos monstros são desenhados no Canvas
 bundle Angular; esta separação visa manutenção e menos regressões, não ganho
 automático de desempenho. Para crescer, alterar o arquivo da interface envolvida
 e manter o limite validado de 350 linhas por folha.
+
+**Raros do Sul:** dez novos ícones SVG procedurais em `item-icon.component.ts`, modelados a partir da cartela fornecida pelo autor. `HudService` apenas escolhe um ícone distinto para cada loot raro realmente possuído e conservado pelo motor; o catálogo público mostra os mesmos desenhos e o selo "Raro", sem sugerir negociação.
