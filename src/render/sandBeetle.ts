@@ -1,5 +1,5 @@
 import { sandBeetleBuried } from "../actors/CreatureCatalog.ts";
-import { clamp01, ellipse, mix, pill, rgba, softShadow, TAU } from "./draw.ts";
+import { clamp01, ellipse, mix, pill, rgba, softShadow } from "./draw.ts";
 
 export interface SandBeetleVisual {
   readonly hp: number;
