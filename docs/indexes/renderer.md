@@ -15,7 +15,7 @@ Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
 - [`src/render/caveDetails.ts`](../../src/render/caveDetails.ts)
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 
-## Todos os arquivos deste módulo (78)
+## Todos os arquivos deste módulo (79)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -25,6 +25,7 @@ Desenha entidades e mundo; GameUi separa o Angular do orquestrador do jogo.
 - [`src/render/animation.ts`](../../src/render/animation.ts)
 - [`src/render/cave.ts`](../../src/render/cave.ts)
 - [`src/render/caveDetails.ts`](../../src/render/caveDetails.ts)
+- [`src/render/caveStairsDownArt.ts`](../../src/render/caveStairsDownArt.ts)
 - [`src/render/creatures/center/slimes/slime.ts`](../../src/render/creatures/center/slimes/slime.ts)
 - [`src/render/creatures/east/crabs/coralCrab.ts`](../../src/render/creatures/east/crabs/coralCrab.ts)
 - [`src/render/creatures/east/octopuses/abyssalOctopus.ts`](../../src/render/creatures/east/octopuses/abyssalOctopus.ts)

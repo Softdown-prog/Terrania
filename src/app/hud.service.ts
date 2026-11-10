@@ -16,6 +16,8 @@ const ACTION_LABELS: Record<NearbyAction, string> = {
   read: 'Ler',
   enter: 'Entrar',
   leave: 'Subir',
+  ascend: 'Subir',
+  descend: 'Descer',
   tracks: 'Examinar pegadas',
   tame: 'Acalmar cavalo',
 };
@@ -76,7 +78,7 @@ export class HudService implements GameUi {
   readonly mapTile = signal({ x: 0, y: 0 }, { equal: (a, b) => a.x === b.x && a.y === b.y });
   readonly seed = signal(842136);
   readonly cave = signal<CaveMapState | null>(null, {equal:(a,b)=> a===b ||
-    (a!==null && b!==null && a.floor===b.floor && a.tileX===b.tileX && a.tileY===b.tileY)});
+    (a!==null && b!==null && a.floor===b.floor && a.floorIndex===b.floorIndex && a.tileX===b.tileX && a.tileY===b.tileY)});
   readonly gel = signal(0);
   readonly creatureMaterials = signal<Readonly<Record<string,number>>>({}, {
     equal: (a,b) => a===b || (Object.keys(a).length===Object.keys(b).length &&
@@ -331,7 +333,9 @@ export class HudService implements GameUi {
     if(location) {
       this.coords.set("Subsolo · X "+location.tileX+" · Y "+location.tileY);
       this.quest.set(location.floor.name);
-      this.questProgress.set("Andar −1 · retorne pela escada");
+      this.questProgress.set(location.floorCount > 1
+        ? "Andar " + location.floorIndex + " de " + location.floorCount + " · " + location.floorName
+        : "Andar −1 · retorne pela escada");
     }
   }
   setNearbyAction(action: NearbyAction | null): void {

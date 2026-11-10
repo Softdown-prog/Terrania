@@ -14,6 +14,7 @@ import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { QUEST_REWARD_POTIONS } from "../engine/character/Inventory.ts";
 import { InteriorRoom } from "../engine/rooms/InteriorRoom.ts";
 import { CaveRoom } from "../engine/rooms/CaveRoom.ts";
+import { nearbyStairsMove, roomAfterMove } from "../engine/rooms/caveStairs.ts";
 import { caveEntranceNear, type CaveEntrance } from "../world/caves.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { SOUTH_BUILDINGS } from "../world/southCity.ts";
@@ -98,7 +99,8 @@ export class Game {
       input: this.input, travel: this.travel, hud: this.hud, scene: this.scene,
       camera: this.camera, effects: this.effects, timers: this.timers,
       save: () => this.save(), updateHud: () => this.updateHud(), hudBattleRows: () => this.hudBattleRows(),
-      leaveCave: () => this.leaveCave(), leaveInterior: () => this.leaveInterior(),
+      leaveCave: () => this.leaveCave(), changeCaveFloor: move => this.changeCaveFloor(move),
+      leaveInterior: () => this.leaveInterior(),
     };
   }
   private updateHud(): void {
@@ -179,7 +181,9 @@ export class Game {
     if (this.hud.menuOpen || this.sim.awaitingRespawn) return;
     this.travel.navigator.cancel();
     if (this.cave) {
-      if (this.cave.nearExit) this.leaveCave();
+      const move = nearbyStairsMove(this.cave);
+      if (move === "leave") this.leaveCave();
+      else if (move) this.changeCaveFloor(move);
       return;
     }
     if (this.interior) {
@@ -242,7 +246,23 @@ export class Game {
     this.sim.mounts.dismount();
     this.cave=new CaveRoom(entrance,this.sim.player.hp,this.sim.player.maxHp,this.sim.defeated);
     this.cave.player.syncAdventureStateFrom(this.sim.player);
-    this.hud.setTravelNotice("Você desceu para "+entrance.name+". O mapa agora acompanha o primeiro andar da caverna.");
+    this.hud.setTravelNotice("Você desceu para "+entrance.name+(this.cave.floorCount>1
+      ? ". Andar 1 de "+this.cave.floorCount+": "+this.cave.floorName+"."
+      : ". O mapa agora acompanha o primeiro andar da caverna."));
+  }
+  private changeCaveFloor(move:"descend"|"ascend"):void {
+    if(!this.cave) return;
+    const next=roomAfterMove(this.cave,move,this.sim.defeated);
+    this.travel.stopAll();
+    this.input.clear();
+    this.timers.accumulator=0;
+    this.effects.reset();
+    this.hud.setCombatTarget(null);
+    this.hud.setBattleCreatures([],null);
+    this.cave=next;
+    this.hud.setTravelNotice((move==="descend"?"Você desceu":"Você subiu")+" para o andar "+next.floorIndex+
+      " de "+next.floorCount+": "+next.floorName+".");
+    this.save();
   }
   private leaveCave():void {
     if(this.cave) this.sim.player.syncAdventureStateFrom(this.cave.player);

@@ -153,3 +153,5 @@ sincronizadas ao estado real de movimento ainda são trabalhos pendentes.
 a renderização gelatinosa completa, expressões, efeitos e HP. A reexportação
 em `src/render/actors.ts` preserva os imports existentes do jogo. Assim o
 herói e a Slime não precisam mais dividir um arquivo de implementação.
+
+**Escada que desce (ADR 0018):** `caveStairsDownArt.ts` desenha a descida ao andar de baixo; a de saída segue em `caveDetails.ts`. A planta (`cave.ts`) só chama as duas.

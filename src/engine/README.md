@@ -45,4 +45,6 @@ os objetivos reais da quest. Nenhum estado do Angular é autoridade de gameplay.
 
 **Estrutura (ADR 0016):** a raiz tem só `OfflineSimulation.ts` (a simulação) e `Limits.ts`. `combat/` guarda golpe, alvo, perseguição e lista de batalha; `movement/` guarda o andar por passos e a navegação por toque; `character/` guarda experiência, bolsa, equipamento, comida, armas e itens no chão; `mounts/` guarda estábulo, missões e ações de montaria; `rooms/` guarda a caverna, o interior e as recompensas da caverna. Arquivo novo vai para a pasta do seu assunto, não para a raiz.
 
+**Andares de caverna (ADR 0018):** `CaveRoom` conhece o andar (`floorIndex`, `floorCount`, `floorName`) e povoa pela tabela do andar em `src/dungeons`. `rooms/caveStairs.ts` decide descer, subir ou sair e cria o andar de destino; a planta e as escadas vêm de `world/caveFloor.ts`.
+
 **Espadas em arquivos separados:** as dez fichas autoritativas de nível, dano, recarga, efeitos e rastro ficam individualmente em `character/weapons/swords/` (primeira `starter.ts`). `character/Weapons.ts` agrega sem duplicar definições nem alterar o contrato antigo. Render e ícones permanecem em seus módulos de apresentação; ver `character/weapons/swords/README.md`.

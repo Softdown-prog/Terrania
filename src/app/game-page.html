@@ -312,23 +312,27 @@
               <div class="atlas-titlebar">
                 <div><span class="atlas-eyebrow">TERRANIA · SUBSOLO</span>
                   <h2 id="caveMapTitle">{{ cave.floor.name }}</h2></div>
-                <span class="atlas-seed">ANDAR −1</span>
+                <span class="atlas-seed">ANDAR −{{ cave.floorIndex }}</span>
               </div>
-              <p id="worldMapDimensions">Mapa do primeiro andar desta caverna. As paredes e águas profundas são obstáculos reais.</p>
+              <p id="worldMapDimensions">
+                @if (cave.floorCount > 1) { Andar {{ cave.floorIndex }} de {{ cave.floorCount }} — {{ cave.floorName }}. }
+                @else { Mapa do primeiro andar desta caverna. }
+                As paredes e águas profundas são obstáculos reais.</p>
               <div class="atlas-main">
                 <div class="atlas-map-frame">
                   <div class="atlas-map-topline"><span>✦ PLANTA DA CAVERNA ✦</span><span>N ↑</span></div>
                   <canvas #atlasCanvas id="worldAtlasCanvas" width="256" height="256" role="img"
-                    [attr.aria-label]="'Mapa interior de ' + cave.floor.name + ', andar subterrâneo um, sua posição e a saída'"></canvas>
-                  <div class="atlas-map-bottomline"><span>O ←</span><span>ANDAR −1</span><span>→ L</span></div>
+                    [attr.aria-label]="'Mapa interior de ' + cave.floor.name + ', andar subterrâneo ' + cave.floorIndex + ', sua posição e as escadas'"></canvas>
+                  <div class="atlas-map-bottomline"><span>O ←</span><span>ANDAR −{{ cave.floorIndex }}</span><span>→ L</span></div>
                 </div>
                 <div class="atlas-details">
                   <strong id="atlasCurrentRegion">Você está em: {{ cave.floor.name }}</strong>
                   <span id="atlasCoordinates">Posição interna: X {{ cave.tileX }} · Y {{ cave.tileY }}</span>
                   <span id="atlasGround">Região exterior: {{ cave.floor.entrance.theme }}</span>
-                  <span id="atlasScaleDetails">Primeiro andar: 42 × 30 tiles</span>
+                  <span id="atlasScaleDetails">{{ cave.floorCount > 1 ? 'Andar ' + cave.floorIndex : 'Primeiro andar' }}: 42 × 30 tiles</span>
                   <div class="atlas-legend" aria-label="Legenda subterrânea">
-                    <span>▲ Jogador (branco)</span><span>◆ Escada de retorno (dourado)</span>
+                    <span>▲ Jogador (branco)</span><span>◆ Escada de {{ cave.floorIndex > 1 ? 'subida' : 'retorno' }} (dourado)</span>
+                    @if (cave.floorIndex < cave.floorCount) { <span>▼ Escada de descida (violeta)</span> }
                     <span>Passagens iluminadas</span><span>Rocha escura e água intransponível</span>
                   </div>
                 </div>
