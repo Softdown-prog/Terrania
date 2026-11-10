@@ -52,3 +52,12 @@ export const vulture = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void =>
   ellipse(ctx,-18,-58,2.2,1,"#ad9b72",-.2);
   freckles(ctx,c,13,3,-28,8,16);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#54525c","light":"#908c91","dark":"#272933","accent":"#c69b67","eye":"#f0d68b","extra":"#cb8b92"};
+export function renderCarrionVultureCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,vulture);
+}

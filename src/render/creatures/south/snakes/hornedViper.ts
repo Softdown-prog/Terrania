@@ -20,3 +20,12 @@ export const viper = (ctx:CanvasRenderingContext2D,c:Palette,t:number):void => {
   }
   freckles(ctx,c,12,-7,-37,8,5);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderWave3Frame } from "../../shared/wave3Frame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: Palette = {"base":"#ac915c","light":"#d8c498","dark":"#635d4b","accent":"#c68e54","eye":"#efcc6c","extra":"#8a8f4a"};
+export function renderHornedViperCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderWave3Frame(ctx,actor,sx,sy,time,CREATURE_PALETTE,viper);
+}
