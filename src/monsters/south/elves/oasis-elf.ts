@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 import { southRareDrop } from "../../rareLoot.ts";
 
 /** oasis-elf: ficha da região Sul. */
@@ -9,3 +10,6 @@ export const oasisElf = {
     biomes: ["oasis", "ruins"],
     loot: [{ item: "Tecido de Linho Fino", chance: .50 }, { item: "Tâmara do Oásis", chance: .60 }, { item: "Ponta de Lança Élfica", chance: .18 }, southRareDrop("oasis-elf")],
 } satisfies CreatureDefinition;
+
+/** Comportamento de oasis-elf: ritmo, perseguição e distância de recuo. */
+export const oasisElfBehavior = { gait: "stride", pursuit: "flank", cadence: 1.43, weave: 0.18 } satisfies SpeciesBehavior;

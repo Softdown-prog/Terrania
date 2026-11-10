@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 import { southRareDrop } from "../../rareLoot.ts";
 
 /** horned-viper: ficha da região Sul. */
@@ -9,3 +10,6 @@ export const hornedViper = {
     biomes: ["dunes", "oasis", "ruins"],
     loot: [{ item: "Presa Pequena", chance: .50 }, { item: "Couro de Cobra", chance: .40 }, southRareDrop("horned-viper")],
 } satisfies CreatureDefinition;
+
+/** Comportamento de horned-viper: ritmo, perseguição e distância de recuo. */
+export const hornedViperBehavior = { gait: "slither", pursuit: "flank", cadence: 1.76, weave: 0.31 } satisfies SpeciesBehavior;

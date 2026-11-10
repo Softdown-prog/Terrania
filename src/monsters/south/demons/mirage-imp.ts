@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 import { southRareDrop } from "../../rareLoot.ts";
 
 /** mirage-imp: ficha da região Sul. */
@@ -9,3 +10,6 @@ export const mirageImp = {
     biomes: ["dunes", "ruins"],
     loot: [{ item: "Pó Cintilante", chance: .45 }, southRareDrop("mirage-imp")],
 } satisfies CreatureDefinition;
+
+/** Comportamento de mirage-imp: ritmo, perseguição e distância de recuo. */
+export const mirageImpBehavior = { gait: "float", pursuit: "flank", cadence: 1.85, weave: 0.3 } satisfies SpeciesBehavior;
