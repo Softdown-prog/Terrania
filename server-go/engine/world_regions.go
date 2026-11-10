@@ -110,7 +110,7 @@ func regionalLandmarkCandidate(cellX, cellY int, seed uint32) (int, int, bool) {
 // RegionalLandmarkForCell mirrors src/world/regionalLandmarks.ts without UI imports.
 func (w World) RegionalLandmarkForCell(cellX, cellY int) (RegionalLandmark, bool) {
 	tx, ty, ok := regionalLandmarkCandidate(cellX, cellY, w.Seed)
-	if !ok { return RegionalLandmark{}, false }
+	if !ok || southCitySafe(tx,ty) { return RegionalLandmark{}, false }
 	region := worldRegion(getRegionWeights(float64(tx), float64(ty)))
 	kind := ""
 	switch region {

@@ -1,11 +1,19 @@
 import { hash2 } from "../world/random.ts";
+import { paintTrunk } from "./sceneryTrunk.ts";
+import type { SouthCityPropKind } from "../world/southCity.ts";
+import { paintSouthCity } from "./southCityArt.ts";
 import type { RegionalLandmarkKind } from "../world/regionalLandmarks.ts";
 import { landmarkArtVariant, paintRegionalLandmark } from "./regionalLandmarkArt.ts";
+import { paintSouthRuin, type RuinLayer } from "./southRuinsArt.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
 
 export interface Scenery {
-  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark";
+  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-city";
+  cityKind?: SouthCityPropKind;
+  cityId?: string;
   landmarkKind?: RegionalLandmarkKind;
+  /** Só `south-ruin`: a ruína sai em duas camadas (fundo e frente) para o herói passar entre elas; `variant` é o índice 0..3. */
+  ruinLayer?: Exclude<RuinLayer, "all">;
   x: number;
   y: number;
   variant: number;
@@ -17,6 +25,9 @@ export interface Scenery {
  * gradientes sem custo por quadro, e deixa o vento inclinar copas e troncos.
  */
 const RES = 2;
+/** Quanto cada camada da ruína é recuada/avançada na ordenação em profundidade (px). */
+export const RUIN_BACK_DEPTH = 30;
+export const RUIN_FRONT_DEPTH = 6;
 interface Sprite { canvas: HTMLCanvasElement; ox: number; oy: number }
 const sprites = new Map<string, Sprite | null>();
 
@@ -47,37 +58,6 @@ export function clearSceneryCache(): void { sprites.clear(); }
 const bucket = (v: number, n: number): number => Math.min(n - 1, Math.max(0, Math.floor(v * n)));
 
 // ---------------------------------------------------------------- árvores
-function paintTrunk(c: CanvasRenderingContext2D, pine: boolean): void {
-  const w = pine ? 4.6 : 6;
-  const g = c.createLinearGradient(-w, 0, w, 0);
-  g.addColorStop(0, "#8a7650"); g.addColorStop(0.45, "#5f5237"); g.addColorStop(1, "#33301f");
-  c.fillStyle = g;
-  c.beginPath();
-  c.moveTo(-w, -30); c.lineTo(w, -30);
-  c.quadraticCurveTo(w - 0.5, -8, w + 4.4, 1.5);
-  c.quadraticCurveTo(0, 3.4, -w - 4.4, 1.5);
-  c.quadraticCurveTo(-w + 0.5, -8, -w, -30);
-  c.closePath(); c.fill();
-  c.strokeStyle = rgba("#20200f", 0.5); c.lineWidth = 0.9;
-  for (let i = 0; i < 6; i++) {
-    const x = -w + 2 + (i % 3) * 3;
-    c.beginPath(); c.moveTo(x, -26 + i * 3.5); c.lineTo(x + (i % 2 ? 1 : -1), -19 + i * 3.5); c.stroke();
-  }
-  c.strokeStyle = rgba("#b9a77a", 0.45); c.lineWidth = 1.4;
-  c.beginPath(); c.moveTo(-w + 1.6, -28); c.lineTo(-w + 2.2, -4); c.stroke();
-  // raízes e musgo
-  c.strokeStyle = "#3f3b27"; c.lineWidth = 3; c.lineCap = "round";
-  c.beginPath(); c.moveTo(-w - 3, 2.6); c.lineTo(-w + 0.5, -2); c.moveTo(w + 3, 2.4); c.lineTo(w - 0.5, -2); c.stroke();
-  c.lineCap = "butt";
-  ellipse(c, -w + 1.2, -3, 2.4, 3.6, rgba("#7e9e55", 0.7));
-  // samambaias na base
-  c.strokeStyle = "#8da155"; c.lineWidth = 1;
-  for (let i = -3; i <= 3; i++) {
-    c.beginPath(); c.moveTo(i * 3, 3);
-    c.quadraticCurveTo(i * 5.4, -5 - Math.abs(i), i * 7.2, -1 + Math.abs(i) * 0.6); c.stroke();
-  }
-}
-
 function paintBroadleaf(c: CanvasRenderingContext2D, b: number): void {
   const j = (i: number, a = 3): number => (hash2(i, b, 991) - 0.5) * 2 * a;
   const lobes: Array<[number, number, number]> = [
@@ -380,7 +360,10 @@ export function renderScenery(
   ctx.translate(sx, sy);
   if (faded) ctx.globalAlpha = 0.36;
   const flip = hash2(Math.floor(prop.x), Math.floor(prop.y), 3) < 0.5 ? -1 : 1;
-  if (prop.kind === "tree") {
+  if (prop.kind === "south-city" && prop.cityKind) {
+    paintSouthCity(ctx,{kind:prop.cityKind,x:prop.x,y:prop.y,variant:prop.variant,
+      ...(prop.cityId?{id:prop.cityId}:{})},time);
+  } else if (prop.kind === "tree") {
     const pine = prop.variant > 0.9;
     const b = pine ? 9 : bucket(prop.variant / 0.9, 9);
     const scale = 0.86 + prop.variant * 0.24;
@@ -427,6 +410,12 @@ export function renderScenery(
     const s = sprite("regional-" + kind + "-" + variation, 96, 128, 48, 102,
       (c) => paintRegionalLandmark(c, kind, variation));
     if (s) blit(ctx, s); else paintRegionalLandmark(ctx, kind, variation);
+  } else if (prop.kind === "south-ruin" && prop.ruinLayer) {
+    const layer = prop.ruinLayer, v = Math.max(0, Math.min(3, Math.floor(prop.variant)));
+    // O desenho usa o contato da ruína como origem; cada camada é ordenada em uma altura própria.
+    ctx.translate(0, layer === "back" ? RUIN_BACK_DEPTH : -RUIN_FRONT_DEPTH);
+    const s = sprite("south-ruin-" + v + "-" + layer, 232, 168, 116, 112, (c) => paintSouthRuin(c, v, layer));
+    if (s) blit(ctx, s); else paintSouthRuin(ctx, v, layer);
   } else if (prop.kind === "arch") {
     const s = sprite("arch", 120, 100, 60, 82, paintArch);
     if (s) blit(ctx, s); else paintArch(ctx);

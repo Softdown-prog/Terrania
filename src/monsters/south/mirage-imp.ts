@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../types.ts";
+import { southRareDrop } from "../rareLoot.ts";
 
 /** mirage-imp: ficha da região Sul. */
 export const mirageImp = {
@@ -6,5 +7,5 @@ export const mirageImp = {
     nature: "magical", special: "mirage-sparks", speed: 58, range: 104, interval: 1.7,
     status: "blind", statusSeconds: 1.25, region: "south", caveThemes: ["desert"],
     biomes: ["dunes", "ruins"],
-    loot: [{ item: "Pó Cintilante", chance: .45 }],
+    loot: [{ item: "Pó Cintilante", chance: .45 }, southRareDrop("mirage-imp")],
 } satisfies CreatureDefinition;

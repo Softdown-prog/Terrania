@@ -7,11 +7,14 @@ import {
   type Tile,
 } from "../world/terrain.ts";
 import { hash2, valueNoise } from "../world/random.ts";
-import { ellipse, mix, TAU } from "./draw.ts";
+import { ellipse, mix, TAU, blade } from "./draw.ts";
+import { southCityGroundColors, paintSouthCityPaving } from "./southCityArt.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
+import { southCityGround, southCitySafe } from "../world/southCity.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
+import { southRuinsInArea } from "../world/southRuins.ts";
 import { caveEntrancesInArea } from "../world/caves.ts";
 
 /** Pares (sombra, luz) por tipo de solo; a mistura segue ruído contínuo. */
@@ -27,6 +30,7 @@ const BIOME_PALETTE: Partial<Record<Biome, { lo: string; hi: string }>> = {
   tundra: { lo: "#889d91", hi: "#b3c7c0" },
   snowfield: { lo: "#cadce2", hi: "#f0f3ec" },
   "frozen-lake": { lo: "#7db4c7", hi: "#b8d9e4" },
+  "black-lake": { lo: "#121a23", hi: "#22313c" },
   dunes: { lo: "#cfac63", hi: "#eed28a" },
   ruins: { lo: "#a99577", hi: "#c7b38b" },
   oasis: { lo: "#668c60", hi: "#96ae7b" },
@@ -38,6 +42,8 @@ const BIOME_PALETTE: Partial<Record<Biome, { lo: string; hi: string }>> = {
   volcanic: { lo: "#4e4d50", hi: "#78625e" },
 };
 const WATER_DEEP = "#265867", WATER_MID = "#337279", WATER_SHALLOW = "#4f9a96";
+/** Lago negro dos Ermos do Sul (ADR 0017): água de tinta com raso turvo e margem de lama. */
+const BLACK_DEEP = "#0d121a", BLACK_MID = "#17212b", BLACK_SHALLOW = "#2b3b3d";
 const PAD = 2;
 const SPAN = CHUNK_TILES + PAD * 2;
 
@@ -71,13 +77,17 @@ class Grid {
 function drawGround(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number, x: number, y: number, seed: number): void {
   const tile = grid.at(lx, ly);
   const [tx, ty] = grid.global(lx, ly);
-  const p = BIOME_PALETTE[tile.biome] ?? PALETTE[tile.ground];
+  const south = southCityGround(tx,ty)!==null;
+  const p = south ? southCityGroundColors(tile.ground) :
+    BIOME_PALETTE[tile.biome] ?? PALETTE[tile.ground];
   // Ruído em duas escalas: manchas largas e variação fina.
   const n = valueNoise(tx / 6, ty / 6, seed + 17) * 0.65 + valueNoise(tx / 1.8, ty / 1.8, seed + 23) * 0.35;
   let color = mix(p.lo, p.hi, n);
   if (tile.ground === "water") {
     const d = grid.shore(lx, ly);
-    color = tile.biome === "frozen-lake" || tile.biome === "open-sea" ? mix(p.lo, p.hi, n) :
+    color = tile.biome === "black-lake"
+      ? mix(d === 1 ? BLACK_SHALLOW : d === 2 ? BLACK_MID : BLACK_DEEP, mix(p.lo, p.hi, n), 0.3) :
+      tile.biome === "frozen-lake" || tile.biome === "open-sea" ? mix(p.lo, p.hi, n) :
       mix(d === 1 ? WATER_SHALLOW : d === 2 ? WATER_MID : WATER_DEEP, mix(p.lo, p.hi, n), 0.35);
   }
   ctx.fillStyle = color;
@@ -86,13 +96,63 @@ function drawGround(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: n
 
 const DIRS: ReadonlyArray<readonly [number, number]> = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
-function blade(ctx: CanvasRenderingContext2D, x: number, y: number, h: number, lean: number, color: string): void {
-  ctx.strokeStyle = color;
+/** Água do lago negro: ondas arroxeadas, mancha oleosa nas partes fundas e galhos afogados no raso. */
+function drawBlackWater(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number,
+  x: number, y: number, r: (i: number) => number, neighbours: readonly Ground[]): void {
+  const d = grid.shore(lx, ly);
+  ctx.strokeStyle = "rgba(150,120,196,.2)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.quadraticCurveTo(x + lean * 0.3, y - h * 0.6, x + lean, y - h);
+  for (let i = 0; i < 2; i++) {
+    const wx = x + 4 + r(40 + i) * 14, wy = y + 6 + r(50 + i) * 20;
+    ctx.moveTo(wx, wy);
+    ctx.quadraticCurveTo(wx + 5, wy - 2, wx + 10, wy);
+    ctx.quadraticCurveTo(wx + 15, wy + 2, wx + 19, wy);
+  }
   ctx.stroke();
+  if (d >= 2 && r(66) > 0.6) {
+    // mancha oleosa rara, de posição e giro variados, do roxo ao verde-veneno e bem fraca
+    const px = x + 6 + r(63) * 20, py = y + 6 + r(64) * 20;
+    const sheen = ctx.createLinearGradient(px - 10, py - 4, px + 10, py + 4);
+    sheen.addColorStop(0, "rgba(120,80,190,.12)"); sheen.addColorStop(0.55, "rgba(70,150,150,.07)");
+    sheen.addColorStop(1, "rgba(120,200,90,.09)");
+    ctx.fillStyle = sheen;
+    ctx.beginPath(); ctx.ellipse(px, py, 7 + r(60) * 8, 2.6 + r(61) * 3, r(62) * 3, 0, TAU); ctx.fill();
+  }
+  DIRS.forEach(([dx, dy], k) => {
+    if (neighbours[k] === "water") return;
+    // lama escura onde a água encontra a terra
+    const g = dx
+      ? ctx.createLinearGradient(x + (dx > 0 ? 32 : 0), 0, x + (dx > 0 ? 21 : 11), 0)
+      : ctx.createLinearGradient(0, y + (dy > 0 ? 32 : 0), 0, y + (dy > 0 ? 21 : 11));
+    g.addColorStop(0, "rgba(58,46,36,.6)"); g.addColorStop(1, "rgba(58,46,36,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+  });
+  if (d === 1 && r(70) > 0.9) {
+    // galho afogado
+    const px = x + 8 + r(71) * 16, py = y + 10 + r(72) * 12;
+    ctx.strokeStyle = "#3a2f27"; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 6, py - 5); ctx.moveTo(px + 3, py - 2.5); ctx.lineTo(px + 7, py + 1); ctx.stroke();
+  }
+}
+/** Margem de terra junto ao lago negro: lama batida e juncos secos e tortos. */
+function drawBlackShore(ctx: CanvasRenderingContext2D, x: number, y: number, k: number,
+  dx: number, dy: number, r: (i: number) => number): void {
+  const mud = dx
+    ? ctx.createLinearGradient(x + (dx > 0 ? 32 : 0), 0, x + (dx > 0 ? 18 : 14), 0)
+    : ctx.createLinearGradient(0, y + (dy > 0 ? 32 : 0), 0, y + (dy > 0 ? 18 : 14));
+  mud.addColorStop(0, "rgba(54,42,34,.62)"); mud.addColorStop(1, "rgba(54,42,34,0)");
+  ctx.fillStyle = mud;
+  ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+  if (r(80 + k) > 0.45) {
+    const bx = dx ? x + (dx > 0 ? 24 : 8) : x + 6 + r(85 + k) * 20;
+    const by = dy ? y + (dy > 0 ? 26 : 8) : y + 10 + r(86 + k) * 16;
+    for (let i = 0; i < 4; i++) {
+      const lean = (i - 1.5) * 2.4 + (r(90 + i) - 0.5) * 3;
+      blade(ctx, bx + i * 1.7, by, 9 + (i % 2) * 5, lean, i % 2 ? "#6d6544" : "#4a4332");
+    }
+  }
 }
 
 function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number, x: number, y: number, seed: number): void {
@@ -108,6 +168,14 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
     ctx.fillRect(x + 3 + a * 26, y + 3 + b * 26, 1 + a * 2.6, 1 + b * 1.4);
   }
 
+  if (southCitySafe(tx,ty) && tile.ground==="path") {
+    paintSouthCityPaving(ctx,x,y,r);
+    return;
+  }
+  if (tile.ground === "water" && tile.biome === "black-lake") {
+    drawBlackWater(ctx, grid, lx, ly, x, y, r, neighbours);
+    return;
+  }
   if (tile.ground === "water") {
     const d = grid.shore(lx, ly);
     ctx.strokeStyle = "rgba(160,222,214,.22)";
@@ -150,6 +218,7 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
   neighbours.forEach((g, k) => {
     if (g !== "water") return;
     const [dx, dy] = DIRS[k] as readonly [number, number];
+    if (grid.at(lx + dx, ly + dy).biome === "black-lake") { drawBlackShore(ctx, x, y, k, dx, dy, r); return; }
     const wet = dx
       ? ctx.createLinearGradient(x + (dx > 0 ? 32 : 0), 0, x + (dx > 0 ? 24 : 8), 0)
       : ctx.createLinearGradient(0, y + (dy > 0 ? 32 : 0), 0, y + (dy > 0 ? 24 : 8));
@@ -471,6 +540,8 @@ export function drawWorldAtlas(
       }
     for (const cave of caveEntrancesInArea(startX,startY,endX,endY,seed))
       mark(cave.tileX,cave.tileY,"#a3f1ce",5);
+    for (const ruin of southRuinsInArea(startX,startY,endX,endY,seed))
+      mark(ruin.tileX,ruin.tileY,"#d98c5f",4);
   }
   mark(Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE),
     Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE), "#ffe0a1", 5);

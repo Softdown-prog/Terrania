@@ -23,6 +23,9 @@ export function loadLocalSave(): OfflineSave | null {
       hp: awaitingRespawn ? 0 : Math.min(maxHpForExperience(experience), Math.max(1, save.hp)),
       ...(awaitingRespawn ? { awaitingRespawn: true } : {}),
       kills: normalizeKills(save.kills),
+      // A missão da gruta usa contador separado; sem ele os saves carregados
+      // voltavam sempre para 0/5 e liberavam recompensas inconsistentes.
+      trainingKills: Math.min(5, normalizeKills(save.trainingKills)),
       experience,
       defeated: save.defeated.slice(-2000),
       inventory: normalizeInventory(save.inventory),

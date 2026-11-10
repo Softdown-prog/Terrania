@@ -262,6 +262,7 @@
                   [attr.aria-pressed]="hud.selectedBagId() === item.id"
                   [attr.aria-label]="item.name + ', quantidade ' + item.quantity"
                   [class.is-empty]="item.quantity === 0" [class.is-selected]="hud.selectedBagId() === item.id"
+                  [attr.data-rarity]="item.rarity ?? null"
                   (click)="hud.selectBagItem(item.id)">
                   <span class="backpack-icon" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" /></span>
                   <span class="backpack-name">{{ item.name }}</span>
@@ -277,7 +278,7 @@
                 <div class="backpack-details-head">
                   <span class="backpack-icon large" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" /></span>
                   <div>
-                    <span class="dialog-kicker">ITEM SELECIONADO</span>
+                    <span class="dialog-kicker">{{ item.rarity === 'rare' ? 'ITEM RARO · REGIÃO SUL' : 'ITEM SELECIONADO' }}</span>
                     <h3 id="selectedBagName">{{ item.name }}</h3>
                   </div>
                 </div>

@@ -20,7 +20,23 @@
   border-radius: 3px;
   font: 10px system-ui;
 }
-#npcSpeech { min-height: 68px; }
+#npcDialog {
+  width: min(530px, calc(100% - 24px));
+  border: 1px solid #bfaa7f;
+  background: linear-gradient(155deg, #1e3a35 0%, #102b2a 65%, #102522 100%);
+  box-shadow: 0 22px 65px #061413bb, inset 0 1px #e9deb526;
+}
+#npcDialog #npcName { margin-bottom: 12px; }
+#npcDialog #npcRole { color: #d9c699; }
+#npcSpeech {
+  min-height: 68px;
+  background: #0b2320a3;
+  border-left: 3px solid #c7af7a;
+  border-radius: 3px;
+  padding: 14px 16px;
+  line-height: 1.8;
+  font-size: 14px;
+}
 #npcStep { display: block; color: #c7b888; }
 #gameNotice {
   position: absolute;

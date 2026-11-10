@@ -8,6 +8,7 @@ import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
+import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
@@ -28,6 +29,7 @@ export interface BackpackItemView {
   readonly description: string;
   readonly icon: ItemIconId;
   readonly quantity: number;
+  readonly rarity?: 'rare';
   readonly foodId?: FoodId;
   readonly gearId?: GearId;
   readonly weaponId?: WeaponId;
@@ -110,8 +112,12 @@ export class HudService implements GameUi {
     ];
     for (const [name,quantity] of Object.entries(this.creatureMaterials()).sort(([a],[b])=>a.localeCompare(b))) {
       if (quantity <= 0) continue;
-      result.push({id:'creature-material:'+name,kind:'material',name,icon:'material',
-        quantity,description:'Material obtido de uma criatura regional. Guardado na bolsa.'});
+      const rare=southRareLootByName(name);
+      result.push({id:'creature-material:'+name,kind:'material',name,
+        icon:rare?.id ?? 'material', quantity,
+        ...(rare ? {rarity:'rare' as const} : {}),
+        description:rare ? 'ITEM RARO · Região Sul. '+rare.description :
+          'Material obtido de uma criatura regional. Guardado na bolsa.'});
     }
     const food = this.food();
     for (const id of FOOD_IDS) {

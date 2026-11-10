@@ -5,7 +5,12 @@
  @if(state()==='loading'){<p role="status">Buscando os itens…</p>}
  @if(state()==='error'){<div role="alert"><p>O catálogo está indisponível no momento. Você pode continuar sua aventura solo.</p><button class="button" (click)="load()">Tentar novamente</button></div>}
  @if(state()==='ready'){<p role="status">{{items().length}} itens na coleção</p><ul class="catalog-grid">
- @for(item of items();track item.id){<li><span class="item-kind">{{category(item.category)}}</span><h2>{{item.name}}</h2><p>{{item.maxStack===1?'Equipamento individual':'Até '+item.maxStack+' por pilha'}}</p></li>}
+ @for(item of items();track item.id){<li [attr.data-rarity]="item.rarity">
+  <span class="item-kind">{{item.rarity==='rare'?'Raro · ':''}}{{category(item.category)}}</span>
+  @if(rareIcon(item.id);as icon){<app-item-icon class="catalog-icon" [name]="icon" />}
+  <h2>{{item.name}}</h2><p>{{item.maxStack===1?'Equipamento individual':'Até '+item.maxStack+' por pilha'}}</p>
+  @if(item.rarity==='rare'){<p>Encontrado na Região Sul · Trocas ainda indisponíveis</p>}
+ </li>}
  </ul>}
  <a class="button" routerLink="/jogar/">Voltar à aventura</a>
 </main>

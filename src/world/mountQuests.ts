@@ -1,4 +1,4 @@
-import type { MountId } from "../actors/MountCatalog.ts";
+import type { MountId } from "./mountIds.ts";
 
 /** Os roteiros são dados do mundo, não estado de HUD ou rede. */
 export type QuestEventKind = "inspect" | "defeat" | "craft" | "collect" |

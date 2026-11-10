@@ -1,4 +1,4 @@
-const AELA_SLIME_GOAL = 5;
+export const AELA_SLIME_GOAL = 5;
 
 export interface AelaQuestProgress {
   readonly defeated: number;
