@@ -1,7 +1,7 @@
 /** Anatomia e movimentos próprios da espécie: não é uma ficha de atributos. */
-import type { Ramp } from "./geometry.ts";
-import { mass, eye, joint, crystal, etched } from "./geometry.ts";
-import { ellipse, rgba } from "../../draw.ts";
+import type { Ramp } from "../../shared/wave2Geometry.ts";
+import { mass, eye, joint, crystal, etched } from "../../shared/wave2Geometry.ts";
+import { ellipse, rgba } from "../../../draw.ts";
 
 export const banshee = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   // Torn veil is layered as translucent folds rather than a solid ground-touching actor.

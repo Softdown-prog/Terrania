@@ -1,6 +1,6 @@
 /** Anatomia e movimentos próprios da espécie: não é uma ficha de atributos. */
-import type { Ramp } from "./geometry.ts";
-import { mass, eye, joint, crystal, etched, EDGE } from "./geometry.ts";
+import type { Ramp } from "../../shared/wave2Geometry.ts";
+import { mass, eye, joint, crystal, etched, EDGE } from "../../shared/wave2Geometry.ts";
 
 export const griffin = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   for(const s of [-1,1]){

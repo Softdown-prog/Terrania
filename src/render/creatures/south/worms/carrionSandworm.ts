@@ -1,7 +1,7 @@
 /** Anatomia e movimentos próprios da espécie: não é uma ficha de atributos. */
-import type { Ramp } from "./geometry.ts";
-import { mass, crystal, etched, EDGE } from "./geometry.ts";
-import { ellipse, shade, TAU, softShadow } from "../../draw.ts";
+import type { Ramp } from "../../shared/wave2Geometry.ts";
+import { mass, crystal, etched, EDGE } from "../../shared/wave2Geometry.ts";
+import { ellipse, shade, TAU, softShadow } from "../../../draw.ts";
 
 export const worm = (ctx:CanvasRenderingContext2D,c:Ramp,t:number):void => {
   softShadow(ctx,0,1,32,9,.45);
