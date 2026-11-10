@@ -53,17 +53,34 @@ async function heroTile(page: Page): Promise<Tile> {
   return { x: Number(match[1]), y: Number(match[2]) };
 }
 
-/** Anda até `goal` (um tile) ou até `done()` ficar verdadeiro; refaz o caminho a cada passo. */
-async function walk(page: Page, floor: CaveFloor, goal: Tile, done: () => Promise<boolean>): Promise<void> {
+/**
+ * Anda até o tile `goal` (uma escada) ou até `done()` ficar verdadeiro; refaz o caminho a cada passo.
+ * Ao chegar no tile da escada, usa o botão de ação (E): a escada "pisada" só vale a menos de 13 px do
+ * centro, e tentar acertar isso por teclas fazia o herói oscilar na borda do tile. O botão funciona de
+ * qualquer ponto do tile (menos de 52 px) e é o caminho que o jogador também tem na tela.
+ * Cada toque na tecla é solto assim que `done()` fica verdadeiro, para o herói não andar mais na
+ * superfície com a tecla ainda apertada depois de sair.
+ */
+async function walk(page: Page, floor: CaveFloor, goal: Tile, act: () => Promise<void>,
+  done: () => Promise<boolean>): Promise<void> {
   for (let step = 0; step < 300; step++) {
     if (await done()) return;
     const here = await heroTile(page);
+    if (await done()) return; // saiu entre a pergunta e a leitura: `here` já é da superfície
+    if (here.x === goal.x && here.y === goal.y) {
+      await act();
+      await page.waitForTimeout(150);
+      continue;
+    }
     const path = safePath(floor, here, goal);
     expect(path, `existe caminho seguro de ${here.x},${here.y} até ${goal.x},${goal.y}`).not.toBeNull();
     const next = path![1] ?? goal;
     const key = next.x > here.x ? "d" : next.x < here.x ? "a" : next.y > here.y ? "s" : "w";
     await page.keyboard.down(key);
-    await page.waitForTimeout(110);
+    for (let held = 0; held < 110; held += 22) {
+      await page.waitForTimeout(22);
+      if (await done()) break;
+    }
     await page.keyboard.up(key);
   }
   throw new Error("o herói não chegou ao destino");
@@ -88,6 +105,10 @@ test("masmorra de 3 andares: descer, subir e sair pela mesma entrada (desktop/An
   await page.goto("/jogar/?modo=solo");
   await expect(page.locator("canvas#game")).toBeVisible();
   const action = page.locator("#talkButton");
+  const pressAction = async (): Promise<void> => {
+    if (info.project.name === "android") await action.tap(); else await action.click();
+    await page.locator("canvas#game").focus();
+  };
   await expect(action).toContainText("Entrar (E)");
   if (info.project.name === "android") await action.tap(); else await action.click();
 
@@ -98,20 +119,20 @@ test("masmorra de 3 andares: descer, subir e sair pela mesma entrada (desktop/An
 
   // Andar 1 → 2: a escada que desce fica na câmara do fundo.
   const floor1 = new CaveFloor(entrance, 1, 3);
-  await walk(page, floor1, CAVE_STAIRS_DOWN, async () => /Andar 2 de 3/.test((await progress.textContent()) ?? ""));
+  await walk(page, floor1, CAVE_STAIRS_DOWN, pressAction, async () => /Andar 2 de 3/.test((await progress.textContent()) ?? ""));
   await expect(progress).toContainText("Andar 2 de 3 · Túnel dos Contrabandistas");
   await expect(page.locator("#gameNotice")).toContainText("desceu");
   await page.locator("canvas#game").screenshot({ path: test.info().outputPath("andar-2.png") });
 
   // Andar 2 → 1: a escada de saída agora sobe um andar (não sai da caverna).
   const floor2 = new CaveFloor(entrance, 2, 3);
-  await walk(page, floor2, CAVE_EXIT, async () => /Andar 1 de 3/.test((await progress.textContent()) ?? ""));
+  await walk(page, floor2, CAVE_EXIT, pressAction, async () => /Andar 1 de 3/.test((await progress.textContent()) ?? ""));
   await expect(progress).toContainText("Andar 1 de 3 · Galerias de Areia");
   await expect(page.locator("#gameNotice")).toContainText("subiu");
   await expect(page.locator("#coords")).toContainText("Subsolo");
 
   // Andar 1 → superfície: voltou exatamente à entrada.
-  await walk(page, floor1, CAVE_EXIT, async () => !/Subsolo/.test((await page.locator("#coords").textContent()) ?? ""));
+  await walk(page, floor1, CAVE_EXIT, pressAction, async () => !/Subsolo/.test((await page.locator("#coords").textContent()) ?? ""));
   await expect(page.locator("#coords")).toHaveText(`X ${entrance.tileX} · Y ${entrance.tileY}`);
   await expect(page.locator("#gameNotice")).toContainText("retornou à superfície");
   expect(errors).toEqual([]);
