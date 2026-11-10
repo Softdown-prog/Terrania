@@ -20,5 +20,16 @@ export const STARTER_ARTWORK: SwordArtwork = {
       ctx.quadraticCurveTo(23,y-1.5,27,y-.35);
       ctx.quadraticCurveTo(len-5,y+1,len-2,y*.4);ctx.stroke();
     }
+    // Faixa de luz e cicatriz em arco evidenciam o volume da madeira.
+    ctx.strokeStyle=tone(s.glint);ctx.lineWidth=.52;
+    ctx.beginPath();ctx.moveTo(19,-w*.51);
+    ctx.quadraticCurveTo(len-12,-w*.62,len-5,-w*.27);ctx.stroke();
+  },
+  finish(ctx,s,tone) {
+    // Nó de madeira: oval irregular com núcleo escuro, não uma jóia.
+    ctx.strokeStyle=tone(s.shade);ctx.lineWidth=.82;
+    ctx.beginPath();ctx.ellipse(23.5,.6,2,1,.12,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle=tone(s.trim);ctx.lineWidth=.5;
+    ctx.beginPath();ctx.moveTo(21,.65);ctx.quadraticCurveTo(23,.1,26,.9);ctx.stroke();
   },
 };

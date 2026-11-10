@@ -72,7 +72,7 @@ test("animação: preparo, contato e rastro respeitam o tempo de todas as espada
 });
 
 test("acabamento animado usa o tempo do jogo, é determinístico e não altera lâminas comuns",()=>{
-  for(const weapon of ["obsidian","tempest","astral"] as const){
+  for(const weapon of ["dunes","boreal","obsidian","marsh","tempest","astral"] as const){
     const first=new Recorder(),again=new Recorder(),later=new Recorder();
     drawKnightSword(first.ctx,weapon,0,c=>c,.25);
     drawKnightSword(again.ctx,weapon,0,c=>c,.25);
