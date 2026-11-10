@@ -188,6 +188,33 @@ function drawCombatTarget(ctx: CanvasRenderingContext2D, x: number, y: number, t
   ctx.restore();
 }
 
+/**
+ * Tudo que um quadro da superfície precisa para ser desenhado. Os campos têm nome porque vários são
+ * booleanos em sequência: em argumentos posicionais, trocar dois deles compilaria sem ninguém notar.
+ */
+export interface SurfaceFrame {
+  readonly world: WorldRenderer;
+  readonly camera: Camera;
+  readonly player: Player;
+  readonly mobs: ReadonlyArray<Slime>;
+  readonly time: number;
+  readonly effects: Effects;
+  readonly destination: Point | null;
+  readonly drops: ReadonlyArray<LootDrop>;
+  readonly combatTargetId: string | null;
+  readonly playerGear: GearState | undefined;
+  readonly playerWeapon: WeaponId | undefined;
+  readonly mount: MountId | null;
+  /** O cavalo selvagem deve ser desenhado no mapa. */
+  readonly wildHorse: boolean;
+  /** O cercado do estábulo já foi construído. */
+  readonly stableBuilt: boolean;
+  /** As pegadas da missão do cavalo estão visíveis. */
+  readonly tracksVisible: boolean;
+  /** O cavalo acalmado acompanha o herói de volta ao estábulo. */
+  readonly leadingHorse: boolean;
+}
+
 /** Partículas flutuantes (pólen/vaga-lumes) em espaço de tela; sem estado nem alocação. */
 function drawAmbient(ctx: CanvasRenderingContext2D, w: number, h: number, time: number,
   camX: number, camY: number, zoom: number): void {
@@ -276,13 +303,9 @@ export class CanvasScene {
     if (destination) drawTarget(this.ctx, destination, time);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
   }
-  render(world: WorldRenderer, camera: Camera, player: Player, mobs: ReadonlyArray<Slime>,
-    time: number, effects: Effects,
-    destination: Point | null = null, drops: ReadonlyArray<LootDrop> = [],
-    combatTargetId: string | null = null, playerGear?: GearState,
-    playerWeapon?: WeaponId,
-    mount: MountId | null = null, wildHorse=true, stableBuilt=false,
-    tracksVisible=false, leadingHorse=false): void {
+  render(frame: SurfaceFrame): void {
+    const { world, camera, player, mobs, time, effects, destination, drops, combatTargetId,
+      playerGear, playerWeapon, mount, wildHorse, stableBuilt, tracksVisible, leadingHorse } = frame;
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale, 0, 0);
     drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, time, effects.enabled, drops, effects, playerGear, playerWeapon,
