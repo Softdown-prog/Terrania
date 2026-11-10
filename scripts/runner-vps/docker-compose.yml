@@ -1,0 +1,53 @@
+# Runner do GitHub Actions do Terrania, em contêiner, na VPS (ADR 0030).
+#
+# Isolamento: o runner NÃO recebe o Docker da VPS (nada de /var/run/docker.sock). Ele usa um Docker
+# próprio e descartável (`dind`), então os jobs não enxergam nem tocam nos contêineres de produção
+# (Terrania, Painel, Caddy, PostgreSQL...). O `dind` precisa de `privileged` por natureza: é o ponto
+# de maior risco desta montagem (ver docs/RUNNER_VPS.md).
+name: terrania-runner
+
+services:
+  dind:
+    image: docker:27-dind
+    privileged: true
+    restart: unless-stopped
+    environment:
+      DOCKER_TLS_CERTDIR: ""        # escuta em 2375 só dentro desta composição; nenhuma porta é publicada
+    volumes:
+      - dind-data:/var/lib/docker
+    cpus: ${DIND_CPUS:-1}            # contêineres dos fluxos (postgres, docker build)
+    mem_limit: ${DIND_MEMORY:-2g}
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  runner:
+    build:
+      context: .
+      args:
+        RUNNER_IMAGE: ${RUNNER_IMAGE:-ghcr.io/actions/actions-runner:latest}
+    restart: unless-stopped
+    cpus: ${RUNNER_CPUS:-2}          # os passos dos fluxos (npm, testes, navegador) rodam aqui
+    mem_limit: ${RUNNER_MEMORY:-4g}
+    # Mesma rede do dind: `localhost` do job é o `localhost` do Docker interno, então os serviços de
+    # contêiner dos fluxos (postgres em localhost:5432) funcionam como no GitHub.
+    network_mode: "service:dind"
+    depends_on:
+      dind:
+        condition: service_healthy
+    environment:
+      DOCKER_HOST: tcp://localhost:2375
+      RUNNER_REPO_URL: ${RUNNER_REPO_URL:-https://github.com/Softdown-prog/Terrania}
+      RUNNER_NAME: ${RUNNER_NAME:-terrania-vps}
+      RUNNER_LABELS: ${RUNNER_LABELS:-terrania-vps}
+      RUNNER_TOKEN: ${RUNNER_TOKEN:-}
+    volumes:
+      - runner-state:/home/runner/state
+      - runner-work:/home/runner/_work
+
+volumes:
+  dind-data:
+  runner-state:
+  runner-work:

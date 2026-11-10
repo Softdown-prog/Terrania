@@ -12,7 +12,7 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 - [`scripts/mcp/server.mjs`](../../scripts/mcp/server.mjs)
 
-## Todos os arquivos deste módulo (27)
+## Todos os arquivos deste módulo (31)
 
 - [`.github/workflows/autoscale-lab.yml`](../../.github/workflows/autoscale-lab.yml)
 - [`.github/workflows/capacity-lab.yml`](../../.github/workflows/capacity-lab.yml)
@@ -38,6 +38,10 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`scripts/qa-bot.mjs`](../../scripts/qa-bot.mjs)
 - [`scripts/resolve-worker-target.mjs`](../../scripts/resolve-worker-target.mjs)
 - [`scripts/routes.json`](../../scripts/routes.json)
+- [`scripts/runner-vps/Dockerfile`](../../scripts/runner-vps/Dockerfile)
+- [`scripts/runner-vps/docker-compose.yml`](../../scripts/runner-vps/docker-compose.yml)
+- [`scripts/runner-vps/entrypoint.sh`](../../scripts/runner-vps/entrypoint.sh)
+- [`scripts/runner-vps/install.sh`](../../scripts/runner-vps/install.sh)
 - [`scripts/verify-build.mjs`](../../scripts/verify-build.mjs)
 - [`scripts/verify-live-theme.mjs`](../../scripts/verify-live-theme.mjs)
 - [`scripts/write-runtime-config.mjs`](../../scripts/write-runtime-config.mjs)
