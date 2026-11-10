@@ -68,13 +68,27 @@ jobs:
           ref: 8af962c48ea0347b9db3ea6c8598b39b60b68640
           path: operations-client
           persist-credentials: false
+      # Public VPS host key verified via trusted Panel identity (issue #119).
+      # Never replace it with unverified ssh-keyscan output.
+      - name: Load trusted VPS SSH public host key
+        shell: bash
+        run: |
+          set -euo pipefail
+          pin=".github/vps-known-hosts"
+          test "$(wc -l < "$pin")" -eq 1
+          grep -Eq '^164[.]163[.]9[.]7 ssh-rsa [A-Za-z0-9+/]+={0,2}$' "$pin"
+          ssh-keygen -lf "$pin" -E sha256 | grep -Fq 'SHA256:mKWE3g30If1cz58VRxyMin3cRHf0tYbXEgF9wczN5cc'
+          {
+            echo 'VPS_KNOWN_HOSTS<<PINNED_PUBLIC_HOST_KEY'
+            cat "$pin"
+            echo 'PINNED_PUBLIC_HOST_KEY'
+          } >> "$GITHUB_ENV"
       - name: Install Terrania HTTP API and verify public SHA
         env:
           VPS_OPERATION: deploy
           VPS_PROJECT: terrania
           VPS_IMAGES: '{"multiplayer":"ghcr.io/softdown-prog/terrania-multiplayer@${{ steps.image.outputs.digest }}"}'
           VPS_SSH_KEY: ${{ secrets.VPS_OPERATIONS_SSH_KEY }}
-          VPS_KNOWN_HOSTS: ${{ secrets.VPS_OPERATIONS_KNOWN_HOSTS }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 operations-client/operations/client.py
       - name: Verify public HTTPS health, presence and anonymous heartbeat
