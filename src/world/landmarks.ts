@@ -1,5 +1,6 @@
 import { regionalLandmarkBlocks } from "./regionalLandmarks.ts";
 import { southRuinBlocks } from "./southRuins.ts";
+import { southTowerBlocks } from "./towers/placement.ts";
 /** Landmarks are shared with collision so decorative masonry is never passable. */
 export const LANDMARKS = [
   { kind: "arch" as const, x: -176, y: -96, variant: 0.4 },
@@ -12,7 +13,8 @@ export const LANDMARKS = [
   { kind: "arch" as const, x: 1216, y: 368, variant: 0.2 },
 ];
 export function landmarkBlocks(x: number, y: number, radius: number, seed?: number): boolean {
-  return (seed !== undefined && (regionalLandmarkBlocks(x, y, radius, seed) || southRuinBlocks(x, y, radius, seed))) || LANDMARKS.some((prop) => {
+  return (seed !== undefined && (regionalLandmarkBlocks(x, y, radius, seed) || southRuinBlocks(x, y, radius, seed) ||
+    southTowerBlocks(x, y, radius, seed))) || LANDMARKS.some((prop) => {
     if (prop.kind === "arch")
       return [-26, 26].some(
         (offset) =>

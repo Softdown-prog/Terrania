@@ -5,10 +5,14 @@ import { paintSouthCity } from "./southCityArt.ts";
 import type { RegionalLandmarkKind } from "../world/regionalLandmarks.ts";
 import { landmarkArtVariant, paintRegionalLandmark } from "./regionalLandmarkArt.ts";
 import { paintSouthRuin, type RuinLayer } from "./southRuinsArt.ts";
+import { TOWER_PAINTERS } from "./south/towers/index.ts";
+import type { TowerId } from "../world/towers/types.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
 
 export interface Scenery {
-  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-city";
+  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-tower" | "south-city";
+  /** Só `south-tower`: qual torre desenhar. */
+  towerId?: TowerId;
   cityKind?: SouthCityPropKind;
   cityId?: string;
   landmarkKind?: RegionalLandmarkKind;
@@ -416,6 +420,10 @@ export function renderScenery(
     ctx.translate(0, layer === "back" ? RUIN_BACK_DEPTH : -RUIN_FRONT_DEPTH);
     const s = sprite("south-ruin-" + v + "-" + layer, 232, 168, 116, 112, (c) => paintSouthRuin(c, v, layer));
     if (s) blit(ctx, s); else paintSouthRuin(ctx, v, layer);
+  } else if (prop.kind === "south-tower" && prop.towerId) {
+    const id = prop.towerId;
+    const s = sprite("south-tower-" + id, 200, 262, 100, 232, (c) => TOWER_PAINTERS[id](c));
+    if (s) blit(ctx, s); else TOWER_PAINTERS[id](ctx);
   } else if (prop.kind === "arch") {
     const s = sprite("arch", 120, 100, 60, 82, paintArch);
     if (s) blit(ctx, s); else paintArch(ctx);
