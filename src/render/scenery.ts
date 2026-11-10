@@ -4,13 +4,16 @@ import type { SouthCityPropKind } from "../world/southCity.ts";
 import { paintSouthCity } from "./southCityArt.ts";
 import type { RegionalLandmarkKind } from "../world/regionalLandmarks.ts";
 import { landmarkArtVariant, paintRegionalLandmark } from "./regionalLandmarkArt.ts";
+import { paintSouthRuin, type RuinLayer } from "./southRuinsArt.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
 
 export interface Scenery {
-  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-city";
+  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-city";
   cityKind?: SouthCityPropKind;
   cityId?: string;
   landmarkKind?: RegionalLandmarkKind;
+  /** Só `south-ruin`: a ruína sai em duas camadas (fundo e frente) para o herói passar entre elas; `variant` é o índice 0..3. */
+  ruinLayer?: Exclude<RuinLayer, "all">;
   x: number;
   y: number;
   variant: number;
@@ -22,6 +25,9 @@ export interface Scenery {
  * gradientes sem custo por quadro, e deixa o vento inclinar copas e troncos.
  */
 const RES = 2;
+/** Quanto cada camada da ruína é recuada/avançada na ordenação em profundidade (px). */
+export const RUIN_BACK_DEPTH = 30;
+export const RUIN_FRONT_DEPTH = 6;
 interface Sprite { canvas: HTMLCanvasElement; ox: number; oy: number }
 const sprites = new Map<string, Sprite | null>();
 
@@ -404,6 +410,12 @@ export function renderScenery(
     const s = sprite("regional-" + kind + "-" + variation, 96, 128, 48, 102,
       (c) => paintRegionalLandmark(c, kind, variation));
     if (s) blit(ctx, s); else paintRegionalLandmark(ctx, kind, variation);
+  } else if (prop.kind === "south-ruin" && prop.ruinLayer) {
+    const layer = prop.ruinLayer, v = Math.max(0, Math.min(3, Math.floor(prop.variant)));
+    // O desenho usa o contato da ruína como origem; cada camada é ordenada em uma altura própria.
+    ctx.translate(0, layer === "back" ? RUIN_BACK_DEPTH : -RUIN_FRONT_DEPTH);
+    const s = sprite("south-ruin-" + v + "-" + layer, 232, 168, 116, 112, (c) => paintSouthRuin(c, v, layer));
+    if (s) blit(ctx, s); else paintSouthRuin(ctx, v, layer);
   } else if (prop.kind === "arch") {
     const s = sprite("arch", 120, 100, 60, 82, paintArch);
     if (s) blit(ctx, s); else paintArch(ctx);

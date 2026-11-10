@@ -7,6 +7,8 @@ import {
 } from "../world/terrain.ts";
 import { LANDMARKS } from "../world/landmarks.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
+import { RUIN_CELL_TILES, getSouthRuinForCell } from "../world/southRuins.ts";
+import { RUIN_BACK_DEPTH, RUIN_FRONT_DEPTH } from "./scenery.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { SOUTH_CITY, SOUTH_CITY_PROPS } from "../world/southCity.ts";
 import { generateChunkCanvas } from "./terrain.ts";
@@ -14,9 +16,9 @@ import type { Scenery } from "./scenery.ts";
 interface ChunkVisual {
   canvas: HTMLCanvasElement;
   props: Scenery[];
-  water: Array<{ x: number; y: number; phase: number }>;
+  water: Array<{ x: number; y: number; phase: number; black?: true }>;
   /** Linhas de margem onde a água encontra terra, para a espuma animada. */
-  foam: Array<{ x1: number; y1: number; x2: number; y2: number; phase: number; nx: number; ny: number }>;
+  foam: Array<{ x1: number; y1: number; x2: number; y2: number; phase: number; nx: number; ny: number; black?: true }>;
 }
 /** Bounded LRU: ground is cached; tall objects are sorted with actors each frame. */
 export class WorldRenderer {
@@ -46,21 +48,23 @@ export class WorldRenderer {
             variant: tile.decoration,
           });
         if (tile.ground === "water") {
+          const black = tile.biome === "black-lake";
           water.push({
             x: tx * TILE_SIZE + 8,
             y: ty * TILE_SIZE + 13,
             phase: tile.decoration * 6,
+            ...(black ? { black: true as const } : {}),
           });
           const x0 = tx * TILE_SIZE, y0 = ty * TILE_SIZE, p = tile.decoration * 9;
           const S = TILE_SIZE;
           if (getTile(tx, ty - 1, this.seed).ground !== "water")
-            foam.push({ x1: x0, y1: y0 + 1, x2: x0 + S, y2: y0 + 1, phase: p, nx: 0, ny: -1 });
+            foam.push({ x1: x0, y1: y0 + 1, x2: x0 + S, y2: y0 + 1, phase: p, nx: 0, ny: -1, ...(black ? { black: true as const } : {}) });
           if (getTile(tx, ty + 1, this.seed).ground !== "water")
-            foam.push({ x1: x0, y1: y0 + S - 1, x2: x0 + S, y2: y0 + S - 1, phase: p + 2, nx: 0, ny: 1 });
+            foam.push({ x1: x0, y1: y0 + S - 1, x2: x0 + S, y2: y0 + S - 1, phase: p + 2, nx: 0, ny: 1, ...(black ? { black: true as const } : {}) });
           if (getTile(tx - 1, ty, this.seed).ground !== "water")
-            foam.push({ x1: x0 + 1, y1: y0, x2: x0 + 1, y2: y0 + S, phase: p + 4, nx: -1, ny: 0 });
+            foam.push({ x1: x0 + 1, y1: y0, x2: x0 + 1, y2: y0 + S, phase: p + 4, nx: -1, ny: 0, ...(black ? { black: true as const } : {}) });
           if (getTile(tx + 1, ty, this.seed).ground !== "water")
-            foam.push({ x1: x0 + S - 1, y1: y0, x2: x0 + S - 1, y2: y0 + S, phase: p + 6, nx: 1, ny: 0 });
+            foam.push({ x1: x0 + S - 1, y1: y0, x2: x0 + S - 1, y2: y0 + S, phase: p + 6, nx: 1, ny: 0, ...(black ? { black: true as const } : {}) });
         }
       }
     const regional = getRegionalLandmarkForCell(
@@ -71,6 +75,15 @@ export class WorldRenderer {
         Math.floor(regional.tileY / CHUNK_TILES) === cy)
       props.push({ kind: "regional-landmark", landmarkKind: regional.kind,
         x: regional.x, y: regional.y, variant: regional.variant });
+    const ruin = getSouthRuinForCell(
+      Math.floor(cx * CHUNK_TILES / RUIN_CELL_TILES),
+      Math.floor(cy * CHUNK_TILES / RUIN_CELL_TILES), this.seed,
+    );
+    if (ruin && Math.floor(ruin.tileX / CHUNK_TILES) === cx &&
+        Math.floor(ruin.tileY / CHUNK_TILES) === cy)
+      for (const layer of ["back", "front"] as const)
+        props.push({ kind: "south-ruin", ruinLayer: layer, variant: ruin.variant, x: ruin.x,
+          y: ruin.y + (layer === "back" ? -RUIN_BACK_DEPTH : RUIN_FRONT_DEPTH) });
     const result = {
       canvas: generateChunkCanvas(cx, cy, this.seed),
       props,
@@ -112,7 +125,9 @@ export class WorldRenderer {
             const push = pulse * 1.3;
             const horizontal = f.y1 === f.y2;
             const ox = push * f.nx, oy = push * f.ny;
-            ctx.strokeStyle = "rgba(236,248,238," + (0.2 + 0.22 * (pulse * 0.5 + 0.5)).toFixed(3) + ")";
+            const foamAlpha = (0.2 + 0.22 * (pulse * 0.5 + 0.5)).toFixed(3);
+            // Lago negro: a borda é um fio roxo-acinzentado, não espuma branca.
+            ctx.strokeStyle = f.black ? "rgba(140,118,180," + foamAlpha + ")" : "rgba(236,248,238," + foamAlpha + ")";
             ctx.beginPath();
             const steps = 4;
             for (let i = 0; i <= steps; i++) {
@@ -126,10 +141,10 @@ export class WorldRenderer {
           }
           ctx.lineCap = "butt";
           // Ondulações e cintilações sobre a água.
-          ctx.strokeStyle = "#c8e1bf55";
           ctx.lineWidth = 0.9;
           for (const spot of chunk.water) {
             const wave = Math.sin(time * 1.5 + spot.phase);
+            ctx.strokeStyle = spot.black ? "#a78fd855" : "#c8e1bf55";
             if (wave >= 0.4) {
               ctx.globalAlpha = (wave - 0.4) * 0.8;
               ctx.beginPath();
@@ -141,7 +156,7 @@ export class WorldRenderer {
             if (glint > 0.93) {
               const gx = spot.x - left + 12, gy = spot.y - top + 6, s = (glint - 0.93) * 55;
               ctx.globalAlpha = Math.min(1, (glint - 0.93) * 14);
-              ctx.fillStyle = "#f7ffee";
+              ctx.fillStyle = spot.black ? "#d9ccff" : "#f7ffee";
               ctx.beginPath();
               ctx.moveTo(gx, gy - s); ctx.lineTo(gx + s * 0.28, gy); ctx.lineTo(gx, gy + s); ctx.lineTo(gx - s * 0.28, gy);
               ctx.closePath(); ctx.fill();
@@ -163,16 +178,20 @@ export class WorldRenderer {
     const right = left + width + 90,
       bottom = top + height + 110;
     const result: Scenery[] = [];
+    // A ruína tem ~230 px de largura: sua margem lateral é maior para não aparecer de repente.
+    const wide = 125;
     for (let cy = chunkOf(top); cy <= chunkOf(bottom); cy++)
-      for (let cx = chunkOf(left); cx <= chunkOf(right); cx++) {
-        for (const prop of this.chunk(cx, cy).props)
+      for (let cx = chunkOf(left - wide); cx <= chunkOf(right + wide); cx++) {
+        for (const prop of this.chunk(cx, cy).props) {
+          const pad = prop.kind === "south-ruin" ? wide : 0;
           if (
-            prop.x > left &&
-            prop.x < right &&
+            prop.x > left - pad &&
+            prop.x < right + pad &&
             prop.y > top &&
             prop.y < bottom
           )
             result.push(prop);
+        }
       }
     for (const b of BUILDINGS)
       if (b.x > left - 60 && b.x < right + 60 && b.y > top - 110 && b.y < bottom + 20)

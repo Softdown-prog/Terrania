@@ -84,3 +84,5 @@ enxerga relevo, material e formas regionais, não apenas o piso plano da saída.
 
 ### Arte das montarias
 `mounts.ts` contém silhuetas procedurais diferentes para as dez montarias, além do cercado da vila. `renderMount` e `renderStableFence` estão em `tests/helpers/artAssets.ts` como `creature` e `structure`; sem imagens externas ou novas exceções ao contrato.
+
+**Ruínas e lago negro do Sul (ADR 0017):** `southRuinsArt.ts` desenha as mesmas peças que a colisão usa (`world/southRuins.ts`), em duas camadas de profundidade (`back` e `front`) cacheadas por `scenery.ts`. O lago negro é desenhado em `terrain.ts` (paleta, margem de lama, juncos secos) e animado em `WorldRenderer.ts` com ondas e fio roxo no lugar da espuma branca.
