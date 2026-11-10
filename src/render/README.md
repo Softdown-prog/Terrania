@@ -140,3 +140,8 @@ com materiais e movimentos característicos. Nenhuma mudança de loot,
 velocidade, colisão, domar ou habilidades do motor foi feita. A avaliação
 de fidelidade artística em Android físico e o aprofundamento de animações
 sincronizadas ao estado real de movimento ainda são trabalhos pendentes.
+
+**Slime em módulo próprio:** `src/render/creatures/center/slime.ts` contém
+a renderização gelatinosa completa, expressões, efeitos e HP. A reexportação
+em `src/render/actors.ts` preserva os imports existentes do jogo. Assim o
+herói e a Slime não precisam mais dividir um arquivo de implementação.

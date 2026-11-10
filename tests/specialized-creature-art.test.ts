@@ -108,8 +108,10 @@ test("32 criaturas possuem corpo procedural específico, e não só ficha de atr
     const contents=readFileSync(full,"utf8");
     assert.ok(contents.length>350,kind+" ainda é só uma linha de ficha");
   }
-  assert.ok(readFileSync("src/render/actors.ts","utf8").includes("function renderSlime") ||
-    readFileSync("src/render/actors.ts","utf8").includes("export function renderSlime"));
+  assert.ok(readFileSync("src/render/creatures/center/slime.ts","utf8").includes("export function renderSlime"),
+    "Slime precisa do próprio arquivo de anatomia");
+  assert.ok(readFileSync("src/render/actors.ts","utf8").includes('export { renderSlime }'),
+    "API pública antiga de renderSlime deve continuar funcionando");
 });
 
 
