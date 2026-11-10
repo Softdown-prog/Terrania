@@ -30,3 +30,18 @@ O HUD recebe o progresso calculado da missão da Aela e as falas prontas para ex
 
 ### Painel de Cavalaria
 O NPC Eron apresenta o cercado e o primeiro resgate; `HudService` só envia ações ao `GameUi`. As regras de gastos, requisitos e recompensas pertencem a `MountStable`; o HUD não altera inventário sozinho. Usar toque de 44px no Android.
+
+### CSS da tela do jogo
+
+A tela Angular usa `styleUrls` para carregar os arquivos de `src/app/styles/`
+**na ordem original de cascata**. Os arquivos são: `game-core.css` (HUD),
+`dialogs-and-controls.css` (diálogos e interação), `responsive.css` (Android),
+`inventory.css` (mochila e equipamentos), `game-overlays.css` (menu e status),
+`battle-list.css` (combate), `world-atlas.css` (mapa) e `mounts.css` (montarias).
+
+A migração conserva integralmente os seletores, cores, regras e media queries;
+não duplica folhas nem altera o motor. Novos monstros são desenhados no Canvas e
+**não precisam de CSS individual**. O CSS do componente continua incluído no
+bundle Angular; esta separação visa manutenção e menos regressões, não ganho
+automático de desempenho. Para crescer, alterar o arquivo da interface envolvida
+e manter o limite validado de 350 linhas por folha.

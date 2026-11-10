@@ -1,0 +1,244 @@
+@media (max-width: 1060px) {
+  .game-tools {
+    top: 94px;
+    right: 16px;
+  }
+  .hud {
+    gap: 22px;
+  }
+  .quest {
+    padding-left: 18px;
+  }
+  .connection {
+    top: 102px;
+  }
+}
+@media (pointer: coarse), (max-width: 650px) {
+  #joystick,
+  #attack {
+    display: flex;
+  }
+  .keyboard-hint {
+    display: none;
+  }
+  #talkButton {
+    right: 20px;
+    bottom: max(142px, calc(env(safe-area-inset-bottom) + 135px));
+    font-size: 11px;
+  }
+  .bottom-info {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 12px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  .bottom-info small {
+    display: none;
+  }
+}
+@media (max-width: 650px) {
+  .hud {
+    padding: 14px 14px 30px;
+    gap: 13px;
+    align-items: flex-start;
+  }
+  .game-brand {
+    font-size: 16px;
+    gap: 5px;
+    letter-spacing: 1px;
+  }
+  .game-brand img {
+    width: 26px;
+    height: 31px;
+  }
+  .game-brand small {
+    font-size: 6px;
+    letter-spacing: 1px;
+  }
+  .vitals {
+    width: 100px;
+    margin-top: 3px;
+  }
+  .stat-heading {
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .stat-heading b {
+    font-size: 8px;
+  }
+  .meter {
+    height: 6px;
+    margin-top: 7px;
+  }
+  .quest {
+    position: absolute;
+    top: 98px;
+    left: 15px;
+    min-width: 130px;
+    padding: 10px 12px;
+    background: #122b278c;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .quest > b {
+    font-size: 13px;
+  }
+  .quest-bottom {
+    font-size: 8px;
+    gap: 7px;
+  }
+  .quest-meter {
+    width: 45px;
+  }
+  .game-tools {
+    top: 14px;
+    right: 12px;
+    gap: 4px;
+    flex-direction: column;
+  }
+  .game-tools button {
+    font-size: 9px;
+    padding: 7px 9px;
+    min-height: 30px;
+  }
+  .connection {
+    left: 15px;
+    top: 63px;
+  }
+  .connection b {
+    font-size: 9px;
+    max-width: 210px;
+  }
+  .connection small {
+    font-size: 8px;
+  }
+  .bottom-info {
+    gap: 12px;
+  }
+  dialog {
+    padding: 28px 24px;
+  }
+  .dialog-actions {
+    flex-direction: column;
+    gap: 0;
+  }
+  #gameNotice {
+    bottom: 153px;
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+  .quest {
+    top: 90px;
+  }
+  .game-tools {
+    top: 14px;
+    right: 14px;
+    flex-direction: row;
+  }
+  .connection {
+    top: 62px;
+  }
+  .bottom-info {
+    bottom: 8px;
+  }
+  #joystick {
+    width: 92px;
+    height: 92px;
+    bottom: 22px;
+  }
+  #attack {
+    bottom: 30px;
+    width: 65px;
+    height: 65px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+
+/* Android-first: controles táteis acessíveis, sem cobrir o mundo jogável. */
+#joystick, #attack {
+  z-index: 5;
+  -webkit-user-select: none;
+  user-select: none;
+}
+#talkButton { z-index: 5; }
+#game { touch-action: none; }
+@media (pointer: coarse), (max-width: 650px) {
+  #joystick {
+    left: max(16px, env(safe-area-inset-left));
+    bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
+    width: clamp(104px, 28vw, 124px);
+    height: clamp(104px, 28vw, 124px);
+    background: #173c2fd9;
+  }
+  #attack {
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(23px, calc(env(safe-area-inset-bottom) + 17px));
+    width: 78px;
+    height: 78px;
+  }
+  #attack:active, #talkButton:active { filter: brightness(1.22); }
+  #talkButton {
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(132px, calc(env(safe-area-inset-bottom) + 120px));
+    min-width: 92px;
+    min-height: 48px;
+  }
+  .bottom-info {
+    pointer-events: none;
+    bottom: max(3px, env(safe-area-inset-bottom));
+  }
+  .bottom-info #coords { display: none; }
+}
+@media (max-width: 650px) {
+  .hud {
+    padding-top: max(14px, calc(env(safe-area-inset-top) + 10px));
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+  .game-tools {
+    top: max(14px, calc(env(safe-area-inset-top) + 10px));
+    right: max(12px, env(safe-area-inset-right));
+  }
+  .game-tools button, .nav-toggle {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  .connection { top: max(70px, calc(env(safe-area-inset-top) + 64px)); }
+  .quest { top: max(112px, calc(env(safe-area-inset-top) + 104px)); }
+  #gameNotice { bottom: max(174px, calc(env(safe-area-inset-bottom) + 157px)); }
+}
+@media (max-width: 370px) {
+  .vitals { width: 87px; }
+  .game-brand { font-size: 14px; }
+  .game-tools button { padding-inline: 8px; }
+  #joystick { width: 104px; height: 104px; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  .quest { display: none; }
+  .hud { padding-top: max(8px, env(safe-area-inset-top)); }
+  .game-tools {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    flex-direction: row;
+  }
+  .game-tools button { min-height: 44px; }
+  .connection { top: max(54px, calc(env(safe-area-inset-top) + 47px)); }
+  .bottom-info { display: none; }
+  #joystick {
+    width: 100px; height: 100px;
+    bottom: max(12px, calc(env(safe-area-inset-bottom) + 10px));
+  }
+  #attack {
+    width: 72px; height: 72px;
+    bottom: max(18px, calc(env(safe-area-inset-bottom) + 14px));
+  }
+  #talkButton { bottom: max(98px, calc(env(safe-area-inset-bottom) + 95px)); }
+  #gameNotice { bottom: max(110px, calc(env(safe-area-inset-bottom) + 104px)); }
+}
+
