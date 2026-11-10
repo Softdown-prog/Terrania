@@ -20,3 +20,12 @@ export const drawHydra = (ctx: CanvasRenderingContext2D, c: ColorRamp, time: num
   }
   carapaceDetail(ctx,0,-12,21,6,c,12);
 };
+
+/** Paleta e renderizador próprios desta espécie. */
+import { renderRegionalFrame } from "../../shared/regionalFrame.ts";
+import type { RegionalCreatureVisual } from "../../../regionalCreatures.ts";
+const CREATURE_PALETTE: ColorRamp = {"base":"#4bba66","light":"#a0e375","dark":"#376a56","accent":"#ad54b1","eye":"#b6f6ef"};
+export function renderMireHydraCreature(ctx:CanvasRenderingContext2D,actor:RegionalCreatureVisual,
+  sx:number,sy:number,time=0):void {
+  renderRegionalFrame(ctx,actor,sx,sy,time,CREATURE_PALETTE,drawHydra);
+}
