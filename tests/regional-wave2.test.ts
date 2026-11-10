@@ -107,7 +107,7 @@ test("combate da salamandra: projétil possui conjuração e aplica queimadura c
   h.x=110;h.y=0;
   const m=new RegionalMonster("magma-test","magma-salamander",0,0);
   for(let i=0;i<180&&h.debuffs.burn===0;i++){
-    m.update(1/60,h,world);
+    m.update(1/60,h,world,0,false); // arena unitária fora da geografia da vila
     h.update(1/60,{x:0,y:0},world);
   }
   assert.ok(h.debuffs.burn>0,"rajada deve atingir e causar queimadura");

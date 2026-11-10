@@ -35,22 +35,22 @@ test("NPCs: falas originais independentes de reexportações e aliases",()=>{
   const scenarios:ReadonlyArray<readonly [string,number,boolean,readonly string[]]>=[
     ["aela",0,false,[
       "Saudações, viajante! Sou Aela, a guardiã desta clareira.",
-      "Os slimes estão se espalhando pela floresta. Preciso de ajuda para afastar cinco deles.",
-      "Siga as trilhas além do arco de pedra, mas cuide da sua vida. Volte aqui para contar seus feitos!",
+      "A gruta a leste abriga slimes. Preciso que derrote cinco deles lá dentro para aprender o combate.",
+      "Siga as avenidas até o portão leste e entre na primeira caverna. Treine, saia e volte para receber sua recompensa!",
     ]],
     ["aela",2,false,[
       "Vejo que já começou a proteger a clareira. Continue firme!",
-      "Você derrotou 2 de 5 slimes. Explore as trilhas fora do círculo de pedras.",
+      "Você derrotou 2 de 5 slimes. Continue enfrentando os slimes na gruta de treinamento fora da vila.",
       "Use a espada com Espaço ou J; no celular, toque no botão ATACAR.",
     ]],
     ["aela",5,false,[
-      "Você conseguiu! Cinco slimes derrotados. A clareira pode descansar por enquanto.",
+      "Você conseguiu! Cinco slimes derrotados. A vila está mais segura agora.",
       "Além das árvores há trilhas antigas e ruínas. Esta terra guarda muitos segredos.",
-      "Volte quando quiser conversar. Novas missões chegarão com a expansão do mundo.",
+      "Volte quando quiser conversar. Mira conhece as estradas para as outras regiões.",
     ]],
     ["mira",0,false,[
       "Sou Mira, cartógrafa da Vila da Travessia.",
-      "Siga para leste, leia as placas e conheça os moradores.",
+      "Siga a avenida até o portão leste. A gruta-escola fica fora da área protegida.",
       "Aela ainda precisa de ajuda com os slimes.",
     ]],
     ["mira",5,false,[
@@ -59,7 +59,7 @@ test("NPCs: falas originais independentes de reexportações e aliases",()=>{
     ]],
     ["toren",0,false,[
       "Sou Toren, ferreiro.",
-      "Chegue perto da porta e pressione E para visitar a oficina.",
+      "Aproxime-se da porta e pressione E. Leve a espada à caverna da missão de Aela.",
       "Ainda não ofereço comércio.",
     ]],
     ["toren",5,false,[
@@ -73,7 +73,7 @@ test("NPCs: falas originais independentes de reexportações e aliases",()=>{
     ["lina",0,false,[
       "Sou Lina, anfitriã da Travessia.",
       "Entre na hospedaria pela porta atrás de mim.",
-      "Por enquanto não há serviço de descanso.",
+      "A hospedaria é um ponto seguro; monstros não cruzam a vila.",
     ]],
     ["lina",5,false,[
       "Obrigado por ajudar Aela!",
@@ -86,12 +86,12 @@ test("NPCs: falas originais independentes de reexportações e aliases",()=>{
       "Cada montaria tem nível, sela e região próprios. As criaturas selvagens precisam de missões especiais.",
     ]],
     ["entrance",0,false,[
-      "Vila da Travessia — bem-vindo!",
-      "Ao leste fica a praça. Ao sul, a hospedaria.",
+      "Vila da Travessia — área protegida contra monstros.",
+      "Da praça, siga para leste até a gruta de treinamento.",
     ]],
     ["square",0,false,[
-      "Aviso: cuidado com os monstros fora da vila!",
-      "Ajude Aela na clareira. Outras tarefas virão em etapas futuras.",
+      "Aela precisa de cinco slimes derrotados na primeira gruta a leste.",
+      "Os caminhos ligam hospedaria, mercado, arquivo, curandeiros e armazém.",
     ]],
   ];
   for(const [id,kills,forge,expected] of scenarios)

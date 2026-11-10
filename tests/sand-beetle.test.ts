@@ -32,10 +32,10 @@ test("Besouro da Areia: 9x10, nível recomendado 5–18, 40 HP, golpe físico 7 
 test("Besouro: mandíbulas causam 7 de contato e nunca aplicam magia/status",()=>{
   const hero=new Player(), beetle=new RegionalMonster("bite","sand-beetle",0,0);
   hero.x=20;hero.y=0;
-  beetle.update(1/60,hero,collision);
+  beetle.update(1/60,hero,collision,0,false);
   assert.equal(hero.hp,93);
   assert.ok(Object.values(hero.debuffs).every(value=>value===0));
-  beetle.update(1/60,hero,collision);
+  beetle.update(1/60,hero,collision,0,false);
   assert.equal(hero.hp,93,"a recarga impede ataque a cada frame");
 });
 

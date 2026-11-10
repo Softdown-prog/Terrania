@@ -32,7 +32,7 @@ export const ROOM_FURNITURE: Readonly<Record<Building["id"], readonly Furniture[
   market: [
     { x: 30, y: 85, width: 75, height: 44, kind: "shelf" },
     { x: 249, y: 85, width: 76, height: 44, kind: "shelf" },
-    { x: 129, y: 88, width: 99, height: 39, kind: "table" },
+    { x: 129, y: 105, width: 99, height: 43, kind: "table" },
   ],
   archive: [
     { x: 26, y: 78, width: 65, height: 90, kind: "shelf" },
