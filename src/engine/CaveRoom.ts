@@ -167,7 +167,7 @@ export class CaveRoom {
       // O herói encara o alvo principal; os demais do arco astral não giram o golpe.
       if(targets[0])faceTarget(this.player,targets[0]);
       resolveSwordStrike(equipped,this.player,targets,this.monsters,this.collision,
-        monster=>this.defeat(monster.id,monster,defense));
+        monster=>this.defeat(monster.id,monster,defense),false);
     }
   }
   /** One kill event even if DOT, direct hit and chained lightning overlap. */

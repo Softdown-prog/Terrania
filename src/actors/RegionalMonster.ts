@@ -46,7 +46,8 @@ export class RegionalMonster extends Slime {
     this.regenElapsed=0;
   }
   /** Reflected damage is a consequence of a landed short-sword strike. */
-  onSwordHit(hero: Player, weapon: WeaponId): void {
+  onSwordHit(hero: Player, weapon: WeaponId, protectVillage = true): void {
+    if(protectVillage && villageGround(Math.floor(hero.x/TILE_SIZE),Math.floor(hero.y/TILE_SIZE)))return;
     if(this.definition.special==="thorns" && weapon==="forge")
       hero.receiveThorns(2);
   }

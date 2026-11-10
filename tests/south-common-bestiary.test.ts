@@ -137,12 +137,16 @@ test("troll: recupera um HP por segundo somente após afastar-se do combate",()=
 
 test("cacto: apenas espada curta provoca contra-ataque fixo de dois HP",()=>{
   const hero=new Player(),cactus=new RegionalMonster("thorns","cactus-sprout",0,0);
+  hero.x=-600;hero.y=-600; // unidade de combate fora da região protegida
   cactus.onSwordHit(hero,"starter");
   assert.equal(hero.hp,100);
   cactus.onSwordHit(hero,"forge");
   assert.equal(hero.hp,98);
   cactus.onSwordHit(hero,"forge");
   assert.equal(hero.hp,96);
+  hero.x=16;hero.y=16;
+  cactus.onSwordHit(hero,"forge");
+  assert.equal(hero.hp,96,"a proteção da vila impede dano refletido");
 });
 
 test("miragem: status diminui acerto; saques são reproduzíveis sem drop obrigatório",()=>{

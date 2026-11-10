@@ -100,11 +100,11 @@ export function applySwordImpact<T extends Slime>(weapon:WeaponId,hero:Player,ta
  */
 export function resolveSwordStrike<T extends Slime>(weapon: WeaponId, hero: Player,
   targets: readonly T[], pool: ReadonlyMap<string, T>, world: CollisionMap,
-  onDefeated: (mob: T) => void): void {
+  onDefeated: (mob: T) => void, protectVillage = true): void {
   for (const mob of targets) {
     if (mob.hp <= 0) continue;
     mob.takeHit(hero.x, hero.y, swordHitDamage(weapon, mob));
-    if (mob instanceof RegionalMonster) mob.onSwordHit(hero, weapon);
+    if (mob instanceof RegionalMonster) mob.onSwordHit(hero, weapon, protectVillage);
     for (const struck of applySwordImpact(weapon, hero, mob, pool.values(), world).extra)
       if (struck.hp <= 0) onDefeated(struck);
     if (mob.hp <= 0) onDefeated(mob);
