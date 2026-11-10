@@ -89,6 +89,8 @@ enxerga relevo, material e formas regionais, não apenas o piso plano da saída.
 
 **Torres do Sul (ADR 0019):** `south/towers/` tem um pintor por torre (`vigia-caida.ts`, `miragem.ts`, `sol-negro.ts`), `common.ts` com o pincel compartilhado (`TowerBrush`) e `index.ts` com `TOWER_PAINTERS`. A posição e a colisão ficam em `world/towers/`; `scenery.ts` cacheia o sprite `south-tower-<id>`.
 
+**Interior das torres (ADR 0021):** `south/towers/interior/` tem um estilo por torre (cores e luz), as peças `wallFace.ts`, `window.ts` e `sconce.ts` (registradas como `prop`) e `floor.ts`, que pinta o andar inteiro (laje, tijolo, janelas, lampiões). `cave.ts` usa esse pintor quando a entrada é de torre.
+
 
 ## Arte de espécies com anatomia própria — 10/11/2026
 
