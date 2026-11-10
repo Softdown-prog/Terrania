@@ -12,7 +12,7 @@ const counts = (total: number): number[] => coinBreakdown(total).map(c => c.coun
 
 test("cada moeda tem o seu arquivo, com o seu id, em ordem crescente de valor (cada uma vale 100 da anterior)", () => {
   const files = readdirSync(new URL("../src/engine/character/coins/", import.meta.url))
-    .filter(f => f.endsWith(".ts") && !["index.ts", "types.ts", "wallet.ts", "drops.ts"].includes(f)).map(f => f.replace(/\.ts$/, "")).sort();
+    .filter(f => f.endsWith(".ts") && !["index.ts", "types.ts", "wallet.ts", "drops.ts", "market.ts"].includes(f)).map(f => f.replace(/\.ts$/, "")).sort();
   assert.deepEqual(files, COIN_TIERS.map(c => c.id).sort(), "um arquivo por moeda, nomeado pelo id");
   assert.deepEqual(COIN_TIERS.map(c => c.id), ["terrania-gold", "cripta-coin", "eclipse-crown"]);
   assert.deepEqual(COIN_TIERS.map(c => c.name), ["Terrania Gold", "Cripta Coin", "Eclipse Crown"]);

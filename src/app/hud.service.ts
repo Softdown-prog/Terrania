@@ -9,7 +9,7 @@ import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
 import { southRareLootByName } from '../monsters/rareLoot.ts';
-import { COIN_TIERS, coinBreakdown, describeCoins } from '../engine/character/coins/index.ts';
+import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
@@ -209,6 +209,7 @@ export class HudService implements GameUi {
   private talkCallback: () => void = () => {};
   private potionTradeCallback: () => string = () => '';
   private innRestCallback: () => string = () => '';
+  private materialSaleCallback: (market: MarketId, material: string, quantity: number) => string = () => '';
   private potionCallback: () => string = () => '';
   private foodCallback: (id: FoodId) => string = () => '';
   private foodTradeCallback: (id: FoodId) => string = () => '';
@@ -249,6 +250,7 @@ export class HudService implements GameUi {
   onFoodTrade(callback: (id: FoodId) => string): void { this.foodTradeCallback = callback; }
   onSwordPurchase(callback: () => string): void { this.swordPurchaseCallback = callback; }
   onInnRest(callback: () => string): void { this.innRestCallback = callback; }
+  onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void { this.materialSaleCallback = callback; }
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void { this.gearEquipCallback = callback; }
   onRespawn(callback: () => void): void { this.respawnCallback = callback; }
@@ -277,6 +279,17 @@ export class HudService implements GameUi {
   talk(): void { this.talkCallback(); }
   tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
   restAtInn(): void { this.npcTradeFeedback.set(this.innRestCallback()); }
+  /** Vende `quantity` unidades (ou tudo, com um número grande) do material à banca aberta (ADR 0026). */
+  sellMaterial(market: MarketId, material: string, quantity: number): void {
+    this.npcTradeFeedback.set(this.materialSaleCallback(market, material, quantity));
+  }
+  /** O que o herói tem e esta banca compra, com o preço de cada unidade em Terrania Gold. */
+  sellableMaterials(market: MarketId): ReadonlyArray<{ name: string; quantity: number; price: number }> {
+    return Object.entries(this.creatureMaterials())
+      .filter(([name, quantity]) => quantity > 0 && marketFor(name) === market)
+      .map(([name, quantity]) => ({ name, quantity, price: materialSalePrice(name) ?? 0 }))
+      .sort((a, b) => b.price - a.price || a.name.localeCompare(b.name));
+  }
   usePotion(): void {
     const message = this.potionCallback();
     this.inventoryFeedback.set(message);

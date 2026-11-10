@@ -4,6 +4,7 @@ import { terraniaGold } from "./terrania-gold.ts";
 import type { CoinDefinition } from "./types.ts";
 
 export type { CoinDefinition, CoinId } from "./types.ts";
+export { MARKET_NPC, marketFor, materialSalePrice, type MarketId } from "./market.ts";
 export { BOSS_CROWN_CHANCE, rollCoinDrop } from "./drops.ts";
 export { coinBreakdown, describeCoins, MAX_COINS, MERGE_AT, normalizeCoins } from "./wallet.ts";
 

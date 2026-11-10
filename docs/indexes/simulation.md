@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (42)
+## Todos os arquivos deste módulo (43)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -34,6 +34,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/coins/drops.ts`](../../src/engine/character/coins/drops.ts)
 - [`src/engine/character/coins/eclipse-crown.ts`](../../src/engine/character/coins/eclipse-crown.ts)
 - [`src/engine/character/coins/index.ts`](../../src/engine/character/coins/index.ts)
+- [`src/engine/character/coins/market.ts`](../../src/engine/character/coins/market.ts)
 - [`src/engine/character/coins/terrania-gold.ts`](../../src/engine/character/coins/terrania-gold.ts)
 - [`src/engine/character/coins/types.ts`](../../src/engine/character/coins/types.ts)
 - [`src/engine/character/coins/wallet.ts`](../../src/engine/character/coins/wallet.ts)

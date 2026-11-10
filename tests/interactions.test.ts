@@ -50,7 +50,8 @@ test("interação: ofertas de comércio de Lina, Toren e do Mestre de Estábulos
   assert.deepEqual(npcOffer("toren"), { item: "sword", price: FORGE_SWORD_PRICE });
   assert.deepEqual(npcOffer("stablemaster"), { item: "stable", price: 0 });
   assert.deepEqual(npcOffer("south-madame"), { item: "rest", price: INN_REST_PRICE });
-  assert.equal(npcOffer("south-zinha"), undefined, "o Bazar ainda não compra nem vende");
+  assert.deepEqual(npcOffer("south-zinha"), { item: "bazaar", price: 0 }, "o Bazar compra os raros (ADR 0026)");
+  assert.equal(npcOffer("south-gorrak"), undefined, "os demais moradores não têm oferta");
   assert.equal(npcOffer("aela"), undefined);
   assert.equal(npcOffer("inexistente"), undefined);
 });

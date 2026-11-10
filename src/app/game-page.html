@@ -523,6 +523,20 @@
                 [disabled]="hud.coins() < item.price || hud.food()[id] >= 99"
                 (click)="hud.tradeFood(id)">Comprar {{ item.name }} · {{ hud.coinText(item.price) }}</button>
             }
+          } @else if (offer.item === 'bazaar' || offer.item === 'ossuary') {
+            <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }}.
+              {{ offer.item === 'bazaar' ? 'O Bazar das Raridades compra os dez loots raros do Sul.' : 'O Ossuário compra o saque comum das criaturas.' }}</p>
+            @for (entry of hud.sellableMaterials(offer.item); track entry.name) {
+              <div class="market-row">
+                <span>{{ entry.name }} × {{ entry.quantity }} · {{ hud.coinText(entry.price) }} cada</span>
+                <button type="button" class="secondary-button" [attr.data-sell-one]="entry.name"
+                  (click)="hud.sellMaterial(offer.item, entry.name, 1)">Vender 1</button>
+                @if (entry.quantity > 1) {
+                  <button type="button" class="secondary-button" [attr.data-sell-all]="entry.name"
+                    (click)="hud.sellMaterial(offer.item, entry.name, entry.quantity)">Vender todos</button>
+                }
+              </div>
+            } @empty { <p class="dialog-note">Você não tem nada que esta banca compre.</p> }
           } @else if (offer.item === 'rest') {
             <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }} · Vida {{ hud.hp() }} / {{ hud.maxHp() }}</p>
             <button id="innRest" (click)="hud.restAtInn()" class="secondary-button" type="button"

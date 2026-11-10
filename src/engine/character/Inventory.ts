@@ -7,7 +7,7 @@ import type { Player } from "../../actors/Player.ts";
 import { FOODS, emptyFoodCounts, normalizeFoodCounts, type FoodCounts, type FoodId,
   type FoodTradeResult, type FoodUseResult } from "./Food.ts";
 import { nearestNpc } from "../../world/npcs.ts";
-import { MAX_COINS, normalizeCoins } from "./coins/index.ts";
+import { MAX_COINS, marketFor, materialSalePrice, normalizeCoins, type MarketId } from "./coins/index.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 
@@ -20,9 +20,11 @@ export const INN_REST_PRICE = 24;
 export type PotionTradeResult = "traded" | "insufficient-gel" | "potions-full";
 export type SwordPurchaseResult = "purchased" | "already-owned" | "insufficient-sword-coins" | "too-far-from-forge" | "unavailable";
 export type InnRestResult = "rested" | "insufficient-rest-coins" | "too-far-from-inn" | "rest-not-needed";
+/** `sold` = vendeu; os outros recusam sem mudar nada. */
+export type MaterialSaleResult = "sold" | "not-sellable-here" | "no-material" | "wallet-full";
 export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned" | "level-too-low";
 /** Tudo que uma ação da bolsa pode responder; a interface traduz cada valor em uma mensagem. */
-export type InventoryOutcome = PotionTradeResult | InnRestResult | SwordPurchaseResult | SwordEquipResult | GearResult |
+export type InventoryOutcome = PotionTradeResult | InnRestResult | MaterialSaleResult | SwordPurchaseResult | SwordEquipResult | GearResult |
   FoodTradeResult | FoodUseResult | "healed" | "full-health" | "no-potion" | "too-far";
 
 export interface InventoryState {
@@ -117,6 +119,22 @@ export class Inventory {
     return true;
   }
   get materials(): Readonly<Record<string, number>> { return { ...this.materialCounts }; }
+  /**
+   * Vende `quantity` unidades de um material a uma banca (ADR 0026) e paga em moedas. Atômico: só vende
+   * o que esta banca compra, o que o herói tem, e se a carteira comporta o total.
+   */
+  sellMaterial(market: MarketId, material: string, quantity: number): { result: MaterialSaleResult; coins: number; sold: number } {
+    const refused = (result: MaterialSaleResult) => ({ result, coins: 0, sold: 0 });
+    const price = materialSalePrice(material);
+    if (price === null || marketFor(material) !== market) return refused("not-sellable-here");
+    const owned = this.materialCounts[material] ?? 0;
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || owned < 1) return refused("no-material");
+    const sold = Math.min(quantity, owned), total = price * sold;
+    if (MAX_COINS - this.coinCount < total) return refused("wallet-full");
+    this.addCoins(total);
+    if (owned - sold > 0) this.materialCounts[material] = owned - sold; else delete this.materialCounts[material];
+    return { result: "sold", coins: total, sold };
+  }
   addMaterial(id: string): boolean {
     if (!KNOWN_MATERIALS.has(id) || (this.materialCounts[id] ?? 0) >= MAX_STACK) return false;
     this.materialCounts[id] = (this.materialCounts[id] ?? 0) + 1;

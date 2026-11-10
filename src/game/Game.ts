@@ -23,7 +23,7 @@ import { nearestCombatCreature } from "../engine/combat/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { runMountAction } from "../engine/mounts/MountActions.ts";
-import { buyFood, buySword, eatFood, equipGear, equipWeapon, restAtInn, tradeGelForPotion, usePotion,
+import { buyFood, buySword, eatFood, equipGear, equipWeapon, restAtInn, sellMaterial, tradeGelForPotion, usePotion,
   type ShopContext, type ShopResult } from "./actions/shopActions.ts";
 import { TravelState } from "./TravelState.ts";
 import type { Frame, FrameTimers, ModeHost } from "./modes/types.ts";
@@ -84,6 +84,7 @@ export class Game {
     this.hud.onPotionTrade(() => this.shop(tradeGelForPotion));
     this.hud.onSwordPurchase(() => this.shop(buySword));
     this.hud.onInnRest(() => this.shop(restAtInn));
+    this.hud.onMaterialSale((market, material, quantity) => this.shop(context => sellMaterial(context, market, material, quantity)));
     this.hud.onFoodUse(id => this.shop(context => eatFood(context, id)));
     this.hud.onFoodTrade(id => this.shop(context => buyFood(context, id)));
     this.hud.onWeaponEquip(weapon => this.shop(context => equipWeapon(context, weapon)));
