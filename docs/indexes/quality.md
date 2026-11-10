@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (83)
+## Todos os arquivos deste módulo (85)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -48,6 +48,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/engine-layout.test.ts`](../../tests/engine-layout.test.ts)
 - [`tests/experience.test.ts`](../../tests/experience.test.ts)
 - [`tests/file-size-budget.test.ts`](../../tests/file-size-budget.test.ts)
+- [`tests/folder-capacity.test.ts`](../../tests/folder-capacity.test.ts)
 - [`tests/game-styles.test.ts`](../../tests/game-styles.test.ts)
 - [`tests/helpers/artAssets.ts`](../../tests/helpers/artAssets.ts)
 - [`tests/helpers/browserEncounter.ts`](../../tests/helpers/browserEncounter.ts)
@@ -95,6 +96,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/south-sites.test.ts`](../../tests/south-sites.test.ts)
 - [`tests/specialized-creature-art.test.ts`](../../tests/specialized-creature-art.test.ts)
 - [`tests/species-behavior.test.ts`](../../tests/species-behavior.test.ts)
+- [`tests/sword-definitions.test.ts`](../../tests/sword-definitions.test.ts)
 - [`tests/sword-strike.test.ts`](../../tests/sword-strike.test.ts)
 - [`tests/tap-navigation.test.ts`](../../tests/tap-navigation.test.ts)
 - [`tests/travel-state.test.ts`](../../tests/travel-state.test.ts)
