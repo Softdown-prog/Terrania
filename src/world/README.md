@@ -41,3 +41,5 @@ fugitivo no mapa da vila, sem criar terrenos secretos nem colisões novas.
 **Sítios do Sul (ADR 0017):** `southRuins.ts` coloca as ruínas abandonadas (4 modelos, uma por célula de 160 tiles) e dá a colisão a partir das peças em `RUIN_PIECES`, as mesmas que `render/southRuinsArt.ts` desenha. O lago negro é o bioma `black-lake`, decidido por `isBlackLake` em `terrain.ts`. Nenhum dos dois é espelhado no Go; `tests/south-sites.test.ts` trava as amostras de paridade.
 
 **Camadas (ADR 0016):** `world` fica na base e só importa `world`. O vocabulário das montarias (`mountIds.ts`) mora aqui para que `mountQuests.ts` não dependa de `actors/`; `tests/layering.test.ts` confere. Única exceção hoje: `npcs.ts` (reexportação de `npcs/`), que sai junto com o PR da vila.
+
+**Planta de andar (ADR 0018):** `caveFloor.ts` gera as paredes, a água funda, a colisão e as escadas de um andar de caverna; não sabe nada de criaturas. As entradas continuam em `caves.ts`.
