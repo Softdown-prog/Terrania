@@ -29,10 +29,26 @@ test("engine: cada arquivo mora na pasta do seu assunto", () => {
   const expected: Readonly<Record<string, readonly string[]>> = {
     combat: ["ClassicBattleList.ts", "ClassicCombat.ts", "ClassicPursuit.ts", "SwordCombat.ts", "combat.ts"],
     movement: ["ClassicTileWalker.ts", "TapNavigator.ts"],
-    character: ["Equipment.ts", "Experience.ts", "Food.ts", "Inventory.ts", "Weapons.ts", "loot.ts"],
+    character: ["Equipment.ts", "Experience.ts", "Food.ts", "Inventory.ts", "Weapons.ts", "loot.ts", "weapons"],
     mounts: ["MountActions.ts", "MountQuestState.ts", "MountStable.ts"],
     rooms: ["CaveRewards.ts", "CaveRoom.ts", "InteriorRoom.ts"],
   };
   for (const [folder, names] of Object.entries(expected))
     assert.deepEqual(list(join(ENGINE, folder)), [...names].sort(), folder);
+});
+
+test("engine: weapons/swords contém exclusivamente as dez fichas individuais", () => {
+  const weaponsFolder = join(ENGINE, "character", "weapons");
+  const swordsFolder = join(weaponsFolder, "swords");
+  assert.deepEqual(list(weaponsFolder), ["swords"],
+    "weapons deve agrupar apenas pastas de categorias de armas");
+  const swordFiles = [
+    "starter.ts", "forge.ts", "bronze.ts", "copper.ts", "dunes.ts",
+    "boreal.ts", "obsidian.ts", "marsh.ts", "tempest.ts", "astral.ts",
+  ];
+  assert.deepEqual(list(swordsFolder), ["README.md", ...swordFiles].sort(),
+    "uma ficha por espada; sem módulos estranhos ou fichas faltando");
+  for (const name of swordFiles) {
+    assert.ok(statSync(join(swordsFolder, name)).isFile(), name);
+  }
 });
