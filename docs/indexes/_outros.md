@@ -5,6 +5,7 @@
 - [`.dockerignore`](../../.dockerignore)
 - [`.env.example`](../../.env.example)
 - [`.github/pull_request_template.md`](../../.github/pull_request_template.md)
+- [`.github/vps-known-hosts`](../../.github/vps-known-hosts)
 - [`.gitignore`](../../.gitignore)
 - [`.node-version`](../../.node-version)
 - [`AGENTS.md`](../../AGENTS.md)
