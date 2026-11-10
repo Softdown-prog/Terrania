@@ -96,7 +96,7 @@ var southCityBuildings = [][2]float64{
 }
 func southCityWall(tx,ty int) bool {
 	x,y:=tx,ty-southCityY
-	if x<-28||x>27||y<-24||y>23{return false}
+	if x < -28 || x > 27 || y < -24 || y > 23 {return false}
 	if x==-28||x==27{return true}
 	return (y==-24||y==23)&&absInt(x)>2
 }
