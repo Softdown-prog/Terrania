@@ -88,7 +88,7 @@ continuam classificadas no Sul, sem criar uma região nova artificial.
 
 ## Identidade de movimento de cada monstro
 
-`behavior.ts` define explicitamente uma estratégia por espécie (locomoção, perseguição, cadência e desvio lateral). `RegionalMonster.ts` usa essa estratégia no deslocamento real por `moveBody` e `monsterMotion.ts` vincula o passo real à animação procedural. Slime permanece com sua rotina exclusiva. Golpes especiais, veneno, magia e recompensas continuam no código existente. Os perfis não simulam voo atravessando paredes ou projéteis reais: são tarefas separadas que exigem novas regras e testes.
+Cada **um dos 31 monstros regionais** exporta seu próprio `...Behavior` tipado na respectiva ficha de `src/monsters/<região>/<categoria>/<espécie>.ts`. `behavior.ts` importa essas estratégias por identidade e mantém somente os algoritmos compartilhados de perseguição e fuga, sem copiar valores. `RegionalMonster.ts` usa essa estratégia no deslocamento real por `moveBody` e `monsterMotion.ts` vincula o passo real à animação procedural. Slime permanece com sua rotina exclusiva. Golpes especiais, veneno, magia e recompensas continuam no código existente. Os perfis não simulam voo atravessando paredes ou projéteis reais: são tarefas separadas que exigem novas regras e testes.
 
 ## Dez loots raros da Região Sul
 

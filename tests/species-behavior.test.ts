@@ -81,3 +81,31 @@ test("recuo por espécie é parametrizado: algumas fogem no amarelo, outras no v
   assert.ok(rat.x>x, "fuga aumenta distância em relação ao herói");
   assert.equal(hero.hp,hero.maxHp);
 });
+test("o registro usa o comportamento exportado pela ficha, sem duplicação",async()=>{
+  const { readFileSync, existsSync }=await import("node:fs");
+  const { duneRatBehavior }=await import("../src/monsters/south/rats/dune-rat.ts");
+  const { sandGoblinBehavior }=await import("../src/monsters/south/goblins/sand-goblin.ts");
+  const { desertOrcBehavior }=await import("../src/monsters/south/orcs/desert-orc.ts");
+  assert.strictEqual(SPECIES_BEHAVIORS["dune-rat"],duneRatBehavior);
+  assert.strictEqual(SPECIES_BEHAVIORS["sand-goblin"],sandGoblinBehavior);
+  assert.strictEqual(SPECIES_BEHAVIORS["desert-orc"],desertOrcBehavior);
+  const { readdirSync }=await import("node:fs");
+  let found=0;
+  for(const region of ["north","south","east","west"]){
+    const regionRoot="src/monsters/"+region;
+    for(const category of readdirSync(regionRoot,{withFileTypes:true}).filter(x=>x.isDirectory())){
+      for(const file of readdirSync(regionRoot+"/"+category.name).filter(x=>x.endsWith(".ts"))){
+        const species=file.slice(0,-3);
+        const name=species.replace(/-([a-z])/g,(_,c:string)=>c.toUpperCase())+"Behavior";
+        const path=regionRoot+"/"+category.name+"/"+file;
+        assert.ok(existsSync(path));
+        assert.ok(readFileSync(path,"utf8").includes("export const "+name+" = "),
+          "comportamento ainda centralizado: "+species);
+        found++;
+      }
+    }
+  }
+  assert.equal(found,REGIONAL_CREATURE_KINDS.length);
+  const central=readFileSync("src/monsters/behavior.ts","utf8");
+  assert.ok(!central.includes('"dune-rat": { gait:'),"registro não pode duplicar perfil");
+});
