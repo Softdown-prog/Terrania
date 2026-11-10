@@ -189,16 +189,18 @@ test('Toren vende a espada e o herói conserva qual arma equipou ao recarregar',
   await expect(page.locator('#gelCount')).toHaveText('2 / 99');
   await openEquipment();
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada de Treino de Carvalho');
-  await activate(page.getByRole('button', { name: 'Equipar Espada Curta de Ferro Batido' }));
+  await activate(page.locator('#equip-slot-weapon-forge'));
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada Curta de Ferro Batido');
+  await expect(page.locator('#equip-slot-weapon-forge')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByText('16 de dano · 1 s entre golpes · 90 ms de preparo', { exact: true })).toBeVisible();
   await page.reload();
   await openBag();
   await openEquipment();
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada Curta de Ferro Batido');
-  await activate(page.getByRole('button', { name: 'Equipar Espada de Treino de Carvalho' }));
+  await activate(page.locator('#equip-slot-weapon-starter'));
   await expect(page.locator('#equippedWeapon')).toHaveText('Espada de Treino de Carvalho');
-  await expect(page.getByRole('button', { name: 'Equipar Espada Curta de Ferro Batido' })).toBeVisible();
+  await expect(page.locator('#equip-slot-weapon-forge')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('#equip-slot-weapon-forge')).toBeVisible();
 });
 
 test('voltar ao painel não fica preso numa consulta cancelada da tela anterior', async ({ page }) => {

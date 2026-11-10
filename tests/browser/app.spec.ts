@@ -532,15 +532,16 @@ test('arsenal exibe dez espadas sem permitir equipar as bloqueadas', async ({ pa
 
 test('espada forjada equipada aparece parada na prévia e troca para a inicial sem atacar', async ({ page }) => {
   await page.addInitScript(() => {
-    const original = CanvasRenderingContext2D.prototype.fillRect;
+    const original = CanvasRenderingContext2D.prototype.roundRect;
     const swordFrames = { all: 0, forge: 0 };
     Object.assign(window, { swordFrames });
-    CanvasRenderingContext2D.prototype.fillRect = function (x, y, width, height) {
-      // All ten authored sword meshes draw the same real wrapped hilt primitive.
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radii) {
+      // O cabo real usa roundRect; a versão antiga do teste esperava fillRect.
       if (this.canvas.id === 'inventoryHero' && Math.abs(x - 4) < .0001 &&
-          Math.abs(y + 2.4) < .0001 && Math.abs(width - 8.6) < .0001 &&
-          Math.abs(height - 4.8) < .0001) swordFrames.all++;
-      original.call(this, x, y, width, height);
+          Math.abs(y + 2.5) < .0001 && Math.abs(width - 9.5) < .0001 &&
+          Math.abs(height - 5) < .0001 && typeof radii === 'number' &&
+          Math.abs(radii - .9) < .0001) swordFrames.all++;
+      original.call(this, x, y, width, height, radii);
     };
     const desc=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'fillStyle');
     if(desc?.get && desc.set)Object.defineProperty(CanvasRenderingContext2D.prototype,'fillStyle',{
