@@ -1,0 +1,71 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { WEAPON_IDS, WEAPONS } from "../src/engine/Weapons.ts";
+import { ATTACK_DURATION } from "../src/engine/combat.ts";
+import { attackBody, KNIGHT_SWORD_GRIP, KNIGHT_SWORD_SCALE, swordMount, swordSwing, swingTrail } from "../src/render/heroPose.ts";
+import { drawKnightTrail } from "../src/render/swords.ts";
+import { renderHero } from "../src/render/actors.ts";
+import { Recorder } from "./helpers/recordingContext.ts";
+
+const directions = [
+  {faceX:0,faceY:1},{faceX:0,faceY:-1},{faceX:1,faceY:0},
+  {faceX:-1,faceY:0},{faceX:.7,faceY:.7},{faceX:-.7,faceY:-.7},
+] as const;
+const gear = { head:"trail-helm", shield:"willow-shield", chest:"quilted-vest",
+  feet:"trail-boots", legs:"travel-trousers", backpack:"canvas-pack", neck:"river-pendant" } as const;
+
+test("espada: mão do cavaleiro e cabo permanecem juntos na cintura, em todas as direções",()=>{
+  for(const direction of directions)for(const attackTime of [0,ATTACK_DURATION,ATTACK_DURATION*.35]){
+    const f=swordMount({...direction,attackTime,attackWeapon:"starter"});
+    assert.equal(f.attacking,attackTime>0);
+    assert.equal(f.scale,KNIGHT_SWORD_SCALE);
+    assert.ok(f.gripY>=-17 && f.gripY<=-13,"a mão não pode cair nos pés");
+    assert.ok(Math.abs(f.gripX)<=13,"a mão fica perto do tronco");
+    assert.ok(Math.abs(f.ox+Math.cos(f.rot)*KNIGHT_SWORD_GRIP*f.scale-f.gripX)<1e-10);
+    assert.ok(Math.abs(f.oy+Math.sin(f.rot)*KNIGHT_SWORD_GRIP*f.scale-f.gripY)<1e-10);
+    const tipX=f.ox+Math.cos(f.rot)*44*f.scale;
+    const tipY=f.oy+Math.sin(f.rot)*44*f.scale;
+    assert.ok(Math.hypot(tipX-f.gripX,tipY-f.gripY)<22,"espada astral proporcional ao cavaleiro");
+  }
+});
+
+test("arte: dez espadas renderizam dentro da escala do cavaleiro com equipamento",()=>{
+  assert.ok(KNIGHT_SWORD_SCALE<=.65);
+  for(const equippedWeapon of WEAPON_IDS)for(const direction of directions)
+    for(const attackTime of [0,ATTACK_DURATION]){
+      const r=new Recorder();
+      renderHero(r.ctx,{...direction,walkTime:0,attackTime,
+        equippedWeapon,attackWeapon:equippedWeapon,gear},100,100,1);
+      const m=r.metrics();
+      assert.equal(m.saves,m.restores,equippedWeapon);
+      assert.ok(m.width<85 && m.height<80,
+        `${equippedWeapon} (${direction.faceX},${direction.faceY}): ${m.width} × ${m.height}`);
+      assert.ok(m.paintOps>30);
+    }
+});
+
+test("rastro: acompanha a mão, não forma um arco maior que o cavaleiro",()=>{
+  for(const weapon of WEAPON_IDS){
+    const attackTime=ATTACK_DURATION*.6;
+    const f=swordMount({faceX:0,faceY:1,attackTime,attackWeapon:weapon});
+    const trail=swingTrail(attackTime,weapon);
+    if(trail.alpha<=0)continue;
+    const r=new Recorder();
+    r.ctx.save();r.ctx.translate(f.gripX,f.gripY);r.ctx.scale(f.scale,f.scale);
+    drawKnightTrail(r.ctx,weapon,Math.PI/2,trail.angles,trail.alpha);
+    r.ctx.restore();
+    const m=r.metrics();
+    assert.equal(m.saves,m.restores,weapon);
+    assert.ok(m.width<65 && m.height<65,`rastro de ${weapon} desproporcional`);
+  }
+});
+
+test("animação: preparo, contato e rastro respeitam o tempo de todas as espadas",()=>{
+  for(const weapon of WEAPON_IDS){
+    const hitTime=ATTACK_DURATION-WEAPONS[weapon].windup;
+    assert.ok(Math.abs(swordSwing(hitTime,weapon).angle)<1e-10,weapon);
+    assert.ok(Math.abs(attackBody(hitTime,weapon).lunge)<1e-8,weapon);
+    assert.ok(swingTrail(hitTime,weapon).angles.length>0,weapon);
+    assert.equal(swingTrail(0,weapon).alpha,0);
+  }
+});

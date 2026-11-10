@@ -4,7 +4,7 @@ import type { Slime } from "../actors/Slime.ts";
 import type { GearState } from "../engine/Equipment.ts";
 import type { WeaponId } from "../engine/Weapons.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
-import { attackBody, swingTrail, swordSwing } from "./heroPose.ts";
+import { attackBody, swordMount, swingTrail, type SwordMountFrame } from "./heroPose.ts";
 import { blink, gait, slimePose, smoothTo } from "./animation.ts";
 import { clamp01, ellipse, hashString, limb, mix, pill, rgba, smoothstep, softShadow, TAU } from "./draw.ts";
 
@@ -39,31 +39,26 @@ const PAL = {
   outline: "#142a2a",
 };
 
-interface WeaponFrame { ox: number; oy: number; rot: number; attacking: boolean; hand: number }
-function weaponFrame(player: HeroVisual): WeaponFrame {
-  const attacking = player.attackTime > 0;
-  const hand = player.faceX < -0.3 ? -1 : 1;
-  if (attacking) {
-    const pose = swordSwing(player.attackTime, player.attackWeapon);
-    return { ox: 0, oy: -12, rot: Math.atan2(player.faceY, player.faceX) + pose.angle, attacking, hand };
-  }
-  const tilt = player.faceY < -0.35 ? -0.95 : 0.95;
-  return { ox: hand * 9, oy: -9, rot: hand < 0 ? Math.PI - tilt : tilt, attacking, hand };
-}
-
 /** Rastro em forma de crescente atrás da lâmina durante a varredura. */
 /** The strike and weapon use exactly the equipped tier from the shared sword catalog. */
-function renderTrail(ctx: CanvasRenderingContext2D, player: HeroVisual): void {
+function renderTrail(ctx: CanvasRenderingContext2D, player: HeroVisual, frame: SwordMountFrame): void {
   const weapon = player.attackWeapon ?? "starter";
   const trail = swingTrail(player.attackTime,weapon);
+  if (!trail.angles.length || trail.alpha <= 0) return;
+  // Rastro, mão e espada compartilham âncora e escala.
+  ctx.save();
+  ctx.translate(frame.gripX, frame.gripY);
+  ctx.scale(frame.scale, frame.scale);
   drawKnightTrail(ctx,weapon,Math.atan2(player.faceY,player.faceX),trail.angles,trail.alpha);
+  ctx.restore();
 }
 
-function renderWeapon(ctx: CanvasRenderingContext2D, frame: WeaponFrame, player: HeroVisual,
+function renderWeapon(ctx: CanvasRenderingContext2D, frame: SwordMountFrame, player: HeroVisual,
   tone: (c: string) => string, impact: number): void {
   const weapon=frame.attacking ? player.attackWeapon ?? "starter" :
     player.equippedWeapon ?? player.attackWeapon ?? "starter";
   ctx.save();ctx.translate(frame.ox,frame.oy);ctx.rotate(frame.rot);
+  ctx.scale(frame.scale, frame.scale);
   drawKnightSword(ctx,weapon,impact,tone);
   ctx.restore();
 }
@@ -162,7 +157,7 @@ export function renderHero(
   const prof = Math.abs(player.faceX) * (1 - Math.abs(player.faceY) * 0.55);
   const wf = 1 - 0.2 * prof;
   const dirX = Math.cos(Math.atan2(player.faceY, player.faceX));
-  const frame = weaponFrame(player);
+  const frame = swordMount(player);
   const gear = player.gear;
   const hasHelm = gear?.head === "trail-helm";
   const hasChest = gear?.chest === "quilted-vest";
@@ -315,7 +310,7 @@ export function renderHero(
     const hy = -12.5 + mvy * swing * -shieldSide * 2.8 - swing * -shieldSide * 1.2 + breath * 0.3;
     drawShield(ctx, hx, hy, shieldSide, swing, tone);
   }
-  const gripX = frame.ox + Math.cos(frame.rot) * 9, gripY = frame.oy + Math.sin(frame.rot) * 9;
+  const gripX = frame.gripX, gripY = frame.gripY;
   const swordArm = (): void => {
     limb(ctx, swordSide * 8.6 * wf, -22.6, gripX, gripY, 4.6, tone(PAL.tunic));
     limb(ctx, (swordSide * 8.6 * wf + gripX) / 2, (-22.6 + gripY) / 2, gripX, gripY, 4.7, tone(PAL.leatherD));
@@ -440,7 +435,7 @@ export function renderHero(
   if (back) { swordArm(); }
   if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); }
   // Rastro e brilho por cima de tudo para ler bem em qualquer direção.
-  renderTrail(ctx, player);
+  renderTrail(ctx, player, frame);
   ctx.restore();
 }
 
