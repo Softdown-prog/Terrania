@@ -60,3 +60,54 @@ test("profundidade visual não altera parâmetros de combate e loot",()=>{
   assert.ok(CREATURE_CATALOG["sand-goblin"].loot.some(v=>v.item==="Adaga Enferrujada"));
   assert.ok(CREATURE_CATALOG["desert-orc"].loot.some(v=>v.item==="Osso Talhado"));
 });
+
+
+test("32 criaturas possuem corpo procedural específico, e não só ficha de atributos", async()=>{
+  const { REGIONAL_CREATURE_KINDS }=await import("../src/actors/CreatureCatalog.ts");
+  const { readFileSync, existsSync }=await import("node:fs");
+  const paths: Record<string,string>={
+    "dune-rat":"south/duneRat",
+    "sand-goblin":"south/sandGoblin",
+    "desert-orc":"south/desertOrc",
+    "clay-troll":"south/clayTroll",
+    "dune-scout":"south/duneScout",
+    "oasis-elf":"south/oasisElf",
+    "mirage-imp":"south/mirageImp",
+    "horned-viper":"south/hornedViper",
+    "carrion-vulture":"south/carrionVulture",
+    "cactus-sprout":"south/cactusSprout",
+    "summit-griffin":"wave2/summitGriffin",
+    "magma-salamander":"wave2/magmaSalamander",
+    "rotten-marsh-ent":"wave2/rottenMarshEnt",
+    "poison-scout-toad":"wave2/poisonScoutToad",
+    "carrion-sandworm":"wave2/carrionSandworm",
+    "tundra-mammoth":"wave2/tundraMammoth",
+    "frost-banshee":"wave2/frostBanshee",
+    "runic-polar-bear":"wave2/runicPolarBear",
+    "abyssal-octopus":"wave2/abyssalOctopus",
+    "tide-hunter-triton":"wave2/tideHunterTriton",
+    "basalt-golem":"regional/basaltGolem",
+    "cliff-draconid":"regional/cliffDraconid",
+    "mire-hydra":"regional/mireHydra",
+    "dune-scorpion":"regional/duneScorpion",
+    "solar-scarab":"regional/solarScarab",
+    "boreal-yeti":"regional/borealYeti",
+    "glacial-wolf":"regional/glacialWolf",
+    "frost-spirit":"regional/frostSpirit",
+    "coral-crab":"regional/coralCrab",
+    "storm-serpent":"regional/stormSerpent",
+    "sand-beetle":"../sandBeetle",
+  };
+  assert.equal(REGIONAL_CREATURE_KINDS.length,31);
+  for(const kind of REGIONAL_CREATURE_KINDS){
+    const loc=paths[kind];
+    assert.ok(loc,kind+" não tem arte individual");
+    const full=loc.startsWith("../")?"src/render/"+loc.slice(3)+".ts":
+      "src/render/creatures/"+loc+".ts";
+    assert.ok(existsSync(full),kind+" não possui arquivo de anatomia");
+    const contents=readFileSync(full,"utf8");
+    assert.ok(contents.length>350,kind+" ainda é só uma linha de ficha");
+  }
+  assert.ok(readFileSync("src/render/actors.ts","utf8").includes("function renderSlime") ||
+    readFileSync("src/render/actors.ts","utf8").includes("export function renderSlime"));
+});

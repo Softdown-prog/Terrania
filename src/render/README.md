@@ -112,3 +112,12 @@ separam silhueta/ficha em módulos próprios em `src/render/creatures/south/`.
 render. Sete delas mantêm a anatomia original enquanto aguardam a mesma
 rodada de acabamento aprofundado das três primeiras. A extração não afirma
 que sete receberam arte nova.
+
+**Anatomia por espécie em todas as regiões:** os 10 desenhos da onda regional
+estão em `src/render/creatures/regional/`, e os 10 da segunda onda em
+`src/render/creatures/wave2/`. Somados aos 10 comuns em `south/`, ao
+`sandBeetle.ts` e ao slime em `actors.ts`, as 32 espécies podem ser localizadas
+por renderizadores específicos sem que a ficha de atributos importe Canvas.
+Arquivos `geometry.ts` compartilham primitivas sem copiar corpos inteiros.
+A extração de 27 espécies **não** é acabamento novo: a arte pré-existente
+continua até ser revisada em novas passagens.
