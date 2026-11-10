@@ -1,6 +1,6 @@
 # ADR 0014 — Auditoria da lógica de `src/engine`
 
-**Estado:** em andamento. Sessão 1 entregue em 2026-11-10; sessões 2 a 4 abaixo.
+**Estado:** em andamento. Sessões 1 e 2 entregues em 2026-11-10; sessões 3 e 4 abaixo.
 
 ## Contexto
 
@@ -27,9 +27,13 @@
 
 **O que continua separado, de propósito:** quem vira o herói (a superfície vira para o alvo escolhido *antes*; a caverna vira para o primeiro alvo *depois*), a recarga e a regra de derrota. São decisões de cada cenário, não do golpe.
 
-## Próximas sessões
+## Sessão 2 (feita): eliminar limites e níveis divergentes
 
-- **Sessão 2 — constantes únicas:** um só `MAX_KILLS`, `MAX_STACK` em todas as pilhas, nível de domesticação vindo do catálogo, `equipWeapon` sem nível padrão. Cada item com teste que falha sem a mudança.
+`Limits.ts` passa a definir `MAX_KILLS` e `MAX_STACK` para save, missão de montaria, alimentos, materiais e bolsa. Os exports anteriores em `OfflineSimulation.ts` e `Inventory.ts` continuam disponíveis. O Garrano consulta `MOUNTS.warhorse.level` também ao domar; `equipWeapon` exige o nível atual do chamador, já fornecido por `shopActions.ts`.
+
+**Regressões:** normalização de abates, marcos da missão e pilhas; tentativa de domar com nível de catálogo alterado; chamada de equipamento sem nível não pode usar o nível antigo do inventário. Nenhum balanceamento ou save foi alterado.
+
+## Próximas sessões
 - **Sessão 3 — `CaveFloor` para `src/world/`:** atualizar `architecture/modules.json` e regenerar os índices. O gerador do mapa deve produzir **o mesmo mapa** para a mesma semente (teste de igualdade célula a célula antes e depois).
 - **Sessão 4 — `OfflineSimulation.update` em partes** (movimento, criaturas, golpe, coleta) e atualização do README do motor.
 

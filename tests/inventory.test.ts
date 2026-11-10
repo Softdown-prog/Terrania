@@ -1,8 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { Inventory, normalizeInventory, MAX_STACK, POTION_GEL_PRICE, POTION_HEAL } from "../src/engine/Inventory.ts";
+import { Inventory, normalizeInventory, normalizeMaterials, MAX_STACK, POTION_GEL_PRICE, POTION_HEAL } from "../src/engine/Inventory.ts";
 import { normalizeDrops, MAX_WORLD_DROPS } from "../src/engine/loot.ts";
-import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
+import { OfflineSimulation, normalizeKills, MAX_KILLS } from "../src/engine/OfflineSimulation.ts";
+import { normalizeFoodCounts } from "../src/engine/Food.ts";
+import { startMountQuest } from "../src/engine/MountQuestState.ts";
+import { MAX_KILLS as SHARED_MAX_KILLS, MAX_STACK as SHARED_MAX_STACK } from "../src/engine/Limits.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { EQUIPMENT_SLOTS, GEAR } from "../src/engine/Equipment.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../src/engine/Weapons.ts";
@@ -107,7 +110,7 @@ test("Toren vende uma única espada, exige saldo e conserva posse e equipamento 
   const toren = { x: 538, y: 32, hp: 100 };
   const bag = new Inventory({ gel: FORGE_SWORD_PRICE - 1, loadout: { equipped: "forge" } },10);
   assert.equal(bag.weapon, WEAPONS.starter);
-  assert.equal(bag.equipWeapon("forge"), "not-owned");
+  assert.equal(bag.equipWeapon("forge", 10), "not-owned");
   assert.equal(bag.buyForgeSword(toren), "insufficient-sword-gel");
   assert.equal(bag.gel, FORGE_SWORD_PRICE - 1);
   bag.addGel();
@@ -117,12 +120,12 @@ test("Toren vende uma única espada, exige saldo e conserva posse e equipamento 
   assert.equal(bag.gel, 0);
   assert.equal(bag.weapon, WEAPONS.starter);
   assert.equal(bag.buyForgeSword(toren), "already-owned");
-  assert.equal(bag.equipWeapon("forge"), "equipped");
-  assert.equal(bag.equipWeapon("forge"), "already-equipped");
+  assert.equal(bag.equipWeapon("forge", 10), "equipped");
+  assert.equal(bag.equipWeapon("forge", 10), "already-equipped");
   const restored = new Inventory(JSON.parse(JSON.stringify(bag.snapshot())),10);
   assert.equal(restored.weapon, WEAPONS.forge);
-  assert.equal(restored.equipWeapon("starter"), "equipped");
-  assert.equal(new Inventory(restored.snapshot(),10).equipWeapon("forge"), "equipped");
+  assert.equal(restored.equipWeapon("starter", 10), "equipped");
+  assert.equal(new Inventory(restored.snapshot(),10).equipWeapon("forge", 10), "equipped");
   assert.equal(new Inventory({ loadout: { forged: true, equipped: "bogus" } }).weapon, WEAPONS.starter);
 });
 test("trocar espada durante o golpe preserva dano e recarga da arma comprometida", () => {
@@ -143,7 +146,7 @@ test("trocar espada durante o golpe preserva dano e recarga da arma comprometida
   };
   assert.equal(tick(),true);
   assert.equal(combat.cooldown,WEAPONS.starter.interval);
-  assert.equal(sim.inventory.equipWeapon("forge"),"equipped");
+  assert.equal(sim.inventory.equipWeapon("forge", 10),"equipped");
   tick();tick();
   assert.equal(slime.hp,92,"the first started wooden swing must still hit for 8");
   let second=false;
@@ -152,7 +155,7 @@ test("trocar espada durante o golpe preserva dano e recarga da arma comprometida
   }
   assert.equal(second,true);
   assert.equal(combat.cooldown,WEAPONS.forge.interval);
-  assert.equal(sim.inventory.equipWeapon("starter"),"equipped");
+  assert.equal(sim.inventory.equipWeapon("starter", 10),"equipped");
   tick();tick();
   assert.equal(slime.hp,76,"the second started iron swing must still hit for 16");
   assert.ok(combat.cooldown>0,"target/equipment switching must not cancel cooldown");
@@ -316,4 +319,21 @@ test("normalização de itens e nutrição rejeita números inválidos", () => {
   assert.deepEqual(hero.nutrition, { reserve: 0, elapsed: 0, cooldown: 5 });
   hero.restoreNutrition({ reserve: 60, elapsed: 0, cooldown: 0 });
   assert.equal(hero.eatFood("apple"), "nutrition-full");
+});
+
+test("ADR 0014: limites compartilham fonte para saves, pilhas e montaria", () => {
+  assert.equal(MAX_KILLS, SHARED_MAX_KILLS);
+  assert.equal(MAX_STACK, SHARED_MAX_STACK);
+  assert.equal(normalizeKills(MAX_KILLS + 100), MAX_KILLS);
+  assert.equal(startMountQuest("warhorse", MAX_KILLS + 100)?.killsAtStart, MAX_KILLS);
+  assert.deepEqual(normalizeFoodCounts({ apple: MAX_STACK + 1, bread: 0, meat: 0 }),
+    { apple: MAX_STACK, bread: 0, meat: 0 });
+  assert.equal(normalizeMaterials({ "Couro Comum": MAX_STACK + 1 })["Couro Comum"], MAX_STACK);
+});
+
+test("ADR 0014: equipar exige nível atual, nunca nível de quando a bolsa foi criada", () => {
+  const bag = new Inventory({ loadout: { forged: true, equipped: "starter" } }, 10);
+  assert.equal(bag.equipWeapon("forge", undefined as unknown as number), "level-too-low");
+  assert.equal(bag.equipWeapon("forge", 9), "level-too-low");
+  assert.equal(bag.equipWeapon("forge", 10), "equipped");
 });

@@ -1,4 +1,6 @@
-/** Alimentação da vocação inicial (Cavaleiro), compartilhada entre solo e sala Node. */
+import { MAX_STACK } from "./Limits.ts";
+
+/** Alimentação da vocação inicial (Cavaleiro) no jogo solo. */
 export const FOODS = {
   apple: { name: "Maçã", healBudget: 8, gelPrice: 1 },
   bread: { name: "Pão", healBudget: 18, gelPrice: 2 },
@@ -21,7 +23,7 @@ export function emptyFoodCounts(): FoodCounts { return { apple: 0, bread: 0, mea
 export function normalizeFoodCounts(value: unknown): FoodCounts {
   const raw = value && typeof value === "object" ? value as Record<string, unknown> : {};
   const count = (id: FoodId): number => typeof raw[id] === "number" &&
-    Number.isSafeInteger(raw[id]) && (raw[id] as number) >= 0 ? Math.min(99, raw[id] as number) : 0;
+    Number.isSafeInteger(raw[id]) && (raw[id] as number) >= 0 ? Math.min(MAX_STACK, raw[id] as number) : 0;
   return { apple: count("apple"), bread: count("bread"), meat: count("meat") };
 }
 export function normalizeNutrition(value: unknown): NutritionState {
