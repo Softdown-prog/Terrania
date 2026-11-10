@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** frost-banshee: ficha da região Norte. */
 export const frostBanshee = {
@@ -8,3 +9,6 @@ export const frostBanshee = {
     biomes: ["snowfield", "frozen-lake"],
     loot: [{ item: "Ectoplasma Congelado", chance: .35 }, { item: "Fragmento de Runa", chance: .12 }],
 } satisfies CreatureDefinition;
+
+/** Locomoção, abordagem e eventual recuo definidos por frost-banshee. */
+export const frostBansheeBehavior = { gait: "hover", pursuit: "cautious", cadence: 1.17, weave: 0.35 } satisfies SpeciesBehavior;

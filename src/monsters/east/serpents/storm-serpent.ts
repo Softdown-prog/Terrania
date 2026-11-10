@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** storm-serpent: ficha da região Leste. */
 export const stormSerpent = {
@@ -8,3 +9,6 @@ export const stormSerpent = {
     biomes: ["island", "beach"],
     loot: [{ item: "Escama Condutora", chance: .4 }, { item: "Orbe da Tempestade", chance: .12 }, { item: "Espada de Coral Rara", chance: .03 }],
 } satisfies CreatureDefinition;
+
+/** Locomoção, abordagem e eventual recuo definidos por storm-serpent. */
+export const stormSerpentBehavior = { gait: "slither", pursuit: "flank", cadence: 1.12, weave: 0.26 } satisfies SpeciesBehavior;

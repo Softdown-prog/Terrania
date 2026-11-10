@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** coral-crab: ficha da região Leste. */
 export const coralCrab = {
@@ -8,3 +9,6 @@ export const coralCrab = {
     biomes: ["beach", "island"],
     loot: [{ item: "Carne de Siri", chance: .8 }, { item: "Fragmento de Coral", chance: .5 }, { item: "Pérola Marinha", chance: .08 }],
 } satisfies CreatureDefinition;
+
+/** Locomoção, abordagem e eventual recuo definidos por coral-crab. */
+export const coralCrabBehavior = { gait: "scuttle", pursuit: "flank", cadence: 1.38, weave: 0.43 } satisfies SpeciesBehavior;

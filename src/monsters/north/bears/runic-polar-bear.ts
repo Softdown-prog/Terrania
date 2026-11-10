@@ -1,4 +1,5 @@
 import type { CreatureDefinition } from "../../types.ts";
+import type { SpeciesBehavior } from "../../behavior.ts";
 
 /** runic-polar-bear: ficha da região Norte. */
 export const runicPolarBear = {
@@ -8,3 +9,6 @@ export const runicPolarBear = {
     biomes: ["tundra", "snowfield"],
     loot: [{ item: "Pelagem Branca Real", chance: .60 }, { item: "Garra de Cristal", chance: .40 }, { item: "Carne Gorda", chance: .75 }],
 } satisfies CreatureDefinition;
+
+/** Locomoção, abordagem e eventual recuo definidos por runic-polar-bear. */
+export const runicPolarBearBehavior = { gait: "gallop", pursuit: "rush", cadence: 1.33, weave: 0.06 } satisfies SpeciesBehavior;
