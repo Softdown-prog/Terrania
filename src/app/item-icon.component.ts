@@ -8,7 +8,7 @@ import type { CoinId } from '../engine/character/coins/index.ts';
 /** Ícones desenhados para o Terrania. Somente apresentação: não carregam regra de jogo. */
 export type ItemIconId =
   | 'gel' | 'material' | 'potion' | 'apple' | 'bread' | 'meat'
-  | 'sword-starter' | 'sword-forge' | 'sword-bronze' | 'sword-copper'
+  | 'sword-starter' | 'sword-forge' | 'sword-common' | 'sword-bronze' | 'sword-copper'
   | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
   | 'sword-tempest' | 'sword-astral'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
@@ -118,6 +118,20 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
             <rect x="14.6" y="20.9" width="2.8" height="6" fill="#5b3b28"/>
             <path d="M14.5 22L17.4 24M14.5 24.5L17.4 26.4" fill="none" stroke="#ae8054" stroke-width=".9"/>
             <circle cx="16" cy="28.5" r="2.2" fill="#899598"/>
+          </g>
+        }
+        @case ('sword-common') {
+          <g transform="rotate(45 16 16)">
+            <path d="M16 1.5L18.6 5V18.5H13.4V5Z" fill="#aab9bc"/>
+            <path d="M13.7 5.2L16 2.5L16 18.2H13.7Z" fill="#d8ddd7" stroke="none"/>
+            <path d="M16 5V17.2" stroke="#56696d" stroke-width="1" fill="none"/>
+            <path d="M17.6 6V17.5" stroke="#edf0e7" stroke-width=".7" fill="none"/>
+            <rect x="9.5" y="18.2" width="13" height="2.4" rx=".7" fill="#818c87"/>
+            <path d="M10.5 18.7H21.5" stroke="#d8ddd7" stroke-width=".6"/>
+            <rect x="14.5" y="20.6" width="3" height="6.6" rx=".4" fill="#74543e"/>
+            <path d="M14.7 22L17.2 23.7M14.7 24.7L17.2 26.2" stroke="#a18462" stroke-width=".7"/>
+            <circle cx="16" cy="28.1" r="2" fill="#818c87"/>
+            <circle cx="15.5" cy="27.8" r=".55" fill="#edf0e7" stroke="none"/>
           </g>
         }
         @case ('sword-bronze') {

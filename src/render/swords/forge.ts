@@ -1,5 +1,6 @@
 import type { SwordArtwork } from "./shared.ts";
 import { point } from "./shared.ts";
+import { rgba } from "../draw.ts";
 
 /** Arte específica; dados de combate continuam na ficha da espada. */
 export const FORGE_ARTWORK: SwordArtwork = {
@@ -31,5 +32,16 @@ export const FORGE_ARTWORK: SwordArtwork = {
     // Rebites e reflexo superior sobrevivem à redução no cavaleiro.
     point(ctx,14.2,-s.width*.55,.43,tone(s.glint));
     point(ctx,14.2,s.width*.55,.43,tone(s.trim));
+  },
+  slashAccent(ctx,args) {
+    const {x,y,angle,alpha,first,second}=args;
+    const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;
+    // Dois filetes curtos de reflexo metálico junto ao fio de ataque.
+    ctx.strokeStyle=rgba(first,alpha*.68);ctx.lineWidth=.74;
+    ctx.beginPath();ctx.moveTo(x-tx*3+nx*1.25,y-ty*3+ny*1.25);
+    ctx.lineTo(x+tx*1.7+nx*.8,y+ty*1.7+ny*.8);ctx.stroke();
+    ctx.strokeStyle=rgba(second,alpha*.48);ctx.lineWidth=.48;
+    ctx.beginPath();ctx.moveTo(x-tx*1.8-nx*1.45,y-ty*1.8-ny*1.45);
+    ctx.lineTo(x+tx*.75-nx*1.15,y+ty*.75-ny*1.15);ctx.stroke();
   },
 };

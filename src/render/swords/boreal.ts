@@ -24,6 +24,18 @@ export const BOREAL_ARTWORK: SwordArtwork = {
       ctx.strokeStyle=tone(s.trim);ctx.lineWidth=.55;ctx.stroke();
     }
   },
+  animate(ctx,s,tone,time) {
+    // Reflexo gelado percorre a aresta, contido nas facetas da espada.
+    const travel=.5+.5*Math.sin(time*2.1);
+    const x=21+(s.length-29)*travel;
+    ctx.save();
+    ctx.globalAlpha=.28+.3*(.5+.5*Math.cos(time*2.6));
+    ctx.strokeStyle=tone(s.glint);ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(x,-s.width*.65);
+    ctx.lineTo(x+1.7,-s.width*.12);ctx.lineTo(x+.7,s.width*.42);ctx.stroke();
+    point(ctx,x+1.7,-s.width*.12,.55,tone(s.accent));
+    ctx.restore();
+  },
   slashAccent(ctx,args) {
     const { x, y, angle, alpha, second, glow } = args;
     const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;

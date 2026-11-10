@@ -28,6 +28,18 @@ export const DUNES_ARTWORK: SwordArtwork = {
       point(ctx,x+1,-w*.3,.55,tone(s.trim));
     }
   },
+  animate(ctx,s,tone,time) {
+    // Grãos de quartzo deslizam na lâmina, sem emitir partículas no repouso.
+    ctx.save();
+    for(let i=0;i<3;i++){
+      const travel=.5+.5*Math.sin(time*1.8+i*2.25);
+      const x=21+(s.length-29)*travel;
+      const y=(i%2?-1:1)*s.width*.24;
+      ctx.globalAlpha=.22+.23*(.5+.5*Math.sin(time*2.4+i));
+      point(ctx,x,y,.48+(i%2)*.1,tone(i%2?s.glint:s.accent));
+    }
+    ctx.restore();
+  },
   slashAccent(ctx,args) {
     const { x, y, angle, alpha, first, second, index } = args;
     const tx=Math.cos(angle),ty=Math.sin(angle),nx=-ty,ny=tx;
