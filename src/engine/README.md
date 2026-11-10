@@ -24,7 +24,7 @@
 
 **Continuidade de passos:** `ClassicTileWalker` consome o restante do tick após cada centro, sem guardar tempo ocioso. Pode receber uma função de direção, consultada no centro para virar/parar corretamente. `ClassicPursuit.direction(0, ...)` só reavalia o caminho; a chamada positiva avança seu orçamento uma vez por tick. Velocidade diagonal e efeitos de ataque seguem tempo/distância, com regressão a 20, 30, 60 e 144 Hz. Ver [ADR 0006](../../docs/adr/0006-movimento-e-apresentacao-do-personagem.md).
 
-**Moedas (ADR 0023):** `character/coins/` tem uma moeda por arquivo (Terrania Gold, Cripta Coin, Eclipse Crown) e `wallet.ts` com a regra de junção a cada 100. A bolsa guarda o dinheiro como um só inteiro em Terrania Gold (`Inventory.coins`); as moedas maiores são calculadas por `coinBreakdown`, então se unem sozinhas e o troco volta sozinho. O gel é material de troca, não dinheiro. Ainda sem drops e sem preços em moeda.
+**Moedas (ADR 0023):** `character/coins/` tem uma moeda por arquivo (Terrania Gold, Cripta Coin, Eclipse Crown) e `wallet.ts` com a regra de junção a cada 100. A bolsa guarda o dinheiro como um só inteiro em Terrania Gold (`Inventory.coins`); as moedas maiores são calculadas por `coinBreakdown`, então se unem sozinhas e o troco volta sozinho. O gel é material de troca, não dinheiro. As criaturas deixam moedas ao cair (`coins/drops.ts`, ADR 0024: no chão na superfície, direto na bolsa nas masmorras). Ainda sem preços em moeda.
 
 **Bolsa solo:** Aela entrega duas poções uma vez ao concluir a missão. A troca com Lina consome três unidades de gel e entrega uma poção em uma única operação do inventário. O orquestrador verifica a proximidade e grava a bolsa após uma troca concluída.
 

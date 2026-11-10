@@ -24,6 +24,7 @@ import type { Camera } from '../render/Camera.ts';
 import type { Point } from '../engine/movement/TapNavigator.ts';
 import { screenToWorld, screenToInterior } from '../input/tap.ts';
 import { clamp01, rgba, softShadow } from '../render/draw.ts';
+import { coinDropTier, renderCoinDrop } from '../render/coinDrop.ts';
 
 import type { LootDrop } from '../engine/character/loot.ts';
 
@@ -128,8 +129,9 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   for (const drop of drops) {
     if (Math.abs(drop.x - cameraX) > width / 2 + 12 ||
         Math.abs(drop.y - cameraY) > height / 2 + 18) continue;
-    actors.push({ y: drop.y, draw: () =>
-      renderGel(ctx, drop.x - left, drop.y - top, time) });
+    actors.push({ y: drop.y, draw: () => drop.item === "coin"
+      ? renderCoinDrop(ctx, coinDropTier(drop.amount), drop.x - left, drop.y - top, time)
+      : renderGel(ctx, drop.x - left, drop.y - top, time) });
   }
   actors.push({ y: player.y, draw: () => {
     if(mount)renderMount(ctx,mount,player.x-left,player.y-top,time);

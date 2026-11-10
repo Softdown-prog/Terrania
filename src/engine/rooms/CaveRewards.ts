@@ -1,6 +1,7 @@
 import { CREATURE_CATALOG, type CreatureKind } from "../../actors/CreatureCatalog.ts";
 import { rollCreatureLoot } from "../../actors/RegionalMonster.ts";
 import { grantExperience } from "../character/Experience.ts";
+import { rollCoinDrop } from "../character/coins/index.ts";
 import { MAX_KILLS } from "../Limits.ts";
 import type { OfflineSimulation } from "../OfflineSimulation.ts";
 
@@ -25,8 +26,11 @@ export function applyCaveVictories(sim: OfflineSimulation, cave: CaveVictorySour
     if (victory.kind === "slime" && victory.id.startsWith(`cave:${sim.seed}:0:0:floor:1:slime:`)) {
       sim.trainingKills = Math.min(5, sim.trainingKills + 1);
       sim.inventory.addGel();
-    } else if (victory.kind !== "slime") {
-      for (const item of rollCreatureLoot(victory.kind, victory.id)) sim.inventory.addMaterial(item);
+    } else {
+      // Dentro da masmorra o dinheiro vai direto para a bolsa; o chefe do último andar deixa um baú (ADR 0024).
+      sim.inventory.addCoins(rollCoinDrop(victory.kind, victory.id, { boss: victory.id.endsWith(":boss") }));
+      if (victory.kind !== "slime")
+        for (const item of rollCreatureLoot(victory.kind, victory.id)) sim.inventory.addMaterial(item);
     }
     changed = true;
   }

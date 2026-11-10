@@ -61,6 +61,8 @@ import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
 import { paintSouthRuin } from "../../src/render/southRuinsArt.ts";
 import { TOWER_PAINTERS } from "../../src/render/south/towers/index.ts";
 import { TOWERS } from "../../src/world/towers/index.ts";
+import { renderCoinDrop } from "../../src/render/coinDrop.ts";
+import { COIN_TIERS } from "../../src/engine/character/coins/index.ts";
 import { TOWER_INTERIOR_STYLES } from "../../src/render/south/towers/interior/index.ts";
 import { drawTowerSconce } from "../../src/render/south/towers/interior/sconce.ts";
 import { drawTowerWallFace } from "../../src/render/south/towers/interior/wallFace.ts";
@@ -234,6 +236,9 @@ export const ASSETS: ArtAsset[] = [
         draw: c => drawTowerSconce(c, style, 0, 0, .61) },
     ];
   }),
+  // Moedas no chão (ADR 0024): uma peça por moeda, com a marca de cada uma.
+  ...COIN_TIERS.map<ArtAsset>(coin => ({ id: "moedas no chão " + coin.name, tier: "prop", fn: "renderCoinDrop",
+    draw: c => renderCoinDrop(c, coin.id, 0, 0, .6) })),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
   ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
     .flatMap<ArtAsset>(theme => [

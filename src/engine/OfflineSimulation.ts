@@ -13,6 +13,7 @@ import { faceTarget } from "./combat/combat.ts";
 import type { ClassicTileWalker, WalkDirection } from "./movement/ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./character/Inventory.ts";
 import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./character/loot.ts";
+import { rollCoinDrop } from "./character/coins/index.ts";
 import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./character/Experience.ts";
 import { hasNutrition, type NutritionState } from "./character/Food.ts";
 
@@ -79,8 +80,8 @@ export class OfflineSimulation {
       for (const id of Array.isArray(saved.defeated) ? saved.defeated : [])
         if (typeof id === "string") this.defeated.add(id);
       for (const drop of normalizeDrops(saved.drops)) {
-        // Não carregar itens incompatíveis com a lista de monstros derrotados.
-        if (this.defeated.has(drop.id)) this.drops.set(drop.id, drop);
+        // Não carregar itens incompatíveis com a lista de monstros derrotados (as moedas levam ":coin" no id).
+        if (this.defeated.has(drop.id.replace(/:coin$/, ""))) this.drops.set(drop.id, drop);
       }
     }
   }
@@ -128,6 +129,9 @@ export class OfflineSimulation {
       CREATURE_CATALOG[slime.kind].experience,this.player);
     if(slime.kind==="slime" && this.drops.size<MAX_WORLD_DROPS)
       this.drops.set(id,{id,item:"gel",x:slime.x,y:slime.y});
+    // Toda criatura deixa moedas no chão, ao lado do gel (ADR 0024).
+    if(this.drops.size<MAX_WORLD_DROPS)
+      this.drops.set(id+":coin",{id:id+":coin",item:"coin",x:slime.x,y:slime.y,amount:rollCoinDrop(slime.kind,id)});
   }
 
   /** Retorna true se o progresso mudou e merece salvar imediatamente. */
@@ -192,11 +196,17 @@ export class OfflineSimulation {
     // O jogador recolhe automaticamente o gel ao se aproximar. Se a bolsa
     // estiver cheia, o item permanece visível no chão até haver espaço.
     for (const [id, drop] of this.drops) {
-      if (Math.hypot(this.player.x - drop.x, this.player.y - drop.y) <= PICKUP_DISTANCE &&
-          this.inventory.addGel()) {
-        this.drops.delete(id);
-        changed = true;
+      if (Math.hypot(this.player.x - drop.x, this.player.y - drop.y) > PICKUP_DISTANCE) continue;
+      if (drop.item === "gel") {
+        if (this.inventory.addGel()) { this.drops.delete(id); changed = true; }
+        continue;
       }
+      // Moedas: a carteira tem teto; o que não couber fica no chão até haver espaço.
+      const added = this.inventory.addCoins(drop.amount);
+      if (added <= 0) continue;
+      if (added >= drop.amount) this.drops.delete(id);
+      else this.drops.set(id, { ...drop, amount: drop.amount - added });
+      changed = true;
     }
     // Derrota por veneno, queimadura ou espinhos também é progresso: salvar na hora.
     return changed || this.awaitingRespawn;

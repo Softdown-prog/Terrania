@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (102)
+## Todos os arquivos deste módulo (103)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -27,6 +27,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/cave.ts`](../../src/render/cave.ts)
 - [`src/render/caveDetails.ts`](../../src/render/caveDetails.ts)
 - [`src/render/caveStairsDownArt.ts`](../../src/render/caveStairsDownArt.ts)
+- [`src/render/coinDrop.ts`](../../src/render/coinDrop.ts)
 - [`src/render/creatures/center/slimes/slime.ts`](../../src/render/creatures/center/slimes/slime.ts)
 - [`src/render/creatures/east/crabs/coralCrab.ts`](../../src/render/creatures/east/crabs/coralCrab.ts)
 - [`src/render/creatures/east/octopuses/abyssalOctopus.ts`](../../src/render/creatures/east/octopuses/abyssalOctopus.ts)
