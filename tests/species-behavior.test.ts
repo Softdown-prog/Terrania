@@ -3,7 +3,7 @@ import test from "node:test";
 import { Player } from "../src/actors/Player.ts";
 import { Slime } from "../src/actors/Slime.ts";
 import { RegionalMonster } from "../src/actors/RegionalMonster.ts";
-import { SPECIES_BEHAVIORS, pursuitStep } from "../src/monsters/behavior.ts";
+import { SPECIES_BEHAVIORS, pursuitStep, speciesRetreats } from "../src/monsters/behavior.ts";
 import { REGIONAL_CREATURE_KINDS } from "../src/monsters/catalog.ts";
 import { monsterPose } from "../src/render/monsterMotion.ts";
 
@@ -46,10 +46,10 @@ test("passos e animação são específicos de cada espécie",()=>{
   }
 });
 test("movimento regional usa suas regras, sem update do Slime e sem cruzar bloqueio",()=>{
-  const hero=new Player();hero.x=155;hero.y=0;
-  const wolf=new RegionalMonster("wolf-id","glacial-wolf",0,0);
-  const twin=new RegionalMonster("wolf-id","glacial-wolf",0,0);
-  const blocked=new RegionalMonster("wolf-blocked","glacial-wolf",0,0);
+  const hero=new Player();hero.x=155;hero.y=-600;
+  const wolf=new RegionalMonster("wolf-id","glacial-wolf",0,-600);
+  const twin=new RegionalMonster("wolf-id","glacial-wolf",0,-600);
+  const blocked=new RegionalMonster("wolf-blocked","glacial-wolf",0,-600);
   const old=Slime.prototype.update;
   Slime.prototype.update=()=>{throw new Error("Slime.update não pode ser herdado");};
   try{
@@ -61,8 +61,23 @@ test("movimento regional usa suas regras, sem update do Slime e sem cruzar bloqu
     assert.ok(wolf.x>0);
     assert.deepEqual([wolf.x,wolf.y,wolf.motionPhase],[twin.x,twin.y,twin.motionPhase]);
     assert.ok(wolf.motionPhase>0&&wolf.moving>0);
-    assert.deepEqual([blocked.x,blocked.y],[0,0]);
+    assert.deepEqual([blocked.x,blocked.y],[0,-600]);
     assert.equal(blocked.motionPhase,0);
     assert.equal(blocked.moving,0);
   }finally{Slime.prototype.update=old;}
+});
+
+test("recuo por espécie é parametrizado: algumas fogem no amarelo, outras no vermelho", () => {
+  assert.equal(speciesRetreats("dune-rat",49,100),true);
+  assert.equal(speciesRetreats("dune-rat",70,100),false);
+  assert.equal(speciesRetreats("carrion-vulture",24,100),true);
+  assert.equal(speciesRetreats("carrion-vulture",40,100),false);
+  assert.equal(speciesRetreats("basalt-golem",1,100),false);
+  const hero=new Player();hero.x=0;hero.y=-600;
+  const rat=new RegionalMonster("rato","dune-rat",45,-600);
+  rat.hp=Math.floor(rat.definition.maxHp*.4);
+  const x=rat.x;
+  for(let i=0;i<25;i++)rat.update(1/60,hero,open);
+  assert.ok(rat.x>x, "fuga aumenta distância em relação ao herói");
+  assert.equal(hero.hp,hero.maxHp);
 });
