@@ -1,4 +1,7 @@
 import { monsterPose } from "./monsterMotion.ts";
+import { renderDuneRatDetail } from "./creatures/south/duneRat.ts";
+import { renderSandGoblinDetail } from "./creatures/south/sandGoblin.ts";
+import { renderDesertOrcDetail } from "./creatures/south/desertOrc.ts";
 import { CREATURE_CATALOG, type SouthCommonKind } from "../actors/CreatureCatalog.ts";
 import { clamp01, ellipse, hashString, mix, pill, rgba, shade, softShadow, TAU } from "./draw.ts";
 type Palette={base:string;light:string;dark:string;accent:string;eye:string;extra:string};
@@ -446,6 +449,10 @@ export function renderWave3Creature(ctx:CanvasRenderingContext2D,
     case "carrion-vulture":vulture(ctx,c,time);break;
     case "cactus-sprout":cactus(ctx,c,time);break;
   }
+  // Espécies prioritárias recebem acabamento próprio sem alterar o motor de combate.
+  if(actor.kind==="dune-rat")renderDuneRatDetail(ctx,actor,time);
+  if(actor.kind==="sand-goblin")renderSandGoblinDetail(ctx,actor,time);
+  if(actor.kind==="desert-orc")renderDesertOrcDetail(ctx,actor,time);
   // Stable micro-highlights supply material structure even on the smallest actors.
   for(let i=0;i<13;i++){
     const x=Math.sin(i*9.31+seed*7)*11,y=-12-Math.abs(Math.cos(i*5.71+seed))*19;
