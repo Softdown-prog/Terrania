@@ -7,7 +7,8 @@ import { materialSalePrice } from "../src/engine/character/coins/index.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { Player } from "../src/actors/Player.ts";
 import { NPCS } from "../src/world/npcs.ts";
-import { craftElixir, drinkElixir, type ShopContext } from "../src/game/actions/shopActions.ts";
+import { craftElixir, drinkElixir } from "../src/game/actions/alchemyActions.ts";
+import type { ShopContext } from "../src/game/actions/shopContext.ts";
 import { npcOffer } from "../src/game/interactions.ts";
 import { SOUTH_DIALOGUES } from "../src/npcs/south/index.ts";
 import { INVENTORY_FEEDBACK } from "../src/game/messages/inventoryFeedback.ts";
@@ -23,9 +24,11 @@ const bagFor = (recipe = POTION, extra: Record<string, unknown> = {}): Inventory
 });
 
 test("cada receita tem o seu arquivo e usa só ingredientes que as criaturas realmente deixam cair", () => {
-  const files = readdirSync(new URL("../src/engine/character/alchemy/", import.meta.url))
-    .filter(f => f.endsWith(".ts") && !["index.ts", "types.ts"].includes(f)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ELIXIR_RECIPES.map(r => r.id).sort(), "um arquivo por receita, nomeado pelo id");
+  const dir = "../src/engine/character/alchemy/";
+  const files = readdirSync(new URL(dir + "recipes/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
+  assert.deepEqual(files, ELIXIR_RECIPES.map(r => r.id).sort(), "um arquivo por receita, nomeado pelo id, na pasta recipes");
+  assert.deepEqual(readdirSync(new URL(dir, import.meta.url)).filter(f => f.endsWith(".ts")).sort(),
+    ["alchemist.ts", "catalog.ts", "counts.ts", "index.ts", "recipe.ts", "results.ts"], "cada assunto no seu arquivo");
   assert.deepEqual([...ELIXIR_IDS].sort(), ["antidote", "greater-potion"]);
   for (const recipe of ELIXIR_RECIPES) {
     assert.ok(recipe.price > 0 && Number.isSafeInteger(recipe.price) && recipe.name && recipe.description, recipe.id);

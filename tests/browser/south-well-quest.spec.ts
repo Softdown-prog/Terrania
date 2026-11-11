@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { NPCS } from "../../src/world/npcs.ts";
-import { WELL_REWARD_COINS, WELL_SAMPLE_MATERIAL } from "../../src/engine/quests/south/well/state.ts";
+import { WELL_REWARD_COINS, WELL_SAMPLE_MATERIAL } from "../../src/engine/quests/south/well/index.ts";
 
 /**
  * "A Água Escura" no jogo de verdade (ADR 0031): as três versões, o poço, a comparação de Ixtal e a

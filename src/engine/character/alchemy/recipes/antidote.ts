@@ -1,4 +1,4 @@
-import type { ElixirRecipe } from "./types.ts";
+import type { ElixirRecipe } from "../recipe.ts";
 
 /** Tira todos os status (veneno, queimadura, gelo...) sem gastar uma noite na hospedaria. */
 export const ANTIDOTE: ElixirRecipe = {

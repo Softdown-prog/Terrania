@@ -25,8 +25,3 @@ export interface ElixirRecipe {
   readonly price: number;
   readonly effect: ElixirEffect;
 }
-
-/** Resultados do preparo e do uso; a interface traduz cada um em mensagem (`INVENTORY_FEEDBACK`). */
-export type ElixirCraftResult = "elixir-crafted" | "missing-ingredients" | "insufficient-elixir-coins" |
-  "elixir-stack-full" | "too-far-from-lab";
-export type ElixirUseResult = "elixir-used" | "no-elixir" | "elixir-no-effect";

@@ -1,4 +1,4 @@
-import type { ElixirRecipe } from "./types.ts";
+import type { ElixirRecipe } from "../recipe.ts";
 
 /** Cura mais de três vezes a poção comum; usa o que o cacto e a flor do deserto dão de sobra. */
 export const GREATER_POTION: ElixirRecipe = {

@@ -4,11 +4,11 @@ import { readdirSync } from "node:fs";
 import { Inventory } from "../src/engine/character/Inventory.ts";
 import { MAX_COINS } from "../src/engine/character/coins/index.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
-import { WELL_ANALYST_NPC, WELL_REPORT_NPC, WELL_SIGN_NPC, WellInvestigation } from "../src/engine/quests/south/well/WellInvestigation.ts";
+import { WELL_ANALYST_NPC, WELL_REPORT_NPC, WELL_SIGN_NPC, WellInvestigation } from "../src/engine/quests/south/well/index.ts";
 import { WELL_REWARD_COINS, WELL_SAMPLE_MATERIAL, WELL_WITNESSES, normalizeWellQuest, wellQuestStarted,
-  wellQuestSummary } from "../src/engine/quests/south/well/state.ts";
-import type { WellEvent } from "../src/engine/quests/south/well/types.ts";
-import { WELL_LINES } from "../src/game/messages/wellQuestLines.ts";
+  wellQuestSummary } from "../src/engine/quests/south/well/index.ts";
+import type { WellEvent } from "../src/engine/quests/south/well/index.ts";
+import { WELL_LINES } from "../src/game/messages/well/index.ts";
 import { NPCS } from "../src/world/npcs.ts";
 import { CREATURE_CATALOG } from "../src/actors/CreatureCatalog.ts";
 
@@ -24,7 +24,10 @@ test("os atores da missão existem e a gosma é saque real da hidra do brejo", (
   assert.equal(WELL_REPORT_NPC, "south-gorrak");
   assert.ok(Object.values(CREATURE_CATALOG).some(c => c.loot.some(l => l.item === WELL_SAMPLE_MATERIAL)));
   const files = readdirSync(new URL("../src/engine/quests/south/well/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["WellInvestigation", "state", "types"], "estado, regra e tipos em arquivos próprios");
+  assert.deepEqual(files, ["WellInvestigation", "constants", "events", "index", "normalize", "questState", "summary", "witness"],
+    "cada assunto no seu arquivo");
+  const lines = readdirSync(new URL("../src/game/messages/well/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
+  assert.equal(lines.length, Object.keys(WELL_LINES).length + 1, "uma fala por evento, cada uma no seu arquivo, mais o índice");
 });
 
 test("as três versões valem em qualquer ordem e só uma vez cada", () => {

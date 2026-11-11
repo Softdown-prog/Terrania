@@ -3,7 +3,7 @@ import { normalizeInventory } from '../engine/character/Inventory.ts';
 import { normalizeDrops } from '../engine/character/loot.ts';
 import { maxHpForExperience, normalizeExperience } from '../engine/character/Experience.ts';
 import { hasNutrition, normalizeNutrition } from '../engine/character/Food.ts';
-import { normalizeWellQuest, wellQuestStarted } from '../engine/quests/south/well/state.ts';
+import { normalizeWellQuest, wellQuestStarted } from '../engine/quests/south/well/index.ts';
 import { normalizeMountSave } from '../engine/mounts/MountStable.ts';
 
 const SAVE_KEY = 'terrania-origins-v1';

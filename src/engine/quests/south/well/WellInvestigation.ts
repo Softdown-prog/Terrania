@@ -1,12 +1,10 @@
 import type { Inventory } from "../../../character/Inventory.ts";
 import { MAX_COINS } from "../../../character/coins/index.ts";
-import { WELL_REWARD_COINS, WELL_SAMPLE_MATERIAL, WELL_WITNESSES, emptyWellQuest, isWellWitness,
-  normalizeWellQuest } from "./state.ts";
-import type { WellQuestState, WellTalkResult } from "./types.ts";
-
-export const WELL_SIGN_NPC = "south-well-sign";
-export const WELL_ANALYST_NPC = "south-ixtal";
-export const WELL_REPORT_NPC = "south-gorrak";
+import { WELL_ANALYST_NPC, WELL_REPORT_NPC, WELL_REWARD_COINS, WELL_SAMPLE_MATERIAL, WELL_SIGN_NPC,
+  WELL_WITNESSES } from "./constants.ts";
+import { emptyWellQuest, isWellWitness, normalizeWellQuest } from "./normalize.ts";
+import type { WellQuestState } from "./questState.ts";
+import type { WellTalkResult } from "./events.ts";
 
 const none: WellTalkResult = { event: null, changed: false };
 

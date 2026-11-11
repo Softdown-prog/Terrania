@@ -7,9 +7,9 @@ Este índice informa **onde procurar**. Estado active = módulo utilizado na arq
 | Módulo | Estado | Arquivos | Responsabilidade |
 | --- | --- | ---: | --- |
 | [Site e HUD Angular](indexes/angular-site.md) | active | 34 | Páginas do site, navegação, HUD e ações de interface. Não calcula regras autoritativas. |
-| [Orquestração Phaser](indexes/phaser-game.md) | active | 13 | Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir regras do motor para este adaptador. |
+| [Orquestração Phaser](indexes/phaser-game.md) | active | 25 | Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir regras do motor para este adaptador. |
 | [Renderização e adaptadores Canvas](indexes/renderer.md) | active | 104 | Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com composição Canvas compartilhada. |
-| [Regras e simulação offline](indexes/simulation.md) | active | 52 | Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular. |
+| [Regras e simulação offline](indexes/simulation.md) | active | 61 | Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Phaser ou Angular. |
 | [Entidades jogáveis](indexes/actors.md) | active | 17 | Estado e comportamento do herói e das criaturas; catálogo inicial de espécies separado das instâncias. |
 | [Bestiário por região](indexes/monsters.md) | active | 46 | Fichas individuais de criaturas classificadas por região; fonte única de atributos e loot, sem duplicar IA nem renderização. |
 | [Masmorras por região](indexes/dungeons.md) | active | 9 | Masmorras de vários andares: nome de cada andar, moradores e chefe, uma masmorra por arquivo na pasta da sua região. Só dados; a planta fica em world e o povoamento em engine. |

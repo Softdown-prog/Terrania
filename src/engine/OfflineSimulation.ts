@@ -19,9 +19,7 @@ import { LEGACY_RESPAWN_SECONDS, respawnSecondsForId } from "./combat/respawn.ts
 import type { CreatureKind } from "../actors/CreatureCatalog.ts";
 import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./character/Experience.ts";
 import { hasNutrition, type NutritionState } from "./character/Food.ts";
-import { WellInvestigation } from "./quests/south/well/WellInvestigation.ts";
-import { wellQuestStarted } from "./quests/south/well/state.ts";
-import type { WellQuestState } from "./quests/south/well/types.ts";
+import { WellInvestigation, wellQuestStarted, type WellQuestState } from "./quests/south/well/index.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
 export interface OfflineSave {

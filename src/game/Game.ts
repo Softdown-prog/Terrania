@@ -23,8 +23,9 @@ import { nearestCombatCreature } from "../engine/combat/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { runMountAction } from "../engine/mounts/MountActions.ts";
-import { buyFood, buySword, craftElixir, drinkElixir, eatFood, equipGear, equipWeapon, restAtInn, sellMaterial, tradeGelForPotion, usePotion,
+import { buyFood, buySword, eatFood, equipGear, equipWeapon, restAtInn, sellMaterial, tradeGelForPotion, usePotion,
   type ShopContext, type ShopResult } from "./actions/shopActions.ts";
+import { craftElixir, drinkElixir } from "./actions/alchemyActions.ts";
 import { TravelState } from "./TravelState.ts";
 import type { Frame, FrameTimers, ModeHost } from "./modes/types.ts";
 import { tickCave } from "./modes/caveMode.ts";
@@ -32,8 +33,8 @@ import { tickSurface } from "./modes/surfaceMode.ts";
 import { tickInterior } from "./modes/interiorMode.ts";
 import { mountQuestAction, npcOffer, questStepId } from "./interactions.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
-import { wellQuestSummary } from "../engine/quests/south/well/state.ts";
-import { WELL_LINES } from "./messages/wellQuestLines.ts";
+import { wellQuestSummary } from "../engine/quests/south/well/index.ts";
+import { WELL_LINES } from "./messages/well/index.ts";
 import { visibleBattleCreatures } from "../engine/combat/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/character/Experience.ts";
 
