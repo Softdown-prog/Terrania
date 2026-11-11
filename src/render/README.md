@@ -228,3 +228,7 @@ A captura monstros-estados-reais.png é produzida pelo próprio Canvas 2D do
 Terrania em Chromium via scripts/art-preview.mjs, usando renderRegionalCreature
 em repouso, deslocamento e preparação de ataque. É uma imagem de inspeção
 renderizada pelo jogo, não um screenshot da partida com HUD.
+
+## Interior das cavernas
+Dois estilos visuais (ADR 0032): o comum (`cave.ts` + `caveDetails.ts`) e a **Gruta Luminosa**
+(`caveStyles/luminous/`, uma peça por arquivo). O estilo sai de `world/caveStyle/` e só muda a aparência.

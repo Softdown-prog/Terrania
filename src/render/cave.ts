@@ -12,6 +12,8 @@ import type { CaveEntrance } from "../world/caves.ts";
 import type { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { CAVE_EXIT, CAVE_HEIGHT, CAVE_STAIRS_DOWN, CAVE_WIDTH, type CaveFloor } from "../world/caveFloor.ts";
 import { drawCaveDownStair } from "./caveStairsDownArt.ts";
+import { caveStyleFor } from "../world/caveStyle/index.ts";
+import { cavePaletteFor, drawGlowMushroom, drawGlowPool, luminousPieces } from "./caveStyles/index.ts";
 import { paintTowerFloor } from "./south/towers/interior/floor.ts";
 
 const PALETTE = CAVE_PALETTE;
@@ -30,7 +32,8 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
   canvas.height = CAVE_HEIGHT * TILE_SIZE;
   const ctx = canvas.getContext("2d");
   if (!ctx) return canvas;
-  const p = PALETTE[floor.theme];
+  const style = caveStyleFor(floor.entrance);
+  const p = cavePaletteFor(floor.theme, style);
   const seed = floor.entrance.seed ^ Math.imul(floor.entrance.tileX, 313) ^
     Math.imul(floor.entrance.tileY, 971);
   const n = (x: number, y: number, salt: number): number => hash2(x, y, seed + salt);
@@ -61,9 +64,9 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
       // Rock edges are physical, individually audited pieces rather than
       // straight-line effects hiding inside this unregistered composition.
       if (isOpen(x, y + 1))
-        drawCaveWallFace(ctx, floor.theme, sx + 16, sy + 30, "south", n(x, y, 201));
+        drawCaveWallFace(ctx, floor.theme, sx + 16, sy + 30, "south", n(x, y, 201), p);
       if (isOpen(x + 1, y))
-        drawCaveWallFace(ctx, floor.theme, sx + 30, sy + 16, "east", n(x, y, 219));
+        drawCaveWallFace(ctx, floor.theme, sx + 30, sy + 16, "east", n(x, y, 219), p);
       continue;
     }
 
@@ -123,6 +126,8 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
     }
 
     // Theme-specific formations live at wall edges and do not change walkability.
+    // A Gruta Luminosa troca as formações por cogumelos e poças, pintados num passe próprio mais abaixo.
+    if (style === "luminous") continue;
     const besideWall = !isOpen(x, y + 1) || !isOpen(x - 1, y) || !isOpen(x + 1, y);
     if (!besideWall || n(x, y, 107) < .83) continue;
     const cx = sx + 7 + n(x, y, 113) * 17;
@@ -130,6 +135,12 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
     drawCaveFormation(ctx, floor.theme, cx, cy + 3, fine);
   }
 
+  // Gruta Luminosa: o halo passa do tile, então as peças só se pintam depois de todos os tiles (ADR 0032).
+  if (style === "luminous") {
+    const pieces = luminousPieces(floor, seed);
+    for (const piece of pieces) if (piece.kind === "pool") drawGlowPool(ctx, floor.theme, piece.x, piece.y, piece.variation);
+    for (const piece of pieces) if (piece.kind === "mushroom") drawGlowMushroom(ctx, floor.theme, piece.x, piece.y, piece.variation);
+  }
   // A cut-stone stairwell, with a dark recess and perspective rather than a flat circle.
   const ex = (CAVE_EXIT.x + .5) * TILE_SIZE;
   const ey = (CAVE_EXIT.y + .5) * TILE_SIZE;
@@ -218,9 +229,11 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   // Static darkness with a local light pool following the real cave player.
   const light=ctx.createRadialGradient(player.x-left,player.y-top,24,
     player.x-left,player.y-top,Math.max(180,Math.min(width,height)*.68));
+  // A Gruta Luminosa tem luz própria: a escuridão das bordas é mais leve e puxa para o petróleo.
+  const glowing=caveStyleFor(room.floor.entrance)==="luminous";
   light.addColorStop(0,"rgba(2,9,13,0)");
-  light.addColorStop(.65,"rgba(3,10,13,.2)");
-  light.addColorStop(1,"rgba(3,8,12,.66)");
+  light.addColorStop(.65,glowing ? "rgba(3,14,20,.12)" : "rgba(3,10,13,.2)");
+  light.addColorStop(1,glowing ? "rgba(3,12,20,.5)" : "rgba(3,8,12,.66)");
   ctx.fillStyle=light;ctx.fillRect(0,0,width,height);
   if(player.debuffs.blind>0){
     const radius=Math.min(width,height)*.36;
@@ -234,7 +247,7 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
 
 /** Readable cartography, not the same terrain screenshot shrunk to a few pixels. */
 function paintCaveAtlasBackground(ctx: CanvasRenderingContext2D, floor: CaveFloor): void {
-  const w = ctx.canvas.width, h = ctx.canvas.height, p = PALETTE[floor.theme];
+  const w = ctx.canvas.width, h = ctx.canvas.height, p = cavePaletteFor(floor.theme, caveStyleFor(floor.entrance));
   ctx.save();
   ctx.clearRect(0, 0, w, h);
   const paper = ctx.createLinearGradient(0, 0, w, h);
@@ -302,7 +315,7 @@ function paintCaveAtlasBackground(ctx: CanvasRenderingContext2D, floor: CaveFloo
 /** Map background is frozen per floor; moving the marker never regenerates 1260 tiles. */
 export function drawCaveAtlas(ctx: CanvasRenderingContext2D, floor: CaveFloor,
   tileX: number, tileY: number): void {
-  const w = ctx.canvas.width, h = ctx.canvas.height, p = PALETTE[floor.theme];
+  const w = ctx.canvas.width, h = ctx.canvas.height, p = cavePaletteFor(floor.theme, caveStyleFor(floor.entrance));
   let cached = atlasCache.get(floor);
   if (!cached || cached.width !== w || cached.height !== h) {
     const surface = document.createElement("canvas");

@@ -73,6 +73,8 @@ import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
 import { drawCaveDownStair } from "../../src/render/caveStairsDownArt.ts";
+import { drawGlowMushroom } from "../../src/render/caveStyles/luminous/mushroom.ts";
+import { drawGlowPool } from "../../src/render/caveStyles/luminous/glowPool.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
 import type { RegionalLandmarkKind } from "../../src/world/regionalLandmarks.ts";
 import { NPCS } from "../../src/world/npcs.ts";
@@ -244,6 +246,10 @@ export const ASSETS: ArtAsset[] = [
     .flatMap<ArtAsset>(theme => [
       { id: "formação subterrânea " + theme, tier: "prop", fn: "drawCaveFormation",
         draw: c => drawCaveFormation(c, theme, 0, 0, .61) },
+      { id: "cogumelos luminosos " + theme, tier: "prop", fn: "drawGlowMushroom",
+        draw: c => drawGlowMushroom(c, theme, 0, 0, .61) },
+      { id: "poça de musgo luminoso " + theme, tier: "prop", fn: "drawGlowPool",
+        draw: c => drawGlowPool(c, theme, 0, 0, .61) },
       { id: "escada subterrânea " + theme, tier: "prop", fn: "drawCaveExitStair",
         draw: c => drawCaveExitStair(c, theme, 0, 0) },
       { id: "escada de descida " + theme, tier: "prop", fn: "drawCaveDownStair",

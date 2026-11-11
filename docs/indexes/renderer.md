@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (104)
+## Todos os arquivos deste módulo (111)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -27,6 +27,13 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/cave.ts`](../../src/render/cave.ts)
 - [`src/render/caveDetails.ts`](../../src/render/caveDetails.ts)
 - [`src/render/caveStairsDownArt.ts`](../../src/render/caveStairsDownArt.ts)
+- [`src/render/caveStyles/index.ts`](../../src/render/caveStyles/index.ts)
+- [`src/render/caveStyles/luminous/glowPool.ts`](../../src/render/caveStyles/luminous/glowPool.ts)
+- [`src/render/caveStyles/luminous/index.ts`](../../src/render/caveStyles/luminous/index.ts)
+- [`src/render/caveStyles/luminous/mushroom.ts`](../../src/render/caveStyles/luminous/mushroom.ts)
+- [`src/render/caveStyles/luminous/palette.ts`](../../src/render/caveStyles/luminous/palette.ts)
+- [`src/render/caveStyles/luminous/placement.ts`](../../src/render/caveStyles/luminous/placement.ts)
+- [`src/render/caveStyles/paletteFor.ts`](../../src/render/caveStyles/paletteFor.ts)
 - [`src/render/coinDrop.ts`](../../src/render/coinDrop.ts)
 - [`src/render/creatures/center/slimes/slime.ts`](../../src/render/creatures/center/slimes/slime.ts)
 - [`src/render/creatures/east/crabs/coralCrab.ts`](../../src/render/creatures/east/crabs/coralCrab.ts)

@@ -206,8 +206,9 @@ export function drawCaveExitStair(ctx: CanvasRenderingContext2D, theme: CaveThem
  * grade nem modifica passabilidade. Orientação leste gira o mesmo relevo.
  */
 export function drawCaveWallFace(ctx: CanvasRenderingContext2D, theme: CaveTheme,
-  sx: number, sy: number, side: "south" | "east" = "south", variation = .5): void {
-  const p = CAVE_PALETTE[theme];
+  sx: number, sy: number, side: "south" | "east" = "south", variation = .5,
+  palette: CavePalette = CAVE_PALETTE[theme]): void {
+  const p = palette;
   const v = Math.max(0, Math.min(1, Number.isFinite(variation) ? variation : .5));
   const outline = (): void => {
     const ripple = (v - .5) * 3;

@@ -19,7 +19,7 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/mountLocations.ts`](../../src/world/mountLocations.ts)
 - [`src/world/mountQuests.ts`](../../src/world/mountQuests.ts)
 
-## Todos os arquivos deste módulo (32)
+## Todos os arquivos deste módulo (35)
 
 - [`src/world/README.md`](../../src/world/README.md)
 - [`src/world/aelaQuest.ts`](../../src/world/aelaQuest.ts)
@@ -27,6 +27,9 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/biomes.ts`](../../src/world/biomes.ts)
 - [`src/world/blackLakeShore.ts`](../../src/world/blackLakeShore.ts)
 - [`src/world/caveFloor.ts`](../../src/world/caveFloor.ts)
+- [`src/world/caveStyle/choose.ts`](../../src/world/caveStyle/choose.ts)
+- [`src/world/caveStyle/index.ts`](../../src/world/caveStyle/index.ts)
+- [`src/world/caveStyle/style.ts`](../../src/world/caveStyle/style.ts)
 - [`src/world/caves.ts`](../../src/world/caves.ts)
 - [`src/world/collision.ts`](../../src/world/collision.ts)
 - [`src/world/entrances.ts`](../../src/world/entrances.ts)

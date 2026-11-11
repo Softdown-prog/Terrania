@@ -79,6 +79,7 @@
 - [`docs/adr/0029-tempo-de-volta-dos-monstros.md`](../../docs/adr/0029-tempo-de-volta-dos-monstros.md)
 - [`docs/adr/0030-alquimia-da-casa-de-venenos.md`](../../docs/adr/0030-alquimia-da-casa-de-venenos.md)
 - [`docs/adr/0031-missao-a-agua-escura.md`](../../docs/adr/0031-missao-a-agua-escura.md)
+- [`docs/adr/0032-gruta-luminosa.md`](../../docs/adr/0032-gruta-luminosa.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)
