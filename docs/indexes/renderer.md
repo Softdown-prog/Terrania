@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (111)
+## Todos os arquivos deste módulo (116)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -97,6 +97,11 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/regionalWave3.ts`](../../src/render/regionalWave3.ts)
 - [`src/render/scenery.ts`](../../src/render/scenery.ts)
 - [`src/render/sceneryTrunk.ts`](../../src/render/sceneryTrunk.ts)
+- [`src/render/south/terrain/dunes/field.ts`](../../src/render/south/terrain/dunes/field.ts)
+- [`src/render/south/terrain/dunes/index.ts`](../../src/render/south/terrain/dunes/index.ts)
+- [`src/render/south/terrain/dunes/palette.ts`](../../src/render/south/terrain/dunes/palette.ts)
+- [`src/render/south/terrain/dunes/relief.ts`](../../src/render/south/terrain/dunes/relief.ts)
+- [`src/render/south/terrain/dunes/shade.ts`](../../src/render/south/terrain/dunes/shade.ts)
 - [`src/render/south/towers/common.ts`](../../src/render/south/towers/common.ts)
 - [`src/render/south/towers/index.ts`](../../src/render/south/towers/index.ts)
 - [`src/render/south/towers/interior/floor.ts`](../../src/render/south/towers/interior/floor.ts)

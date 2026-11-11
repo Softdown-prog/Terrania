@@ -14,6 +14,7 @@ import { southCityGround, southCitySafe } from "../world/southCity.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
+import { DUNES_LOOK, HARDPAN_LOOK, duneReliefCanvas } from "./south/terrain/dunes/index.ts";
 import { southRuinsInArea } from "../world/southRuins.ts";
 import { southTowersInArea } from "../world/towers/placement.ts";
 import { caveEntrancesInArea } from "../world/caves.ts";
@@ -50,7 +51,11 @@ const SPAN = CHUNK_TILES + PAD * 2;
 
 class Grid {
   private readonly tiles: Tile[] = [];
-  constructor(private readonly cx: number, private readonly cy: number, private readonly seed: number) {
+  private readonly cx: number;
+  private readonly cy: number;
+  private readonly seed: number;
+  constructor(cx: number, cy: number, seed: number) {
+    this.cx = cx; this.cy = cy; this.seed = seed;
     for (let y = -PAD; y < CHUNK_TILES + PAD; y++)
       for (let x = -PAD; x < CHUNK_TILES + PAD; x++)
         this.tiles.push(getTile(cx * CHUNK_TILES + x, cy * CHUNK_TILES + y, seed));
@@ -244,12 +249,6 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
     ctx.fillStyle = "rgba(252,255,255,.48)";
     for (let i = 0; i < 5; i++)
       ctx.fillRect(x + r(300 + i) * 28 + 2, y + r(310 + i) * 28 + 2, 1.4, 1.4);
-  } else if (tile.biome === "dunes") {
-    ctx.strokeStyle = "rgba(255,234,180,.35)";
-    ctx.beginPath();
-    ctx.moveTo(x + 2, y + 12 + r(315) * 4);
-    ctx.quadraticCurveTo(x + 16, y + 5 + r(316) * 6, x + 30, y + 12 + r(317) * 4);
-    ctx.stroke();
   } else if (tile.biome === "stone-peak" || tile.biome === "volcanic") {
     ctx.strokeStyle = "rgba(28,34,43,.3)";
     ctx.beginPath();
@@ -321,6 +320,13 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
       ctx.fillStyle = "rgba(60,44,28,.12)";
       ctx.fillRect(dx > 0 ? x + 29 : x, dy > 0 ? y + 29 : y, dx ? 3 : 32, dy ? 3 : 32);
     });
+  } else if (tile.ground === "sand" && (tile.biome === "dunes" || tile.biome === "ruins")) {
+    // Deserto: o relevo e as ondulações vêm da camada contínua (ADR 0033); aqui só um seixo raro, sem concha do mar.
+    if (r(280) > 0.9) {
+      const px = x + 8 + r(281) * 16, py = y + 8 + r(282) * 16;
+      ellipse(ctx, px + 0.7, py + 0.9, 2.2, 1.2, "rgba(70,48,24,.28)");
+      ellipse(ctx, px, py, 1.9, 1.3, tile.biome === "dunes" ? "#e6d3a2" : "#cdbf9e");
+    }
   } else if (tile.ground === "sand") {
     ctx.strokeStyle = "rgba(124,108,70,.2)"; ctx.lineWidth = 1;
     for (let i = 0; i < 2; i++) {
@@ -377,6 +383,11 @@ export function generateChunkCanvas(
   ctx.filter = "blur(4px)";
   ctx.drawImage(padded, -TILE_SIZE, -TILE_SIZE);
   ctx.filter = "none";
+  // Dunas do Sul: relevo contínuo sombreado por cima da cor lisa, sem costura entre chunks (ADR 0033).
+  for (const [look, biome] of [[DUNES_LOOK, "dunes"], [HARDPAN_LOOK, "ruins"]] as const) {
+    const relief = duneReliefCanvas(cx, cy, seed, look, (lx, ly) => grid.at(lx, ly).biome === biome);
+    if (relief) { ctx.globalAlpha = .9; ctx.drawImage(relief, 0, 0); ctx.globalAlpha = 1; }
+  }
   for (let y = 0; y < CHUNK_TILES; y++)
     for (let x = 0; x < CHUNK_TILES; x++)
       drawDetails(ctx, grid, x, y, x * TILE_SIZE, y * TILE_SIZE, seed);
