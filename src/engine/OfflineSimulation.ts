@@ -7,7 +7,7 @@ import { Player } from "../actors/Player.ts";
 import { MountStable, type MountSave } from "./mounts/MountStable.ts";
 import { Slime, slimeSpawns } from "../actors/Slime.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
-import { SeedCollision } from "../world/collision.ts";
+import { SeedCollision, canMoveOnSeed, freeSpotNear } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
 import { faceTarget } from "./combat/combat.ts";
@@ -86,10 +86,14 @@ export class OfflineSimulation {
     this.well = new WellInvestigation(saved?.seed === seed ? saved.wellQuest : undefined);
     this.mounts = new MountStable(saved?.seed === seed ? saved.mounts : undefined);
     if (saved && saved.seed === seed) {
-      // A previous save may now overlap a newly introduced solid landmark.
-      if (this.collision.canMove(saved.x, saved.y)) {
-        this.player.x = saved.x;
-        this.player.y = saved.y;
+      // Um save antigo pode ficar sobre um obstáculo novo. Se o terreno, os marcos e a cidade estão livres e só a
+      // decoração bloqueia, o herói é tirado dela para o ponto livre mais próximo (até 64 px, ADR 0037); se o
+      // bloqueio é de outra coisa, volta ao ponto inicial, como sempre.
+      const spot = canMoveOnSeed(saved.x, saved.y, seed)
+        ? freeSpotNear((x, y) => this.collision.canMove(x, y), saved.x, saved.y) : null;
+      if (spot) {
+        this.player.x = spot.x;
+        this.player.y = spot.y;
       }
       this.experience = normalizeExperience(saved.experience);
       this.player.maxHp = maxHpForExperience(this.experience);

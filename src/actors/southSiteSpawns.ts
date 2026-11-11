@@ -1,7 +1,7 @@
 import { RegionalMonster } from "./RegionalMonster.ts";
 import { HYDRA_MIN_LAKE_TILES, LAKE_DWELLERS, RUIN_DWELLERS, RUIN_RESIDENTS, type SiteResident } from "../monsters/sites/south/index.ts";
 import { blackLakeShoreSpots } from "../world/blackLakeShore.ts";
-import { canMoveOnSeed } from "../world/collision.ts";
+import { canWalkOnSeed } from "../world/collision.ts";
 import { hash2 } from "../world/random.ts";
 import { CHUNK_TILES, TILE_SIZE } from "../world/terrain.ts";
 import { southRuinsInArea } from "../world/southRuins.ts";
@@ -20,7 +20,7 @@ const pickResident = (residents: readonly SiteResident[], roll: number): SiteRes
   return residents[residents.length - 1]!;
 };
 const usable = (tx: number, ty: number, seed: number): boolean =>
-  !protectedSurfaceTile(tx, ty) && canMoveOnSeed((tx + .5) * TILE_SIZE, (ty + .5) * TILE_SIZE, seed);
+  !protectedSurfaceTile(tx, ty) && canWalkOnSeed((tx + .5) * TILE_SIZE, (ty + .5) * TILE_SIZE, seed);
 
 export function southSiteSpawns(cx: number, cy: number, seed: number): RegionalMonster[] {
   if (![cx, cy, seed].every(Number.isSafeInteger)) return [];

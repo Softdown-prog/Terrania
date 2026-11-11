@@ -1,6 +1,14 @@
-import { hash2 } from "../../../world/random.ts";
-import type { Biome } from "../../../world/biomes.ts";
+import { hash2 } from "../../random.ts";
+import type { Biome } from "../../biomes.ts";
 import type { DecorKind, DecorPlacement } from "./types.ts";
+
+/** Chance máxima de um tile ter uma peça: serve para descartar quase todos os tiles só com um hash, sem consultar o terreno. */
+export const MAX_DECOR_DENSITY = 0.09;
+
+/** Sorteio barato da posição: só quando passa é que vale consultar o terreno. */
+export function mayHaveDecor(tx: number, ty: number, seed: number): boolean {
+  return hash2(tx, ty, seed + 6101) < MAX_DECOR_DENSITY;
+}
 
 /** Chance de um tile de cada bioma de deserto ter uma peça: pouca, para o deserto respirar. */
 const DENSITY: Partial<Record<Biome, number>> = { dunes: 0.075, ruins: 0.09 };

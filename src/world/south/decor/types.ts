@@ -1,6 +1,6 @@
 /**
- * Decoração do deserto do Sul (ADR 0036): peças só visuais, sem colisão e sem entrar nos dados do mundo.
- * Cada tipo tem o seu pintor; a colocação sai do bioma e da posição.
+ * Decoração do deserto do Sul (ADR 0036 e 0037): onde cada peça fica e o que bloqueia. É um sistema próprio, fora
+ * de `Tile` (nenhum campo novo nos dados do terreno), e a colisão sai da mesma colocação que a arte desenha.
  */
 export type DecorKind = "dry-grass" | "shrub" | "bones" | "cactus" | "cracked-earth";
 

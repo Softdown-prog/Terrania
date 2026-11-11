@@ -19,7 +19,7 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/mountLocations.ts`](../../src/world/mountLocations.ts)
 - [`src/world/mountQuests.ts`](../../src/world/mountQuests.ts)
 
-## Todos os arquivos deste módulo (35)
+## Todos os arquivos deste módulo (42)
 
 - [`src/world/README.md`](../../src/world/README.md)
 - [`src/world/aelaQuest.ts`](../../src/world/aelaQuest.ts)
@@ -42,6 +42,13 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/regionDifficulty.ts`](../../src/world/regionDifficulty.ts)
 - [`src/world/regionalLandmarks.ts`](../../src/world/regionalLandmarks.ts)
 - [`src/world/regions.ts`](../../src/world/regions.ts)
+- [`src/world/south/decor/blocks.ts`](../../src/world/south/decor/blocks.ts)
+- [`src/world/south/decor/eligibility.ts`](../../src/world/south/decor/eligibility.ts)
+- [`src/world/south/decor/footprints.ts`](../../src/world/south/decor/footprints.ts)
+- [`src/world/south/decor/index.ts`](../../src/world/south/decor/index.ts)
+- [`src/world/south/decor/placement.ts`](../../src/world/south/decor/placement.ts)
+- [`src/world/south/decor/shape.ts`](../../src/world/south/decor/shape.ts)
+- [`src/world/south/decor/types.ts`](../../src/world/south/decor/types.ts)
 - [`src/world/southCity.ts`](../../src/world/southCity.ts)
 - [`src/world/southRuins.ts`](../../src/world/southRuins.ts)
 - [`src/world/terrain.ts`](../../src/world/terrain.ts)

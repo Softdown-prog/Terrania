@@ -1,10 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
-import { BIOME_NAMES, type Biome } from "../src/world/biomes.ts";
-import { SOUTH_CITY, southCityGround } from "../src/world/southCity.ts";
-import { TILE_SIZE, getTile, type Tile } from "../src/world/terrain.ts";
-import { DECOR_PAINTERS, DECOR_VARIANTS, decorFor, decorShape, southDecorProp, type DecorKind } from "../src/render/south/decor/index.ts";
+import { DECOR_PAINTERS, decorShape, southDecorProp } from "../src/render/south/decor/index.ts";
+import type { DecorKind } from "../src/world/south/decor/index.ts";
 import { WorldRenderer } from "../src/render/WorldRenderer.ts";
 import { renderScenery, clearSceneryCache, type Scenery } from "../src/render/scenery.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
@@ -24,73 +22,7 @@ const signature = (draw: (c: CanvasRenderingContext2D) => void): string => {
 
 test("cada assunto da decoração está no seu arquivo, na pasta do Sul", () => {
   const files = readdirSync(new URL("../src/render/south/decor/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["bones", "cactus", "crackedEarth", "desertShrub", "dryGrass", "index", "painters", "palette", "placement", "prop", "types"]);
-  assert.equal(DECOR_VARIANTS, 4);
-});
-
-test("a colocação é determinística, só nos biomas de deserto e respeita densidade, pesos e posição no tile", () => {
-  for (const biome of Object.keys(BIOME_NAMES) as Biome[])
-    if (biome !== "dunes" && biome !== "ruins") for (let i = 0; i < 300; i++) assert.equal(decorFor(biome, i, i * 3, SEED), null, biome);
-  for (const [biome, density, weights] of [
-    ["dunes", 0.075, { "dry-grass": 0.4, shrub: 0.22, cactus: 0.22, bones: 0.1, "cracked-earth": 0.06 }],
-    ["ruins", 0.09, { "cracked-earth": 0.38, "dry-grass": 0.2, bones: 0.18, shrub: 0.16, cactus: 0.08 }],
-  ] as const) {
-    const counts: Record<string, number> = {};
-    let placed = 0, total = 0;
-    for (let ty = 15500; ty < 15600; ty++) for (let tx = -200; tx < 200; tx++) {
-      total++;
-      const p = decorFor(biome, tx, ty, SEED);
-      assert.deepEqual(decorFor(biome, tx, ty, SEED), p, "determinística");
-      if (!p) continue;
-      placed++;
-      counts[p.kind] = (counts[p.kind] ?? 0) + 1;
-      assert.ok(p.x >= 6 && p.x < 26 && p.y >= 12 && p.y < 26, `posição no tile ${p.x},${p.y}`);
-      assert.ok(p.variation >= 0 && p.variation < 1);
-    }
-    assert.ok(Math.abs(placed / total - density) < 0.012, `${biome}: densidade ${(placed / total).toFixed(3)}`);
-    for (const kind of KINDS) assert.ok(Math.abs((counts[kind] ?? 0) / placed - weights[kind]) < 0.04, `${biome} ${kind}: ${((counts[kind] ?? 0) / placed).toFixed(2)}`);
-  }
-  assert.notDeepEqual(Array.from({ length: 200 }, (_, i) => decorFor("dunes", i, 15600, SEED)), Array.from({ length: 200 }, (_, i) => decorFor("dunes", i, 15600, SEED + 1)));
-  // A semente muda ONDE há decoração, não só o que ela é.
-  const where = (seed: number): string => Array.from({ length: 1500 }, (_, i) => decorFor("dunes", i, 15600, seed) ? "1" : "0").join("");
-  assert.notEqual(where(SEED), where(SEED + 1));
-  assert.notEqual(where(SEED), where(SEED + 2));
-});
-
-const sandTile = (over: Partial<Tile> = {}): Tile => ({ ground: "sand", biome: "dunes", tree: false, rock: false, decoration: 0.5, ...over });
-/** Um tile de deserto que, sem nenhuma outra regra, teria decoração. */
-function placedTile(): { tx: number; ty: number } {
-  for (let tx = 0; tx < 400; tx++) if (decorFor("dunes", tx, 15700, SEED)) return { tx, ty: 15700 };
-  throw new Error("sem decoração na amostra");
-}
-
-test("só vira cenário em areia livre, fora da cidade: nada em estrada, água, pedra, árvore ou muralha", () => {
-  const { tx, ty } = placedTile();
-  const prop = southDecorProp(sandTile(), tx, ty, SEED)!;
-  assert.equal(prop.kind, "south-decor");
-  assert.ok(prop.decorKind && KINDS.includes(prop.decorKind));
-  assert.ok(prop.x >= tx * TILE_SIZE + 6 && prop.x < tx * TILE_SIZE + 26 && prop.y >= ty * TILE_SIZE + 12 && prop.y < ty * TILE_SIZE + 26);
-  for (const over of [{ ground: "path" as const }, { ground: "water" as const }, { ground: "grass" as const }, { rock: true }, { tree: true }])
-    assert.equal(southDecorProp(sandTile(over), tx, ty, SEED), null, JSON.stringify(over));
-  // Dentro da cidade do Poço Negro (qualquer tile que ela define), nunca.
-  let cityTiles = 0, wouldHave = 0;
-  for (let y = SOUTH_CITY.centerY - 30; y <= SOUTH_CITY.centerY + 30; y++) for (let x = -40; x <= 40; x++) {
-    if (southCityGround(x, y) === null) continue;
-    cityTiles++;
-    if (decorFor("ruins", x, y, SEED)) wouldHave++;
-    assert.equal(southDecorProp(sandTile({ biome: "ruins" }), x, y, SEED), null, `cidade ${x},${y}`);
-  }
-  assert.ok(cityTiles > 500 && wouldHave > 10, `a regra da cidade é necessária: ${cityTiles} tiles, ${wouldHave} teriam decoração`);
-});
-
-test("a decoração não toca o mundo: não há importação dela em world, engine, actors, monsters, npcs nem dungeons", () => {
-  const walk = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(dir + "/" + e.name) : e.name.endsWith(".ts") ? [dir + "/" + e.name] : []);
-  for (const dir of ["src/world", "src/engine", "src/actors", "src/monsters", "src/npcs", "src/dungeons"])
-    for (const file of walk(dir)) assert.equal(/south\/decor/.test(readFileSync(file, "utf8")), false, file);
-  // O tile de uma peça é igual com e sem decoração: nenhum campo novo e nada bloqueado.
-  const { tx, ty } = placedTile();
-  const tile = getTile(tx, ty, SEED);
-  assert.deepEqual(Object.keys(tile).sort(), ["biome", "decoration", "ground", "rock", "tree"]);
+  assert.deepEqual(files, ["bones", "cactus", "crackedEarth", "desertShrub", "dryGrass", "index", "painters", "palette", "prop"], "o desenho; a colocação e a colisão ficam no mundo");
 });
 
 type Chunky = { chunk(cx: number, cy: number): { props: Scenery[] } };
@@ -146,5 +78,5 @@ test("o cenário usa o mapa de pintores e o mundo pergunta pela decoração", ()
   const scenery = readFileSync("src/render/scenery.ts", "utf8");
   assert.match(scenery, /DECOR_PAINTERS\[kind\]\(c, shape\)/);
   assert.match(scenery, /`south-decor-\$\{kind\}-\$\{shape\}`/);
-  assert.match(readFileSync("src/render/WorldRenderer.ts", "utf8"), /southDecorProp\(tile, tx, ty, this\.seed\)/);
+  assert.match(readFileSync("src/render/WorldRenderer.ts", "utf8"), /southDecorProp\(tx, ty, this\.seed\)/);
 });

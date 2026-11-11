@@ -2,6 +2,7 @@ import { getTile, isWalkable, TILE_SIZE } from "./terrain.ts";
 import { landmarkBlocks } from "./landmarks.ts";
 import { villageBlocks } from "./village.ts";
 import { southCityBlocks } from "./southCity.ts";
+import { southDecorBlocks } from "./south/decor/index.ts";
 /** Limite técnico por eixo da colisão, não uma fronteira geográfica desenhada. */
 export const WORLD_EDGE_PIXELS = 1_000_000;
 /** Interface sem dependência de DOM, compartilhada entre navegador e servidor. */
@@ -66,13 +67,41 @@ export function canMoveOnSeed(x: number, y: number, seed: number): boolean {
     ),
   );
 }
+/** Raio do corpo que anda (px): o mesmo de `canMoveOnSeed`. */
+const BODY_RADIUS = 7;
+
+/**
+ * O corpo pode andar aqui? É `canMoveOnSeed` (terreno, marcos, ruínas, torres, vilarejo e cidade) mais a decoração do
+ * deserto que bloqueia (ADR 0037). Serve ao movimento e ao lugar onde monstros nascem. Fica separado de `canMoveOnSeed`
+ * de propósito: a geração do mundo (as entradas de caverna, por exemplo) usa esta última e não pode mudar de lugar.
+ */
+export function canWalkOnSeed(x: number, y: number, seed: number): boolean {
+  return canMoveOnSeed(x, y, seed) && !southDecorBlocks(x, y, BODY_RADIUS, seed);
+}
+
+/**
+ * O ponto livre mais próximo de (x, y), ou ele mesmo se já é livre, ou nada se não há nenhum até `maxRadius` px
+ * (ADR 0037). Anda em anéis de 4 px e 16 direções, sempre na mesma ordem. Serve para tirar o herói de dentro de uma
+ * peça que passou a bloquear (um save antigo, por exemplo).
+ */
+export function freeSpotNear(canMove: (x: number, y: number) => boolean, x: number, y: number,
+  maxRadius = 64): { x: number; y: number } | null {
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  if (canMove(x, y)) return { x, y };
+  for (let r = 4; r <= maxRadius; r += 4)
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2, px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+      if (canMove(px, py)) return { x: px, y: py };
+    }
+  return null;
+}
 export class SeedCollision implements CollisionMap {
   readonly seed: number;
   constructor(seed: number) {
     this.seed = seed;
   }
   canMove(x: number, y: number): boolean {
-    return canMoveOnSeed(x, y, this.seed);
+    return canWalkOnSeed(x, y, this.seed);
   }
   speedAt(x: number, y: number): number {
     const tile = getTile(

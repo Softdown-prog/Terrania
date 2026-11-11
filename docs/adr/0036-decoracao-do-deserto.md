@@ -2,6 +2,8 @@
 
 **Estado:** entregue em 2026-11-11, direto na `main` por pedido do dono. Quarta fatia da campanha ([docs/QUALIDADE_VISUAL.md](../QUALIDADE_VISUAL.md)).
 
+> **Atualização (ADR 0037):** a colocação (`types.ts`, `placement.ts`) foi para `src/world/south/decor/` e a decoração ganhou colisão (cacto e arbusto lenhoso bloqueiam). O que está dito abaixo sobre "sem colisão" vale para a entrega original.
+
 ## Contexto
 
 Depois do relevo das dunas (ADR 0033), das estradas (0034) e das pedras (0035), o deserto ainda só tinha pedras: nenhuma vida, nenhum sinal de que algo passou ali. Junto, o dono reforçou uma regra de organização: **tudo em arquivo separado e em pastas com o nome de cada região onde o item aparece**.

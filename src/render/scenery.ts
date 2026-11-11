@@ -10,7 +10,8 @@ import type { TowerId } from "../world/towers/types.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
 import { drawMossRock, type RockStyle } from "./rocks/index.ts";
 import { drawSandstoneRock } from "./south/rocks/index.ts";
-import { DECOR_PAINTERS, decorShape, type DecorKind } from "./south/decor/index.ts";
+import { DECOR_PAINTERS } from "./south/decor/index.ts";
+import { decorShapeOf, type DecorKind } from "../world/south/decor/index.ts";
 
 export interface Scenery {
   kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-tower" | "south-city" | "south-decor";
@@ -398,7 +399,7 @@ export function renderScenery(
     // Sem tipo não desenha nada (e nunca cai na fogueira do `else` final).
     const kind = prop.decorKind;
     if (kind) {
-      const shape = decorShape(Math.floor(prop.variant * 4));
+      const shape = decorShapeOf(prop.variant);
       const s = sprite(`south-decor-${kind}-${shape}`, 56, 48, 28, 38, (c) => DECOR_PAINTERS[kind](c, shape));
       ctx.scale(flip, 1);
       if (s) blit(ctx, s); else DECOR_PAINTERS[kind](ctx, shape);

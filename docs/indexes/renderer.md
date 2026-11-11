@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (146)
+## Todos os arquivos deste módulo (144)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -122,9 +122,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/south/decor/index.ts`](../../src/render/south/decor/index.ts)
 - [`src/render/south/decor/painters.ts`](../../src/render/south/decor/painters.ts)
 - [`src/render/south/decor/palette.ts`](../../src/render/south/decor/palette.ts)
-- [`src/render/south/decor/placement.ts`](../../src/render/south/decor/placement.ts)
 - [`src/render/south/decor/prop.ts`](../../src/render/south/decor/prop.ts)
-- [`src/render/south/decor/types.ts`](../../src/render/south/decor/types.ts)
 - [`src/render/south/rocks/index.ts`](../../src/render/south/rocks/index.ts)
 - [`src/render/south/rocks/sandstoneRock.ts`](../../src/render/south/rocks/sandstoneRock.ts)
 - [`src/render/south/terrain/dunes/field.ts`](../../src/render/south/terrain/dunes/field.ts)

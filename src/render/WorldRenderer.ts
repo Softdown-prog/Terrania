@@ -54,7 +54,7 @@ export class WorldRenderer {
             ...(tile.rock ? { rockStyle: rockStyleFor(tile.biome) } : {}),
           });
         // Decoração do deserto (ADR 0036): só visual, sem colisão, em chão livre de areia fora da cidade.
-        const decor = southDecorProp(tile, tx, ty, this.seed);
+        const decor = southDecorProp(tx, ty, this.seed);
         if (decor) props.push(decor);
         if (tile.ground === "water") {
           const black = tile.biome === "black-lake";

@@ -7,7 +7,7 @@ import { desertOrcClubKnockback, DESERT_ORC_CLUB_PUSH_DISTANCE } from "../monste
 import { clayTrollRegeneration } from "../monsters/south/trolls/clay-troll.ts";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS, SOUTH_COMMON_KINDS, SOUTH_SURFACE_KINDS,
   sandBeetleBuried, type RegionalCreatureKind, type CreatureDefinition } from "./CreatureCatalog.ts";
-import { moveBody, clearPath, canMoveOnSeed, type CollisionMap } from "../world/collision.ts";
+import { moveBody, clearPath, canWalkOnSeed, type CollisionMap } from "../world/collision.ts";
 import { getWorldRegion } from "../world/regions.ts";
 import { getBiomeAt } from "../world/biomes.ts";
 import { caveThemeAt, type CaveTheme } from "../world/caves.ts";
@@ -196,7 +196,7 @@ export function regionalSurfaceSpawns(cx: number, cy: number, seed: number): Reg
     const sy = cy * CHUNK_TILES + Math.floor(hash2(cx, cy + n * 17, seed + 479) * CHUNK_TILES);
     const region=getWorldRegion(sx,sy);
     if (region==="center" || protectedSurfaceTile(sx,sy) ||
-        !canMoveOnSeed((sx + .5) * TILE_SIZE, (sy + .5) * TILE_SIZE, seed)) continue;
+        !canWalkOnSeed((sx + .5) * TILE_SIZE, (sy + .5) * TILE_SIZE, seed)) continue;
     const biome=getBiomeAt(sx,sy,seed);
     const marsh=caveThemeAt(sx,sy)==="marsh";
     const candidates=REGIONAL_CREATURE_KINDS.filter(kind=>{
@@ -240,7 +240,7 @@ export function southCommonSpawns(cx:number,cy:number,seed:number): RegionalMons
     const tx=cx*CHUNK_TILES+Math.floor(hash2(cx*17+i*5,cy,seed+23341)*CHUNK_TILES);
     const ty=cy*CHUNK_TILES+Math.floor(hash2(cx,cy*19+i*7,seed+23343)*CHUNK_TILES);
     if(getWorldRegion(tx,ty)!=="south" || protectedSurfaceTile(tx,ty) ||
-       !canMoveOnSeed((tx+.5)*TILE_SIZE,(ty+.5)*TILE_SIZE,seed))continue;
+       !canWalkOnSeed((tx+.5)*TILE_SIZE,(ty+.5)*TILE_SIZE,seed))continue;
     const theme=caveThemeAt(tx,ty),biome=getBiomeAt(tx,ty,seed);
     const eligible=[...SOUTH_COMMON_KINDS,...SOUTH_SURFACE_KINDS].filter(kind=>{
       const def=CREATURE_CATALOG[kind];
