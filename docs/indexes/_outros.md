@@ -82,6 +82,7 @@
 - [`docs/adr/0031-missao-a-agua-escura.md`](../../docs/adr/0031-missao-a-agua-escura.md)
 - [`docs/adr/0032-gruta-luminosa.md`](../../docs/adr/0032-gruta-luminosa.md)
 - [`docs/adr/0033-relevo-das-dunas-do-sul.md`](../../docs/adr/0033-relevo-das-dunas-do-sul.md)
+- [`docs/adr/0034-estradas-e-marcas-de-roda.md`](../../docs/adr/0034-estradas-e-marcas-de-roda.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

@@ -2,8 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { CHUNK_PIXELS, CHUNK_TILES, TILE_SIZE, getTile } from "../src/world/terrain.ts";
-import { generateChunkCanvas } from "../src/render/terrain.ts";
-import { Recorder } from "./helpers/recordingContext.ts";
+import { paintChunk, withDocument } from "./helpers/paintChunk.ts";
 import { DUNES_LOOK, DUNE_ACROSS, DUNE_LIGHT, HARDPAN_LOOK, RAMP_STEPS, SHADE_SIZE, duneHeight, duneReliefCanvas,
   rippleHeight, sandColor, shadeDuneRelief } from "../src/render/south/terrain/dunes/index.ts";
 
@@ -150,11 +149,6 @@ function fakeDocument(withImageData = true) {
   } };
   return { doc, log, canvases };
 }
-function withDocument<T>(doc: object, run: () => T): T {
-  const g = globalThis as Record<string, unknown>, previous = g.document;
-  g.document = doc;
-  try { return run(); } finally { if (previous === undefined) delete g.document; else g.document = previous; }
-}
 
 test("a camada do chunk só existe onde há duna, é recortada pelo mapa suave e some sem Canvas completo", () => {
   const none = fakeDocument();
@@ -179,29 +173,6 @@ test("a camada do chunk só existe onde há duna, é recortada pelo mapa suave e
     `draw:${-TILE_SIZE},${-TILE_SIZE},${span * TILE_SIZE},${span * TILE_SIZE}:destination-in`, "op:source-over"]);
 });
 
-/** Roda `generateChunkCanvas` inteiro num Canvas gravador e devolve o que foi desenhado e a opacidade usada em cada desenho. */
-function paintChunk(cx: number, cy: number): { draws: Array<{ args: unknown[]; alpha: unknown; composite: unknown }>; sets: string[]; puts: number[][] } {
-  const recorder = new Recorder(), inner = recorder.ctx;
-  const draws: Array<{ args: unknown[]; alpha: unknown; composite: unknown }> = [], sets: string[] = [], puts: number[][] = [];
-  const state: Record<string, unknown> = { globalAlpha: 1, globalCompositeOperation: "source-over" };
-  const spy = new Proxy(inner, {
-    get(target, prop) {
-      if (prop === "createImageData") return (w: number, h: number) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) });
-      if (prop === "putImageData") return (image: { data: Uint8ClampedArray }) => { puts.push([...image.data.slice(0, 64)]); };
-      if (prop === "drawImage") return (...args: unknown[]) => { draws.push({ args: args.slice(1), alpha: state.globalAlpha, composite: state.globalCompositeOperation }); };
-      if (prop === "globalAlpha" || prop === "globalCompositeOperation") return state[prop];
-      const value = (target as unknown as Record<string | symbol, unknown>)[prop];
-      return typeof value === "function" ? (value as (...x: unknown[]) => unknown).bind(target) : value;
-    },
-    set(target, prop, value) {
-      if (prop === "globalAlpha" || prop === "globalCompositeOperation") { state[prop] = value; sets.push(`${String(prop)}=${String(value)}`); return true; }
-      (target as unknown as Record<string | symbol, unknown>)[prop] = value; return true;
-    },
-  });
-  withDocument({ createElement: () => ({ width: 0, height: 0, getContext: () => spy }) }, () => generateChunkCanvas(cx, cy, SEED));
-  return { draws, sets, puts };
-}
-
 test("o chunk de deserto desenha a camada de relevo com 90 % de opacidade; o chunk sem duna não a desenha", () => {
   // Um chunk de dunas e outro de terra batida (ruínas), achados no mundo desta semente.
   const find = (biome: string): [number, number] => {
@@ -213,7 +184,7 @@ test("o chunk de deserto desenha a camada de relevo com 90 % de opacidade; o chu
     throw new Error("sem chunk de " + biome);
   };
   const [dx, dy] = find("dunes");
-  const dunes = paintChunk(dx, dy);
+  const dunes = paintChunk(dx, dy, SEED);
   // Ordem: base borrada, depois o relevo (dois desenhos internos de ampliação e recorte + o desenho final), depois detalhes.
   const finalDraws = dunes.draws.filter(d => d.args.length === 2 && d.args[0] === 0 && d.args[1] === 0);
   assert.equal(finalDraws.length >= 1, true, "a camada de relevo é desenhada sobre o chunk");
@@ -223,13 +194,13 @@ test("o chunk de deserto desenha a camada de relevo com 90 % de opacidade; o chu
   assert.ok(dunes.sets.lastIndexOf("globalAlpha=1") > dunes.sets.indexOf("globalAlpha=0.9"));
   // Chunk só de terra batida (bioma "ruins", achado por varredura): recebe o relevo suave, não o de duna.
   assert.equal(getTile(13 * CHUNK_TILES + 8, 902 * CHUNK_TILES + 8, SEED).biome, "ruins");
-  const hardpan = paintChunk(13, 902);
+  const hardpan = paintChunk(13, 902, SEED);
   assert.ok(hardpan.draws.some(d => d.args.length === 2 && d.args[0] === 0 && d.args[1] === 0 && d.alpha === 0.9), "a terra batida também ganha relevo");
   assert.ok(hardpan.sets.includes("globalCompositeOperation=destination-in"));
   const gravados = hardpan.puts.map(p => p.join(","));
   assert.ok(gravados.includes([...shadeDuneRelief(13, 902, SEED, HARDPAN_LOOK).slice(0, 64)].join(",")), "com o visual de terra batida");
   // Em chunk sem nenhuma duna nem terra batida (o vilarejo), o relevo nunca é montado.
-  const village = paintChunk(0, 0);
+  const village = paintChunk(0, 0, SEED);
   assert.equal(village.sets.includes("globalCompositeOperation=destination-in"), false, "sem duna: nenhum recorte de relevo");
   assert.equal(village.draws.some(d => d.args.length === 2 && d.args[0] === 0 && d.args[1] === 0 && d.alpha === 0.9), false);
 });

@@ -73,6 +73,9 @@ import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
 import { drawCaveDownStair } from "../../src/render/caveStairsDownArt.ts";
+import { drawWheelRut } from "../../src/render/roads/wheelRut.ts";
+import { drawRoadStones } from "../../src/render/roads/roadStones.ts";
+import { drawRoadVerge } from "../../src/render/roads/roadVerge.ts";
 import { drawGlowMushroom } from "../../src/render/caveStyles/luminous/mushroom.ts";
 import { drawGlowPool } from "../../src/render/caveStyles/luminous/glowPool.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
@@ -241,6 +244,16 @@ export const ASSETS: ArtAsset[] = [
   // Moedas no chão (ADR 0024): uma peça por moeda, com a marca de cada uma.
   ...COIN_TIERS.map<ArtAsset>(coin => ({ id: "moedas no chão " + coin.name, tier: "prop", fn: "renderCoinDrop",
     draw: c => renderCoinDrop(c, coin.id, 0, 0, .6) })),
+  // Estradas (ADR 0034): marcas de roda nos dois sentidos e nos dois materiais, pedras e as duas transições.
+  ...(["earth", "sand"] as const).flatMap<ArtAsset>(surface => [
+    ...(["x", "y"] as const).map<ArtAsset>(axis => ({ id: `marca de roda ${surface} ${axis}`, tier: "prop", fn: "drawWheelRut",
+      draw: c => drawWheelRut(c, { kind: "rut", surface, axis, across: 16, shiftA: -1, shiftB: 1.2, fadeA: 1, fadeB: 1, variation: .61 }, 0, 0) })),
+    { id: `pedras da estrada ${surface}`, tier: "prop", fn: "drawRoadStones",
+      draw: c => drawRoadStones(c, { kind: "stones", surface, x: 16, y: 16, variation: .61 }, 0, 0) },
+  ]),
+  ...(["grass", "sand"] as const).flatMap<ArtAsset>(edge => ([0, 1, 2, 3] as const).map<ArtAsset>(side => ({
+    id: `borda da estrada ${edge} lado ${side}`, tier: "prop", fn: "drawRoadVerge",
+    draw: c => drawRoadVerge(c, { kind: "verge", side, edge, variation: .61 }, 0, 0) }))),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
   ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
     .flatMap<ArtAsset>(theme => [

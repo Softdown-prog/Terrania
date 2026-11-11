@@ -14,6 +14,8 @@ import { southCityGround, southCitySafe } from "../world/southCity.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
+import { buildRoadMask, drawRoadStones, drawRoadVerge, drawWheelRut, planRoadTile, quantizeVariation, roadProfile, roadSprite,
+  type RoadMask, type RoadPiece } from "./roads/index.ts";
 import { DUNES_LOOK, HARDPAN_LOOK, duneReliefCanvas } from "./south/terrain/dunes/index.ts";
 import { southRuinsInArea } from "../world/southRuins.ts";
 import { southTowersInArea } from "../world/towers/placement.ts";
@@ -54,6 +56,7 @@ class Grid {
   private readonly cx: number;
   private readonly cy: number;
   private readonly seed: number;
+  private roads: RoadMask | null = null;
   constructor(cx: number, cy: number, seed: number) {
     this.cx = cx; this.cy = cy; this.seed = seed;
     for (let y = -PAD; y < CHUNK_TILES + PAD; y++)
@@ -73,6 +76,11 @@ class Grid {
         for (let dx = -r; dx <= r; dx++)
           if (Math.max(Math.abs(dx), Math.abs(dy)) === r && this.at(x + dx, y + dy).ground !== "water") return r;
     return 3;
+  }
+  /** Máscara de estrada do chunk e da vizinhança (ADR 0034), montada só na primeira vez que um tile de estrada pede. */
+  roadMask(): RoadMask {
+    this.roads ??= buildRoadMask(this.cx, this.cy, CHUNK_TILES, (tx, ty) => getTile(tx, ty, this.seed).ground === "path");
+    return this.roads;
   }
   global(x: number, y: number): [number, number] {
     return [this.cx * CHUNK_TILES + x, this.cy * CHUNK_TILES + y];
@@ -159,6 +167,26 @@ function drawBlackShore(ctx: CanvasRenderingContext2D, x: number, y: number, k: 
       blade(ctx, bx + i * 1.7, by, 9 + (i % 2) * 5, lean, i % 2 ? "#6d6544" : "#4a4332");
     }
   }
+}
+
+/**
+ * Pinta uma peça de estrada no tile (x, y). Marcas de roda variam de forma contínua e vão direto; pedras e
+ * bordas variam em poucos níveis e saem de sprites em cache (ADR 0034).
+ */
+function paintRoadPiece(ctx: CanvasRenderingContext2D, piece: RoadPiece, x: number, y: number): void {
+  if (piece.kind === "rut") { drawWheelRut(ctx, piece, x, y); return; }
+  const variation = quantizeVariation(piece.variation);
+  if (piece.kind === "stones") {
+    const sprite = roadSprite(`stones:${piece.surface}:${variation}`, 48, 48,
+      c => drawRoadStones(c, { ...piece, x: 24, y: 24, variation }, 0, 0));
+    if (sprite) ctx.drawImage(sprite, Math.round(x + piece.x - 24), Math.round(y + piece.y - 24));
+    else drawRoadStones(ctx, piece, x, y);
+    return;
+  }
+  const sprite = roadSprite(`verge:${piece.edge}:${piece.side}:${variation}`, 32, 32,
+    c => drawRoadVerge(c, { ...piece, variation }, 0, 0));
+  if (sprite) ctx.drawImage(sprite, x, y);
+  else drawRoadVerge(ctx, piece, x, y);
 }
 
 function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number, x: number, y: number, seed: number): void {
@@ -299,27 +327,14 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
       }
     }
   } else if (tile.ground === "path") {
-    // seixos e marcas de roda
-    ctx.strokeStyle = "rgba(92,72,48,.18)"; ctx.lineWidth = 1.2;
-    ctx.beginPath(); ctx.moveTo(x, y + 11 + r(200) * 3); ctx.lineTo(x + 32, y + 11 + r(201) * 3);
-    ctx.moveTo(x, y + 22 + r(202) * 3); ctx.lineTo(x + 32, y + 22 + r(203) * 3); ctx.stroke();
-    for (let i = 0; i < 5; i++) {
-      const px = x + 3 + r(210 + i) * 26, py = y + 4 + r(220 + i) * 24, rs = 1 + r(230 + i) * 1.6;
-      ellipse(ctx, px + 0.5, py + 0.8, rs, rs * 0.7, "rgba(60,44,28,.28)");
-      ellipse(ctx, px, py, rs, rs * 0.75, i % 2 ? "#d9cba6" : "#9c8963");
+    // Estrada (ADR 0034): marcas de roda na direção real da estrada, pedras e a transição em cada margem.
+    let sandy = 0, green = 0;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const g = grid.at(lx + dx, ly + dy).ground;
+      if (g === "sand") sandy++; else if (g === "grass" || g === "forest") green++;
     }
-    // grama avançando sobre a trilha nas bordas
-    DIRS.forEach(([dx, dy], k) => {
-      const g = neighbours[k];
-      if (g === "path" || g === "water" || g === "sand") return;
-      for (let i = 0; i < 6; i++) {
-        const t = 3 + i * 5 + r(240 + i + k * 6) * 2;
-        const bx = dx ? x + (dx > 0 ? 31 : 1) : x + t, by = dy ? y + (dy > 0 ? 31 : 1) : y + t;
-        blade(ctx, bx, by, 3 + r(250 + i) * 3, (dx ? -dx : (r(260 + i) - 0.5) * 3) * 2, i % 2 ? "#4f7d44" : "#78a257");
-      }
-      ctx.fillStyle = "rgba(60,44,28,.12)";
-      ctx.fillRect(dx > 0 ? x + 29 : x, dy > 0 ? y + 29 : y, dx ? 3 : 32, dy ? 3 : 32);
-    });
+    for (const piece of planRoadTile({ profile: roadProfile(grid.roadMask(), lx, ly), tx, ty, seed, neighbours, sandy: sandy > green }))
+      paintRoadPiece(ctx, piece, x, y);
   } else if (tile.ground === "sand" && (tile.biome === "dunes" || tile.biome === "ruins")) {
     // Deserto: o relevo e as ondulações vêm da camada contínua (ADR 0033); aqui só um seixo raro, sem concha do mar.
     if (r(280) > 0.9) {

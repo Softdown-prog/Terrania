@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (114)
+## Todos os arquivos deste módulo (117)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -40,6 +40,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/coin-shop.spec.ts`](../../tests/browser/coin-shop.spec.ts)
 - [`tests/browser/coins.spec.ts`](../../tests/browser/coins.spec.ts)
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
+- [`tests/browser/roads.spec.ts`](../../tests/browser/roads.spec.ts)
 - [`tests/browser/session.spec.ts`](../../tests/browser/session.spec.ts)
 - [`tests/browser/south-alchemy.spec.ts`](../../tests/browser/south-alchemy.spec.ts)
 - [`tests/browser/south-dunes.spec.ts`](../../tests/browser/south-dunes.spec.ts)
@@ -72,6 +73,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/game-styles.test.ts`](../../tests/game-styles.test.ts)
 - [`tests/helpers/artAssets.ts`](../../tests/helpers/artAssets.ts)
 - [`tests/helpers/browserEncounter.ts`](../../tests/helpers/browserEncounter.ts)
+- [`tests/helpers/paintChunk.ts`](../../tests/helpers/paintChunk.ts)
 - [`tests/helpers/recordingContext.ts`](../../tests/helpers/recordingContext.ts)
 - [`tests/hero-pose.test.ts`](../../tests/hero-pose.test.ts)
 - [`tests/interactions.test.ts`](../../tests/interactions.test.ts)
@@ -108,6 +110,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/regional-wave2.test.ts`](../../tests/regional-wave2.test.ts)
 - [`tests/regions.test.ts`](../../tests/regions.test.ts)
 - [`tests/respawn.test.ts`](../../tests/respawn.test.ts)
+- [`tests/roads.test.ts`](../../tests/roads.test.ts)
 - [`tests/sand-beetle.test.ts`](../../tests/sand-beetle.test.ts)
 - [`tests/shop-actions.test.ts`](../../tests/shop-actions.test.ts)
 - [`tests/simulation.test.ts`](../../tests/simulation.test.ts)
