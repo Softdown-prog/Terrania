@@ -32,6 +32,8 @@ import { tickSurface } from "./modes/surfaceMode.ts";
 import { tickInterior } from "./modes/interiorMode.ts";
 import { mountQuestAction, npcOffer, questStepId } from "./interactions.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
+import { wellQuestSummary } from "../engine/quests/south/well/state.ts";
+import { WELL_LINES } from "./messages/wellQuestLines.ts";
 import { visibleBattleCreatures } from "../engine/combat/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/character/Experience.ts";
 
@@ -119,7 +121,7 @@ export class Game {
       tileY: Math.floor(player.y / TILE_SIZE),
       progression: experienceProgress(this.sim.experience),
       awaitingRespawn: player.hp <= 0,
-    }, aelaQuestProgress(this.sim.trainingKills));
+    }, aelaQuestProgress(this.sim.trainingKills), wellQuestSummary(this.sim.well.view));
     this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins, inventory.elixirs);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateGear(inventory.gear);
@@ -216,9 +218,11 @@ export class Game {
       if (rewarded) this.save();
       const offer = npcOffer(npc.id);
       const lines = npcDialogue(npc, this.sim.trainingKills, offer?.item === "sword");
-      this.hud.showNpcDialogue(npc.name, npc.role, rewarded
-        ? [...lines, `Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`]
-        : lines, offer);
+      const well = this.sim.well.talk(npc.id, this.sim.inventory);
+      if (well.changed) { this.save(); this.updateHud(); }
+      const extra = [...(rewarded ? [`Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`] : []),
+        ...(well.event ? WELL_LINES[well.event] : [])];
+      this.hud.showNpcDialogue(npc.name, npc.role, extra.length ? [...lines, ...extra] : lines, offer);
     }
   }
 

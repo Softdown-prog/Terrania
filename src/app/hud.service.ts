@@ -11,6 +11,7 @@ import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './i
 import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { SOUTH_MOUNT_SALES } from '../engine/mounts/southMountSales.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
+import type { WellQuestSummary } from '../engine/quests/south/well/types.ts';
 import { ELIXIR_RECIPES, elixirRecipe, emptyElixirCounts, type ElixirCounts, type ElixirId } from '../engine/character/alchemy/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
@@ -427,14 +428,21 @@ export class HudService implements GameUi {
     this.quest.set(name); this.questProgress.set('E ou porta: sair');
     this.coords.set('Interior · Vila da Travessia');
   }
-  updateHero(hero: HeroHudState, quest: AelaQuestProgress): void {
+  updateHero(hero: HeroHudState, quest: AelaQuestProgress, well?: WellQuestSummary): void {
     this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);
     this.nutrition.set(hero.nutrition);
     this.awaitingRespawn.set(hero.awaitingRespawn);
     this.progression.set(hero.progression);
-    this.quest.set(quest.completed ? 'Clareira protegida' : 'Proteja a clareira');
-    this.questProgress.set(quest.completed ? 'Missão concluída ✓' : `${quest.defeated} / ${quest.goal} slimes`);
-    this.questPercent.set(quest.defeated / quest.goal * 100);
+    // Uma missão no painel: a da clareira até ser concluída; depois a do poço, se já começou (ADR 0031).
+    if (quest.completed && well?.started) {
+      this.quest.set(well.title);
+      this.questProgress.set(well.progress);
+      this.questPercent.set(well.percent);
+    } else {
+      this.quest.set(quest.completed ? 'Clareira protegida' : 'Proteja a clareira');
+      this.questProgress.set(quest.completed ? 'Missão concluída ✓' : `${quest.defeated} / ${quest.goal} slimes`);
+      this.questPercent.set(quest.defeated / quest.goal * 100);
+    }
     this.mapTile.set({ x: hero.tileX, y: hero.tileY });
     this.coords.set(`X ${hero.tileX} · Y ${hero.tileY}`);
   }

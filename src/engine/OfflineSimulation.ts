@@ -19,6 +19,9 @@ import { LEGACY_RESPAWN_SECONDS, respawnSecondsForId } from "./combat/respawn.ts
 import type { CreatureKind } from "../actors/CreatureCatalog.ts";
 import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./character/Experience.ts";
 import { hasNutrition, type NutritionState } from "./character/Food.ts";
+import { WellInvestigation } from "./quests/south/well/WellInvestigation.ts";
+import { wellQuestStarted } from "./quests/south/well/state.ts";
+import type { WellQuestState } from "./quests/south/well/types.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
 export interface OfflineSave {
@@ -37,6 +40,8 @@ export interface OfflineSave {
   experience?: number;
   awaitingRespawn?: true;
   mounts?: MountSave;
+  /** Missão "A Água Escura" (ADR 0031); ausente enquanto não começou. */
+  wellQuest?: WellQuestState;
   /** Relógio da aventura, em segundos de jogo (ADR 0029). */
   time?: number;
   /** Quando cada criatura derrotada volta, em segundos do relógio. */
@@ -58,6 +63,8 @@ export class OfflineSimulation {
   readonly slimes = new Map<string, Slime>();
   readonly defeated = new Set<string>();
   readonly inventory: Inventory;
+  /** Missão "A Água Escura" (ADR 0031). */
+  readonly well: WellInvestigation;
   readonly mounts: MountStable;
   readonly drops = new Map<string, LootDrop>();
   readonly collision: SeedCollision;
@@ -78,6 +85,7 @@ export class OfflineSimulation {
     this.collision = new SeedCollision(seed);
     this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined,
       levelForExperience(saved?.seed === seed ? normalizeExperience(saved?.experience) : 0));
+    this.well = new WellInvestigation(saved?.seed === seed ? saved.wellQuest : undefined);
     this.mounts = new MountStable(saved?.seed === seed ? saved.mounts : undefined);
     if (saved && saved.seed === seed) {
       // A previous save may now overlap a newly introduced solid landmark.
@@ -293,6 +301,7 @@ export class OfflineSimulation {
       defeated: [...this.defeated].slice(-2000),
       inventory: this.inventory.snapshot(),
       ...(Object.keys(this.mounts.snapshot()).length ? { mounts: this.mounts.snapshot() } : {}),
+      ...(wellQuestStarted(this.well.view) ? { wellQuest: this.well.snapshot() } : {}),
       ...(hasNutrition(this.player.nutrition) ? { nutrition: this.player.nutrition } : {}),
       drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),
     };

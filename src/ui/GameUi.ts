@@ -2,6 +2,7 @@ import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import type { ElixirCounts, ElixirId } from '../engine/character/alchemy/index.ts';
+import type { WellQuestSummary } from '../engine/quests/south/well/types.ts';
 import type { MarketId } from '../engine/character/coins/index.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/character/Weapons.ts';
@@ -65,7 +66,7 @@ export interface GameUi {
   updateGear(gear: GearState | null): void;
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void;
   setQuickPotionFeedback(message: string): void;
-  updateHero(hero: HeroHudState, quest: AelaQuestProgress): void;
+  updateHero(hero: HeroHudState, quest: AelaQuestProgress, well?: WellQuestSummary): void;
   /** Avisos de transição (por exemplo, descer ou subir de uma caverna). */
   setTravelNotice(message: string): void;
   setTargetCombat(enabled: boolean): void;

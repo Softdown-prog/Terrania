@@ -57,7 +57,7 @@ export const SOUTH_DIALOGUES:Readonly<Record<string,readonly string[]>>={
     "Traga polpa de cacto, flor do deserto, erva do pântano e glândulas; eu preparo Poção Maior e Antídoto por moedas."],
   "south-khemet":["O Sol Negro observa tudo, sobretudo a água que deixou de refletir as estrelas.",
     "O Escaravelho Solar é um presságio nas ruínas. Não invoque a criatura dentro da cidade.",
-    "O templo está aberto a peregrinos; a investigação do poço será uma missão futura."],
+    "O templo está aberto a peregrinos. Quem investiga o poço deve ouvir Gorrak, Sylrael e a mim, e depois olhar a água."],
   "south-sylrael":["Fui expulsa do oásis depois que a água ganhou a cor de pedra sombria.",
     "Encontrei inscrições sob o poço, mas Gorrak não deixou que eu as copiasse.",
     "Procure os sinais das antigas palmeiras a oeste. Ainda não é uma missão registrada."],

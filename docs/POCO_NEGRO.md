@@ -45,12 +45,15 @@ A arena é somente cenário nesta etapa.
 - **Bazar das Raridades e Ossuário** compram loot em moedas (ADR 0026).
 - **Casa de Venenos:** Ixtal prepara a **Poção Maior** (cura 120 HP) e o **Antídoto** (limpa todos os status) com
   saque das criaturas e moedas; os frascos ficam na bolsa e se bebem em qualquer lugar (ADR 0030).
+- **Missão "A Água Escura"** (ADR 0031): ouvir Gorrak, Khemet e Sylrael (qualquer ordem), examinar o poço pela placa,
+  levar **Gosma Tóxica** (hidra do brejo) a Ixtal e contar a Gorrak, que paga **150 Terrania Gold** uma única vez.
+  Aparece no painel de missão depois da clareira de Aela.
 - **Cercado do Domador Rukh:** vende o Escaravelho de Carga e o Lagarto das Areias em moedas, já selados (ADR 0028).
 
 ## O que NÃO foi implementado
 - Receitas de veneno para a lâmina e de efeitos temporários (a **alquimia básica** existe: Poção Maior e Antídoto) e comércio de itens na hospedaria (o **descanso pago** existe: ver acima);
 - As habilidades especiais das montarias do deserto (carga extra e resistência ao calor);
-- Cultos, missões de corrupção do poço, combate de arena;
+- Cultos, as missões seguintes sobre quem despeja a toxina no poço (a investigação inicial existe), combate de arena;
 - Uma caverna fixa de brejo junto ao muro (o bioma de brejo fica na
   transição sudeste e possui geração própria).
 

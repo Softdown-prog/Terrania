@@ -143,6 +143,13 @@ export class Inventory {
     if (owned - sold > 0) this.materialCounts[material] = owned - sold; else delete this.materialCounts[material];
     return { result: "sold", coins: total, sold };
   }
+  /** Gasta `quantity` de um material. Atômico: sem o suficiente nada muda. */
+  spendMaterial(id: string, quantity: number): boolean {
+    const owned = this.materialCounts[id] ?? 0;
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || owned < quantity) return false;
+    if (owned - quantity > 0) this.materialCounts[id] = owned - quantity; else delete this.materialCounts[id];
+    return true;
+  }
   addMaterial(id: string): boolean {
     if (!KNOWN_MATERIALS.has(id) || (this.materialCounts[id] ?? 0) >= MAX_STACK) return false;
     this.materialCounts[id] = (this.materialCounts[id] ?? 0) + 1;

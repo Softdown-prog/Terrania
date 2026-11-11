@@ -3,6 +3,7 @@ import { normalizeInventory } from '../engine/character/Inventory.ts';
 import { normalizeDrops } from '../engine/character/loot.ts';
 import { maxHpForExperience, normalizeExperience } from '../engine/character/Experience.ts';
 import { hasNutrition, normalizeNutrition } from '../engine/character/Food.ts';
+import { normalizeWellQuest, wellQuestStarted } from '../engine/quests/south/well/state.ts';
 import { normalizeMountSave } from '../engine/mounts/MountStable.ts';
 
 const SAVE_KEY = 'terrania-origins-v1';
@@ -33,7 +34,8 @@ export function loadLocalSave(): OfflineSave | null {
         { nutrition: normalizeNutrition(save.nutrition) } : {}),
       drops: normalizeDrops(save.drops),
       ...(Object.keys(normalizeMountSave(save.mounts)).length ?
-        { mounts: normalizeMountSave(save.mounts) } : {}) };
+        { mounts: normalizeMountSave(save.mounts) } : {}),
+      ...(wellQuestStarted(normalizeWellQuest(save.wellQuest)) ? { wellQuest: normalizeWellQuest(save.wellQuest) } : {}) };
   } catch { return null; }
 }
 export function saveLocal(save: OfflineSave): void {

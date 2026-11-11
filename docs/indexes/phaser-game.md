@@ -18,7 +18,7 @@ Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir reg
 - [`src/game/modes/caveMode.ts`](../../src/game/modes/caveMode.ts)
 - [`src/game/modes/interiorMode.ts`](../../src/game/modes/interiorMode.ts)
 
-## Todos os arquivos deste módulo (12)
+## Todos os arquivos deste módulo (13)
 
 - [`src/game/Game.ts`](../../src/game/Game.ts)
 - [`src/game/PhaserGame.ts`](../../src/game/PhaserGame.ts)
@@ -28,6 +28,7 @@ Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir reg
 - [`src/game/interactions.ts`](../../src/game/interactions.ts)
 - [`src/game/messages/inventoryFeedback.ts`](../../src/game/messages/inventoryFeedback.ts)
 - [`src/game/messages/mountMessages.ts`](../../src/game/messages/mountMessages.ts)
+- [`src/game/messages/wellQuestLines.ts`](../../src/game/messages/wellQuestLines.ts)
 - [`src/game/modes/caveMode.ts`](../../src/game/modes/caveMode.ts)
 - [`src/game/modes/interiorMode.ts`](../../src/game/modes/interiorMode.ts)
 - [`src/game/modes/surfaceMode.ts`](../../src/game/modes/surfaceMode.ts)
