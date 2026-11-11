@@ -8,7 +8,7 @@ Toda pedra do jogo saía do mesmo pintor (`paintRock`, dentro de `scenery.ts`): 
 
 ## Decisões
 
-1. **Estilo por bioma, um arquivo por assunto** (`src/render/rocks/`, o `index.ts` só reexporta): `types.ts` (os estilos e o número de formatos), `style.ts` (qual estilo cada bioma pede), `variant.ts` (a variação da pedra), `mossRock.ts` e `sandstoneRock.ts` (um pintor por estilo).
+1. **Estilo por bioma, um arquivo por assunto** (`src/render/rocks/`, o `index.ts` só reexporta): `types.ts` (os estilos e o número de formatos), `style.ts` (qual estilo cada bioma pede), `variant.ts` (a variação da pedra), `mossRock.ts` (o pintor da pedra de musgo, comum às regiões). A pedra de arenito só aparece no Sul e fica em `src/render/south/rocks/sandstoneRock.ts`.
 2. **Pedra de arenito** (`dunes` e `ruins`): estratos em faixas de tons de areia com a junta escavada pelo vento, nichos de erosão, lado de sombra, areia amontoada no pé, contorno e reflexo, **sem nenhum verde**. Seis formatos: matacão, laje, pilar esculpido, dois blocos, arco baixo e um grupo de três pedras pequenas. As fendas são recortadas pela silhueta e nunca passam dela.
 3. **A pedra de musgo é a de antes**, só que movida de `scenery.ts` para o seu arquivo (as seis assinaturas de desenho são idênticas às originais). Os demais biomas continuam com ela.
 4. **Variação própria da pedra** (`rockVariant`: hash da posição e da semente), no lugar do `decoration`, que escolhia sempre o formato 0. Vale para os dois estilos, então a pedra de musgo do resto do mundo também passa a ter os seis formatos.

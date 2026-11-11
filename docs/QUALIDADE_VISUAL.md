@@ -14,7 +14,7 @@ Referência de qualidade: monstros (`src/render/creatures/`), espadas (`src/rend
 | 1 | Chão do deserto (dunas e terra batida) | cor lisa e um traço repetido por tile; sem relevo; concha do mar no deserto | **feito** (ADR 0033) |
 | 2 | Estradas e trilhas | marcas de roda sempre horizontais, mesmo em estrada vertical; emenda abrupta com a areia | **feito** (ADR 0034) |
 | 3 | Pedras do deserto | a mesma pedra cinza com musgo verde em todo lugar; falta arenito | **feito** (ADR 0035) |
-| 4 | Decoração do deserto | só pedras: faltam cacto, capim seco, ossos, rastros (peças registradas no contrato de arte) | pendente |
+| 4 | Decoração do deserto | só pedras: faltam cacto, capim seco, ossos, rastros (peças registradas no contrato de arte) | **feito** (ADR 0036; rastros ficaram de fora) |
 | 5 | Lago negro | costa em degraus de tile, sem borda irregular nem areia úmida suave | pendente |
 | 6 | Ruínas | peças pequenas e chapadas | pendente |
 | 7 | Torres (exterior) | volume bom, superfície plana, pouco detalhe de desgaste | pendente |

@@ -1,8 +1,8 @@
-import { ALCHEMIST_NPC, elixirRecipe, type ElixirId } from "../../engine/character/alchemy/index.ts";
-import { nearestNpc } from "../../world/npcs.ts";
-import { INVENTORY_FEEDBACK } from "../messages/inventoryFeedback.ts";
-import { say } from "./say.ts";
-import type { ShopContext, ShopResult } from "./shopContext.ts";
+import { ALCHEMIST_NPC, elixirRecipe, type ElixirId } from "../../../engine/character/south/alchemy/index.ts";
+import { nearestNpc } from "../../../world/npcs.ts";
+import { INVENTORY_FEEDBACK } from "../../messages/inventoryFeedback.ts";
+import { say } from "../say.ts";
+import type { ShopContext, ShopResult } from "../shopContext.ts";
 
 /** Preparo na Casa de Venenos (ADR 0030): só com o diálogo aberto, fora de interior e ao lado de Ixtal. */
 export function craftElixir({ sim, inInterior, menuOpen }: ShopContext, id: ElixirId): ShopResult {

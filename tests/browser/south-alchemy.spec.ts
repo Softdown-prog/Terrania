@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { NPCS } from "../../src/world/npcs.ts";
-import { elixirRecipe } from "../../src/engine/character/alchemy/index.ts";
+import { elixirRecipe } from "../../src/engine/character/south/alchemy/index.ts";
 
 /**
  * Alquimia da Casa de Venenos no jogo de verdade (ADR 0030): conversar com Ixtal, preparar a Poção Maior

@@ -84,6 +84,7 @@
 - [`docs/adr/0033-relevo-das-dunas-do-sul.md`](../../docs/adr/0033-relevo-das-dunas-do-sul.md)
 - [`docs/adr/0034-estradas-e-marcas-de-roda.md`](../../docs/adr/0034-estradas-e-marcas-de-roda.md)
 - [`docs/adr/0035-pedras-por-bioma.md`](../../docs/adr/0035-pedras-por-bioma.md)
+- [`docs/adr/0036-decoracao-do-deserto.md`](../../docs/adr/0036-decoracao-do-deserto.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

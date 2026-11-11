@@ -1,4 +1,4 @@
-import { WELL_SAMPLE_MATERIAL } from "../../../engine/quests/south/well/index.ts";
+import { WELL_SAMPLE_MATERIAL } from "../../../../engine/quests/south/well/index.ts";
 
 /** Ixtal compara a gosma com a água do poço. */
 export const ANALYZED: readonly string[] = [

@@ -1,4 +1,4 @@
-import { MAX_STACK } from "../../Limits.ts";
+import { MAX_STACK } from "../../../Limits.ts";
 import { ELIXIR_IDS } from "./catalog.ts";
 import type { ElixirId } from "./recipe.ts";
 

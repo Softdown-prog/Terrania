@@ -12,7 +12,7 @@ import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { SOUTH_MOUNT_SALES } from '../engine/mounts/southMountSales.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
-import { ELIXIR_RECIPES, elixirRecipe, emptyElixirCounts, type ElixirCounts, type ElixirId } from '../engine/character/alchemy/index.ts';
+import { ELIXIR_RECIPES, elixirRecipe, emptyElixirCounts, type ElixirCounts, type ElixirId } from '../engine/character/south/alchemy/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {

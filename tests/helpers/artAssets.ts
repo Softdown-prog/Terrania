@@ -73,8 +73,9 @@ import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
 import { drawCaveDownStair } from "../../src/render/caveStairsDownArt.ts";
+import { drawBones, drawCrackedEarth, drawDesertCactus, drawDesertShrub, drawDryGrass } from "../../src/render/south/decor/index.ts";
 import { drawMossRock } from "../../src/render/rocks/mossRock.ts";
-import { drawSandstoneRock } from "../../src/render/rocks/sandstoneRock.ts";
+import { drawSandstoneRock } from "../../src/render/south/rocks/sandstoneRock.ts";
 import { drawWheelRut } from "../../src/render/roads/wheelRut.ts";
 import { drawRoadStones } from "../../src/render/roads/roadStones.ts";
 import { drawRoadVerge } from "../../src/render/roads/roadVerge.ts";
@@ -260,6 +261,14 @@ export const ASSETS: ArtAsset[] = [
   ...([0, 1, 2, 3, 4, 5] as const).flatMap<ArtAsset>(shape => [
     { id: `pedra de musgo formato ${shape}`, tier: "prop", fn: "drawMossRock", draw: c => drawMossRock(c, shape) },
     { id: `pedra de arenito formato ${shape}`, tier: "prop", fn: "drawSandstoneRock", draw: c => drawSandstoneRock(c, shape) },
+  ]),
+  // Decoração do deserto do Sul (ADR 0036): cada formato de cada peça é uma peça própria.
+  ...([0, 1, 2, 3] as const).flatMap<ArtAsset>(shape => [
+    { id: `capim seco formato ${shape}`, tier: "prop", fn: "drawDryGrass", draw: c => drawDryGrass(c, shape) },
+    { id: `arbusto seco formato ${shape}`, tier: "prop", fn: "drawDesertShrub", draw: c => drawDesertShrub(c, shape) },
+    { id: `ossos formato ${shape}`, tier: "prop", fn: "drawBones", draw: c => drawBones(c, shape) },
+    { id: `cacto formato ${shape}`, tier: "prop", fn: "drawDesertCactus", draw: c => drawDesertCactus(c, shape) },
+    { id: `terra rachada formato ${shape}`, tier: "prop", fn: "drawCrackedEarth", draw: c => drawCrackedEarth(c, shape) },
   ]),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
   ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)

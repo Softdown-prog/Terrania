@@ -8,12 +8,16 @@ import { paintSouthRuin, type RuinLayer } from "./southRuinsArt.ts";
 import { TOWER_PAINTERS } from "./south/towers/index.ts";
 import type { TowerId } from "../world/towers/types.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
-import { drawMossRock, drawSandstoneRock, type RockStyle } from "./rocks/index.ts";
+import { drawMossRock, type RockStyle } from "./rocks/index.ts";
+import { drawSandstoneRock } from "./south/rocks/index.ts";
+import { DECOR_PAINTERS, decorShape, type DecorKind } from "./south/decor/index.ts";
 
 export interface Scenery {
-  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-tower" | "south-city";
+  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-tower" | "south-city" | "south-decor";
   /** Só `rock`: o estilo da pedra, escolhido pelo bioma (ausente = pedra de musgo de sempre). */
   rockStyle?: RockStyle;
+  /** Só `south-decor`: o tipo de decoração do deserto (sem colisão, só visual). */
+  decorKind?: DecorKind;
   /** Só `south-tower`: qual torre desenhar. */
   towerId?: TowerId;
   cityKind?: SouthCityPropKind;
@@ -390,6 +394,15 @@ export function renderScenery(
     const s = sprite("regional-" + kind + "-" + variation, 96, 128, 48, 102,
       (c) => paintRegionalLandmark(c, kind, variation));
     if (s) blit(ctx, s); else paintRegionalLandmark(ctx, kind, variation);
+  } else if (prop.kind === "south-decor") {
+    // Sem tipo não desenha nada (e nunca cai na fogueira do `else` final).
+    const kind = prop.decorKind;
+    if (kind) {
+      const shape = decorShape(Math.floor(prop.variant * 4));
+      const s = sprite(`south-decor-${kind}-${shape}`, 56, 48, 28, 38, (c) => DECOR_PAINTERS[kind](c, shape));
+      ctx.scale(flip, 1);
+      if (s) blit(ctx, s); else DECOR_PAINTERS[kind](ctx, shape);
+    }
   } else if (prop.kind === "south-ruin" && prop.ruinLayer) {
     const layer = prop.ruinLayer, v = Math.max(0, Math.min(3, Math.floor(prop.variant)));
     // O desenho usa o contato da ruína como origem; cada camada é ordenada em uma altura própria.

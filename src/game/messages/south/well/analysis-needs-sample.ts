@@ -1,4 +1,4 @@
-import { WELL_SAMPLE_MATERIAL } from "../../../engine/quests/south/well/index.ts";
+import { WELL_SAMPLE_MATERIAL } from "../../../../engine/quests/south/well/index.ts";
 
 /** Ixtal sem a gosma do brejo para comparar. */
 export const ANALYSIS_NEEDS_SAMPLE: readonly string[] = [

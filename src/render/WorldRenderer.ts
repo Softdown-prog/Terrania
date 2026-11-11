@@ -15,6 +15,7 @@ import { SOUTH_CITY, SOUTH_CITY_PROPS } from "../world/southCity.ts";
 import { generateChunkCanvas } from "./terrain.ts";
 import type { Scenery } from "./scenery.ts";
 import { rockStyleFor, rockVariant } from "./rocks/index.ts";
+import { southDecorProp } from "./south/decor/index.ts";
 interface ChunkVisual {
   canvas: HTMLCanvasElement;
   props: Scenery[];
@@ -52,6 +53,9 @@ export class WorldRenderer {
             variant: tile.rock ? rockVariant(tx, ty, this.seed) : tile.decoration,
             ...(tile.rock ? { rockStyle: rockStyleFor(tile.biome) } : {}),
           });
+        // Decoração do deserto (ADR 0036): só visual, sem colisão, em chão livre de areia fora da cidade.
+        const decor = southDecorProp(tile, tx, ty, this.seed);
+        if (decor) props.push(decor);
         if (tile.ground === "water") {
           const black = tile.biome === "black-lake";
           water.push({

@@ -8,7 +8,7 @@ O saque das criaturas só servia para vender (ADR 0026). Ixtal, o Destilador (di
 
 ## Decisões
 
-1. **Receita = ingredientes + moedas + efeito,** um arquivo por receita em `src/engine/character/alchemy/recipes/` (`greater-potion.ts`, `antidote.ts`); cada assunto no seu arquivo (`recipe.ts` o contrato, `results.ts` os desfechos, `catalog.ts` a lista, `counts.ts` as contagens e a normalização, `alchemist.ts` o NPC) e `index.ts` só reexporta. As ações de loja ficam em `src/game/actions/alchemyActions.ts`. Os ingredientes são **materiais que já existem** (saque comum das criaturas, por nome), então nada de item novo no catálogo de criaturas.
+1. **Receita = ingredientes + moedas + efeito,** um arquivo por receita em `src/engine/character/south/alchemy/recipes/` (`greater-potion.ts`, `antidote.ts`); cada assunto no seu arquivo (`recipe.ts` o contrato, `results.ts` os desfechos, `catalog.ts` a lista, `counts.ts` as contagens e a normalização, `alchemist.ts` o NPC) e `index.ts` só reexporta. As ações de loja ficam em `src/game/actions/south/alchemyActions.ts`. Os ingredientes são **materiais que já existem** (saque comum das criaturas, por nome), então nada de item novo no catálogo de criaturas.
 2. **Duas receitas nesta entrega:**
    - **Poção Maior** (2 × Polpa de Cacto Hidratante + 1 × Flor do Deserto, **40 Terrania Gold**): cura até 120 HP, mais de três poções comuns (35), sem passar da vida máxima.
    - **Antídoto de Ixtal** (1 × Erva do Pântano + 1 × Glândula de Veneno, **18 Terrania Gold**): remove todos os status (veneno, queimadura, gelo...) sem curar vida.

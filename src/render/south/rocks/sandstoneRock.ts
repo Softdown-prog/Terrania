@@ -1,6 +1,6 @@
-import { hash2 } from "../../world/random.ts";
-import { ellipse, mix, rgba, shade, softShadow } from "../draw.ts";
-import { ROCK_VARIANTS } from "./types.ts";
+import { hash2 } from "../../../world/random.ts";
+import { ellipse, mix, rgba, shade, softShadow } from "../../draw.ts";
+import { ROCK_VARIANTS } from "../../rocks/types.ts";
 
 const OUTLINE = "#2b1a0e";
 const GLINT = "#fff6dc";

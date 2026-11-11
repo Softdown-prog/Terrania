@@ -1,6 +1,6 @@
 import type { WellWitness } from "./witness.ts";
 
-/** O que a conversa mudou (ou explicou); o jogo traduz cada evento em falas (`game/messages/well/`). */
+/** O que a conversa mudou (ou explicou); o jogo traduz cada evento em falas (`game/messages/south/well/`). */
 export type WellEvent =
   | `heard:${WellWitness}`
   | "sign-needs-witnesses" | "well-inspected"

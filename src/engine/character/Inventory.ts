@@ -9,7 +9,7 @@ import { FOODS, emptyFoodCounts, normalizeFoodCounts, type FoodCounts, type Food
 import { nearestNpc } from "../../world/npcs.ts";
 import { MAX_COINS, marketFor, materialSalePrice, normalizeCoins, type MarketId } from "./coins/index.ts";
 import { ELIXIR_IDS, elixirRecipe, emptyElixirCounts, normalizeElixirs, type ElixirCounts, type ElixirCraftResult,
-  type ElixirId, type ElixirUseResult } from "./alchemy/index.ts";
+  type ElixirId, type ElixirUseResult } from "./south/alchemy/index.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 

@@ -2,12 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync } from "node:fs";
 import { Inventory, normalizeInventory, POTION_HEAL } from "../src/engine/character/Inventory.ts";
-import { ALCHEMIST_NPC, ELIXIR_IDS, ELIXIR_RECIPES, elixirRecipe, normalizeElixirs } from "../src/engine/character/alchemy/index.ts";
+import { ALCHEMIST_NPC, ELIXIR_IDS, ELIXIR_RECIPES, elixirRecipe, normalizeElixirs } from "../src/engine/character/south/alchemy/index.ts";
 import { materialSalePrice } from "../src/engine/character/coins/index.ts";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { Player } from "../src/actors/Player.ts";
 import { NPCS } from "../src/world/npcs.ts";
-import { craftElixir, drinkElixir } from "../src/game/actions/alchemyActions.ts";
+import { craftElixir, drinkElixir } from "../src/game/actions/south/alchemyActions.ts";
 import type { ShopContext } from "../src/game/actions/shopContext.ts";
 import { npcOffer } from "../src/game/interactions.ts";
 import { SOUTH_DIALOGUES } from "../src/npcs/south/index.ts";
@@ -24,7 +24,7 @@ const bagFor = (recipe = POTION, extra: Record<string, unknown> = {}): Inventory
 });
 
 test("cada receita tem o seu arquivo e usa só ingredientes que as criaturas realmente deixam cair", () => {
-  const dir = "../src/engine/character/alchemy/";
+  const dir = "../src/engine/character/south/alchemy/";
   const files = readdirSync(new URL(dir + "recipes/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
   assert.deepEqual(files, ELIXIR_RECIPES.map(r => r.id).sort(), "um arquivo por receita, nomeado pelo id, na pasta recipes");
   assert.deepEqual(readdirSync(new URL(dir, import.meta.url)).filter(f => f.endsWith(".ts")).sort(),

@@ -3,4 +3,3 @@ export { ROCK_VARIANTS, type RockStyle } from "./types.ts";
 export { rockStyleFor } from "./style.ts";
 export { rockVariant } from "./variant.ts";
 export { drawMossRock } from "./mossRock.ts";
-export { drawSandstoneRock } from "./sandstoneRock.ts";

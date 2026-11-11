@@ -1,7 +1,7 @@
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
-import type { ElixirCounts, ElixirId } from '../engine/character/alchemy/index.ts';
+import type { ElixirCounts, ElixirId } from '../engine/character/south/alchemy/index.ts';
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
 import type { MarketId } from '../engine/character/coins/index.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';

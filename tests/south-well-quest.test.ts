@@ -8,7 +8,7 @@ import { WELL_ANALYST_NPC, WELL_REPORT_NPC, WELL_SIGN_NPC, WellInvestigation } f
 import { WELL_REWARD_COINS, WELL_SAMPLE_MATERIAL, WELL_WITNESSES, normalizeWellQuest, wellQuestStarted,
   wellQuestSummary } from "../src/engine/quests/south/well/index.ts";
 import type { WellEvent } from "../src/engine/quests/south/well/index.ts";
-import { WELL_LINES } from "../src/game/messages/well/index.ts";
+import { WELL_LINES } from "../src/game/messages/south/well/index.ts";
 import { NPCS } from "../src/world/npcs.ts";
 import { CREATURE_CATALOG } from "../src/actors/CreatureCatalog.ts";
 
@@ -26,7 +26,7 @@ test("os atores da missão existem e a gosma é saque real da hidra do brejo", (
   const files = readdirSync(new URL("../src/engine/quests/south/well/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
   assert.deepEqual(files, ["WellInvestigation", "constants", "events", "index", "normalize", "questState", "summary", "witness"],
     "cada assunto no seu arquivo");
-  const lines = readdirSync(new URL("../src/game/messages/well/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
+  const lines = readdirSync(new URL("../src/game/messages/south/well/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
   assert.equal(lines.length, Object.keys(WELL_LINES).length + 1, "uma fala por evento, cada uma no seu arquivo, mais o índice");
 });
 

@@ -1,5 +1,5 @@
-import { describeCoins } from "../../../engine/character/coins/index.ts";
-import { WELL_REWARD_COINS } from "../../../engine/quests/south/well/index.ts";
+import { describeCoins } from "../../../../engine/character/coins/index.ts";
+import { WELL_REWARD_COINS } from "../../../../engine/quests/south/well/index.ts";
 
 /** Gorrak recebe o relatório e paga. */
 export const REPORTED: readonly string[] = [

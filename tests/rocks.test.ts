@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { BIOME_NAMES, type Biome } from "../src/world/biomes.ts";
 import { CHUNK_TILES, getTile } from "../src/world/terrain.ts";
-import { ROCK_VARIANTS, drawMossRock, drawSandstoneRock, rockStyleFor, rockVariant } from "../src/render/rocks/index.ts";
+import { ROCK_VARIANTS, drawMossRock, rockStyleFor, rockVariant } from "../src/render/rocks/index.ts";
+import { drawSandstoneRock } from "../src/render/south/rocks/index.ts";
 import { WorldRenderer } from "../src/render/WorldRenderer.ts";
 import { renderScenery, clearSceneryCache, type Scenery } from "../src/render/scenery.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
@@ -45,7 +46,9 @@ function colorsOf(draw: (c: CanvasRenderingContext2D) => void): Array<[number, n
 
 test("cada assunto das pedras está no seu arquivo", () => {
   const files = readdirSync(new URL("../src/render/rocks/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["index", "mossRock", "sandstoneRock", "style", "types", "variant"]);
+  assert.deepEqual(files, ["index", "mossRock", "style", "types", "variant"], "pedras comuns a todas as regiões");
+  const south = readdirSync(new URL("../src/render/south/rocks/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
+  assert.deepEqual(south, ["index", "sandstoneRock"], "a pedra do deserto fica na pasta do Sul");
   assert.equal(ROCK_VARIANTS, 6);
 });
 

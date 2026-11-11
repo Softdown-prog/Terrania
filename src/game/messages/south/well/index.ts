@@ -1,4 +1,4 @@
-import type { WellEvent } from "../../../engine/quests/south/well/index.ts";
+import type { WellEvent } from "../../../../engine/quests/south/well/index.ts";
 import { ANALYSIS_NEEDS_SAMPLE } from "./analysis-needs-sample.ts";
 import { ANALYZED } from "./analyzed.ts";
 import { HEARD_GORRAK } from "./heard-gorrak.ts";

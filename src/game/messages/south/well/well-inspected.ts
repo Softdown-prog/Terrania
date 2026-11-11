@@ -1,4 +1,4 @@
-import { WELL_SAMPLE_MATERIAL } from "../../../engine/quests/south/well/index.ts";
+import { WELL_SAMPLE_MATERIAL } from "../../../../engine/quests/south/well/index.ts";
 
 /** O herói examina a água do poço pela placa. */
 export const WELL_INSPECTED: readonly string[] = [
