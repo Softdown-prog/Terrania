@@ -55,6 +55,7 @@ export function npcOffer(npcId: string): NpcOffer | undefined {
   if (npcId === "south-rukh") return { item: "desert-stable", price: 0 };
   if (npcId === "south-zinha") return { item: "bazaar", price: 0 };
   if (npcId === "south-marn") return { item: "ossuary", price: 0 };
+  if (npcId === "south-ixtal") return { item: "alchemy", price: 0 };
   if (npcId === "south-madame") return { item: "rest", price: INN_REST_PRICE };
   if (npcId === "stablemaster") return { item: "stable", price: 0 };
   return undefined;

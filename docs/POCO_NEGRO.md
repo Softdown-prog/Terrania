@@ -43,10 +43,12 @@ A arena é somente cenário nesta etapa.
   O pagamento é em **moedas** (Terrania Gold, Cripta Coin, Eclipse Crown; ADR 0023 e 0025).
 
 - **Bazar das Raridades e Ossuário** compram loot em moedas (ADR 0026).
+- **Casa de Venenos:** Ixtal prepara a **Poção Maior** (cura 120 HP) e o **Antídoto** (limpa todos os status) com
+  saque das criaturas e moedas; os frascos ficam na bolsa e se bebem em qualquer lugar (ADR 0030).
 - **Cercado do Domador Rukh:** vende o Escaravelho de Carga e o Lagarto das Areias em moedas, já selados (ADR 0028).
 
 ## O que NÃO foi implementado
-- Alquimia e comércio de itens na hospedaria (o **descanso pago** existe: ver abaixo);
+- Receitas de veneno para a lâmina e de efeitos temporários (a **alquimia básica** existe: Poção Maior e Antídoto) e comércio de itens na hospedaria (o **descanso pago** existe: ver acima);
 - As habilidades especiais das montarias do deserto (carga extra e resistência ao calor);
 - Cultos, missões de corrupção do poço, combate de arena;
 - Uma caverna fixa de brejo junto ao muro (o bioma de brejo fica na

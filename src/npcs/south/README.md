@@ -6,7 +6,7 @@ e três falas exclusivas. Hesh e Zinha patrulham trajetos curtos; a mesma funç�
 alimenta desenho e alcance da conversa.
 
 Madame Víbora vende o **descanso pago** (24 Terrania Gold: vida completa e sem status, ADR 0022 e 0025); é o
-primeiro serviço da cidade.
+primeiro serviço da cidade. Ixtal prepara **elixires** na Casa de Venenos (Poção Maior e Antídoto, ADR 0030).
 
 Interiores disponíveis: Fortaleza, Fornalha e Hospedaria. Bazar, Casa de Venenos,
 Ossuário, Templo, Arena e Estábulo possuem fachadas, **sem transação, cura,

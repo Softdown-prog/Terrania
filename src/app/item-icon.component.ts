@@ -12,6 +12,7 @@ export type ItemIconId =
   | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
   | 'sword-tempest' | 'sword-astral'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
+  | 'greater-potion' | 'antidote'
   | CoinId
   | SouthRareLootId;
 
@@ -76,6 +77,23 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
           <path d="M13 11V14C8 16 6 19.5 6 23C6 27 10 29 16 29C22 29 26 27 26 23C26 19.5 24 16 19 14V11Z" fill="none"/>
           <rect x="12.5" y="3" width="7" height="4" rx="1.2" fill="#b98a55"/>
           <ellipse cx="11.2" cy="23.5" rx="1.6" ry="2.6" fill="#fff" stroke="none" opacity=".75"/>
+        }
+        @case ('greater-potion') {
+          <path d="M12 9V13C6 15 4.5 19.5 4.5 23C4.5 27.5 9.5 29.5 16 29.5C22.5 29.5 27.5 27.5 27.5 23C27.5 19.5 26 15 20 13V9Z" fill="#e6e2ec"/>
+          <path d="M5.8 22C7 18.5 10.5 17.2 16 17.2C21.5 17.2 25 18.5 26.2 22C26 26.5 22.5 28.4 16 28.4C9.5 28.4 6 26.5 5.8 22Z" fill="#c9283f" stroke="none"/>
+          <path d="M8 22.5C10 20.5 13 20 16 20C19 20 22 20.5 24 22.5C23 26 20 27.4 16 27.4C12 27.4 9 26 8 22.5Z" fill="#f0576c" stroke="none"/>
+          <rect x="11.5" y="3" width="9" height="4.5" rx="1.3" fill="#b98a55"/>
+          <path d="M12.5 5.2H19.5" fill="none" stroke="#7a5630" stroke-width="1.2"/>
+          <path d="M16 20.5V25M13.7 22.7H18.3" fill="none" stroke="#fff6dc" stroke-width="1.6"/>
+          <ellipse cx="9.8" cy="23.4" rx="1.5" ry="2.8" fill="#fff" stroke="none" opacity=".75"/>
+        }
+        @case ('antidote') {
+          <path d="M13 8V13C8.5 15 7 18.5 7 22C7 26.5 11 29 16 29C21 29 25 26.5 25 22C25 18.5 23.5 15 19 13V8Z" fill="#dfe8e0"/>
+          <path d="M8.2 22C9 19 11.8 17.8 16 17.8C20.2 17.8 23 19 23.8 22C23.5 26 20.5 27.8 16 27.8C11.5 27.8 8.5 26 8.2 22Z" fill="#3f9d55" stroke="none"/>
+          <path d="M10 22.5C11.5 20.8 13.5 20.4 16 20.4C18.5 20.4 20.5 20.8 22 22.5C21 25.3 19 26.6 16 26.6C13 26.6 11 25.3 10 22.5Z" fill="#8fe08a" stroke="none"/>
+          <rect x="12" y="3.5" width="8" height="4" rx="1.2" fill="#7b5a8f"/>
+          <path d="M16 20V26M13.5 23H18.5" fill="none" stroke="#fff6dc" stroke-width="1.5"/>
+          <ellipse cx="11.2" cy="23" rx="1.3" ry="2.4" fill="#fff" stroke="none" opacity=".7"/>
         }
         @case ('apple') {
           <path d="M16 10C12 7 6 9 6 16C6 23 10 28 13 28C14.5 28 15 27.3 16 27.3C17 27.3 17.5 28 19 28C22 28 26 23 26 16C26 9 20 7 16 10Z" fill="#d8433a"/>

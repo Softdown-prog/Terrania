@@ -23,7 +23,7 @@ import { nearestCombatCreature } from "../engine/combat/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { runMountAction } from "../engine/mounts/MountActions.ts";
-import { buyFood, buySword, eatFood, equipGear, equipWeapon, restAtInn, sellMaterial, tradeGelForPotion, usePotion,
+import { buyFood, buySword, craftElixir, drinkElixir, eatFood, equipGear, equipWeapon, restAtInn, sellMaterial, tradeGelForPotion, usePotion,
   type ShopContext, type ShopResult } from "./actions/shopActions.ts";
 import { TravelState } from "./TravelState.ts";
 import type { Frame, FrameTimers, ModeHost } from "./modes/types.ts";
@@ -85,6 +85,8 @@ export class Game {
     this.hud.onSwordPurchase(() => this.shop(buySword));
     this.hud.onInnRest(() => this.shop(restAtInn));
     this.hud.onMaterialSale((market, material, quantity) => this.shop(context => sellMaterial(context, market, material, quantity)));
+    this.hud.onElixirCraft(id => this.shop(context => craftElixir(context, id)));
+    this.hud.onElixirUse(id => this.shop(context => drinkElixir(context, id)));
     this.hud.onFoodUse(id => this.shop(context => eatFood(context, id)));
     this.hud.onFoodTrade(id => this.shop(context => buyFood(context, id)));
     this.hud.onWeaponEquip(weapon => this.shop(context => equipWeapon(context, weapon)));
@@ -118,7 +120,7 @@ export class Game {
       progression: experienceProgress(this.sim.experience),
       awaitingRespawn: player.hp <= 0,
     }, aelaQuestProgress(this.sim.trainingKills));
-    this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins);
+    this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins, inventory.elixirs);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateGear(inventory.gear);
     this.hud.updateMount(this.sim.mounts.view(kills));

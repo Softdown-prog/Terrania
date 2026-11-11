@@ -54,7 +54,7 @@ export const SOUTH_DIALOGUES:Readonly<Record<string,readonly string[]>>={
     "Vi uma trilha de lama na direção do brejo, mas não marquei uma caverna segura ainda."],
   "south-ixtal":["Um frasco verde cura ou mata: depende de quem o prepara.",
     "Os diabretes recolhem veneno das víboras e dos escorpiões das dunas.",
-    "A Casa de Venenos ainda não oferece alquimia; trarei receitas quando o laboratório estiver pronto."],
+    "Traga polpa de cacto, flor do deserto, erva do pântano e glândulas; eu preparo Poção Maior e Antídoto por moedas."],
   "south-khemet":["O Sol Negro observa tudo, sobretudo a água que deixou de refletir as estrelas.",
     "O Escaravelho Solar é um presságio nas ruínas. Não invoque a criatura dentro da cidade.",
     "O templo está aberto a peregrinos; a investigação do poço será uma missão futura."],

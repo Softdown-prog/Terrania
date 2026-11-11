@@ -560,6 +560,22 @@
                 }
               </div>
             } @empty { <p class="dialog-note">Você não tem nada que esta banca compre.</p> }
+          } @else if (offer.item === 'alchemy') {
+            <section class="mount-stable-panel" aria-label="Casa de Venenos">
+              <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }}. Ixtal usa o saque das criaturas do Sul.</p>
+              @for (recipe of hud.elixirRecipes; track recipe.id) {
+                <div class="market-row" [attr.data-recipe]="recipe.id">
+                  <span>{{ recipe.name }} · {{ hud.coinText(recipe.price) }} · você tem {{ hud.elixirs()[recipe.id] }}<br>
+                    @for (ingredient of recipe.ingredients; track ingredient.material) {
+                      <small [attr.data-ingredient]="ingredient.material">{{ ingredient.material }}
+                        {{ hud.ingredientOwned(ingredient.material) }}/{{ ingredient.quantity }}</small>{{ ' ' }}
+                    }
+                  </span>
+                  <button type="button" class="secondary-button" [attr.id]="'craft-' + recipe.id"
+                    [disabled]="!hud.canCraft(recipe.id)" (click)="hud.craftElixir(recipe.id)">Preparar</button>
+                </div>
+              }
+            </section>
           } @else if (offer.item === 'rest') {
             <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }} · Vida {{ hud.hp() }} / {{ hud.maxHp() }}</p>
             <button id="innRest" (click)="hud.restAtInn()" class="secondary-button" type="button"

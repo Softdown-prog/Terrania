@@ -15,13 +15,14 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (106)
+## Todos os arquivos deste módulo (108)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
 - [`src/qa/QaExpedition.ts`](../../src/qa/QaExpedition.ts)
 - [`src/qa/QaNatural.ts`](../../src/qa/QaNatural.ts)
 - [`tests/README.md`](../../tests/README.md)
+- [`tests/alchemy.test.ts`](../../tests/alchemy.test.ts)
 - [`tests/architecture-index.test.ts`](../../tests/architecture-index.test.ts)
 - [`tests/art-contract.test.ts`](../../tests/art-contract.test.ts)
 - [`tests/atlas.test.ts`](../../tests/atlas.test.ts)
@@ -39,6 +40,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/coins.spec.ts`](../../tests/browser/coins.spec.ts)
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/browser/session.spec.ts`](../../tests/browser/session.spec.ts)
+- [`tests/browser/south-alchemy.spec.ts`](../../tests/browser/south-alchemy.spec.ts)
 - [`tests/browser/south-inn.spec.ts`](../../tests/browser/south-inn.spec.ts)
 - [`tests/browser/south-market.spec.ts`](../../tests/browser/south-market.spec.ts)
 - [`tests/browser/south-stable.spec.ts`](../../tests/browser/south-stable.spec.ts)

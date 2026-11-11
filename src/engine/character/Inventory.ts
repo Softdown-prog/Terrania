@@ -8,6 +8,8 @@ import { FOODS, emptyFoodCounts, normalizeFoodCounts, type FoodCounts, type Food
   type FoodTradeResult, type FoodUseResult } from "./Food.ts";
 import { nearestNpc } from "../../world/npcs.ts";
 import { MAX_COINS, marketFor, materialSalePrice, normalizeCoins, type MarketId } from "./coins/index.ts";
+import { ELIXIR_IDS, elixirRecipe, emptyElixirCounts, normalizeElixirs, type ElixirCounts, type ElixirCraftResult,
+  type ElixirId, type ElixirUseResult } from "./alchemy/index.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 
@@ -25,7 +27,7 @@ export type MaterialSaleResult = "sold" | "not-sellable-here" | "no-material" | 
 export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned" | "level-too-low";
 /** Tudo que uma ação da bolsa pode responder; a interface traduz cada valor em uma mensagem. */
 export type InventoryOutcome = PotionTradeResult | InnRestResult | MaterialSaleResult | SwordPurchaseResult | SwordEquipResult | GearResult |
-  FoodTradeResult | FoodUseResult | "healed" | "full-health" | "no-potion" | "too-far";
+  FoodTradeResult | FoodUseResult | ElixirCraftResult | ElixirUseResult | "healed" | "full-health" | "no-potion" | "too-far";
 
 export interface InventoryState {
   gel: number;
@@ -37,6 +39,8 @@ export interface InventoryState {
   materials?: Record<string, number>;
   /** Dinheiro em Terrania Gold (ADR 0023); as moedas maiores saem da conta. Ausente quando é zero. */
   coins?: number;
+  /** Elixires da Casa de Venenos (ADR 0030). Ausente quando não há nenhum. */
+  elixirs?: Record<ElixirId, number>;
 }
 
 const KNOWN_MATERIALS = new Set([...REGIONAL_CREATURE_KINDS.flatMap(kind => CREATURE_CATALOG[kind].loot.map(item => item.item)),
@@ -66,12 +70,14 @@ export function normalizeInventory(value: unknown): InventoryState {
     : undefined;
   const gear = normalizeGear(state.gear);
   const food = normalizeFoodCounts(state.food);
+  const elixirs = normalizeElixirs(state.elixirs);
   return {
     gel: count(state.gel),
     potion: count(state.potion),
     questRewardClaimed: state.questRewardClaimed === true,
     ...(normalizeCoins(state.coins) > 0 ? { coins: normalizeCoins(state.coins) } : {}),
     ...(Object.values(food).some(v => v > 0) ? { food } : {}),
+    ...(Object.values(elixirs).some(v => v > 0) ? { elixirs } : {}),
     ...(loadout ? { loadout } : {}),
     ...(Object.keys(gear).length ? { gear } : {}),
     ...(Object.keys(normalizeMaterials(state.materials)).length ? { materials: normalizeMaterials(state.materials) } : {}),
@@ -84,6 +90,7 @@ export class Inventory {
   private materialCounts: Record<string, number> = {};
   private potionCount = 0;
   private foods: FoodCounts = emptyFoodCounts();
+  private elixirCounts: Record<ElixirId, number> = emptyElixirCounts();
   private claimed = false;
   private weapons: WeaponLoadout;
   private equippedGear: GearState;
@@ -95,6 +102,7 @@ export class Inventory {
     this.materialCounts = normalizeMaterials(state.materials);
     this.potionCount = state.potion;
     this.foods = normalizeFoodCounts(state.food);
+    this.elixirCounts = normalizeElixirs(state.elixirs);
     this.claimed = state.questRewardClaimed;
     const restored=state.loadout ?? { forged: false, equipped: "starter" };
     this.weapons = weaponUnlocked(restored.equipped, level, restored.forged)
@@ -148,6 +156,7 @@ export class Inventory {
   }
   get potion(): number { return this.potionCount; }
   get food(): FoodCounts { return { ...this.foods }; }
+  get elixirs(): ElixirCounts { return { ...this.elixirCounts }; }
   get questRewardClaimed(): boolean { return this.claimed; }
   get hasRoomForGel(): boolean { return this.gelCount < MAX_STACK; }
   get loadout(): WeaponLoadout { return this.weapons; }
@@ -212,6 +221,38 @@ export class Inventory {
     if (outcome === "ate") this.foods[id]--;
     return outcome;
   }
+  /**
+   * Prepara um elixir (ADR 0030): gasta os ingredientes e as moedas e entrega o frasco. Atômico: se faltar
+   * ingrediente ou dinheiro, ou a pilha estiver cheia, nada muda. Quem chama garante que está com Ixtal.
+   */
+  craftElixir(id: ElixirId): ElixirCraftResult {
+    const recipe = elixirRecipe(id);
+    if (this.elixirCounts[id] >= MAX_STACK) return "elixir-stack-full";
+    if (recipe.ingredients.some(({ material, quantity }) => (this.materialCounts[material] ?? 0) < quantity))
+      return "missing-ingredients";
+    if (!this.spendCoins(recipe.price)) return "insufficient-elixir-coins";
+    for (const { material, quantity } of recipe.ingredients) {
+      const left = (this.materialCounts[material] ?? 0) - quantity;
+      if (left > 0) this.materialCounts[material] = left; else delete this.materialCounts[material];
+    }
+    this.elixirCounts[id]++;
+    return "elixir-crafted";
+  }
+  /** Usa um elixir. Sem efeito (vida cheia, ou sem nenhum mal) não gasta o frasco. */
+  useElixir(id: ElixirId, hero: { hp: number; maxHp: number; cleanse?: () => void; debuffs?: Readonly<Record<string, number>> }): ElixirUseResult {
+    if (!ELIXIR_IDS.includes(id) || this.elixirCounts[id] < 1) return "no-elixir";
+    if (!Number.isFinite(hero.hp) || !Number.isFinite(hero.maxHp) || hero.hp <= 0) return "elixir-no-effect";
+    const { effect } = elixirRecipe(id);
+    if (effect.kind === "heal") {
+      if (hero.hp >= hero.maxHp) return "elixir-no-effect";
+      hero.hp = Math.min(hero.maxHp, hero.hp + effect.amount);
+    } else {
+      if (!Object.values(hero.debuffs ?? {}).some(seconds => seconds > 0)) return "elixir-no-effect";
+      hero.cleanse?.();
+    }
+    this.elixirCounts[id]--;
+    return "elixir-used";
+  }
   buyForgeSword(hero: { x: number; y: number; hp: number }): SwordPurchaseResult {
     if (hero.hp <= 0) return "unavailable";
     if (nearestNpc(hero.x, hero.y)?.id !== "toren") return "too-far-from-forge";
@@ -247,6 +288,7 @@ export class Inventory {
       questRewardClaimed: this.claimed,
       ...(this.coinCount > 0 ? { coins: this.coinCount } : {}),
       ...(Object.values(this.foods).some(v => v > 0) ? { food: { ...this.foods } } : {}),
+      ...(Object.values(this.elixirCounts).some(v => v > 0) ? { elixirs: { ...this.elixirCounts } } : {}),
       ...(this.weapons.forged || this.weapons.equipped !== "starter" ? { loadout: this.weapons } : {}),
       ...(Object.keys(this.equippedGear).length ? { gear: this.equippedGear } : {}),
       ...(Object.keys(this.materialCounts).length ? { materials: { ...this.materialCounts } } : {}),

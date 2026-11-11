@@ -11,6 +11,7 @@ import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './i
 import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { SOUTH_MOUNT_SALES } from '../engine/mounts/southMountSales.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
+import { ELIXIR_RECIPES, elixirRecipe, emptyElixirCounts, type ElixirCounts, type ElixirId } from '../engine/character/alchemy/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
 const ACTION_LABELS: Record<NearbyAction, string> = {
@@ -28,13 +29,14 @@ const KIT_IDS = Object.keys(GEAR) as GearId[];
 /** Somente a visualização da bolsa; quantidades e propriedade vêm do motor. */
 export interface BackpackItemView {
   readonly id: string;
-  readonly kind: 'material' | 'potion' | 'food' | 'gear' | 'weapon' | 'coin';
+  readonly kind: 'material' | 'potion' | 'food' | 'gear' | 'weapon' | 'coin' | 'elixir';
   readonly name: string;
   readonly description: string;
   readonly icon: ItemIconId;
   readonly quantity: number;
   readonly rarity?: 'rare';
   readonly foodId?: FoodId;
+  readonly elixirId?: ElixirId;
   readonly gearId?: GearId;
   readonly weaponId?: WeaponId;
   readonly defense?: number;
@@ -95,6 +97,8 @@ export class HudService implements GameUi {
       Object.entries(a).every(([key,quantity])=>b[key]===quantity)),
   });
   readonly potions = signal(0);
+  readonly elixirs = signal<ElixirCounts>(emptyElixirCounts());
+  readonly elixirRecipes = ELIXIR_RECIPES;
   readonly foodIds = FOOD_IDS;
   readonly foodCatalog = FOODS;
   readonly food = signal<FoodCounts>(emptyFoodCounts());
@@ -130,6 +134,11 @@ export class HudService implements GameUi {
       if (count <= 0 && id !== 'terrania-gold') continue;
       const coin = COIN_TIERS.find(tier => tier.id === id)!;
       result.push({ id: 'coin-' + id, kind: 'coin', name: coin.name, icon: id, quantity: count, description: coin.description });
+    }
+    const elixirs = this.elixirs();
+    for (const recipe of ELIXIR_RECIPES) {
+      result.push({ id: 'elixir-' + recipe.id, kind: 'elixir', name: recipe.name, icon: recipe.id,
+        quantity: elixirs[recipe.id], elixirId: recipe.id, description: recipe.description });
     }
     for (const [name,quantity] of Object.entries(this.creatureMaterials()).sort(([a],[b])=>a.localeCompare(b))) {
       if (quantity <= 0) continue;
@@ -185,6 +194,7 @@ export class HudService implements GameUi {
     if (!item || this.hp() <= 0) return false;
     if (item.kind === 'material' || item.kind === 'coin') return false;
     if (item.kind === 'potion') return item.quantity > 0 && this.hp() < this.maxHp();
+    if (item.kind === 'elixir') return item.quantity > 0;
     if (item.kind === 'food') {
       return item.quantity > 0 && this.nutrition().cooldown <= 0 &&
         this.nutrition().reserve + (item.foodId ? FOODS[item.foodId].healBudget : 0) <= MAX_NUTRITION;
@@ -214,6 +224,8 @@ export class HudService implements GameUi {
   private talkCallback: () => void = () => {};
   private potionTradeCallback: () => string = () => '';
   private innRestCallback: () => string = () => '';
+  private elixirCraftCallback: (id: ElixirId) => string = () => '';
+  private elixirUseCallback: (id: ElixirId) => string = () => '';
   private materialSaleCallback: (market: MarketId, material: string, quantity: number) => string = () => '';
   private potionCallback: () => string = () => '';
   private foodCallback: (id: FoodId) => string = () => '';
@@ -251,6 +263,8 @@ export class HudService implements GameUi {
   onTalk(callback: () => void): void { this.talkCallback = callback; }
   onPotionTrade(callback: () => string): void { this.potionTradeCallback = callback; }
   onPotionUse(callback: () => string): void { this.potionCallback = callback; }
+  onElixirCraft(callback: (id: ElixirId) => string): void { this.elixirCraftCallback = callback; }
+  onElixirUse(callback: (id: ElixirId) => string): void { this.elixirUseCallback = callback; }
   onFoodUse(callback: (id: FoodId) => string): void { this.foodCallback = callback; }
   onFoodTrade(callback: (id: FoodId) => string): void { this.foodTradeCallback = callback; }
   onSwordPurchase(callback: () => string): void { this.swordPurchaseCallback = callback; }
@@ -284,6 +298,15 @@ export class HudService implements GameUi {
   talk(): void { this.talkCallback(); }
   tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
   restAtInn(): void { this.npcTradeFeedback.set(this.innRestCallback()); }
+  craftElixir(id: ElixirId): void { this.npcTradeFeedback.set(this.elixirCraftCallback(id)); }
+  drinkElixir(id: ElixirId): void { this.inventoryFeedback.set(this.elixirUseCallback(id)); }
+  /** Quantos ingredientes da receita o herói já tem, para a tela da Casa de Venenos. */
+  ingredientOwned(material: string): number { return this.creatureMaterials()[material] ?? 0; }
+  canCraft(id: ElixirId): boolean {
+    const recipe = elixirRecipe(id);
+    return this.coins() >= recipe.price && this.elixirs()[id] < 99 &&
+      recipe.ingredients.every(({ material, quantity }) => this.ingredientOwned(material) >= quantity);
+  }
   /** Vende `quantity` unidades (ou tudo, com um número grande) do material à banca aberta (ADR 0026). */
   sellMaterial(market: MarketId, material: string, quantity: number): void {
     this.npcTradeFeedback.set(this.materialSaleCallback(market, material, quantity));
@@ -309,6 +332,7 @@ export class HudService implements GameUi {
     if (!item || !this.canUseSelectedBagItem()) return;
     if (item.kind === 'potion') this.usePotion();
     else if (item.kind === 'food' && item.foodId) this.useFood(item.foodId);
+    else if (item.kind === 'elixir' && item.elixirId) this.drinkElixir(item.elixirId);
     else if (item.kind === 'gear' && item.gearId) this.equipGear(item.gearId);
     else if (item.kind === 'weapon' && item.weaponId) this.equipWeapon(item.weaponId);
   }
@@ -336,7 +360,8 @@ export class HudService implements GameUi {
   }
   respawn(): void { this.respawnCallback(); }
   updateInventory(gel: number, potions: number, food: FoodCounts,
-    materials: Readonly<Record<string,number>> = {}, coins = 0): void {
+    materials: Readonly<Record<string,number>> = {}, coins = 0, elixirs: ElixirCounts = emptyElixirCounts()): void {
+    this.elixirs.set(elixirs);
     this.gel.set(gel); this.potions.set(potions); this.food.set(food);
     this.coins.set(coins);
     this.creatureMaterials.set(materials);

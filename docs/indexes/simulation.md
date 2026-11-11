@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (45)
+## Todos os arquivos deste módulo (49)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -30,6 +30,10 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/Food.ts`](../../src/engine/character/Food.ts)
 - [`src/engine/character/Inventory.ts`](../../src/engine/character/Inventory.ts)
 - [`src/engine/character/Weapons.ts`](../../src/engine/character/Weapons.ts)
+- [`src/engine/character/alchemy/antidote.ts`](../../src/engine/character/alchemy/antidote.ts)
+- [`src/engine/character/alchemy/greater-potion.ts`](../../src/engine/character/alchemy/greater-potion.ts)
+- [`src/engine/character/alchemy/index.ts`](../../src/engine/character/alchemy/index.ts)
+- [`src/engine/character/alchemy/types.ts`](../../src/engine/character/alchemy/types.ts)
 - [`src/engine/character/coins/cripta-coin.ts`](../../src/engine/character/coins/cripta-coin.ts)
 - [`src/engine/character/coins/drops.ts`](../../src/engine/character/coins/drops.ts)
 - [`src/engine/character/coins/eclipse-crown.ts`](../../src/engine/character/coins/eclipse-crown.ts)
