@@ -73,6 +73,8 @@ import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
 import { drawCaveDownStair } from "../../src/render/caveStairsDownArt.ts";
+import { drawMossRock } from "../../src/render/rocks/mossRock.ts";
+import { drawSandstoneRock } from "../../src/render/rocks/sandstoneRock.ts";
 import { drawWheelRut } from "../../src/render/roads/wheelRut.ts";
 import { drawRoadStones } from "../../src/render/roads/roadStones.ts";
 import { drawRoadVerge } from "../../src/render/roads/roadVerge.ts";
@@ -254,6 +256,11 @@ export const ASSETS: ArtAsset[] = [
   ...(["grass", "sand"] as const).flatMap<ArtAsset>(edge => ([0, 1, 2, 3] as const).map<ArtAsset>(side => ({
     id: `borda da estrada ${edge} lado ${side}`, tier: "prop", fn: "drawRoadVerge",
     draw: c => drawRoadVerge(c, { kind: "verge", side, edge, variation: .61 }, 0, 0) }))),
+  // Pedras (ADR 0035): o formato de cada estilo é uma peça própria.
+  ...([0, 1, 2, 3, 4, 5] as const).flatMap<ArtAsset>(shape => [
+    { id: `pedra de musgo formato ${shape}`, tier: "prop", fn: "drawMossRock", draw: c => drawMossRock(c, shape) },
+    { id: `pedra de arenito formato ${shape}`, tier: "prop", fn: "drawSandstoneRock", draw: c => drawSandstoneRock(c, shape) },
+  ]),
   { id: "barril de referência", tier: "prop", fn: "renderBarrelReference", draw: c => renderBarrelReference(c, 0, 0, "b1") },
   ...(["verdant", "glacial", "desert", "coastal", "basalt", "marsh"] as const)
     .flatMap<ArtAsset>(theme => [

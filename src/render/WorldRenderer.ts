@@ -14,6 +14,7 @@ import { BUILDINGS } from "../world/village.ts";
 import { SOUTH_CITY, SOUTH_CITY_PROPS } from "../world/southCity.ts";
 import { generateChunkCanvas } from "./terrain.ts";
 import type { Scenery } from "./scenery.ts";
+import { rockStyleFor, rockVariant } from "./rocks/index.ts";
 interface ChunkVisual {
   canvas: HTMLCanvasElement;
   props: Scenery[];
@@ -24,7 +25,8 @@ interface ChunkVisual {
 /** Bounded LRU: ground is cached; tall objects are sorted with actors each frame. */
 export class WorldRenderer {
   private readonly cache = new Map<string, ChunkVisual>();
-  constructor(public readonly seed: number) {}
+  readonly seed: number;
+  constructor(seed: number) { this.seed = seed; }
   private chunk(cx: number, cy: number): ChunkVisual {
     const key = cx + "," + cy;
     const cached = this.cache.get(key);
@@ -46,7 +48,9 @@ export class WorldRenderer {
             kind: tile.tree ? "tree" : "rock",
             x: tx * TILE_SIZE + 16,
             y: ty * TILE_SIZE + 23,
-            variant: tile.decoration,
+            // Pedra: variação própria, porque o `decoration` de um tile de pedra é sempre pequeno (ADR 0035).
+            variant: tile.rock ? rockVariant(tx, ty, this.seed) : tile.decoration,
+            ...(tile.rock ? { rockStyle: rockStyleFor(tile.biome) } : {}),
           });
         if (tile.ground === "water") {
           const black = tile.biome === "black-lake";

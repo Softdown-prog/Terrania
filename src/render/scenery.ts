@@ -8,9 +8,12 @@ import { paintSouthRuin, type RuinLayer } from "./southRuinsArt.ts";
 import { TOWER_PAINTERS } from "./south/towers/index.ts";
 import type { TowerId } from "../world/towers/types.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
+import { drawMossRock, drawSandstoneRock, type RockStyle } from "./rocks/index.ts";
 
 export interface Scenery {
   kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-tower" | "south-city";
+  /** Só `rock`: o estilo da pedra, escolhido pelo bioma (ausente = pedra de musgo de sempre). */
+  rockStyle?: RockStyle;
   /** Só `south-tower`: qual torre desenhar. */
   towerId?: TowerId;
   cityKind?: SouthCityPropKind;
@@ -130,34 +133,6 @@ function paintPine(c: CanvasRenderingContext2D, b: number): void {
     c.beginPath(); c.moveTo(0, tip + 1); c.lineTo(-w * 0.55, yy - 14); c.lineTo(-w + 2, yy - 1); c.stroke();
   }
   ellipse(c, -2, -13 - 5 * 13 + 3, 2, 3, rgba("#e8f2c8", 0.5));
-}
-
-// ------------------------------------------------------------------ pedras
-function paintRock(c: CanvasRenderingContext2D, b: number): void {
-  const j = (i: number): number => (hash2(i, b, 77) - 0.5) * 3;
-  const P: Array<[number, number]> = [
-    [-14 + j(1), 0], [-15 + j(2), -10 + j(3)], [-7 + j(4), -20 + j(5)], [6 + j(6), -19 + j(7)], [15 + j(8), -9 + j(9)], [13 + j(10), 0],
-  ];
-  ellipse(c, 2, 1, 19, 5, rgba("#102a21", 0.35));
-  c.fillStyle = "#3d4c43";
-  c.beginPath(); P.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.fill();
-  const top = c.createLinearGradient(-12, -20, 8, -6);
-  top.addColorStop(0, "#c2c4ae"); top.addColorStop(1, "#8d9583");
-  c.fillStyle = top;
-  c.beginPath(); c.moveTo(P[1]![0], P[1]![1]); c.lineTo(P[2]![0], P[2]![1]); c.lineTo(P[3]![0], P[3]![1]); c.lineTo(1, -6); c.closePath(); c.fill();
-  c.fillStyle = "#6f7e70";
-  c.beginPath(); c.moveTo(1, -6); c.lineTo(P[3]![0], P[3]![1]); c.lineTo(P[4]![0], P[4]![1]); c.lineTo(P[5]![0], P[5]![1]); c.closePath(); c.fill();
-  c.fillStyle = "#56655a";
-  c.beginPath(); c.moveTo(P[0]![0], P[0]![1]); c.lineTo(P[1]![0], P[1]![1]); c.lineTo(1, -6); c.lineTo(P[5]![0], P[5]![1]); c.closePath(); c.fill();
-  c.strokeStyle = rgba("#1d2b25", 0.6); c.lineWidth = 1;
-  c.beginPath(); P.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.stroke();
-  c.strokeStyle = rgba("#1d2b25", 0.5);
-  c.beginPath(); c.moveTo(-3, -17); c.lineTo(-5, -10); c.lineTo(-2, -6); c.moveTo(8, -12); c.lineTo(5, -8); c.stroke();
-  c.strokeStyle = rgba("#ffffff", 0.45);
-  c.beginPath(); c.moveTo(P[1]![0] + 1.4, P[1]![1] - 0.6); c.lineTo(P[2]![0] + 0.6, P[2]![1] + 1); c.lineTo(P[3]![0] - 1, P[3]![1] + 0.6); c.stroke();
-  ellipse(c, -6, -2.4, 8, 2.8, "#6f8d4f"); ellipse(c, -7, -3.2, 5, 1.6, "#93b261");
-  ellipse(c, 11, -1.2, 3, 1.5, "#7a9a58");
-  ellipse(c, 17, 0.4, 2.6, 1.7, "#7d8a78"); ellipse(c, -19, 0.8, 2, 1.3, "#6a766a");
 }
 
 // -------------------------------------------------------------------- arco
@@ -403,11 +378,12 @@ export function renderScenery(
       ellipse(ctx, px, py, 3 + p * 6.5, 2.6 + p * 5.5, rgba("#e6e4da", (1 - p) * 0.4));
     }
   } else if (prop.kind === "rock") {
-    const b = bucket(prop.variant, 6);
-    const s = sprite("rock" + b, 64, 44, 32, 36, (c) => paintRock(c, b));
+    const b = bucket(prop.variant, 6), style = prop.rockStyle ?? "moss";
+    const paint = (c: CanvasRenderingContext2D): void => style === "sandstone" ? drawSandstoneRock(c, b) : drawMossRock(c, b);
+    const s = sprite(style === "moss" ? "rock" + b : `rock-${style}-${b}`, 64, 44, 32, 36, paint);
     const sc = 0.82 + ((prop.variant * 37) % 1) * 0.5;
     ctx.scale(sc * flip, sc);
-    if (s) blit(ctx, s); else paintRock(ctx, b);
+    if (s) blit(ctx, s); else paint(ctx);
   } else if (prop.kind === "regional-landmark" && prop.landmarkKind) {
     const kind = prop.landmarkKind, variation = landmarkArtVariant(prop.variant);
     // Four bounded visual variations per kind; painting stays off the frame loop.

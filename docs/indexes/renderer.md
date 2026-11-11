@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (128)
+## Todos os arquivos deste módulo (134)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -107,6 +107,12 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/roads/types.ts`](../../src/render/roads/types.ts)
 - [`src/render/roads/wheelRut.ts`](../../src/render/roads/wheelRut.ts)
 - [`src/render/roads/wobble.ts`](../../src/render/roads/wobble.ts)
+- [`src/render/rocks/index.ts`](../../src/render/rocks/index.ts)
+- [`src/render/rocks/mossRock.ts`](../../src/render/rocks/mossRock.ts)
+- [`src/render/rocks/sandstoneRock.ts`](../../src/render/rocks/sandstoneRock.ts)
+- [`src/render/rocks/style.ts`](../../src/render/rocks/style.ts)
+- [`src/render/rocks/types.ts`](../../src/render/rocks/types.ts)
+- [`src/render/rocks/variant.ts`](../../src/render/rocks/variant.ts)
 - [`src/render/scenery.ts`](../../src/render/scenery.ts)
 - [`src/render/sceneryTrunk.ts`](../../src/render/sceneryTrunk.ts)
 - [`src/render/south/terrain/dunes/field.ts`](../../src/render/south/terrain/dunes/field.ts)
