@@ -2,8 +2,8 @@ package engine
 
 import "math"
 
-// Port independente das regras de regiões, clima e biomas de src/world/*.ts.
-// Alterações de geração exigem validar go run ./cmd/parity contra TS.
+// Port independente (e antigo) das regras de regiões, clima e biomas de src/world/*.ts.
+// Não é mais conferido contra o TypeScript (ADR 0038): pode divergir do jogo.
 type regionWeights struct { center, north, south, east, west float64 }
 type terrainProfile struct {
     region string

@@ -10,8 +10,8 @@ import { RUIN_CELL_TILES, RUIN_NAMES, RUIN_PIECES, getSouthRuinForCell, southRui
   southRuinsInArea, type RuinVariant, type SouthRuin } from "../src/world/southRuins.ts";
 
 /**
- * Ruínas e lago negro dos Ermos do Sul (ADR 0017). O Go não espelha estes dois sistemas,
- * então as amostras da paridade (tiles e marcos perto do centro) precisam continuar idênticas.
+ * Ruínas e lago negro dos Ermos do Sul (ADR 0017). Sistemas próprios: as amostras de tiles e de marcos perto
+ * do centro precisam continuar idênticas, porque mudar a geração do mundo muda o mapa dos saves existentes.
  */
 const SEED = 842136;
 const allRuins = (seed = SEED): SouthRuin[] => {
@@ -23,7 +23,7 @@ const allRuins = (seed = SEED): SouthRuin[] => {
   return out;
 };
 
-test("paridade com o Go: as amostras de tile e de marco regional não mudaram", () => {
+test("geração estável: as amostras de tile e de marco regional não mudaram", () => {
   const tiles = [[0, 0], [1, 1], [-3, 5], [12, -8], [40, 18], [-19, -12], [200, 50]]
     .map(([x, y]) => { const t = getTile(x!, y!, SEED); return [t.ground, t.tree, t.rock]; });
   assert.deepEqual(tiles, [["path", false, false], ["path", false, false], ["grass", false, false],

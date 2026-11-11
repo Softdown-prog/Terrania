@@ -18,7 +18,7 @@
 
 **Verificação:** npm test; Playwright ao afetar movimento/seleção.
 
-**Limites:** Não importar Angular, Phaser ou browser; motor online Go/Node é separado e requer paridade.
+**Limites:** Não importar Angular, Phaser ou browser; o laboratório Go é separado e não espelha este motor (ADR 0038).
 
 **Perseguição em passos:** solo e Node procuram, em uma busca A*, um centro de tile caminhável dentro do alcance e da linha de visão da espada. O orçamento de recálculo continua valendo ao trocar ou cancelar alvos.
 

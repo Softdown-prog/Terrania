@@ -43,7 +43,7 @@ Essa porta é **apenas loopback do host**, sem exposição pública e sem altera
 
 1. Confirmar no host a revisão exata e comparar a resposta `/health` de Node e Go.
 2. Executar smoke end-to-end com cliente real no shadow, incluindo reconnect e reconciliação de estado.
-3. Validar as regras autoritativas de spawn/IA, combate, dano, colidir em construções e save offline frente à referência TypeScript. A paridade estática e de movimento já existe, mas **não cobre todo o comportamento de combate com múltiplos jogadores**.
+3. Validar as regras autoritativas de spawn/IA, combate, dano, colidir em construções e save offline frente à referência TypeScript. A paridade estática e de movimento existiu, mas foi retirada (ADR 0038); este passo fica sem referência TypeScript automática.
 4. Medir p95/p99 dos ticks, CPU, RSS, memória, conexões e tráfego, sob a mesma carga do Node. Os testes de limite não provam suporte a centenas de usuários.
 5. Validar distribuição WebSocket `wss://`, SSL, Caddy e política de origem em staging **protegido** antes de cutover. Não mudar `VITE_MULTIPLAYER_URL` até a homologação.
 6. Preparar rollback para a mesma imagem/revisão Node que está em produção e executar troca de rota numa janela controlada, sem tocar outros containers.

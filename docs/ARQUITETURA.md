@@ -18,7 +18,7 @@ O frontend é uma aplicação Angular 22 compilada em assets estáticos para o W
 | `server-go/cmd/terrania/` | Laboratório: worker Go (fora do produto) |
 | `server-go/cmd/gateway/`, `server-go/presence/` | Laboratório: roteamento e presença do cluster Go (fora do produto) |
 
-A simulação não importa Angular nem Phaser. O servidor reutiliza regras TypeScript apenas para derivar o catálogo de itens; a paridade com Go é de laboratório. Não foram introduzidas regras de física Arcade: isso alteraria a paridade do movimento/combate já existente.
+A simulação não importa Angular nem Phaser. O servidor reutiliza regras TypeScript apenas para derivar o catálogo de itens; o laboratório Go não espelha o TypeScript (ADR 0038). Não foram introduzidas regras de física Arcade: isso alteraria o movimento/combate já existente.
 
 O Phaser é o dono do loop: uma Scene chama `Game.update(delta)` e apresenta uma CanvasTexture com a arte procedural. Não existe um segundo `requestAnimationFrame` de gameplay. Essa adaptação preserva a arte e os saves; não significa que todos os desenhistas Canvas foram reescritos como sprites Phaser, nem pressupõe ganho de FPS.
 

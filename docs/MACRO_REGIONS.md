@@ -22,12 +22,11 @@
 - Interações narrativas e estruturas completas (entradas de cavernas/masmorras, portos funcionais). Monumentos regionais físicos já possuem colisão e posição no atlas próximo.
 - Verificação prática do atlas e do deslocamento em Android; testes de runtime de salas Go em ambientes reais.
 
-O Go experimental agora reproduz a geração regional em `server-go/engine/world_regions.go` e `world.go`; alterações devem manter a paridade TypeScript/Go.
+O Go experimental tem uma cópia antiga da geração regional em `server-go/engine/world_regions.go` e `world.go`, que **não** é mais mantida igual ao TypeScript (ADR 0038): alterar a geração aqui não exige mexer no Go.
 
 ## Verificação desta etapa
 - `tests/landmarks.test.ts`: presença em quatro direções, seed, solo alcançável e corpo sólido.
 - `server-go/engine/regional_landmarks_test.go`: distribuição e colisão equivalentes.
-- `server-go/scripts/ts-reference.mjs` e `cmd/parity`: coordenadas de marcos na comparação TypeScript/Go.
 - `tests/browser/tap-online.spec.ts`: marcador remoto verificado no atlas do inventário (o minimapa sobreposto não faz parte da interface canônica).
 - CI e browser são obrigatórios antes de integrar; resultados não devem ser inferidos apenas da compilação.
 
@@ -39,7 +38,7 @@ e a colisão local. `src/render/cave.ts` desenha o tema correspondente
 (norte glacial, sul desértico, leste marítimo, oeste rochoso, sudeste
 pantanoso, centro com raízes), a boca da caverna e a cartografia interna
 do inventário. Esta implementação **não** altera o protocolo online, a
-colisão terrestre ou a paridade experimental do Go: acesso somente na
+colisão terrestre: acesso somente na
 aventura local até existir autoridade multiandar no servidor. O subsolo
 não conserva a posição ao recarregar; não há inimigos, itens ou progressão
 de andares. Próximas etapas: persistência/localização por ID, múltiplos

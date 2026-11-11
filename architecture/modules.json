@@ -272,7 +272,7 @@
         "server-go/engine/protocol.go"
       ],
       "doc": "server-go/README.md",
-      "description": "Implementação Go de regras e paridade; substituição do backend ativo requer decisão e validação separadas."
+      "description": "Implementação Go de regras (laboratório, não espelha o TypeScript); substituição do backend ativo requer decisão e validação separadas."
     },
     {
       "id": "go-runtime",
@@ -289,7 +289,7 @@
         "server-go/cmd/gateway/main.go"
       ],
       "doc": "server-go/README.md",
-      "description": "Worker, gateway, laboratório de capacidade, presença e scripts de paridade."
+      "description": "Worker, gateway, laboratório de capacidade, presença e scripts de medição."
     },
     {
       "id": "go-cluster",

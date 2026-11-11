@@ -41,7 +41,7 @@ Nenhum cliente pode mandar HP, posição, kills ou seed. O servidor rejeita inpu
 
 ### Estado da migração
 
-O protocolo JSON permanece v3 para evitar exigir deploy simultâneo do cliente. O código Go não compartilha imports com TypeScript. O objetivo é garantir a mesma simulação por testes de paridade, não presumir que os resultados serão idênticos apenas por compilar.
+O protocolo JSON permanece v3 para evitar exigir deploy simultâneo do cliente. O código Go não compartilha imports com TypeScript e **não é mais conferido contra ele**: a paridade (scripts de referência e os programas `cmd/parity` e `cmd/gameplay-parity`) foi retirada no ADR 0038. O que está aqui é um laboratório que pode divergir do jogo.
 
 ### Linters e detecção de condições de corrida
 

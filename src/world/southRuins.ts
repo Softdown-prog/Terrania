@@ -5,7 +5,7 @@ import { CHUNK_TILES, getTile, nearSouthCity, TILE_SIZE } from "./terrain.ts";
 
 /**
  * Ruínas abandonadas dos Ermos do Sul (ADR 0017). Sistema próprio, separado dos marcos regionais:
- * não muda `regionalLandmarks.ts` (que o Go espelha) e tem colisão e arte derivadas das MESMAS
+ * não muda `regionalLandmarks.ts` e tem colisão e arte derivadas das MESMAS
  * peças (`RUIN_PIECES`), para que o que se vê seja o que bloqueia.
  */
 export const RUIN_CELL_TILES = 160;

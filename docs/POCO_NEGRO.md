@@ -31,7 +31,7 @@ A arena é somente cenário nesta etapa.
   usam `protectedSurfaceTile` para impedir perseguição, ataques normais,
   magias, espinhos refletidos e explosões. Fora dos muros não há proteção.
 - Colisão determinística: paredes, edifícios e poço bloqueiam passagem, mas
-  os dois portões não. O Go experimental espelha terreno, portões e colisão.
+  os dois portões não. (O Go experimental tem uma cópia antiga disso, que não é mais mantida igual: ADR 0038.)
 - **12 habitantes** têm diálogos próprios e aparência regional, com adaga,
   balança, frasco ou chicote; Hesh e Zinha patrulham.
 - Apenas **Fortaleza, Fornalha e Hospedaria** possuem interiores caminháveis,

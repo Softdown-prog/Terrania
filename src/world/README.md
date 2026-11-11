@@ -10,7 +10,7 @@ A regra de progresso da missão da Aela fica em `aelaQuest.ts`. As falas da vila
 
 **Ao alterar:** Preservar determinismo e coordenadas globais/tamanho de tile; registrar mudanças que alterem saves.
 
-**Verificação:** tests/world, physics, village, NPCs e paridade com Go.
+**Verificação:** tests/world, physics, village e NPCs.
 
 **Limites:** Não permitir atravessar colisões; cuidado com divergência entre cliente e servidor.
 

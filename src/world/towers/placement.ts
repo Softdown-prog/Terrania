@@ -8,8 +8,8 @@ import type { TowerDefinition } from "./types.ts";
 
 /**
  * Onde as torres do Sul ficam no mundo (ADR 0019): uma por célula sorteada, em chão livre, longe do
- * Poço Negro, das ruínas e do marco regional. Sistema próprio: não mexe em `regionalLandmarks.ts` (espelhado
- * no Go). A colisão vem dos blocos de cada ficha, os mesmos que a arte desenha.
+ * Poço Negro, das ruínas e do marco regional. Sistema próprio: não mexe em `regionalLandmarks.ts`.
+ * A colisão vem dos blocos de cada ficha, os mesmos que a arte desenha.
  */
 export const TOWER_CELL_TILES = 224;
 export interface SouthTower {

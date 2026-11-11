@@ -13,8 +13,7 @@ import { SOUTH_TOWERS } from "../src/world/towers/south/index.ts";
 import { TOWER_PAINTERS } from "../src/render/south/towers/index.ts";
 
 /**
- * Torres do Sul, parte de fora (ADR 0019). O sistema é próprio (não mexe em `regionalLandmarks.ts`,
- * que o Go espelha); a colisão sai dos blocos da ficha, e cada torre tem ficha e pintor em arquivo próprio.
+ * Torres do Sul, parte de fora (ADR 0019). O sistema é próprio (não mexe em `regionalLandmarks.ts`); a colisão sai dos blocos da ficha, e cada torre tem ficha e pintor em arquivo próprio.
  */
 const SEED = 842136;
 const fileIds = (dir: string): string[] =>

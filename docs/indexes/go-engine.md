@@ -2,7 +2,7 @@
 
 > Gerado automaticamente a partir de `architecture/modules.json`. Estado: **experimental** · Camada: **backend**
 
-Implementação Go de regras e paridade; substituição do backend ativo requer decisão e validação separadas.
+Implementação Go de regras (laboratório, não espelha o TypeScript); substituição do backend ativo requer decisão e validação separadas.
 
 **Documentação de manutenção:** [`server-go/README.md`](../../server-go/README.md)
 

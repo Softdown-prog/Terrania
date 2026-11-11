@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   go-core-autoscale:
-    name: 1/6 Go, cluster, autoscale, parity
+    name: 1/6 Go, cluster, autoscale
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -37,9 +37,6 @@ jobs:
         with:
           go-version-file: server-go/go.mod
           cache-dependency-path: server-go/go.sum
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
       - name: Strict formatting of autoscaling and IPC files
         run: |
           set -euo pipefail
@@ -58,20 +55,11 @@ jobs:
           go test -race -count=5 -timeout=5m ./autoscale ./cluster ./cmd/gateway
           go build -o /tmp/terrania-pre-main-gateway ./cmd/gateway
           go build -o /tmp/terrania-pre-main-worker ./cmd/terrania
-      - name: Simulation and gameplay parity vs TypeScript
-        run: |
-          set -euo pipefail
-          node --experimental-strip-types server-go/scripts/ts-reference.mjs >/tmp/terrania-ts.json
-          (cd server-go && go run ./cmd/parity) >/tmp/terrania-go.json
-          node server-go/scripts/compare.mjs /tmp/terrania-ts.json /tmp/terrania-go.json
-          node --experimental-strip-types server-go/scripts/gameplay-reference.mjs >/tmp/terrania-gameplay-ts.json
-          (cd server-go && go run ./cmd/gameplay-parity) >/tmp/terrania-gameplay-go.json
-          node server-go/scripts/compare.mjs /tmp/terrania-gameplay-ts.json /tmp/terrania-gameplay-go.json
       - name: Record test inventory
         run: |
           echo "### Go / autoscale" >> "$GITHUB_STEP_SUMMARY"
           echo "Go test source files (main module): $(find server-go -name '*_test.go' ! -path '*/raftlab/*' | wc -l)" >> "$GITHUB_STEP_SUMMARY"
-          echo "Race-enabled Go tests, gateway, worker builds and parity are required to pass." >> "$GITHUB_STEP_SUMMARY"
+          echo "Race-enabled Go tests, gateway and worker builds are required to pass." >> "$GITHUB_STEP_SUMMARY"
 
   raft-quorum:
     name: 2/6 Raft quorum and recovery
