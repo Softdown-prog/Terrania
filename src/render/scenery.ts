@@ -4,7 +4,7 @@ import type { SouthCityPropKind } from "../world/southCity.ts";
 import { paintSouthCity } from "./southCityArt.ts";
 import type { RegionalLandmarkKind } from "../world/regionalLandmarks.ts";
 import { landmarkArtVariant, paintRegionalLandmark } from "./regionalLandmarkArt.ts";
-import { paintSouthRuin, type RuinLayer } from "./southRuinsArt.ts";
+import { paintSouthRuin, type RuinLayer } from "./south/ruins/index.ts";
 import { TOWER_PAINTERS } from "./south/towers/index.ts";
 import type { TowerId } from "../world/towers/types.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";

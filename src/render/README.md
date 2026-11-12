@@ -85,7 +85,7 @@ enxerga relevo, material e formas regionais, não apenas o piso plano da saída.
 ### Arte das montarias
 `mounts.ts` contém silhuetas procedurais diferentes para as dez montarias, além do cercado da vila. `renderMount` e `renderStableFence` estão em `tests/helpers/artAssets.ts` como `creature` e `structure`; sem imagens externas ou novas exceções ao contrato.
 
-**Ruínas e lago negro do Sul (ADR 0017):** `southRuinsArt.ts` desenha as mesmas peças que a colisão usa (`world/southRuins.ts`), em duas camadas de profundidade (`back` e `front`) cacheadas por `scenery.ts`. O lago negro é desenhado em `terrain.ts` (paleta, margem de lama, juncos secos) e animado em `WorldRenderer.ts` com ondas e fio roxo no lugar da espuma branca.
+**Ruínas e lago negro do Sul (ADR 0017):** `south/ruins/` (um arquivo por peça) desenha as mesmas peças que a colisão usa (`world/southRuins.ts`), em duas camadas de profundidade (`back` e `front`) cacheadas por `scenery.ts`. O lago negro é desenhado em `terrain.ts` (paleta, margem de lama, juncos secos) e animado em `WorldRenderer.ts` com ondas e fio roxo no lugar da espuma branca.
 
 **Torres do Sul (ADR 0019):** `south/towers/` tem um pintor por torre (`vigia-caida.ts`, `miragem.ts`, `sol-negro.ts`), `common.ts` com o pincel compartilhado (`TowerBrush`) e `index.ts` com `TOWER_PAINTERS`. A posição e a colisão ficam em `world/towers/`; `scenery.ts` cacheia o sprite `south-tower-<id>`.
 

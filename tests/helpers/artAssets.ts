@@ -58,7 +58,9 @@ import { renderNpc } from "../../src/render/npcs.ts";
 import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
 import { paintRegionalLandmark } from "../../src/render/regionalLandmarkArt.ts";
-import { paintSouthRuin } from "../../src/render/southRuinsArt.ts";
+import { paintSouthRuin, paintRuinClayFloor, paintRuinColumn, paintRuinDrum, paintRuinGround, paintRuinOven, paintRuinPillar,
+  paintRuinPot, paintRuinSteps, paintRuinTowerFloor, paintRuinWall } from "../../src/render/south/ruins/index.ts";
+import { MUDBRICK, SANDSTONE } from "../../src/render/south/ruins/palette.ts";
 import { TOWER_PAINTERS } from "../../src/render/south/towers/index.ts";
 import { TOWERS } from "../../src/world/towers/index.ts";
 import { renderCoinDrop } from "../../src/render/coinDrop.ts";
@@ -67,7 +69,7 @@ import { TOWER_INTERIOR_STYLES } from "../../src/render/south/towers/interior/in
 import { drawTowerSconce } from "../../src/render/south/towers/interior/sconce.ts";
 import { drawTowerWallFace } from "../../src/render/south/towers/interior/wallFace.ts";
 import { drawTowerWindow } from "../../src/render/south/towers/interior/window.ts";
-import { RUIN_NAMES, type RuinVariant } from "../../src/world/southRuins.ts";
+import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
@@ -103,6 +105,9 @@ export const LIGHTEST_MIN = 0.85;
 const hero = { faceX: 0, faceY: 1, walkTime: 0.3, attackTime: 0 };
 const kit = { head: "trail-helm", shield: "willow-shield", chest: "quilted-vest", feet: "trail-boots",
   legs: "travel-trousers", backpack: "canvas-pack", neck: "river-pendant" } as const;
+
+/** Roda uma peça de ruína e, em seguida, os brilhos que ela deixou para o fim. */
+const withGlints = (paint: (glints: Array<() => void>) => void): void => { const glints: Array<() => void> = []; paint(glints); for (const glint of glints) glint(); };
 
 export const ASSETS: ArtAsset[] = [
   { id: "hero", tier: "character", fn: "renderHero", draw: c => renderHero(c, hero, 0, 0, 1) },
@@ -223,6 +228,23 @@ export const ASSETS: ArtAsset[] = [
   ...([0, 1, 2, 3] as const satisfies readonly RuinVariant[]).map<ArtAsset>(variant => ({
     id: "ruína " + RUIN_NAMES[variant], tier: "structure", fn: "paintSouthRuin",
     draw: c => paintSouthRuin(c, variant, "all") })),
+  // Peças das ruínas (ADR 0040): cada uma tem o seu arquivo em render/south/ruins/ e entra no contrato sozinha, como `prop`
+  // (a ruína inteira acima segue como `structure`). O brilho é adiado pela ruína; aqui ele roda logo depois da peça.
+  ...([1, 3] as const).map<ArtAsset>(v => ({ id: "ruína: parede " + RUIN_NAMES[v], tier: "prop", fn: "paintRuinWall",
+    draw: c => withGlints(g => paintRuinWall(c, RUIN_PIECES[v].find(p => p.kind === "wall")!, v, RUIN_PIECES[v].findIndex(p => p.kind === "wall"), v === 3 ? MUDBRICK : SANDSTONE, g)) })),
+  { id: "ruína: coluna da colunata", tier: "prop", fn: "paintRuinColumn",
+    draw: c => withGlints(g => paintRuinColumn(c, RUIN_PIECES[0][1]!, 0, 1, SANDSTONE, g)) },
+  ...[2, 3].map<ArtAsset>(i => ({ id: "ruína: pilar do templo " + (i === 2 ? "(arco)" : "(estandarte)"), tier: "prop", fn: "paintRuinPillar",
+    draw: c => withGlints(g => paintRuinPillar(c, RUIN_PIECES[1][i]!, i, SANDSTONE, g)) })),
+  { id: "ruína: forno do povoado", tier: "prop", fn: "paintRuinOven", draw: c => withGlints(g => paintRuinOven(c, RUIN_PIECES[3][4]!, g)) },
+  { id: "ruína: degraus", tier: "prop", fn: "paintRuinSteps", draw: c => paintRuinSteps(c, RUIN_PIECES[0][0]!, 0) },
+  { id: "ruína: piso da torre", tier: "prop", fn: "paintRuinTowerFloor", draw: c => paintRuinTowerFloor(c, RUIN_PIECES[2][0]!, 2) },
+  { id: "ruína: piso de barro", tier: "prop", fn: "paintRuinClayFloor", draw: c => paintRuinClayFloor(c, RUIN_PIECES[3][0]!, 3) },
+  { id: "ruína: tambor de coluna", tier: "prop", fn: "paintRuinDrum", draw: c => paintRuinDrum(c, RUIN_PIECES[0][7]!, 0, 7) },
+  ...[5, 6].map<ArtAsset>(i => ({ id: "ruína: pote " + (i === 5 ? "grande" : "pequeno"), tier: "prop", fn: "paintRuinPot",
+    draw: c => paintRuinPot(c, RUIN_PIECES[3][i]!, i === 5 ? 0 : 1) })),
+  ...([0, 1, 2, 3] as const).map<ArtAsset>(v => ({ id: "ruína: chão em volta " + RUIN_NAMES[v], tier: "prop", fn: "paintRuinGround",
+    draw: c => paintRuinGround(c, v) })),
   { id: "Poço Negro: portão, muralha, torre e poço", tier: "structure",
     fn: "paintSouthCity", draw: c => {
       const kinds:readonly SouthCityPropKind[]=["well","gate","tower","wall","torch","building","tent"];

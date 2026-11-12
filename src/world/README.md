@@ -38,7 +38,7 @@ desbloqueios e objetivos para as dez espécies, mas só a missão inicial está
 habilitada. `mountLocations.ts` fixa Eron, as marcas de cascos e o cavalo
 fugitivo no mapa da vila, sem criar terrenos secretos nem colisões novas.
 
-**Sítios do Sul (ADR 0017):** `southRuins.ts` coloca as ruínas abandonadas (4 modelos, uma por célula de 160 tiles) e dá a colisão a partir das peças em `RUIN_PIECES`, as mesmas que `render/southRuinsArt.ts` desenha. O lago negro é o bioma `black-lake`, decidido por `isBlackLake` em `terrain.ts`. Nenhum dos dois é espelhado no Go; `tests/south-sites.test.ts` trava as amostras de paridade.
+**Sítios do Sul (ADR 0017):** `southRuins.ts` coloca as ruínas abandonadas (4 modelos, uma por célula de 160 tiles) e dá a colisão a partir das peças em `RUIN_PIECES`, as mesmas que `render/south/ruins/` desenha. O lago negro é o bioma `black-lake`, decidido por `isBlackLake` em `terrain.ts`. Nenhum dos dois é espelhado no Go; `tests/south-sites.test.ts` trava as amostras de paridade.
 
 **Torres do Sul (ADR 0019):** `towers/placement.ts` coloca as torres (uma por célula de 224 tiles, fora da cidade, das ruínas e do marco regional) e dá a colisão pelos blocos de cada ficha. Cada torre tem o seu arquivo de ficha em `towers/south/` (Norte, Leste e Oeste ganham pastas próprias); `towers/index.ts` só agrega. Não é espelhado no Go; `tests/south-towers.test.ts` cobre a colocação e a colisão.
 
