@@ -63,3 +63,26 @@ npm test
 A suíte `tests/mcp-navigator.test.ts` cobre consultas reais, isolamento, IDs e argumentos inválidos, symlinks fora da raiz e a troca de mensagens stdio. A CI também valida índices, build, navegador e Docker no fluxo existente.
 
 Fase 2, somente após aprovação: planejar indexação semântica opcional, atualização incremental para 5–10 mil arquivos e integração com clientes externos por um transporte autorizado. Não acrescentar ferramentas de execução ou deploy sem desenho de permissão.
+
+## Workspace de compilação Node 24 do Painel (integração distinta)
+
+O MCP de **navegação** acima é somente leitura. A compilação e os testes reais são um
+serviço **diferente**, preparado no repositório `Softdown-prog/Painel`, branch
+`feat/workspace-build-isolation-20261111`, usando contêiner descartável Node 24,
+Angular e Chromium Playwright 1.56.1. Não transportar o executor privilegiado,
+o Docker socket ou credenciais para dentro do repositório/jogo.
+
+Esta branch do Terrania fixa `.node-version` em 24 e inclui sua própria branch
+na CI de verificação completa (arquitetura, typecheck, unitários, build,
+servidor, Docker e navegador Chromium). Isso **não instala o supervisor na VPS**.
+
+Após o Painel receber os perfis fixos `terrania-core` e `terrania-precommit`,
+um projeto de Terrania corretamente importado e vinculado ao repositório pode
+pedir `validar_workspace` com `perfil: "terrania-precommit"` no agente Codex do Painel.
+A aprovação humana autoriza o job; `consultar_workspace` deve retornar
+`status: "passed"` e `passed: true` para comprovar a execução. O recibo inicial
+`queued` não representa sucesso. Os perfis devem testar **o jogo completo**,
+incluindo exploração/combate, Angular/Phaser e Playwright desktop/Android.
+
+O servidor Node de produção, `server/Dockerfile`, continua independente; esta
+etapa não altera deploy, backend, `main` ou operações da VPS.
