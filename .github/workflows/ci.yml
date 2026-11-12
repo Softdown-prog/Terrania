@@ -2,7 +2,7 @@ name: Verificar Terrania front-end e multiplayer
 on:
   push:
     # Validation-only branch. No publish/deploy workflows use this ref.
-    branches: [main, feat/angular-ui-phaser3, feat/terrania-classic-combat-20261104]
+    branches: [main, feat/angular-ui-phaser3, feat/terrania-classic-combat-20261104, feat/mcp-workspace-node24-20261111]
   pull_request:
 jobs:
   validar:
