@@ -72,6 +72,8 @@ import { drawTowerWindow } from "../../src/render/south/towers/interior/window.t
 import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
+import { paintBazar, paintBuildingFlame, paintCasaDeVenenos, paintFornalha, paintFortaleza, paintHospedaria,
+  paintTemplo } from "../../src/render/south/city/buildings/index.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
@@ -246,6 +248,16 @@ export const ASSETS: ArtAsset[] = [
     draw: c => paintRuinPot(c, RUIN_PIECES[3][i]!, i === 5 ? 0 : 1) })),
   ...([0, 1, 2, 3] as const).map<ArtAsset>(v => ({ id: "ruína: chão em volta " + RUIN_NAMES[v], tier: "prop", fn: "paintRuinGround",
     draw: c => paintRuinGround(c, v) })),
+  // Prédios da cidade do Poço Negro (ADR 0043): um pintor por prédio, cada um no seu arquivo; a chama animada entra junto
+  // do prédio que a tem (o corpo fica no cache e só a chama é pintada a cada quadro).
+  ...([["Fortaleza do Poço", paintFortaleza, "paintFortaleza"], ["Fornalha dos Trolls", paintFornalha, "paintFornalha"],
+    ["Hospedaria Sombra do Escorpião", paintHospedaria, "paintHospedaria"], ["Bazar das Raridades", paintBazar, "paintBazar"],
+    ["Casa de Venenos", paintCasaDeVenenos, "paintCasaDeVenenos"], ["Templo do Sol Negro", paintTemplo, "paintTemplo"]] as const)
+    .map<ArtAsset>(([name, paint, fn]) => ({ id: "prédio " + name, tier: "structure", fn, draw: c => paint(c) })),
+  { id: "prédio com chama: Fornalha dos Trolls", tier: "structure", fn: "paintBuildingFlame",
+    draw: c => { paintFornalha(c); paintBuildingFlame(c, 1, 0.4); } },
+  { id: "prédio com chama: Casa de Venenos", tier: "structure", fn: "paintBuildingFlame",
+    draw: c => { paintCasaDeVenenos(c); paintBuildingFlame(c, 4, 0.4); } },
   // Piso da cidade do Poço Negro (ADR 0042): um tile de pedra, um com meio-fio e um da praça com o anel de bronze.
   { id: "piso da cidade: lajes", tier: "prop", fn: "paintCityPaving", draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15493, seed: 842136, plaza: false }) },
   { id: "piso da cidade: meio-fio e areia", tier: "prop", fn: "paintCityPaving",

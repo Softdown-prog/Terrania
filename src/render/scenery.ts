@@ -2,6 +2,7 @@ import { hash2 } from "../world/random.ts";
 import { paintTrunk } from "./sceneryTrunk.ts";
 import type { SouthCityPropKind } from "../world/southCity.ts";
 import { paintSouthCity } from "./southCityArt.ts";
+import { buildingHasFlame, buildingPainterFor, paintBuildingFlame } from "./south/city/buildings/index.ts";
 import type { RegionalLandmarkKind } from "../world/regionalLandmarks.ts";
 import { landmarkArtVariant, paintRegionalLandmark } from "./regionalLandmarkArt.ts";
 import { paintSouthRuin, type RuinLayer } from "./south/ruins/index.ts";
@@ -345,7 +346,13 @@ export function renderScenery(
   if (faded) ctx.globalAlpha = 0.36;
   const flip = hash2(Math.floor(prop.x), Math.floor(prop.y), 3) < 0.5 ? -1 : 1;
   if (prop.kind === "south-city" && prop.cityKind) {
-    paintSouthCity(ctx,{kind:prop.cityKind,x:prop.x,y:prop.y,variant:prop.variant,
+    // Prédios com pintor próprio (ADR 0043): o corpo vai para o cache e só a chama, quando há, é pintada a cada quadro.
+    const painter = prop.cityKind === "building" ? buildingPainterFor(prop.variant) : undefined;
+    if (painter) {
+      const v = Math.round(prop.variant), s = sprite("south-building-" + v, 220, 190, 110, 150, painter);
+      if (s) blit(ctx, s); else painter(ctx);
+      if (buildingHasFlame(v)) paintBuildingFlame(ctx, v, time);
+    } else paintSouthCity(ctx,{kind:prop.cityKind,x:prop.x,y:prop.y,variant:prop.variant,
       ...(prop.cityId?{id:prop.cityId}:{})},time);
   } else if (prop.kind === "tree") {
     const pine = prop.variant > 0.9;
