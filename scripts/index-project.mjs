@@ -44,9 +44,25 @@ for (const mod of registry.modules) {
 const git = spawnSync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], {
   encoding: "utf8", maxBuffer: 16 * 1024 * 1024, cwd: root,
 });
-if (git.status !== 0 || git.error)
+// Only an explicitly sanitized, Git-free workspace may scan files directly.
+// This preserves the architecture checks without shipping Git metadata or
+// local credentials into dependency-install and test containers.
+const isolated = process.env.TERRANIA_WORKSPACE_SANITIZED === "1" && !existsSync(".git");
+const excluded = new Set([".git", "node_modules", ".home", ".npm-cache", ".angular",
+  "dist", "test-results", "playwright-report", "out", ".cache"]);
+function sanitizedPaths(directory = ".") {
+  return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    if (excluded.has(entry.name)) return [];
+    const path = directory === "." ? entry.name : directory + "/" + entry.name;
+    if (entry.isDirectory()) return sanitizedPaths(path);
+    return entry.isFile() ? [path] : [];
+  });
+}
+if ((git.status !== 0 || git.error) && !isolated)
   throw new Error("git ls-files failed; run inside a Git checkout");
-const paths = [...new Set(git.stdout.split("\0").filter(Boolean))]
+const indexedFiles = git.status === 0 && !git.error
+  ? git.stdout.split("\\0").filter(Boolean) : sanitizedPaths();
+const paths = [...new Set(indexedFiles)]
   .map((p) => p.replace(/\\/g, "/"))
   .filter((p) => existsSync(p) && !skipGenerated(p))
   .sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
