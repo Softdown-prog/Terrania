@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (163)
+## Todos os arquivos deste módulo (167)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -150,6 +150,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/south/terrain/dunes/palette.ts`](../../src/render/south/terrain/dunes/palette.ts)
 - [`src/render/south/terrain/dunes/relief.ts`](../../src/render/south/terrain/dunes/relief.ts)
 - [`src/render/south/terrain/dunes/shade.ts`](../../src/render/south/terrain/dunes/shade.ts)
+- [`src/render/south/towers/blocks.ts`](../../src/render/south/towers/blocks.ts)
 - [`src/render/south/towers/common.ts`](../../src/render/south/towers/common.ts)
 - [`src/render/south/towers/index.ts`](../../src/render/south/towers/index.ts)
 - [`src/render/south/towers/interior/floor.ts`](../../src/render/south/towers/interior/floor.ts)
@@ -162,8 +163,11 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/south/towers/interior/wallFace.ts`](../../src/render/south/towers/interior/wallFace.ts)
 - [`src/render/south/towers/interior/window.ts`](../../src/render/south/towers/interior/window.ts)
 - [`src/render/south/towers/miragem.ts`](../../src/render/south/towers/miragem.ts)
+- [`src/render/south/towers/palette.ts`](../../src/render/south/towers/palette.ts)
+- [`src/render/south/towers/sand.ts`](../../src/render/south/towers/sand.ts)
 - [`src/render/south/towers/sol-negro.ts`](../../src/render/south/towers/sol-negro.ts)
 - [`src/render/south/towers/vigia-caida.ts`](../../src/render/south/towers/vigia-caida.ts)
+- [`src/render/south/towers/wear.ts`](../../src/render/south/towers/wear.ts)
 - [`src/render/southCityArt.ts`](../../src/render/southCityArt.ts)
 - [`src/render/swords.ts`](../../src/render/swords.ts)
 - [`src/render/swords/astral.ts`](../../src/render/swords/astral.ts)

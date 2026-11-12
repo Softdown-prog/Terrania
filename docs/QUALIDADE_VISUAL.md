@@ -17,7 +17,7 @@ Referência de qualidade: monstros (`src/render/creatures/`), espadas (`src/rend
 | 4 | Decoração do deserto | só pedras: faltam cacto, capim seco, ossos, rastros (peças registradas no contrato de arte) | **feito** (ADR 0036; rastros ficaram de fora) |
 | 5 | Lago negro | costa em degraus de tile, sem borda irregular nem areia úmida suave | **feito** (ADR 0039) |
 | 6 | Ruínas | peças pequenas e chapadas | **feito** (ADR 0040) |
-| 7 | Torres (exterior) | volume bom, superfície plana, pouco detalhe de desgaste | pendente |
+| 7 | Torres (exterior) | volume bom, superfície plana, pouco detalhe de desgaste | **feito** (ADR 0041) |
 | 8 | Cidade do Poço Negro | pavimento roxo chapado, edifícios pequenos e planos ao lado dos personagens | pendente |
 | 9 | Cavernas (piso e formações) | linguagem de protótipo; as poças da Gruta Luminosa se repetem | pendente |
 

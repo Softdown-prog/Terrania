@@ -1,5 +1,8 @@
-import { hash2 } from "../../../world/random.ts";
 import { ellipse, mix, rgba, shade, softShadow } from "../../draw.ts";
+import { TowerBlocks } from "./blocks.ts";
+import { GLINT, IRON, OUTLINE, WOOD, noise, type Point, type Ramp } from "./palette.ts";
+import { TowerSand } from "./sand.ts";
+import { SAND_WEAR, TowerWear, type WearTone } from "./wear.ts";
 
 /**
  * Ajudantes das torres do Sul (ADR 0019): pedra, janela, porta e entulho. Nenhuma torre mora aqui;
@@ -7,17 +10,7 @@ import { ellipse, mix, rgba, shade, softShadow } from "../../draw.ts";
  * As ferramentas são métodos de `TowerBrush` porque NÃO são peças: o portão de arte exige registrar
  * toda função exportada que recebe um Canvas, e as peças aqui são as torres.
  */
-export type Ramp = { readonly light: string; readonly base: string; readonly dark: string };
-export type Point = readonly [number, number];
-export const OUTLINE = "#142a2a";
-export const GLINT = "#fff6dc";
-export const SANDSTONE: Ramp = { light: "#e8d0a0", base: "#bf9f6c", dark: "#7b5f40" };
-export const PALE_STONE: Ramp = { light: "#f3e7cb", base: "#d4c196", dark: "#8f7d5e" };
-export const BASALT: Ramp = { light: "#8a739b", base: "#54446a", dark: "#2a2038" };
-export const GOLD: Ramp = { light: "#ffe29a", base: "#e0a24a", dark: "#8a5a1e" };
-export const WOOD: Ramp = { light: "#b98255", base: "#8a5e3b", dark: "#5a3a24" };
-export const IRON = "#3b3f46";
-export const noise = (i: number, v: number, salt: number): number => hash2(i + 41, v * 37 + 5, salt);
+export * from "./palette.ts";
 
 export class TowerBrush {
   private readonly c: CanvasRenderingContext2D;
@@ -47,20 +40,17 @@ export class TowerBrush {
     g.addColorStop(0, rgba("#2c1f14", 0)); g.addColorStop(1, rgba("#2c1f14", 0.45));
     c.fillStyle = g; c.fillRect(x - w / 2, y - h, w, h + 1);
   }
-  /** Areia acumulada junto à base. */
-  drift(x: number, y: number, rx: number, ry: number): void {
-    const c = this.c;
-    ellipse(c, x + 1, y + 1, rx, ry, rgba("#a07f4d", 0.35));
-    ellipse(c, x, y, rx, ry, rgba("#d3b377", 0.95));
-    ellipse(c, x - rx * 0.18, y - ry * 0.25, rx * 0.7, ry * 0.55, rgba("#ecd29a", 0.9));
-  }
+  /** Areia acumulada junto à base, com volume e crista (ver `TowerSand`). */
+  drift(x: number, y: number, rx: number, ry: number, i = 0): void { new TowerSand(this.c).drift(x, y, rx, ry, i); }
+  /** Rampa de areia encostada na parede, de x0 a x1 (ver `TowerSand`). */
+  sandSlope(x0: number, x1: number, v: number, gap = 0): void { new TowerSand(this.c).slope(x0, x1, v, gap); }
   /** Sombra de contato da torre, projetada para a direita e para baixo (a luz vem da esquerda e de cima). */
   shadow(width: number, height: number): void {
     softShadow(this.c, width * 0.28, 4, width * 0.78 + height * 0.16, 9, 0.38);
   }
 
   /** Face frontal de alvenaria: gradiente de volume, fiadas deslocadas, tijolos de tom próprio e rachaduras. */
-  brickFace(path: () => void, x0: number, x1: number, yTop: number, yBase: number, ramp: Ramp, v: number, course = 9): void {
+  brickFace(path: () => void, x0: number, x1: number, yTop: number, yBase: number, ramp: Ramp, v: number, course = 9, wear: WearTone = SAND_WEAR, ground = true): void {
     const c = this.c;
     path(); c.fillStyle = this.gradient(x0, x1, ramp); c.fill();
     c.save(); path(); c.clip();
@@ -75,16 +65,37 @@ export class TowerBrush {
       const cx = x0 + noise(i, v, 5) * (x1 - x0), cy = yBase - 12 - noise(i, v, 7) * (yBase - yTop - 24);
       this.line([[cx, cy], [cx + 2.5, cy - 5], [cx - 1, cy - 10]], rgba("#2c1f14", 0.55), 0.9);
     }
+    // desgaste: riscos de chuva, blocos soltos, líquen e a umidade que sobe do chão
+    const wearer = new TowerWear(c);
+    wearer.streaks(x0, x1, yTop, yBase, v, wear);
+    wearer.pits(x0, x1, yTop, yBase, v, wear, Math.max(1, Math.round((x1 - x0) / 22)));
+    wearer.lichen(x0, x1, yTop, yBase, v, wear, Math.max(1, Math.round((x1 - x0) / 20)));
+    if (ground) wearer.damp(x0, x1, yBase, v, wear);
     this.occlusion((x0 + x1) / 2, yBase, x1 - x0);
     c.restore();
   }
 
-  /** Lado direito da torre, mais escuro e estreito, para dar volume. */
-  sideFace(xRight: number, yBase: number, yTop: number, depth: number, ramp: Ramp): void {
+  /** Coroa de um topo quebrado: a espessura da parede à mostra, em tom claro, 4 px à direita e 3 px acima dos dentes. */
+  crown(top: readonly Point[], ramp: Ramp): void {
     const c = this.c;
-    this.poly([[xRight, yBase], [xRight, yTop], [xRight + depth, yTop - depth * 0.5], [xRight + depth, yBase - depth * 0.5]]);
-    c.fillStyle = shade(ramp.dark, -0.12); c.fill();
-    c.strokeStyle = OUTLINE; c.lineWidth = 1; c.stroke();
+    c.beginPath(); c.moveTo(top[0]![0], top[0]![1]);
+    for (const [x, y] of top) c.lineTo(x, y);
+    for (let i = top.length - 1; i >= 0; i--) c.lineTo(top[i]![0] + 4, top[i]![1] - 3.2);
+    c.closePath(); c.fillStyle = ramp.light; c.fill(); c.strokeStyle = OUTLINE; c.lineWidth = 0.9; c.stroke();
+  }
+
+  /** Lado direito da torre, mais escuro e estreito, com degradê, fiadas em perspectiva e riscos de chuva. */
+  sideFace(xRight: number, yBase: number, yTop: number, depth: number, ramp: Ramp, wear: WearTone = SAND_WEAR): void {
+    const c = this.c, path = (): void => this.poly([[xRight, yBase], [xRight, yTop], [xRight + depth, yTop - depth * 0.5], [xRight + depth, yBase - depth * 0.5]]);
+    const g = c.createLinearGradient(xRight, 0, xRight + depth, 0);
+    g.addColorStop(0, shade(ramp.dark, -0.04)); g.addColorStop(1, shade(ramp.dark, -0.24));
+    path(); c.fillStyle = g; c.fill();
+    c.save(); path(); c.clip();
+    for (let y = yBase - 9; y > yTop - depth; y -= 9) this.line([[xRight, y], [xRight + depth, y - depth * 0.5]], rgba("#000000", 0.28), 0.8);
+    new TowerWear(c).streaks(xRight, xRight + depth, yTop - depth * 0.5, yBase, 7, wear);
+    this.occlusion(xRight + depth / 2, yBase - depth * 0.25, depth);
+    c.restore();
+    path(); c.strokeStyle = OUTLINE; c.lineWidth = 1; c.stroke();
   }
 
   /** Janela em arco; com `glow` vira vidro aceso. */
@@ -131,14 +142,6 @@ export class TowerBrush {
     path(); c.strokeStyle = OUTLINE; c.lineWidth = 1; c.stroke();
   }
 
-  /** Pedras caídas em volta da base, de tamanho e lugar fixos por sorteio. */
-  rubble(v: number, count: number, spread: number, ramp: Ramp): void {
-    const c = this.c;
-    for (let i = 0; i < count; i++) {
-      const side = noise(i, v, 11) < 0.5 ? -1 : 1, x = side * (spread * 0.4 + noise(i, v, 13) * spread * 0.6);
-      const y = 4 + noise(i, v, 17) * 20, r = 1.6 + noise(i, v, 19) * 3.6;
-      ellipse(c, x + 1, y + 1, r * 1.3, r * 0.6, rgba("#2c1f14", 0.3));
-      ellipse(c, x, y, r, r * 0.62, i % 3 ? ramp.base : ramp.light);
-    }
-  }
+  /** Entulho em volta da base: blocos lapidados e seixos, de tamanho e lugar fixos por sorteio (ver `TowerBlocks`). */
+  rubble(v: number, count: number, spread: number, ramp: Ramp): void { new TowerBlocks(this.c).scatter(v, count, spread, ramp); }
 }
