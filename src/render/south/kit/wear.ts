@@ -12,7 +12,7 @@ export const BASALT_WEAR: WearTone = { stain: "#0e0814", lichenA: "#7a5fa0", lic
  * Os métodos pintam numa região retangular; o chamador recorta na silhueta antes (a pedra nunca passa do contorno).
  * Tudo sai de `noise`: a mesma torre dá sempre o mesmo desgaste.
  */
-export class TowerWear {
+export class MasonryWear {
   private readonly c: CanvasRenderingContext2D;
   constructor(c: CanvasRenderingContext2D) { this.c = c; }
 

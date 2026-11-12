@@ -1,7 +1,7 @@
 import { rgba } from "../../../draw.ts";
 import { BuildingKit } from "./kit.ts";
 import { BONE, GLINT, OUTLINE, WINE } from "./palette.ts";
-import { noise } from "../../towers/common.ts";
+import { noise } from "../../kit/index.ts";
 
 /** Tenda de Couro: cone de couro vinho em painéis costurados com remendos, entrada de aba levantada e ossos cruzados no alto. */
 export function paintTendaDeCouro(c: CanvasRenderingContext2D): void {

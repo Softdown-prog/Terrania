@@ -1,5 +1,7 @@
 # ADR 0041 — Acabamento visual, fatia 7: exterior das torres do Sul
 
+> **Atualização (ADR 0045):** `common.ts`, `palette.ts`, `wear.ts`, `blocks.ts` e `sand.ts` foram para `src/render/south/kit/` (classes `MasonryBrush`, `MasonryWear`, `MasonryBlocks` e `SandDrift`), para a cidade usar o mesmo kit sem depender das torres.
+
 **Estado:** entregue em 2026-11-12, direto na `main` por pedido do dono ("vamos para as torres"). Sétima fatia da campanha ([docs/QUALIDADE_VISUAL.md](../QUALIDADE_VISUAL.md)).
 
 ## Contexto

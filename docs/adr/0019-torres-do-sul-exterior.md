@@ -1,5 +1,7 @@
 # ADR 0019 — Torres dos Ermos do Sul (parte de fora)
 
+> **Atualização (ADR 0045):** o pincel (`common.ts`, `TowerBrush`) e o resto do kit compartilhado foram para `src/render/south/kit/` e hoje se chamam `MasonryBrush`, `MasonryWear`, `MasonryBlocks` e `SandDrift`.
+
 **Estado:** fatia 3a entregue em 2026-11-10. O interior (andares de 2 a 3 por torre) é a fatia 3b e depende dos andares múltiplos do ADR 0018 (PR #137).
 
 ## Contexto

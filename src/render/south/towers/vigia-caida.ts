@@ -1,12 +1,12 @@
 import { ellipse, rgba } from "../../draw.ts";
-import { GLINT, OUTLINE, SANDSTONE, TowerBrush, WOOD, noise } from "./common.ts";
+import { GLINT, OUTLINE, SANDSTONE, MasonryBrush, WOOD, noise } from "../kit/index.ts";
 
 /** Torre do Vigia Caída: guarita de pedra do deserto, topo quebrado, plataforma de madeira que sobrou e um estandarte rasgado. */
 const HALF = 31, HEIGHT = 112, DEPTH = 14;
 
 export function paintTorreDoVigiaCaida(c: CanvasRenderingContext2D): void {
   c.save();
-  const b = new TowerBrush(c);
+  const b = new MasonryBrush(c);
   // 1. sombra de contato, antes de qualquer forma
   b.shadow(HALF * 2, HEIGHT);
   b.rubble(1, 9, 62, SANDSTONE);

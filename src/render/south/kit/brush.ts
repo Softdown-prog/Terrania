@@ -1,18 +1,18 @@
 import { ellipse, mix, rgba, shade, softShadow } from "../../draw.ts";
-import { TowerBlocks } from "./blocks.ts";
+import { MasonryBlocks } from "./blocks.ts";
 import { GLINT, IRON, OUTLINE, WOOD, noise, type Point, type Ramp } from "./palette.ts";
-import { TowerSand } from "./sand.ts";
-import { SAND_WEAR, TowerWear, type WearTone } from "./wear.ts";
+import { SandDrift } from "./sand.ts";
+import { SAND_WEAR, MasonryWear, type WearTone } from "./wear.ts";
 
 /**
  * Ajudantes das torres do Sul (ADR 0019): pedra, janela, porta e entulho. Nenhuma torre mora aqui;
  * cada uma tem o seu arquivo em `render/south/towers/`. Origem (0,0) = contato do centro da frente.
- * As ferramentas são métodos de `TowerBrush` porque NÃO são peças: o portão de arte exige registrar
+ * As ferramentas são métodos de `MasonryBrush` porque NÃO são peças: o portão de arte exige registrar
  * toda função exportada que recebe um Canvas, e as peças aqui são as torres.
  */
 export * from "./palette.ts";
 
-export class TowerBrush {
+export class MasonryBrush {
   private readonly c: CanvasRenderingContext2D;
   constructor(c: CanvasRenderingContext2D) { this.c = c; }
 
@@ -40,10 +40,10 @@ export class TowerBrush {
     g.addColorStop(0, rgba("#2c1f14", 0)); g.addColorStop(1, rgba("#2c1f14", 0.45));
     c.fillStyle = g; c.fillRect(x - w / 2, y - h, w, h + 1);
   }
-  /** Areia acumulada junto à base, com volume e crista (ver `TowerSand`). */
-  drift(x: number, y: number, rx: number, ry: number, i = 0): void { new TowerSand(this.c).drift(x, y, rx, ry, i); }
-  /** Rampa de areia encostada na parede, de x0 a x1 (ver `TowerSand`). */
-  sandSlope(x0: number, x1: number, v: number, gap = 0): void { new TowerSand(this.c).slope(x0, x1, v, gap); }
+  /** Areia acumulada junto à base, com volume e crista (ver `SandDrift`). */
+  drift(x: number, y: number, rx: number, ry: number, i = 0): void { new SandDrift(this.c).drift(x, y, rx, ry, i); }
+  /** Rampa de areia encostada na parede, de x0 a x1 (ver `SandDrift`). */
+  sandSlope(x0: number, x1: number, v: number, gap = 0): void { new SandDrift(this.c).slope(x0, x1, v, gap); }
   /** Sombra de contato da torre, projetada para a direita e para baixo (a luz vem da esquerda e de cima). */
   shadow(width: number, height: number): void {
     softShadow(this.c, width * 0.28, 4, width * 0.78 + height * 0.16, 9, 0.38);
@@ -66,7 +66,7 @@ export class TowerBrush {
       this.line([[cx, cy], [cx + 2.5, cy - 5], [cx - 1, cy - 10]], rgba("#2c1f14", 0.55), 0.9);
     }
     // desgaste: riscos de chuva, blocos soltos, líquen e a umidade que sobe do chão
-    const wearer = new TowerWear(c);
+    const wearer = new MasonryWear(c);
     wearer.streaks(x0, x1, yTop, yBase, v, wear);
     wearer.pits(x0, x1, yTop, yBase, v, wear, Math.max(1, Math.round((x1 - x0) / 22)));
     wearer.lichen(x0, x1, yTop, yBase, v, wear, Math.max(1, Math.round((x1 - x0) / 20)));
@@ -92,7 +92,7 @@ export class TowerBrush {
     path(); c.fillStyle = g; c.fill();
     c.save(); path(); c.clip();
     for (let y = yBase - 9; y > yTop - depth; y -= 9) this.line([[xRight, y], [xRight + depth, y - depth * 0.5]], rgba("#000000", 0.28), 0.8);
-    new TowerWear(c).streaks(xRight, xRight + depth, yTop - depth * 0.5, yBase, 7, wear);
+    new MasonryWear(c).streaks(xRight, xRight + depth, yTop - depth * 0.5, yBase, 7, wear);
     this.occlusion(xRight + depth / 2, yBase - depth * 0.25, depth);
     c.restore();
     path(); c.strokeStyle = OUTLINE; c.lineWidth = 1; c.stroke();
@@ -142,6 +142,6 @@ export class TowerBrush {
     path(); c.strokeStyle = OUTLINE; c.lineWidth = 1; c.stroke();
   }
 
-  /** Entulho em volta da base: blocos lapidados e seixos, de tamanho e lugar fixos por sorteio (ver `TowerBlocks`). */
-  rubble(v: number, count: number, spread: number, ramp: Ramp): void { new TowerBlocks(this.c).scatter(v, count, spread, ramp); }
+  /** Entulho em volta da base: blocos lapidados e seixos, de tamanho e lugar fixos por sorteio (ver `MasonryBlocks`). */
+  rubble(v: number, count: number, spread: number, ramp: Ramp): void { new MasonryBlocks(this.c).scatter(v, count, spread, ramp); }
 }

@@ -1,6 +1,5 @@
 import { ellipse, rgba, shade } from "../../draw.ts";
-import { GLINT, OUTLINE, PALE_STONE, TowerBrush } from "./common.ts";
-import { PATINA_WEAR } from "./wear.ts";
+import { GLINT, OUTLINE, PALE_STONE, MasonryBrush, PATINA_WEAR } from "../kit/index.ts";
 
 /** Torre da Miragem: alta, esguia e afunilada, com faixas de pedra, janelas de vidro violeta aceso e cúpula de vidro. */
 const BASE = 24, TOP = 19, HEIGHT = 150;
@@ -9,7 +8,7 @@ const halfAt = (y: number): number => BASE + (TOP - BASE) * Math.min(1, -y / HEI
 
 export function paintTorreDaMiragem(c: CanvasRenderingContext2D): void {
   c.save();
-  const b = new TowerBrush(c);
+  const b = new MasonryBrush(c);
   // 1. sombra de contato e, ao pé da torre, a miragem: um véu claro e fraco no chão
   b.shadow(BASE * 2, HEIGHT);
   ellipse(c, 0, 5, 44, 6, rgba("#f3e7cb", 0.14));

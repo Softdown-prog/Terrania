@@ -16,8 +16,8 @@ import { TOWER_PAINTERS } from "../src/render/south/towers/index.ts";
  * Torres do Sul, parte de fora (ADR 0019). O sistema é próprio (não mexe em `regionalLandmarks.ts`); a colisão sai dos blocos da ficha, e cada torre tem ficha e pintor em arquivo próprio.
  */
 const SEED = 842136;
-/** Arquivos de apoio do desenho (ADR 0041): não são torres. */
-const HELPERS = ["index.ts", "common.ts", "palette.ts", "wear.ts", "blocks.ts", "sand.ts"];
+/** Arquivos de apoio do desenho: não são torres (o kit compartilhado mora em `render/south/kit/`, ADR 0045). */
+const HELPERS = ["index.ts"];
 const fileIds = (dir: string): string[] =>
   readdirSync(new URL(dir, import.meta.url)).filter(f => f.endsWith(".ts") && !HELPERS.includes(f))
     .map(f => f.replace(/\.ts$/, "")).sort();

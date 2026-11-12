@@ -87,7 +87,7 @@ enxerga relevo, material e formas regionais, não apenas o piso plano da saída.
 
 **Ruínas e lago negro do Sul (ADR 0017):** `south/ruins/` (um arquivo por peça) desenha as mesmas peças que a colisão usa (`world/southRuins.ts`), em duas camadas de profundidade (`back` e `front`) cacheadas por `scenery.ts`. O lago negro é desenhado em `terrain.ts` (paleta, margem de lama, juncos secos) e animado em `WorldRenderer.ts` com ondas e fio roxo no lugar da espuma branca.
 
-**Torres do Sul (ADR 0019):** `south/towers/` tem um pintor por torre (`vigia-caida.ts`, `miragem.ts`, `sol-negro.ts`), `common.ts` com o pincel compartilhado (`TowerBrush`) e `index.ts` com `TOWER_PAINTERS`. A posição e a colisão ficam em `world/towers/`; `scenery.ts` cacheia o sprite `south-tower-<id>`.
+**Torres do Sul (ADR 0019):** `south/towers/` tem um pintor por torre (`vigia-caida.ts`, `miragem.ts`, `sol-negro.ts`). O pincel de alvenaria (`MasonryBrush`), o desgaste, o entulho de blocos e a areia moram em `south/kit/`, compartilhado com os prédios da cidade (ADR 0045); torres e cidade nunca importam uma à outra. `index.ts` com `TOWER_PAINTERS`. A posição e a colisão ficam em `world/towers/`; `scenery.ts` cacheia o sprite `south-tower-<id>`.
 
 **Interior das torres (ADR 0021):** `south/towers/interior/` tem um estilo por torre (cores e luz), as peças `wallFace.ts`, `window.ts` e `sconce.ts` (registradas como `prop`) e `floor.ts`, que pinta o andar inteiro (laje, tijolo, janelas, lampiões). `cave.ts` usa esse pintor quando a entrada é de torre.
 

@@ -1,7 +1,7 @@
 import { rgba } from "../../../draw.ts";
 import { BuildingKit } from "./kit.ts";
 import { BONE, GLINT, HIDE, OUTLINE } from "./palette.ts";
-import { noise } from "../../towers/common.ts";
+import { noise } from "../../kit/index.ts";
 
 /** Casebre de Ossos: paredes de ossos longos empilhados, telhado de couro, caveira grande sobre a porta e costelas de moldura. */
 export function paintCasebreDeOssos(c: CanvasRenderingContext2D): void {

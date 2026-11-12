@@ -5,7 +5,7 @@ import { OUTLINE, noise, type Point, type Ramp } from "./palette.ts";
  * Entulho em volta da base (ADR 0041): blocos lapidados caídos, com três faces, contorno e sombra, e seixos miúdos
  * entre eles. De tamanho, giro e lugar fixos por sorteio (`noise`).
  */
-export class TowerBlocks {
+export class MasonryBlocks {
   private readonly c: CanvasRenderingContext2D;
   constructor(c: CanvasRenderingContext2D) { this.c = c; }
 

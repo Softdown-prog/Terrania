@@ -1,13 +1,12 @@
 import { ellipse, rgba, shade } from "../../draw.ts";
-import { BASALT, GLINT, GOLD, OUTLINE, TowerBrush } from "./common.ts";
-import { BASALT_WEAR } from "./wear.ts";
+import { BASALT, GLINT, GOLD, OUTLINE, MasonryBrush, BASALT_WEAR } from "../kit/index.ts";
 
 /** Torre do Sol Negro: três degraus de basalto roxo, braseiros de fogo violeta, estandarte negro e o disco dourado no alto. */
 const TIERS = [{ half: 42, top: -52 }, { half: 31, top: -98 }, { half: 20, top: -134 }] as const;
 const FLAME = "#b985ff";
 
 function tier(c: CanvasRenderingContext2D, half: number, yBase: number, yTop: number, v: number, ground: boolean): void {
-  const b = new TowerBrush(c);
+  const b = new MasonryBrush(c);
   const body = (): void => { c.beginPath(); c.rect(-half, yTop, half * 2, yBase - yTop); };
   b.sideFace(half, yBase, yTop, 9, BASALT, BASALT_WEAR);
   b.brickFace(body, -half, half, yTop, yBase, BASALT, v, 10, BASALT_WEAR, ground);
@@ -28,7 +27,7 @@ function tier(c: CanvasRenderingContext2D, half: number, yBase: number, yTop: nu
 
 export function paintTorreDoSolNegro(c: CanvasRenderingContext2D): void {
   c.save();
-  const b = new TowerBrush(c);
+  const b = new MasonryBrush(c);
   // 1. sombra de contato
   b.shadow(84, 150);
   b.rubble(3, 8, 76, BASALT);

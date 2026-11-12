@@ -1,6 +1,5 @@
 import { ellipse, rgba, shade } from "../../../draw.ts";
-import { TowerBrush, noise, type Point, type Ramp } from "../../towers/common.ts";
-import { TowerWear, type WearTone } from "../../towers/wear.ts";
+import { MasonryBrush, noise, type Point, type Ramp, MasonryWear, type WearTone } from "../../kit/index.ts";
 import { GLINT, OUTLINE } from "./palette.ts";
 
 /** Como a parede é pintada: reboco de barro com camadas, tábuas, ou alvenaria (fiadas de pedra ou osso). */
@@ -13,9 +12,9 @@ export type WallTexture = "adobe" | "plank" | "masonry";
  * as peças são os prédios, um por arquivo.
  */
 export class BuildingKit {
-  readonly b: TowerBrush;
+  readonly b: MasonryBrush;
   private readonly c: CanvasRenderingContext2D;
-  constructor(c: CanvasRenderingContext2D) { this.c = c; this.b = new TowerBrush(c); }
+  constructor(c: CanvasRenderingContext2D) { this.c = c; this.b = new MasonryBrush(c); }
 
   /** Parede de frente: degradê de volume, textura recortada na silhueta, desgaste, oclusão no chão e contorno. */
   facade(x0: number, x1: number, yTop: number, yBase: number, ramp: Ramp, v: number, texture: WallTexture, wear: WearTone, ground = true): void {
@@ -25,7 +24,7 @@ export class BuildingKit {
       path(); c.fillStyle = this.b.gradient(x0, x1, ramp); c.fill();
       c.save(); path(); c.clip();
       if (texture === "adobe") this.adobe(x0, x1, yTop, yBase, ramp, v); else this.planks(x0, x1, yTop, yBase, ramp, v);
-      const wearer = new TowerWear(c);
+      const wearer = new MasonryWear(c);
       wearer.streaks(x0, x1, yTop, yBase, v, wear);
       wearer.pits(x0, x1, yTop, yBase, v, wear, Math.max(1, Math.round((x1 - x0) / 40)));
       if (ground) wearer.damp(x0, x1, yBase, v, wear);

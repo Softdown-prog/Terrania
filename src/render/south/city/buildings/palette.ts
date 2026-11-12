@@ -1,6 +1,5 @@
 import { SOUTH_CITY_PALETTE as C } from "../../../../world/southCity.ts";
-import type { Ramp } from "../../towers/palette.ts";
-import type { WearTone } from "../../towers/wear.ts";
+import { type Ramp, type WearTone } from "../../kit/index.ts";
 
 /** Rampas (claro, médio, escuro) da cidade do Poço Negro, na mesma paleta das peças da cidade e do piso (ADR 0043). */
 const ramp = (c: readonly [string, string, string]): Ramp => ({ light: c[0], base: c[1], dark: c[2] });

@@ -2,7 +2,7 @@ import { ellipse, rgba } from "../../draw.ts";
 import { GLINT, noise } from "./palette.ts";
 
 /** Areia junto à base das torres (ADR 0041): montes com volume e a rampa que o vento empilha contra a parede. */
-export class TowerSand {
+export class SandDrift {
   private readonly c: CanvasRenderingContext2D;
   constructor(c: CanvasRenderingContext2D) { this.c = c; }
 
