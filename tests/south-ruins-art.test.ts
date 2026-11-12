@@ -55,9 +55,9 @@ const piece = (variant: 0 | 1 | 2 | 3, kind: RuinPiece["kind"], n = 0): RuinPiec
 
 test("cada peça das ruínas está no seu arquivo, na pasta do Sul; o arquivo único saiu", () => {
   const files = readdirSync(new URL("../src/render/south/ruins/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["brush", "clayFloor", "column", "drum", "ground", "index", "layer", "oven", "paint", "palette", "pillar", "pot", "steps", "towerFloor", "wall"]);
+  assert.deepEqual(files, ["brush", "clayFloor", "column", "depth", "drum", "ground", "index", "layer", "oven", "paint", "palette", "pillar", "pot", "sceneryPainter", "steps", "towerFloor", "wall"]);
   assert.equal(existsSync(new URL("../src/render/southRuinsArt.ts", import.meta.url)), false);
-  assert.match(readFileSync("src/render/scenery.ts", "utf8"), /from "\.\/south\/ruins\/index\.ts"/);
+  assert.match(readFileSync("src/render/south/ruins/sceneryPainter.ts", "utf8"), /from "\.\/paint\.ts"/);
 });
 
 test("a ruína inteira é estável, tem quatro desenhos e três camadas, e ignora variações inválidas", () => {

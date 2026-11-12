@@ -96,6 +96,7 @@
 - [`docs/adr/0045-fronteiras-e-kit-do-sul.md`](../../docs/adr/0045-fronteiras-e-kit-do-sul.md)
 - [`docs/adr/0046-orcamentos-de-custo.md`](../../docs/adr/0046-orcamentos-de-custo.md)
 - [`docs/adr/0047-geracao-de-chunks-em-fatias.md`](../../docs/adr/0047-geracao-de-chunks-em-fatias.md)
+- [`docs/adr/0048-cadastro-de-cenario-por-regiao.md`](../../docs/adr/0048-cadastro-de-cenario-por-regiao.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

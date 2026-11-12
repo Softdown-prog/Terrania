@@ -50,7 +50,7 @@ const TOWER_IDS = ["vigia-caida", "miragem", "sol-negro"] as const;
 
 test("cada assunto do desenho das torres está no seu arquivo", () => {
   const files = readdirSync(new URL("../src/render/south/towers/", import.meta.url)).filter(f => f.endsWith(".ts")).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["index", "miragem", "sol-negro", "vigia-caida"], "só as três torres; o pincel, o desgaste, o entulho e a areia moraram no kit do Sul");
+  assert.deepEqual(files, ["index", "miragem", "sceneryPainter", "sol-negro", "vigia-caida"], "só as três torres; o pincel, o desgaste, o entulho e a areia moraram no kit do Sul");
   const kit = readdirSync(new URL("../src/render/south/kit/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
   assert.deepEqual(kit, ["blocks", "brush", "index", "palette", "sand", "wear"]);
   assert.match(readFileSync("src/render/south/kit/brush.ts", "utf8"), /export \* from "\.\/palette\.ts";/, "o pincel reexporta a paleta");

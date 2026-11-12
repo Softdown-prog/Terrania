@@ -232,3 +232,5 @@ renderizada pelo jogo, não um screenshot da partida com HUD.
 ## Interior das cavernas
 Dois estilos visuais (ADR 0032): o comum (`cave.ts` + `caveDetails.ts`) e a **Gruta Luminosa**
 (`caveStyles/luminous/`, uma peça por arquivo). O estilo sai de `world/caveStyle/` e só muda a aparência.
+
+**Cadastro de cenário por região (ADR 0048):** `props/registry.ts` reúne os pintores de cenário de cada região (`south/sceneryPainters.ts` entrega os do Sul); `scenery.ts` pergunta a ele primeiro e só desenha os tipos comuns. `props/spriteCache.ts` guarda os sprites pintados uma vez; `props/types.ts` tem o objeto `Scenery` e o tipo `SceneryPainter`. Região nova: uma linha em `REGION_PAINTERS`.

@@ -165,7 +165,7 @@ test("o cenário põe o corpo do prédio no cache, uma vez, e pinta a chama a ca
 });
 
 test("o cenário escolhe o pintor novo pelo índice do prédio", () => {
-  const source = readFileSync("src/render/scenery.ts", "utf8");
+  const source = readFileSync("src/render/south/city/sceneryPainter.ts", "utf8");
   assert.match(source, /buildingPainterFor\(prop\.variant\)/);
   assert.match(source, /sprite\("south-building-" \+ v, 220, 190, 110, 150, painter\)/);
   assert.match(source, /if \(buildingHasFlame\(v\)\) paintBuildingFlame\(ctx, v, time\)/);

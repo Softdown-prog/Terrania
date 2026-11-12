@@ -32,4 +32,4 @@ Medido no repositório em 2026-11-12: 417 arquivos de código em `src/` (856 com
 
 1. ~~Orçamento de desempenho e de tamanho~~ — feito no ADR 0046 (e a carga de região sob demanda foi descartada por ora, pelos números).
 2. ~~Desenhar os chunks vizinhos antes de precisarem~~ — feito no ADR 0047 (geração em fatias).
-3. **Cadastro de cenário por região:** trocar a sequência de `if` de `scenery.ts` por um cadastro em que cada região registra os próprios tipos, para uma região nova não editar o arquivo comum.
+3. ~~Cadastro de cenário por região~~ — feito no ADR 0048.

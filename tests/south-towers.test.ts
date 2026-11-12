@@ -17,7 +17,7 @@ import { TOWER_PAINTERS } from "../src/render/south/towers/index.ts";
  */
 const SEED = 842136;
 /** Arquivos de apoio do desenho: não são torres (o kit compartilhado mora em `render/south/kit/`, ADR 0045). */
-const HELPERS = ["index.ts"];
+const HELPERS = ["index.ts", "sceneryPainter.ts"];
 const fileIds = (dir: string): string[] =>
   readdirSync(new URL(dir, import.meta.url)).filter(f => f.endsWith(".ts") && !HELPERS.includes(f))
     .map(f => f.replace(/\.ts$/, "")).sort();

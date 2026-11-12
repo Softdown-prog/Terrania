@@ -1,72 +1,18 @@
 import { hash2 } from "../world/random.ts";
 import { paintTrunk } from "./sceneryTrunk.ts";
-import type { SouthCityPropKind } from "../world/southCity.ts";
-import { paintSouthCity } from "./southCityArt.ts";
-import { buildingHasFlame, buildingPainterFor, paintBuildingFlame } from "./south/city/buildings/index.ts";
-import type { RegionalLandmarkKind } from "../world/regionalLandmarks.ts";
 import { landmarkArtVariant, paintRegionalLandmark } from "./regionalLandmarkArt.ts";
-import { paintSouthRuin, type RuinLayer } from "./south/ruins/index.ts";
-import { TOWER_PAINTERS } from "./south/towers/index.ts";
-import type { TowerId } from "../world/towers/types.ts";
 import { ellipse, mix, rgba, softShadow, TAU } from "./draw.ts";
-import { drawMossRock, type RockStyle } from "./rocks/index.ts";
+import { drawMossRock } from "./rocks/index.ts";
 import { drawSandstoneRock } from "./south/rocks/index.ts";
-import { DECOR_PAINTERS } from "./south/decor/index.ts";
-import { decorShapeOf, type DecorKind } from "../world/south/decor/index.ts";
+import { blit, clearSpriteCache, sprite } from "./props/spriteCache.ts";
+import { regionPainterFor } from "./props/registry.ts";
+import type { Scenery } from "./props/types.ts";
 
-export interface Scenery {
-  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-tower" | "south-city" | "south-decor";
-  /** Só `rock`: o estilo da pedra, escolhido pelo bioma (ausente = pedra de musgo de sempre). */
-  rockStyle?: RockStyle;
-  /** Só `south-decor`: o tipo de decoração do deserto (sem colisão, só visual). */
-  decorKind?: DecorKind;
-  /** Só `south-tower`: qual torre desenhar. */
-  towerId?: TowerId;
-  cityKind?: SouthCityPropKind;
-  cityId?: string;
-  landmarkKind?: RegionalLandmarkKind;
-  /** Só `south-ruin`: a ruína sai em duas camadas (fundo e frente) para o herói passar entre elas; `variant` é o índice 0..3. */
-  ruinLayer?: Exclude<RuinLayer, "all">;
-  x: number;
-  y: number;
-  variant: number;
-}
+/** O objeto de cenário e os tipos dos pintores moram em `props/types.ts`; reexportados aqui para quem já importava deste arquivo. */
+export type { Scenery } from "./props/types.ts";
 
-/**
- * Objetos altos são pintados uma única vez em canvases fora da tela (arte 100%
- * procedural) e carimbados a cada quadro. Isso permite sombreamento rico com
- * gradientes sem custo por quadro, e deixa o vento inclinar copas e troncos.
- */
-const RES = 2;
-/** Quanto cada camada da ruína é recuada/avançada na ordenação em profundidade (px). */
-export const RUIN_BACK_DEPTH = 30;
-export const RUIN_FRONT_DEPTH = 6;
-interface Sprite { canvas: HTMLCanvasElement; ox: number; oy: number }
-const sprites = new Map<string, Sprite | null>();
-
-function sprite(key: string, w: number, h: number, ox: number, oy: number,
-  paint: (c: CanvasRenderingContext2D) => void): Sprite | null {
-  const hit = sprites.get(key);
-  if (hit !== undefined) return hit;
-  let made: Sprite | null = null;
-  if (typeof document !== "undefined") {
-    const canvas = document.createElement("canvas");
-    canvas.width = w * RES; canvas.height = h * RES;
-    const c = canvas.getContext("2d");
-    if (c) {
-      c.scale(RES, RES); c.translate(ox, oy); c.lineJoin = "round";
-      paint(c);
-      made = { canvas, ox, oy };
-    }
-  }
-  sprites.set(key, made);
-  return made;
-}
-function blit(ctx: CanvasRenderingContext2D, s: Sprite): void {
-  ctx.drawImage(s.canvas, -s.ox, -s.oy, s.canvas.width / RES, s.canvas.height / RES);
-}
 /** Libera os canvases (troca de qualidade/contexto). */
-export function clearSceneryCache(): void { sprites.clear(); }
+export function clearSceneryCache(): void { clearSpriteCache(); }
 
 const bucket = (v: number, n: number): number => Math.min(n - 1, Math.max(0, Math.floor(v * n)));
 
@@ -345,15 +291,10 @@ export function renderScenery(
   ctx.translate(sx, sy);
   if (faded) ctx.globalAlpha = 0.36;
   const flip = hash2(Math.floor(prop.x), Math.floor(prop.y), 3) < 0.5 ? -1 : 1;
-  if (prop.kind === "south-city" && prop.cityKind) {
-    // Prédios com pintor próprio (ADR 0043): o corpo vai para o cache e só a chama, quando há, é pintada a cada quadro.
-    const painter = prop.cityKind === "building" ? buildingPainterFor(prop.variant) : undefined;
-    if (painter) {
-      const v = Math.round(prop.variant), s = sprite("south-building-" + v, 220, 190, 110, 150, painter);
-      if (s) blit(ctx, s); else painter(ctx);
-      if (buildingHasFlame(v)) paintBuildingFlame(ctx, v, time);
-    } else paintSouthCity(ctx,{kind:prop.cityKind,x:prop.x,y:prop.y,variant:prop.variant,
-      ...(prop.cityId?{id:prop.cityId}:{})},time);
+  // Tipos que só existem numa região são pintados pelo pintor cadastrado dela (ADR 0048); os comuns seguem abaixo.
+  const regional = regionPainterFor(prop.kind);
+  if (regional) {
+    regional({ ctx, prop, time, flip });
   } else if (prop.kind === "tree") {
     const pine = prop.variant > 0.9;
     const b = pine ? 9 : bucket(prop.variant / 0.9, 9);
@@ -364,11 +305,11 @@ export function renderScenery(
     const trunk = sprite("trunk" + (pine ? "p" : "b"), 50, 46, 25, 40, (c) => paintTrunk(c, pine));
     const crown = sprite("crown" + b, 120, 140, 60, 108, (c) => pine ? paintPine(c, b) : paintBroadleaf(c, b));
     if (trunk && crown) {
-      ctx.save(); ctx.transform(1, 0, k * 0.35, 1, 0, 0); blit(ctx, trunk); ctx.restore();
+      ctx.save(); ctx.transform(1, 0, k * 0.35, 1, 0, 0); blit(trunk, ctx); ctx.restore();
       ctx.save();
       ctx.translate(-k * 0.35 * 22, 0);
       ctx.translate(0, -22); ctx.transform(1, 0, k, 1, 0, 0); ctx.translate(0, 22);
-      blit(ctx, crown);
+      blit(crown, ctx);
       ctx.restore();
     } else {
       const c2 = ctx; paintTrunk(c2, pine); if (pine) paintPine(c2, b); else paintBroadleaf(c2, b);
@@ -376,7 +317,7 @@ export function renderScenery(
   } else if (prop.kind === "house") {
     const v = Math.abs(Math.floor(prop.variant)) % 3;
     const s = sprite("house" + v, 128, 130, 64, 116, (c) => paintHouse(c, v));
-    if (s) blit(ctx, s); else paintHouse(ctx, v);
+    if (s) blit(s, ctx); else paintHouse(ctx, v);
     // brilho quente na janela e na lanterna (leve cintilação) e fumaça da chaminé
     const flick = 0.5 + 0.5 * Math.sin(time * 2.3 + v);
     ctx.fillStyle = rgba("#ffd98a", 0.07 + flick * 0.07);
@@ -395,45 +336,26 @@ export function renderScenery(
     const s = sprite(style === "moss" ? "rock" + b : `rock-${style}-${b}`, 64, 44, 32, 36, paint);
     const sc = 0.82 + ((prop.variant * 37) % 1) * 0.5;
     ctx.scale(sc * flip, sc);
-    if (s) blit(ctx, s); else paint(ctx);
+    if (s) blit(s, ctx); else paint(ctx);
   } else if (prop.kind === "regional-landmark" && prop.landmarkKind) {
     const kind = prop.landmarkKind, variation = landmarkArtVariant(prop.variant);
     // Four bounded visual variations per kind; painting stays off the frame loop.
     const s = sprite("regional-" + kind + "-" + variation, 96, 128, 48, 102,
       (c) => paintRegionalLandmark(c, kind, variation));
-    if (s) blit(ctx, s); else paintRegionalLandmark(ctx, kind, variation);
-  } else if (prop.kind === "south-decor") {
-    // Sem tipo não desenha nada (e nunca cai na fogueira do `else` final).
-    const kind = prop.decorKind;
-    if (kind) {
-      const shape = decorShapeOf(prop.variant);
-      const s = sprite(`south-decor-${kind}-${shape}`, 56, 48, 28, 38, (c) => DECOR_PAINTERS[kind](c, shape));
-      ctx.scale(flip, 1);
-      if (s) blit(ctx, s); else DECOR_PAINTERS[kind](ctx, shape);
-    }
-  } else if (prop.kind === "south-ruin" && prop.ruinLayer) {
-    const layer = prop.ruinLayer, v = Math.max(0, Math.min(3, Math.floor(prop.variant)));
-    // O desenho usa o contato da ruína como origem; cada camada é ordenada em uma altura própria.
-    ctx.translate(0, layer === "back" ? RUIN_BACK_DEPTH : -RUIN_FRONT_DEPTH);
-    const s = sprite("south-ruin-" + v + "-" + layer, 232, 168, 116, 112, (c) => paintSouthRuin(c, v, layer));
-    if (s) blit(ctx, s); else paintSouthRuin(ctx, v, layer);
-  } else if (prop.kind === "south-tower" && prop.towerId) {
-    const id = prop.towerId;
-    const s = sprite("south-tower-" + id, 200, 262, 100, 232, (c) => TOWER_PAINTERS[id](c));
-    if (s) blit(ctx, s); else TOWER_PAINTERS[id](ctx);
+    if (s) blit(s, ctx); else paintRegionalLandmark(ctx, kind, variation);
   } else if (prop.kind === "arch") {
     const s = sprite("arch", 120, 100, 60, 82, paintArch);
-    if (s) blit(ctx, s); else paintArch(ctx);
+    if (s) blit(s, ctx); else paintArch(ctx);
     const pulse = 0.5 + 0.5 * Math.sin(time * 1.8);
     const g = ctx.createRadialGradient(0, -70, 1, 0, -70, 14);
     g.addColorStop(0, rgba("#a6f0ff", 0.18 + pulse * 0.4)); g.addColorStop(1, rgba("#a6f0ff", 0));
     ctx.fillStyle = g; ctx.fillRect(-14, -84, 28, 28);
   } else if (prop.kind === "sign") {
     const s = sprite("sign", 48, 44, 24, 34, paintSign);
-    if (s) blit(ctx, s); else paintSign(ctx);
+    if (s) blit(s, ctx); else paintSign(ctx);
   } else {
     const s = sprite("firebase", 48, 28, 24, 16, paintFireBase);
-    if (s) blit(ctx, s); else paintFireBase(ctx);
+    if (s) blit(s, ctx); else paintFireBase(ctx);
     const flicker = 0.75 + Math.sin(time * 11) * 0.1 + Math.sin(time * 17.3) * 0.07;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";

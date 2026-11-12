@@ -46,6 +46,7 @@ Regras que já quebraram uma vez. Valem para a superfície (`OfflineSimulation`)
 - `src/game/`: orquestrador, não um segundo motor ou autoridade de jogo.
 - `server/`: backend Node atual; `server-go/` e Rust têm componentes experimentais; não promover por suposição.
 - **Fronteiras entre regiões e subpastas** (ADR 0045, travadas em `tests/region-boundaries.test.ts`): um arquivo de uma região (`south/`, `north/`, `west/`, `east/`, em qualquer camada) nunca importa outra região; dentro de uma região, uma subpasta (`towers/`, `city/`, `ruins/`...) nunca importa uma subpasta irmã, **só o `kit/` compartilhado**. Precisou de algo da irmã? Mova para o `kit/` (ou para a pasta comum), não importe de lado.
+- **Cenário de uma região** (ADR 0048): o tipo que só existe numa região é pintado por um `sceneryPainter.ts` na pasta da peça, reunido em `<região>/sceneryPainters.ts` e cadastrado com **uma linha** em `src/render/props/registry.ts`; não acrescente ramos regionais a `render/scenery.ts`, que só desenha os tipos comuns.
 - `docs/indexes/`: **gerados**. Não editar à mão; alterar código/registro e regenerar.
 
 ## Padrão obrigatório da arte procedural

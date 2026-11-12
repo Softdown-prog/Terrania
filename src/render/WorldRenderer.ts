@@ -9,7 +9,7 @@ import { LANDMARKS } from "../world/landmarks.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
 import { RUIN_CELL_TILES, getSouthRuinForCell } from "../world/southRuins.ts";
 import { TOWER_CELL_TILES, getSouthTowerForCell } from "../world/towers/placement.ts";
-import { RUIN_BACK_DEPTH, RUIN_FRONT_DEPTH } from "./scenery.ts";
+import { RUIN_BACK_DEPTH, RUIN_FRONT_DEPTH } from "./south/ruins/depth.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { SOUTH_CITY, SOUTH_CITY_PROPS } from "../world/southCity.ts";
 import { generateChunkSteps } from "./terrain.ts";

@@ -22,7 +22,7 @@ const signature = (draw: (c: CanvasRenderingContext2D) => void): string => {
 
 test("cada assunto da decoração está no seu arquivo, na pasta do Sul", () => {
   const files = readdirSync(new URL("../src/render/south/decor/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["bones", "cactus", "crackedEarth", "desertShrub", "dryGrass", "index", "painters", "palette", "prop"], "o desenho; a colocação e a colisão ficam no mundo");
+  assert.deepEqual(files, ["bones", "cactus", "crackedEarth", "desertShrub", "dryGrass", "index", "painters", "palette", "prop", "sceneryPainter"], "o desenho e o pintor de cenário; a colocação e a colisão ficam no mundo");
 });
 
 type Chunky = { chunk(cx: number, cy: number): { props: Scenery[] } };
@@ -75,7 +75,7 @@ test("o cenário pinta cada tipo e formato num sprite próprio, uma vez só, e a
 });
 
 test("o cenário usa o mapa de pintores e o mundo pergunta pela decoração", () => {
-  const scenery = readFileSync("src/render/scenery.ts", "utf8");
+  const scenery = readFileSync("src/render/south/decor/sceneryPainter.ts", "utf8");
   assert.match(scenery, /DECOR_PAINTERS\[kind\]\(c, shape\)/);
   assert.match(scenery, /`south-decor-\$\{kind\}-\$\{shape\}`/);
   assert.match(readFileSync("src/render/WorldRenderer.ts", "utf8"), /southDecorProp\(tx, ty, this\.seed\)/);
