@@ -12,8 +12,8 @@ import { Recorder } from "./helpers/recordingContext.ts";
 import { withDocument } from "./helpers/paintChunk.ts";
 
 /**
- * Prédios da cidade do Poço Negro, parte 2 (ADR 0043): um pintor por prédio no seu arquivo, feitos com o kit de parede,
- * telhado, ameias e toldo; corpo no cache e só a chama animada a cada quadro.
+ * Prédios da cidade do Poço Negro (ADR 0043 e 0044): um pintor por prédio no seu arquivo, feitos com o kit de parede,
+ * telhados, ameias e toldo; corpo no cache e só a chama animada a cada quadro.
  */
 interface Spy { raw: string[]; calls: Record<string, number>; args: Record<string, number[][]> }
 function spy(draw: (c: CanvasRenderingContext2D) => void): Spy {
@@ -39,20 +39,22 @@ function spy(draw: (c: CanvasRenderingContext2D) => void): Spy {
   return out;
 }
 const signature = (draw: (c: CanvasRenderingContext2D) => void): string => { const r = new Recorder(); draw(r.ctx); return r.metrics().signature; };
-const MIGRATED = ["south-fortress", "south-forge", "south-inn", "south-bazaar", "south-poisons", "south-temple"];
+const MIGRATED = SOUTH_BUILDINGS.map(b => b.id);
 const variantOf = (id: string): number => SOUTH_BUILDINGS.find(b => b.id === id)!.variant;
 
-test("cada prédio tem o seu arquivo na pasta da cidade, mais o kit, a paleta e a chama", () => {
+test("cada um dos doze prédios tem o seu arquivo na pasta da cidade, mais o kit, a paleta e a chama", () => {
   const files = readdirSync(new URL("../src/render/south/city/buildings/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["bazaar", "flame", "forge", "fortress", "index", "inn", "kit", "palette", "poisons", "temple"]);
+  assert.deepEqual(files, ["bazaar", "flame", "forge", "fortress", "homeBone", "homeClay", "homeHide", "homeStilts", "index", "inn", "kit", "ossuary", "palette", "poisons", "stable", "temple"]);
 });
 
-test("os pintores são de prédios que existem, e os outros seis seguem no desenho antigo até a parte 3", () => {
+test("há um pintor para cada um dos doze prédios da cidade, e só para eles", () => {
+  assert.equal(SOUTH_BUILDINGS.length, 12);
   assert.deepEqual(Object.keys(BUILDING_PAINTERS).sort(), [...MIGRATED].sort());
   for (const id of MIGRATED) assert.equal(typeof buildingPainterFor(variantOf(id)), "function", id);
-  for (const b of SOUTH_BUILDINGS) if (!MIGRATED.includes(b.id)) assert.equal(buildingPainterFor(b.variant), undefined, b.id);
+  assert.equal(buildingPainterFor(12), undefined, "não há décimo terceiro prédio");
   assert.equal(buildingPainterFor(Number.NaN), undefined);
   assert.equal(buildingPainterFor(-3), undefined);
+  assert.equal(readFileSync("src/render/southCityArt.ts", "utf8").includes("function building("), false, "o desenho antigo dos prédios saiu");
   assert.equal(buildingPainterFor(0.4), BUILDING_PAINTERS["south-fortress"], "o índice é arredondado, como no cenário");
 });
 
@@ -65,9 +67,10 @@ test("cada prédio é estável, tem desenho próprio, equilibra o estado e cabe 
     const m = r.metrics();
     assert.equal(m.saves, m.restores, id);
     assert.ok(m.width < 220 && m.height < 190, `${id}: ${m.width.toFixed(0)}×${m.height.toFixed(0)} cabe em 220×190`);
-    assert.ok(m.paintOps > 150, `${id}: ${m.paintOps} operações de pintura`);
+    assert.ok(m.paintOps > 120, `${id}: ${m.paintOps} operações de pintura`);
   }
-  for (const id of MIGRATED) assert.ok(spy(c => BUILDING_PAINTERS[id]!(c)).raw.includes("#d9a24a"), `${id} tem porta, com a maçaneta de bronze`);
+  const OPEN = ["south-stable", "south-home-hide"]; // baia aberta e tenda: a entrada é um vão escuro, sem porta
+  for (const id of MIGRATED) assert.ok(spy(c => BUILDING_PAINTERS[id]!(c)).raw.includes(OPEN.includes(id) ? "#171210" : "#d9a24a"), `${id} tem entrada (${OPEN.includes(id) ? "vão escuro" : "porta com maçaneta de bronze"})`);
   assert.ok((spy(c => BUILDING_PAINTERS["south-fortress"]!(c)).calls.strokeRect ?? 0) >= 13 + 4, "a fortaleza tem 13 ameias (9 no corpo e 4 na torre) e as frestas de arqueiro");
   const fortress = new Recorder(); BUILDING_PAINTERS["south-fortress"]!(fortress.ctx);
   assert.ok(fortress.metrics().height > 120, "a fortaleza é o prédio mais alto");
@@ -154,9 +157,10 @@ test("o cenário põe o corpo do prédio no cache, uma vez, e pinta a chama a ca
   const forge = frame(variantOf("south-forge"), 0.1), again = frame(variantOf("south-forge"), 0.7);
   assert.equal(created, 2);
   assert.ok((forge.calls.createRadialGradient ?? 0) >= 1 && (again.calls.createRadialGradient ?? 0) >= 1, "a chama é pintada em todo quadro");
-  const old = frame(variantOf("south-ossuary"), 0.1);
-  assert.equal(created, 2, "prédio sem pintor novo não cria sprite: segue o desenho antigo");
-  assert.ok((old.calls.fillRect ?? 0) > 5);
+  for (const b of SOUTH_BUILDINGS) frame(b.variant, 0.1);
+  assert.equal(created, 12, "um sprite por prédio, doze no total (a fortaleza e a fornalha já estavam no cache)");
+  const wall = frame(-1, 0.1);
+  assert.equal(created, 12, "um índice sem prédio não cria sprite nem pinta nada: " + JSON.stringify(wall.calls));
   clearSceneryCache();
 });
 

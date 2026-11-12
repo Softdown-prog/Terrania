@@ -140,5 +140,78 @@ export class BuildingKit {
     c.fillStyle = this.b.gradient(x - w / 2, x + w / 2, { light: "#b98255", base: "#8a5e3b", dark: "#5a3a24" }); c.fillRect(x - w / 2, y, w, h);
     this.b.line([[x - w / 2 + 1, y + 1], [x + w / 2 - 1, y + 1]], rgba(GLINT, 0.4), 0.8);
   }
+
+  /** Telhado de palha: fios inclinados em três tons, cumeeira amarrada e a franja irregular do beiral. */
+  thatchRoof(x0: number, x1: number, yEave: number, yRidge: number, overhang: number, ramp: Ramp, v: number): void {
+    const c = this.c, inset = (x1 - x0) * 0.12;
+    const path = (): void => this.b.poly([[x0 - overhang, yEave], [x0 + inset, yRidge], [x1 - inset, yRidge], [x1 + overhang, yEave]]);
+    path(); c.fillStyle = this.b.gradient(x0 - overhang, x1 + overhang, ramp); c.fill();
+    c.save(); path(); c.clip();
+    const tones = [ramp.light, ramp.base, ramp.dark];
+    for (let x = x0 - overhang, i = 0; x < x1 + overhang; x += 2.4, i++) {
+      const lean = (x - (x0 + x1) / 2) * 0.12, len = (yEave - yRidge) * (0.5 + noise(i, v, 131) * 0.5);
+      this.b.line([[x + lean * 0.3, yEave], [x + lean, yEave - len]], rgba(tones[i % 3]!, 0.75), 1);
+    }
+    for (let r = 1; r < 4; r++) this.b.line([[x0 - overhang, yEave - r * 7], [x1 + overhang, yEave - r * 7 - 1]], rgba(ramp.dark, 0.4), 0.9);
+    c.restore();
+    path(); c.strokeStyle = OUTLINE; c.lineWidth = 1.2; c.stroke();
+    for (let x = x0 - overhang + 1, i = 0; x < x1 + overhang - 1; x += 3, i++) {
+      c.fillStyle = tones[(i + 1) % 3]!; c.fillRect(x, yEave, 2, 2 + noise(i, v, 133) * 3);
+    }
+    const shadow = c.createLinearGradient(0, yEave + 3, 0, yEave + 10);
+    shadow.addColorStop(0, "rgba(34,26,43,0.4)"); shadow.addColorStop(1, "rgba(34,26,43,0)");
+    c.fillStyle = shadow; c.fillRect(x0, yEave + 3, x1 - x0, 7);
+    c.fillStyle = "#6a4a2a"; c.fillRect(x0 + inset, yRidge - 2, x1 - x0 - inset * 2, 3);
+    this.b.line([[x0 - overhang + 2, yEave - 1], [x0 + inset + 2, yRidge + 2]], rgba(GLINT, 0.5), 1);
+  }
+
+  /** Telhado de couro curtido: painéis costurados que se afinam para o alto, remendos, pontos de linha e o travessão de osso. */
+  hideRoof(x0: number, x1: number, yEave: number, yRidge: number, overhang: number, ramp: Ramp, v: number): void {
+    const c = this.c, inset = (x1 - x0) * 0.1, n = Math.max(3, Math.round((x1 - x0) / 20));
+    const path = (): void => this.b.poly([[x0 - overhang, yEave], [x0 + inset, yRidge], [x1 - inset, yRidge], [x1 + overhang, yEave]]);
+    path(); c.fillStyle = this.b.gradient(x0 - overhang, x1 + overhang, ramp); c.fill();
+    c.save(); path(); c.clip();
+    for (let i = 1; i < n; i++) {
+      const t = i / n, xb = x0 - overhang + (x1 - x0 + overhang * 2) * t, xt = x0 + inset + (x1 - x0 - inset * 2) * t;
+      this.b.line([[xb, yEave], [xt, yRidge]], rgba("#1e1410", 0.55), 1.1);
+      for (let k = 0; k < 6; k++) { const u = (k + 0.5) / 6; this.b.line([[xb + (xt - xb) * u - 1.4, yEave + (yRidge - yEave) * u], [xb + (xt - xb) * u + 1.4, yEave + (yRidge - yEave) * u]], rgba(ramp.light, 0.7), 0.8); }
+    }
+    for (let i = 0; i < 3; i++) {
+      const px = x0 + 6 + noise(i, v, 135) * (x1 - x0 - 24), py = yRidge + 4 + noise(i, v, 137) * (yEave - yRidge - 12);
+      c.fillStyle = rgba(ramp.light, 0.45); c.fillRect(px, py, 11, 7);
+      c.strokeStyle = rgba("#1e1410", 0.6); c.lineWidth = 0.8; c.setLineDash([2, 1.6]); c.strokeRect(px, py, 11, 7); c.setLineDash([]);
+    }
+    c.restore();
+    path(); c.strokeStyle = OUTLINE; c.lineWidth = 1.2; c.stroke();
+    const shadow = c.createLinearGradient(0, yEave + 1, 0, yEave + 8);
+    shadow.addColorStop(0, "rgba(34,26,43,0.4)"); shadow.addColorStop(1, "rgba(34,26,43,0)");
+    c.fillStyle = shadow; c.fillRect(x0, yEave + 1, x1 - x0, 7);
+    this.bone(x0 + inset - 5, yRidge - 1, x1 - inset + 5, yRidge - 1, 1.8);
+    this.b.line([[x0 - overhang + 2, yEave - 1], [x0 + inset + 2, yRidge + 2]], rgba(GLINT, 0.5), 1);
+  }
+
+  /** Osso longo: haste clara com a sombra de baixo e as duas epífises (cabeças arredondadas) nas pontas. */
+  bone(x1: number, y1: number, x2: number, y2: number, r: number): void {
+    const c = this.c, nx = (y2 - y1), ny = -(x2 - x1), len = Math.hypot(nx, ny) || 1, ox = (nx / len) * r * 0.5, oy = (ny / len) * r * 0.5;
+    this.b.line([[x1, y1], [x2, y2]], "#a08f6c", r * 1.2);
+    this.b.line([[x1 + ox, y1 + oy], [x2 + ox, y2 + oy]], "#efe3c8", r * 0.7);
+    for (const [x, y] of [[x1, y1], [x2, y2]] as const) {
+      ellipse(c, x - 0.5, y - r * 0.5, r * 0.8, r * 0.8, "#efe3c8"); ellipse(c, x - 0.5, y + r * 0.5, r * 0.8, r * 0.8, "#d3c3a0");
+      c.beginPath(); c.arc(x - 0.5, y - r * 0.5, r * 0.8, 0, Math.PI * 2); c.arc(x - 0.5, y + r * 0.5, r * 0.8, 0, Math.PI * 2); c.strokeStyle = OUTLINE; c.lineWidth = 0.7; c.stroke();
+    }
+  }
+
+  /** Caveira pequena: crânio, maxilar, órbitas e nariz; `s` é a escala (1 = ~10 px de largura). */
+  skull(x: number, y: number, s: number): void {
+    const c = this.c;
+    c.save(); c.translate(x, y); c.scale(s, s);
+    ellipse(c, 0, -5, 5.4, 4.6, "#d3c3a0");
+    this.b.poly([[-3.6, -3], [-2.4, 3], [2.4, 3], [3.6, -3]]); c.fillStyle = "#efe3c8"; c.fill();
+    ellipse(c, -2, -5, 1.4, 1.7, "#221a2b"); ellipse(c, 2, -5, 1.4, 1.7, "#221a2b");
+    this.b.poly([[0, -2.2], [-1, 0], [1, 0]]); c.fillStyle = "#221a2b"; c.fill();
+    for (let i = -2; i <= 2; i++) { c.fillStyle = "#a08f6c"; c.fillRect(i * 1.1 - 0.4, 1.4, 0.8, 1.8); }
+    c.beginPath(); c.ellipse(0, -5, 5.4, 4.6, 0, 0, Math.PI * 2); c.strokeStyle = OUTLINE; c.lineWidth = 0.8 / s; c.stroke();
+    c.restore();
+  }
 }
 export type { Point };

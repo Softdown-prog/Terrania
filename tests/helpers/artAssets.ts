@@ -72,8 +72,8 @@ import { drawTowerWindow } from "../../src/render/south/towers/interior/window.t
 import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
-import { paintBazar, paintBuildingFlame, paintCasaDeVenenos, paintFornalha, paintFortaleza, paintHospedaria,
-  paintTemplo } from "../../src/render/south/city/buildings/index.ts";
+import { paintBarracaSobreEstacas, paintBazar, paintBuildingFlame, paintCasaDeArgila, paintCasaDeVenenos, paintCasebreDeOssos, paintEstabulo,
+  paintFornalha, paintFortaleza, paintHospedaria, paintOssuario, paintTemplo, paintTendaDeCouro } from "../../src/render/south/city/buildings/index.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
@@ -252,7 +252,10 @@ export const ASSETS: ArtAsset[] = [
   // do prédio que a tem (o corpo fica no cache e só a chama é pintada a cada quadro).
   ...([["Fortaleza do Poço", paintFortaleza, "paintFortaleza"], ["Fornalha dos Trolls", paintFornalha, "paintFornalha"],
     ["Hospedaria Sombra do Escorpião", paintHospedaria, "paintHospedaria"], ["Bazar das Raridades", paintBazar, "paintBazar"],
-    ["Casa de Venenos", paintCasaDeVenenos, "paintCasaDeVenenos"], ["Templo do Sol Negro", paintTemplo, "paintTemplo"]] as const)
+    ["Casa de Venenos", paintCasaDeVenenos, "paintCasaDeVenenos"], ["Templo do Sol Negro", paintTemplo, "paintTemplo"],
+    ["Ossuário", paintOssuario, "paintOssuario"], ["Estábulo de Lagartos", paintEstabulo, "paintEstabulo"],
+    ["Casa de Argila", paintCasaDeArgila, "paintCasaDeArgila"], ["Tenda de Couro", paintTendaDeCouro, "paintTendaDeCouro"],
+    ["Casebre de Ossos", paintCasebreDeOssos, "paintCasebreDeOssos"], ["Barraca sobre Estacas", paintBarracaSobreEstacas, "paintBarracaSobreEstacas"]] as const)
     .map<ArtAsset>(([name, paint, fn]) => ({ id: "prédio " + name, tier: "structure", fn, draw: c => paint(c) })),
   { id: "prédio com chama: Fornalha dos Trolls", tier: "structure", fn: "paintBuildingFlame",
     draw: c => { paintFornalha(c); paintBuildingFlame(c, 1, 0.4); } },

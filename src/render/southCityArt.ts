@@ -30,46 +30,6 @@ function flame(ctx:CanvasRenderingContext2D,poison:boolean,t:number):void{
   rect(ctx,-31,-61,62,62,"#00000000");
   ctx.fillStyle=g;ctx.fillRect(-31,-61,62,62);
 }
-function building(ctx:CanvasRenderingContext2D,variant:number,time:number):void{
-  const v=Math.round(variant),fort=v===0,temple=v===5,hide=v===9||v===11;
-  const w=fort?61:temple?55:hide?42:46;
-  const h=fort?94:temple?65:hide?37:49;
-  ellipse(ctx,3,2,w+8,12,"#221a2b6c");
-  if(hide){
-    poly(ctx,[[-w,0],[-w+4,-h],[0,-h-16],[w-4,-h],[w,0]],C.wine[1]);
-    poly(ctx,[[-w,-h+5],[0,-h-16],[0,-h+3]],C.wine[0]);
-  }else if(temple){
-    rect(ctx,-w, -h+20,2*w,h-20,C.clay[2]);
-    poly(ctx,[[-w,-h+20],[-w+14,-h-4],[w-14,-h-4],[w,-h+20]],C.bone[1]);
-    rect(ctx,-w+9,-h+9,2*w-18,11,C.clay[0]);
-    ellipse(ctx,0,-h-3,12,10,C.bronze[2]);ellipse(ctx,-3,-h-5,7,6,C.bronze[1]);
-  }else{
-    rect(ctx,-w,-h+11,2*w,h-11,C.clay[2]);
-    rect(ctx,-w+3,-h+11,2*w-6,h-16,v===4?C.stone[1]:C.clay[1]);
-    poly(ctx,[[-w-7,-h+13],[-w+4,-h-13],[w-4,-h-13],[w+7,-h+13]],v===2||v===3?C.wine[1]:C.clay[0]);
-    poly(ctx,[[-w-7,-h+13],[-w+4,-h-13],[0,-h-13],[-2,-h+13]],C.wine[0]);
-    if(fort){
-      for(let i=-4;i<=4;i++)rect(ctx,i*13-6,-h-20,9,15,C.bone[i%2===0?1:2]);
-      rect(ctx,-w+14,-h-23,2*w-28,6,C.clay[0]);
-      rect(ctx,-6,-h-47,12,28,C.wine[1]);
-      poly(ctx,[[-6,-h-19],[0,-h-26],[6,-h-19]],C.bone[1]);
-    }
-  }
-  // Fachadas e portas são sólidas no motor; os três edifícios com interior têm entrada E.
-  rect(ctx,-12,-26,24,26,C.stone[2]);
-  rect(ctx,-9,-23,18,23,C.stone[1]);
-  ellipse(ctx,6,-12,1.8,2,C.bronze[0]);
-  for(const px of [-w+13,w-20]){
-    rect(ctx,px,-h+24,9,13,C.stone[2]);
-    rect(ctx,px+2,-h+26,5,8,v===4?C.poison[1]:C.bronze[1]);
-  }
-  if(v===1){rect(ctx,w-10,-h-30,15,31,C.stone[1]);flame(ctx,false,time);}
-  if(v===4){rect(ctx,-w+8,-h-9,7,18,C.poison[1]);flame(ctx,true,time);}
-  if(v===6)for(const x of [-w+12,w-12])skull(ctx,x,-h+22,.7);
-  if(v===7){rect(ctx,-w+8,-19,2*w-16,8,C.bronze[2]);rect(ctx,-w+8,-9,2*w-16,5,C.bone[2]);}
-  if(v===3){for(let i=0;i<5;i++)rect(ctx,-w+7+i*19,-h+10,10,6,i%2?C.wine[0]:C.poison[0]);}
-  if(v===2){rect(ctx,-9,-h-9,18,10,C.wine[1]);skull(ctx,0,-h-4,.5);}
-}
 function wall(ctx:CanvasRenderingContext2D,variant:number):void{
   rect(ctx,-32,-30,64,30,C.clay[2]);rect(ctx,-32,-34,64,30,C.clay[1]);
   rect(ctx,-32,-34,64,4,C.clay[0]);rect(ctx,-32,-15,64,2,C.clay[2]);
@@ -126,7 +86,6 @@ function corral(ctx:CanvasRenderingContext2D):void{
 }
 export function paintSouthCity(ctx:CanvasRenderingContext2D,prop:SouthCityProp,time:number):void{
   switch(prop.kind){
-    case "building":building(ctx,prop.variant,time);break;
     case "wall":wall(ctx,prop.variant);break;
     case "tower":tower(ctx,time);break;
     case "gate":

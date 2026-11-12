@@ -92,6 +92,7 @@
 - [`docs/adr/0041-torres-acabamento.md`](../../docs/adr/0041-torres-acabamento.md)
 - [`docs/adr/0042-cidade-piso-e-praca.md`](../../docs/adr/0042-cidade-piso-e-praca.md)
 - [`docs/adr/0043-cidade-predios-comercio.md`](../../docs/adr/0043-cidade-predios-comercio.md)
+- [`docs/adr/0044-cidade-predios-moradias.md`](../../docs/adr/0044-cidade-predios-moradias.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)
