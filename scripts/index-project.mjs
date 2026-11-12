@@ -61,7 +61,7 @@ function sanitizedPaths(directory = ".") {
 if ((git.status !== 0 || git.error) && !isolated)
   throw new Error("git ls-files failed; run inside a Git checkout");
 const indexedFiles = git.status === 0 && !git.error
-  ? git.stdout.split("\\0").filter(Boolean) : sanitizedPaths();
+  ? git.stdout.split("\0").filter(Boolean) : sanitizedPaths();
 const paths = [...new Set(indexedFiles)]
   .map((p) => p.replace(/\\/g, "/"))
   .filter((p) => existsSync(p) && !skipGenerated(p))
