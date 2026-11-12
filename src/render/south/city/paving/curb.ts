@@ -50,13 +50,11 @@ export class CityCurb {
       // fio claro na quina da frente e, por cima, a areia que o vento jogou: um ou dois montinhos
       c.fillStyle = `rgba(255,246,220,0.35)`; 
       if (horizontal) c.fillRect(x, y + (offset === 0 ? 0 : T - 1), T, 1); else c.fillRect(x + (offset === 0 ? 0 : T - 1), y, 1, T);
-      for (let n = 0; n < 2; n++) {
-        const t = paveNoise(tx * 3 + n, ty * 5 + lane, seed + 61);
-        if (t < 0.45) continue;
+      // a areia que o vento jogou por cima do meio-fio: um montinho em cada lado, e só em parte dos tiles
+      const t = paveNoise(tx * 3, ty * 5 + lane, seed + 61);
+      if (t >= 0.55) {
         const along = 4 + t * (T - 8), cx = horizontal ? x + along : x + offset + K / 2, cy = horizontal ? y + offset + K / 2 : y + along;
-        c.fillStyle = `rgba(143,111,63,0.4)`; c.beginPath(); c.ellipse(cx + 0.8, cy + 0.8, 5, 2.2, 0, 0, Math.PI * 2); c.fill();
         c.fillStyle = SAND.base; c.beginPath(); c.ellipse(cx, cy, 5, 2.2, 0, 0, Math.PI * 2); c.fill();
-        c.fillStyle = `rgba(255,246,220,0.55)`; c.beginPath(); c.ellipse(cx - 1, cy - 0.7, 2.6, 0.9, 0, 0, Math.PI * 2); c.fill();
       }
     }
   }

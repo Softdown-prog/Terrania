@@ -37,8 +37,9 @@ export function pavingSlabs(tx: number, ty: number, seed: number): Slab[] {
     const course = ty * COURSES_PER_TILE + row, y = row * COURSE_HEIGHT;
     let k = Math.floor((X0 - SLAB_WIDTH * 2) / SLAB_WIDTH);
     while (slabJoint(course, k + 1, seed) <= X0) k++;
-    for (; slabJoint(course, k, seed) < X1; k++) {
-      const a = slabJoint(course, k, seed), b = slabJoint(course, k + 1, seed);
+    // cada junta é calculada uma vez: o fim de uma laje é o começo da seguinte
+    for (let a = slabJoint(course, k, seed); a < X1; k++) {
+      const b = slabJoint(course, k + 1, seed);
       const lo = Math.max(a, X0), hi = Math.min(b, X1);
       out.push({
         x: lo - X0, y, w: hi - lo, h: COURSE_HEIGHT,
@@ -47,6 +48,7 @@ export function pavingSlabs(tx: number, ty: number, seed: number): Slab[] {
         worldX: (a + b) / 2, worldY: ty * TILE_SIZE + y + COURSE_HEIGHT / 2,
         roll: paveNoise(course, k, seed + 41),
       });
+      a = b;
     }
   }
   return out;

@@ -30,6 +30,6 @@ Medido no repositório em 2026-11-12: 417 arquivos de código em `src/` (856 com
 
 ## Próximos passos (rodada de proteção)
 
-1. **Orçamento de desempenho:** um teste de navegador que trava o tempo de desenhar um chunk (na cidade, no lago e nas dunas) e um teste do tamanho do download.
-2. **Cadastro de cenário por região:** trocar a sequência de `if` de `scenery.ts` por um cadastro em que cada região registra os próprios tipos, para uma região nova não editar o arquivo comum.
-3. **Carregar regiões sob demanda:** só depois de medir quanto do download é código nosso e quanto é biblioteca; se for quase tudo biblioteca, não vale a complexidade.
+1. ~~Orçamento de desempenho e de tamanho~~ — feito no ADR 0046 (e a carga de região sob demanda foi descartada por ora, pelos números).
+2. **Desenhar os chunks vizinhos antes de precisarem**, um por quadro, para o tranco ao entrar numa região pesada (a cidade) sumir.
+3. **Cadastro de cenário por região:** trocar a sequência de `if` de `scenery.ts` por um cadastro em que cada região registra os próprios tipos, para uma região nova não editar o arquivo comum.

@@ -1,6 +1,6 @@
 import { TILE_SIZE } from "../../../../world/terrain.ts";
 import { CityCurb, NO_EDGES, type PavedEdges } from "./curb.ts";
-import { GLINT, MORTAR, SLAB_DARK, SLAB_LIGHT, paveNoise, slabColor } from "./palette.ts";
+import { CHIP_LIGHT, GLOW_SHARE, MORTAR, POLISH_FLAT, SLAB_DARK, paveNoise, slabLook } from "./palette.ts";
 import { PlazaRings } from "./ring.ts";
 import { pavingSlabs } from "./slabs.ts";
 
@@ -25,12 +25,12 @@ export function paintCityPaving(ctx: CanvasRenderingContext2D, input: PavingInpu
   for (const slab of slabs) {
     const sx = x + slab.x + (slab.left ? 0.6 : 0), sy = y + slab.y + (slab.top ? 0.6 : 0);
     const sw = slab.w - (slab.left ? 0.6 : 0) - (slab.right ? 0.6 : 0), sh = slab.h - (slab.top ? 0.6 : 0) - (slab.bottom ? 0.6 : 0);
-    ctx.fillStyle = slabColor(slab.tone, slab.roll); ctx.fillRect(sx, sy, sw, sh);
-    // volume: quina de luz a noroeste, sombra a sudeste (só nas bordas reais da laje)
-    if (slab.top) { ctx.fillStyle = SLAB_LIGHT; ctx.globalAlpha = 0.6; ctx.fillRect(sx, sy, sw, 1); ctx.globalAlpha = 1; }
-    if (slab.left) { ctx.fillStyle = SLAB_LIGHT; ctx.globalAlpha = 0.4; ctx.fillRect(sx, sy, 1, sh); ctx.globalAlpha = 1; }
-    if (slab.bottom) { ctx.fillStyle = SLAB_DARK; ctx.globalAlpha = 0.5; ctx.fillRect(sx, sy + sh - 1, sw, 1); ctx.globalAlpha = 1; }
-    if (slab.right) { ctx.fillStyle = SLAB_DARK; ctx.globalAlpha = 0.4; ctx.fillRect(sx + sw - 1, sy, 1, sh); ctx.globalAlpha = 1; }
+    // volume com três retângulos empilhados: a sombra (laje inteira), a luz (menos a coluna e a linha de sombra) e o corpo
+    const look = slabLook(slab.tone, slab.roll), hasLight = slab.top || slab.left, hasDark = slab.right || slab.bottom;
+    if (hasDark) { ctx.fillStyle = look.dark; ctx.fillRect(sx, sy, sw, sh); }
+    if (hasLight) { ctx.fillStyle = look.light; ctx.fillRect(sx, sy, sw - (slab.right ? 1 : 0), sh - (slab.bottom ? 1 : 0)); }
+    ctx.fillStyle = look.body;
+    ctx.fillRect(sx + (slab.left ? 1 : 0), sy + (slab.top ? 1 : 0), sw - (slab.left ? 1 : 0) - (slab.right ? 1 : 0), sh - (slab.top ? 1 : 0) - (slab.bottom ? 1 : 0));
     // rachadura em algumas lajes (curva que corre de uma borda a outra)
     if (slab.roll > 0.84 && slab.w > 9) {
       ctx.beginPath(); ctx.moveTo(sx + 1, sy + 2 + slab.roll * 3);
@@ -39,9 +39,7 @@ export function paintCityPaving(ctx: CanvasRenderingContext2D, input: PavingInpu
     }
     // lajes polidas pelo uso: um brilho suave no meio, que some nas bordas
     if (slab.roll >= 0.12 && slab.roll < 0.4 && sw > 8) {
-      const cx = sx + sw / 2, cy = sy + sh / 2, glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(sw, sh) * 0.7);
-      glow.addColorStop(0, "rgba(255,246,220,0.2)"); glow.addColorStop(1, "rgba(255,246,220,0)");
-      ctx.fillStyle = glow; ctx.fillRect(sx, sy, sw, sh);
+      ctx.fillStyle = POLISH_FLAT; ctx.fillRect(sx + 1, sy + 1, sw - 2, sh - 2);
     }
     // quina de baixo arredondada pelo desgaste, em algumas lajes inteiras
     if (slab.roll > 0.5 && slab.roll < 0.75 && slab.right && sw > 6) {
@@ -49,16 +47,19 @@ export function paintCityPaving(ctx: CanvasRenderingContext2D, input: PavingInpu
       ctx.strokeStyle = SLAB_DARK; ctx.lineWidth = 0.9; ctx.stroke();
     }
     // lasca clara na quina de baixo das lajes mais gastas
-    if (slab.roll < 0.12) { ctx.fillStyle = GLINT; ctx.globalAlpha = 0.28; ctx.fillRect(sx + sw * 0.5, sy + 2, 2.2, 1); ctx.globalAlpha = 1; }
+    if (slab.roll < 0.12) { ctx.fillStyle = CHIP_LIGHT; ctx.fillRect(sx + sw * 0.5, sy + 2, 2.2, 1); }
   }
   // uma laje de destaque por tile (escolhida pelo sorteio): polida pelo uso, rachada em duas curvas e com a quina gasta
   const wide = slabs.filter(slab => slab.w >= 8 && slab.left && slab.right);
   const feature = wide[Math.floor(paveNoise(tx, ty, seed + 79) * wide.length)];
   if (feature) {
     const fx = x + feature.x, fy = y + feature.y, cx = fx + feature.w / 2, cy = fy + feature.h / 2;
-    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, feature.w * 0.6);
-    glow.addColorStop(0, "rgba(255,246,220,0.22)"); glow.addColorStop(1, "rgba(255,246,220,0)");
-    ctx.fillStyle = glow; ctx.fillRect(fx, fy, feature.w, feature.h);
+    if (paveNoise(tx, ty, seed + 83) < GLOW_SHARE) {
+      // só uma em cada três lajes de destaque tem o degradê de polimento (um degradê por tile custa caro num chunk inteiro)
+      const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, feature.w * 0.6);
+      glow.addColorStop(0, "rgba(255,246,220,0.22)"); glow.addColorStop(1, "rgba(255,246,220,0)");
+      ctx.fillStyle = glow; ctx.fillRect(fx, fy, feature.w, feature.h);
+    } else { ctx.fillStyle = POLISH_FLAT; ctx.fillRect(fx + 1, fy + 1, feature.w - 2, feature.h - 2); }
     ctx.beginPath(); ctx.moveTo(fx + 1.5, fy + 2);
     ctx.quadraticCurveTo(fx + feature.w * 0.3, fy + feature.h * 0.7, fx + feature.w * 0.55, fy + feature.h * 0.45);
     ctx.quadraticCurveTo(fx + feature.w * 0.8, fy + feature.h * 0.2, fx + feature.w - 1.5, fy + feature.h - 2);

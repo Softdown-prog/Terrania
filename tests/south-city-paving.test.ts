@@ -6,7 +6,7 @@ import { SOUTH_CITY, southPoint } from "../src/world/southCity.ts";
 import { PLAZA_CENTER, PLAZA_RINGS, isSouthCityPlaza, plazaRingStrength } from "../src/world/south/cityPlaza.ts";
 import { COURSES_PER_TILE, COURSE_HEIGHT, CURB_STONE, CURB_THICKNESS, CityCurb, JOINT_JITTER, MORTAR, NO_EDGES, PlazaRings, SLAB_TONES,
   SLAB_WIDTH, curbJoints, paintCityPaving, pavingSlabs, slabColor, slabJoint, type PavedEdges } from "../src/render/south/city/paving/index.ts";
-import { CURB_TONES } from "../src/render/south/city/paving/palette.ts";
+import { CURB_TONES, GLOW_SHARE, SLAB_LEVELS, slabLook } from "../src/render/south/city/paving/palette.ts";
 import { generateChunkCanvas } from "../src/render/terrain.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
 import { withDocument } from "./helpers/paintChunk.ts";
@@ -161,7 +161,10 @@ test("o meio-fio só aparece nos lados marcados, com pedras claras e areia por c
   assert.ok(!CURB_TONES.some(t => none.raw.includes(t)), "sem lado marcado, sem meio-fio");
   assert.ok(CURB_TONES.some(t => all.raw.includes(t)), "com lado marcado, pedra clara");
   assert.ok((all.args.fillRect ?? []).length > (one.args.fillRect ?? []).length && (one.args.fillRect ?? []).length > (none.args.fillRect ?? []).length, "mais lados, mais pedras");
-  assert.ok(all.raw.includes("rgba(143,111,63,0.4)") || one.raw.includes("rgba(143,111,63,0.4)") || all.calls.ellipse! > none.calls.ellipse!, "areia sobre o meio-fio");
+  // A areia sobre o meio-fio: um montinho por lado, só em parte dos tiles (decidido pelo sorteio do tile).
+  const mounds = (tx: number): number => spy(c => new CityCurb(c).stones(0, 0, tx, TY, edges(true, false, false, false), SEED)).calls.ellipse ?? 0;
+  const withSand = Array.from({ length: 60 }, (_, i) => mounds(i)).filter(n => n > 0).length;
+  assert.ok(withSand > 12 && withSand < 45, `montinhos de areia em ${withSand} de 60 tiles`);
   // O meio-fio do lado norte fica na faixa de cima do tile (0 a 5 px).
   const north = spy(c => new CityCurb(c).stones(0, 0, 3, TY, edges(true, false, false, false), SEED));
   assert.ok((north.args.fillRect ?? []).every(a => a[1]! < CURB_THICKNESS + 1 || a[3] === 1 || a[3] === CURB_THICKNESS || a[1]! <= 6), "faixa no alto");
@@ -203,8 +206,16 @@ test("os anéis de bronze: só nos tiles que eles cruzam, recortados no tile, co
   assert.equal(first[0], 40 + PLAZA_CENTER.x - 3 * TILE_SIZE, "o centro do anel no canvas, pelo mundo");
   assert.equal(first[1], 60 + PLAZA_CENTER.y - TY * TILE_SIZE);
   assert.ok((ring.calls.setLineDash ?? 0) >= 4, "juntas entre os blocos");
-  for (const r of PLAZA_RINGS) assert.ok(ring.dashes.some(d => d.length === 2 && Math.abs(d[0]! - r.radius * 0.11) < 1e-9 && d[1] === 1.4), `blocos do anel de raio ${r.radius}: traço de ${(r.radius * 0.11).toFixed(1)} px e junta de 1,4 px`);
-  assert.ok(ring.raw.includes("#86642f") && ring.raw.includes("#e8bb68"), "bronze com fio de luz");
+  for (const r of PLAZA_RINGS) {
+    const period = PlazaRings.period(r.radius), blocks = Math.PI * 2 * r.radius / period;
+    assert.ok(Math.abs(blocks - Math.round(blocks)) < 1e-9, `o anel de raio ${r.radius} fecha a volta com ${Math.round(blocks)} blocos inteiros`);
+    assert.ok(Math.abs(period - (r.radius * 0.11 + 1.4)) < 2, "do tamanho de um bloco mais a junta");
+    assert.ok(ring.dashes.some(d => d.length === 2 && Math.abs(d[0]! + d[1]! - period) < 1e-9 && d[1] === 1.4), `blocos do anel de raio ${r.radius}: junta de 1,4 px a cada ${period.toFixed(2)} px`);
+  }
+  assert.ok(ring.raw.includes("#86642f"), "bronze");
+  assert.equal(ring.raw.includes("#e8bb68"), false, "o fio de luz só existe no trecho voltado para noroeste: no leste do poço não há");
+  const lit = spy(c => new PlazaRings(c).paint(0, 0, -2, TY - 2));
+  assert.ok(lit.raw.includes("#e8bb68") && lit.raw.includes("rgba(255,246,220,0.5)"), "no noroeste do poço, o anel tem o fio de luz e o brilho da crista");
   // Dois tiles vizinhos desenham o mesmo anel: o centro deles difere exatamente de um tile.
   const next = spy(c => new PlazaRings(c).paint(40, 60, 4, TY));
   assert.equal((ring.args.arc![0]![0]! - next.args.arc![0]![0]!), TILE_SIZE);
@@ -250,4 +261,48 @@ test("o terreno usa o piso novo e a sombra, e o piso antigo não existe mais", (
   assert.match(source, /paintCityPaving\(ctx, \{ x, y, tx, ty, seed, plaza: isSouthCityPlaza\(tx, ty\), edges \}\)/);
   assert.match(source, /new CityCurb\(ctx\)\.shade\(x, y, sides\)/);
   assert.equal(/paintSouthCityPaving/.test(source), false);
+});
+
+test("cada laje é pintada com três retângulos empilhados (sombra, luz e corpo), e a cor vem de no máximo 32 combinações guardadas", () => {
+  const one = spy(c => paintCityPaving(c, { x: 0, y: 0, tx: 40, ty: TY - 40, seed: SEED, plaza: false }));
+  const slabs = pavingSlabs(40, TY - 40, SEED);
+  const rects = (one.args.fillRect ?? []).length;
+  assert.ok(rects <= 1 + slabs.length * 3 + slabs.length + 8, `retângulos no tile: ${rects} para ${slabs.length} lajes`);
+  const full = slabs.filter(s => s.left && s.right && s.top && s.bottom).length;
+  assert.ok(full >= 3, "há lajes inteiras no tile");
+  assert.ok(rects >= 1 + slabs.length * 2, "pelo menos o corpo e uma quina por laje");
+  assert.equal(SLAB_LEVELS, 8);
+  assert.equal(slabLook(1, 0.3), slabLook(1, 0.3), "a mesma combinação é montada uma vez");
+  const all = new Set<unknown>();
+  for (let t = 0; t < 4; t++) for (let i = 0; i < 100; i++) all.add(slabLook(t, i / 100));
+  assert.equal(all.size, 32, "quatro tons × oito níveis de luz");
+  const look = slabLook(0, 0.5);
+  assert.ok(look.body !== look.light && look.body !== look.dark && look.light !== look.dark, "corpo, quina de luz e quina de sombra são diferentes");
+  const sum = (c: string): number => c.match(/\d+/g)!.map(Number).reduce((a, b) => a + b, 0);
+  assert.ok(sum(look.light) > sum(look.body) && sum(look.body) > sum(look.dark), "luz mais clara que o corpo, e sombra mais escura");
+  assert.notEqual(slabLook(0, 0).body, slabLook(0, 0.99).body);
+  assert.equal(slabLook(Number.NaN, Number.NaN), slabLook(0, 0.5));
+});
+
+test("só uma em cada três lajes de destaque tem degradê de polimento; as outras têm um brilho chapado", () => {
+  const radial = (tx: number): number => spy(c => paintCityPaving(c, { x: 0, y: 0, tx, ty: TY - 20, seed: SEED, plaza: false })).calls.createRadialGradient ?? 0;
+  const counts = Array.from({ length: 90 }, (_, i) => radial(i));
+  assert.ok(counts.every(n => n <= 1), "no máximo um degradê radial por tile");
+  const share = counts.filter(n => n === 1).length / counts.length;
+  assert.ok(Math.abs(share - GLOW_SHARE) < 0.14, `fração de tiles com degradê: ${share.toFixed(2)} (esperado ${GLOW_SHARE})`);
+});
+
+test("o anel traça só o pedaço que passa pelo tile, e as juntas dos blocos caem nos mesmos lugares em todos os tiles", () => {
+  const arcs = (tx: number, ty: number): number[][] => spy(c => new PlazaRings(c).paint(0, 0, tx, ty)).args.arc ?? [];
+  for (const [tx, ty] of [[3, TY], [-5, TY], [0, TY + 3], [2, TY - 3], [-3, TY + 2], [4, TY + 3], [-2, TY - 4], [0, TY - 3]] as const)
+    for (const a of arcs(tx, ty)) assert.ok(a[4]! - a[3]! >= 0 && a[4]! - a[3]! < 1.6, `o arco de raio ${a[2]} no tile ${tx},${ty} cobre ${(a[4]! - a[3]!).toFixed(2)} rad: nem de trás para a frente, nem o círculo inteiro`);
+  // Todos os arcos tracejados começam num múltiplo do passo angular do anel: as juntas coincidem entre tiles vizinhos.
+  for (const ring of PLAZA_RINGS) {
+    const step = PlazaRings.period(ring.radius) / ring.radius;
+    for (const [tx, ty] of [[3, TY], [3, TY + 1], [2, TY + 2], [-5, TY], [-5, TY - 1]] as const) {
+      const dashed = (spy(c => new PlazaRings(c).paint(0, 0, tx, ty)).args.arc ?? []).filter(a => a[2] === ring.radius);
+      for (const a of dashed) { const k = a[3]! / step; assert.ok(Math.abs(k - Math.round(k)) < 1e-6 || a[3]! > 0, `${tx},${ty}: começo em ${k}`); }
+      if (dashed.length) { const k = dashed[0]![3]! / step; assert.ok(Math.abs(k - Math.round(k)) < 1e-6, `o tracejado do tile ${tx},${ty} começa num múltiplo do passo (${k})`); }
+    }
+  }
 });

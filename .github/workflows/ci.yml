@@ -19,6 +19,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Conferir orçamento de tamanho do download
+        run: npm run bundle:check
       - run: npm run typecheck --prefix server
       - run: npm test --prefix server
       - run: npm run build --prefix server

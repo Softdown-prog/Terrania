@@ -143,6 +143,7 @@ jobs:
           npm run typecheck
           npm test
           npm run build
+          npm run bundle:check
           npm run typecheck --prefix server
           npm test --prefix server
           npm run build --prefix server

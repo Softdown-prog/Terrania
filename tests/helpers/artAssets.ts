@@ -266,7 +266,7 @@ export const ASSETS: ArtAsset[] = [
   { id: "piso da cidade: meio-fio e areia", tier: "prop", fn: "paintCityPaving",
     draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15493, seed: 842136, plaza: false, edges: { n: true, e: true, s: false, w: true } }) },
   { id: "piso da cidade: anel de bronze da praça", tier: "prop", fn: "paintCityPaving",
-    draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15500, seed: 842136, plaza: true }) },
+    draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 5, ty: 15500, seed: 842136, plaza: true }) },
   { id: "Poço Negro: portão, muralha, torre e poço", tier: "structure",
     fn: "paintSouthCity", draw: c => {
       const kinds:readonly SouthCityPropKind[]=["well","gate","tower","wall","torch","building","tent"];

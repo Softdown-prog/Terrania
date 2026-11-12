@@ -14,7 +14,8 @@
     "architecture:index": "node scripts/index-project.mjs --write",
     "architecture:check": "node scripts/index-project.mjs --check",
     "mcp:navigator": "node scripts/mcp/server.mjs",
-    "art:preview": "node scripts/art-preview.mjs"
+    "art:preview": "node scripts/art-preview.mjs",
+    "bundle:check": "node scripts/bundle-budget.mjs"
   },
   "devDependencies": {
     "typescript": "6.0.3",

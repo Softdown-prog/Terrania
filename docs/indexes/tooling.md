@@ -12,7 +12,7 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 - [`scripts/mcp/server.mjs`](../../scripts/mcp/server.mjs)
 
-## Todos os arquivos deste módulo (27)
+## Todos os arquivos deste módulo (28)
 
 - [`.github/workflows/autoscale-lab.yml`](../../.github/workflows/autoscale-lab.yml)
 - [`.github/workflows/capacity-lab.yml`](../../.github/workflows/capacity-lab.yml)
@@ -30,6 +30,7 @@ Build, verificação, testes automatizados, deploys e índice; operações de pr
 - [`.github/workflows/rust-spatial.yml`](../../.github/workflows/rust-spatial.yml)
 - [`scripts/README.md`](../../scripts/README.md)
 - [`scripts/art-preview.mjs`](../../scripts/art-preview.mjs)
+- [`scripts/bundle-budget.mjs`](../../scripts/bundle-budget.mjs)
 - [`scripts/check-published-frontend.mjs`](../../scripts/check-published-frontend.mjs)
 - [`scripts/emit-route-shells.mjs`](../../scripts/emit-route-shells.mjs)
 - [`scripts/index-project.mjs`](../../scripts/index-project.mjs)

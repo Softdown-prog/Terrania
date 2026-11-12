@@ -185,13 +185,6 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
   const r = (i: number): number => hash2(tx * 31 + i * 7, ty * 17 + i * 3, seed + 1000 + i);
   const neighbours = DIRS.map(([dx, dy]) => grid.at(lx + dx, ly + dy).ground);
 
-  // Salpicos de luz e terra: dão grão ao solo sem repetir padrão.
-  for (let i = 0; i < 7; i++) {
-    const a = r(i), b = r(i + 20);
-    ctx.fillStyle = i % 2 ? "rgba(247,237,191,.1)" : "rgba(22,46,39,.1)";
-    ctx.fillRect(x + 3 + a * 26, y + 3 + b * 26, 1 + a * 2.6, 1 + b * 1.4);
-  }
-
   if (southCitySafe(tx,ty) && tile.ground==="path") {
     // Piso de pedra da cidade (ADR 0042): meio-fio nos lados que encostam na areia, anéis de bronze na praça.
     const edges: PavedEdges = { n: grid.at(lx, ly - 1).ground !== "path", s: grid.at(lx, ly + 1).ground !== "path",
@@ -199,6 +192,14 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
     paintCityPaving(ctx, { x, y, tx, ty, seed, plaza: isSouthCityPlaza(tx, ty), edges });
     return;
   }
+
+  // Salpicos de luz e terra: dão grão ao solo sem repetir padrão.
+  for (let i = 0; i < 7; i++) {
+    const a = r(i), b = r(i + 20);
+    ctx.fillStyle = i % 2 ? "rgba(247,237,191,.1)" : "rgba(22,46,39,.1)";
+    ctx.fillRect(x + 3 + a * 26, y + 3 + b * 26, 1 + a * 2.6, 1 + b * 1.4);
+  }
+
   if (southCitySafe(tx,ty) && tile.ground==="sand") {
     // Na areia da cidade, o piso lança uma sombra suave nos lados em que encosta.
     const sides: PavedEdges = { n: grid.at(lx, ly - 1).ground === "path", s: grid.at(lx, ly + 1).ground === "path",
