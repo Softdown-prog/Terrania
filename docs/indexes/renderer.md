@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (144)
+## Todos os arquivos deste módulo (149)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -125,6 +125,11 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/south/decor/prop.ts`](../../src/render/south/decor/prop.ts)
 - [`src/render/south/rocks/index.ts`](../../src/render/south/rocks/index.ts)
 - [`src/render/south/rocks/sandstoneRock.ts`](../../src/render/south/rocks/sandstoneRock.ts)
+- [`src/render/south/terrain/blackLake/coverage.ts`](../../src/render/south/terrain/blackLake/coverage.ts)
+- [`src/render/south/terrain/blackLake/index.ts`](../../src/render/south/terrain/blackLake/index.ts)
+- [`src/render/south/terrain/blackLake/layer.ts`](../../src/render/south/terrain/blackLake/layer.ts)
+- [`src/render/south/terrain/blackLake/palette.ts`](../../src/render/south/terrain/blackLake/palette.ts)
+- [`src/render/south/terrain/blackLake/shade.ts`](../../src/render/south/terrain/blackLake/shade.ts)
 - [`src/render/south/terrain/dunes/field.ts`](../../src/render/south/terrain/dunes/field.ts)
 - [`src/render/south/terrain/dunes/index.ts`](../../src/render/south/terrain/dunes/index.ts)
 - [`src/render/south/terrain/dunes/palette.ts`](../../src/render/south/terrain/dunes/palette.ts)

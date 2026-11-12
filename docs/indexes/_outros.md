@@ -87,6 +87,7 @@
 - [`docs/adr/0036-decoracao-do-deserto.md`](../../docs/adr/0036-decoracao-do-deserto.md)
 - [`docs/adr/0037-colisao-da-decoracao-do-deserto.md`](../../docs/adr/0037-colisao-da-decoracao-do-deserto.md)
 - [`docs/adr/0038-retirada-do-espelhamento-com-o-go.md`](../../docs/adr/0038-retirada-do-espelhamento-com-o-go.md)
+- [`docs/adr/0039-lago-negro-acabamento.md`](../../docs/adr/0039-lago-negro-acabamento.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

@@ -1,4 +1,5 @@
 import { hash2, valueNoise } from './random.ts';
+import { BLACK_LAKE_THRESHOLD, blackLakeNoise } from "./south/blackLake.ts";
 import { villageGround, starterCaveTrail } from './village.ts';
 import { southCityGround, SOUTH_CITY } from './southCity.ts';
 import { classifyBiome, type Biome } from './biomes.ts';
@@ -17,9 +18,7 @@ export function nearSouthCity(tx: number, ty: number): boolean {
 }
 export function isBlackLake(tx: number, ty: number, seed: number, southWeight: number): boolean {
   if (southWeight < 0.62 || nearSouthCity(tx, ty)) return false;
-  const n = valueNoise(tx / 40 + 7.3, ty / 40 - 2.9, seed + 5003) * 0.78 +
-    valueNoise(tx / 12 + 1.1, ty / 12 + 4.4, seed + 5009) * 0.22;
-  return n > 0.82;
+  return blackLakeNoise(tx, ty, seed) > BLACK_LAKE_THRESHOLD;
 }
 /** Gerador compartilhado por servidor, colisão, render e atlas. Sem dependências gráficas. */
 export function getTile(tx: number, ty: number, seed: number): Tile {

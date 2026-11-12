@@ -16,6 +16,7 @@ import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
 import { buildRoadMask, drawRoadStones, drawRoadVerge, drawWheelRut, planRoadTile, quantizeVariation, roadProfile, roadSprite,
   type RoadMask, type RoadPiece } from "./roads/index.ts";
+import { blackLakeLayerCanvas } from "./south/terrain/blackLake/index.ts";
 import { DUNES_LOOK, HARDPAN_LOOK, duneReliefCanvas } from "./south/terrain/dunes/index.ts";
 import { southRuinsInArea } from "../world/southRuins.ts";
 import { southTowersInArea } from "../world/towers/placement.ts";
@@ -46,8 +47,6 @@ const BIOME_PALETTE: Partial<Record<Biome, { lo: string; hi: string }>> = {
   volcanic: { lo: "#4e4d50", hi: "#78625e" },
 };
 const WATER_DEEP = "#265867", WATER_MID = "#337279", WATER_SHALLOW = "#4f9a96";
-/** Lago negro dos Ermos do Sul (ADR 0017): água de tinta com raso turvo e margem de lama. */
-const BLACK_DEEP = "#0d121a", BLACK_MID = "#17212b", BLACK_SHALLOW = "#2b3b3d";
 const PAD = 2;
 const SPAN = CHUNK_TILES + PAD * 2;
 
@@ -99,8 +98,10 @@ function drawGround(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: n
   let color = mix(p.lo, p.hi, n);
   if (tile.ground === "water") {
     const d = grid.shore(lx, ly);
+    // Lago negro: sob a água fica lama (ADR 0039); a camada do lago desenha a água por cima, com a costa orgânica, e onde
+    // ela recua dentro de um tile de água é a lama que aparece, nunca uma escada escura.
     color = tile.biome === "black-lake"
-      ? mix(d === 1 ? BLACK_SHALLOW : d === 2 ? BLACK_MID : BLACK_DEEP, mix(p.lo, p.hi, n), 0.3) :
+      ? mix("#3a2e24", "#4a3a2c", n) :
       tile.biome === "frozen-lake" || tile.biome === "open-sea" ? mix(p.lo, p.hi, n) :
       mix(d === 1 ? WATER_SHALLOW : d === 2 ? WATER_MID : WATER_DEEP, mix(p.lo, p.hi, n), 0.35);
   }
@@ -112,18 +113,21 @@ const DIRS: ReadonlyArray<readonly [number, number]> = [[0, -1], [1, 0], [0, 1],
 
 /** Água do lago negro: ondas arroxeadas, mancha oleosa nas partes fundas e galhos afogados no raso. */
 function drawBlackWater(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: number,
-  x: number, y: number, r: (i: number) => number, neighbours: readonly Ground[]): void {
+  x: number, y: number, r: (i: number) => number): void {
   const d = grid.shore(lx, ly);
-  ctx.strokeStyle = "rgba(150,120,196,.2)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let i = 0; i < 2; i++) {
-    const wx = x + 4 + r(40 + i) * 14, wy = y + 6 + r(50 + i) * 20;
-    ctx.moveTo(wx, wy);
-    ctx.quadraticCurveTo(wx + 5, wy - 2, wx + 10, wy);
-    ctx.quadraticCurveTo(wx + 15, wy + 2, wx + 19, wy);
+  // Ondas só longe da margem: junto dela a costa é orgânica e um traço de tile passaria da água para a lama.
+  if (d >= 2) {
+    ctx.strokeStyle = "rgba(150,120,196,.2)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i < 2; i++) {
+      const wx = x + 4 + r(40 + i) * 14, wy = y + 6 + r(50 + i) * 20;
+      ctx.moveTo(wx, wy);
+      ctx.quadraticCurveTo(wx + 5, wy - 2, wx + 10, wy);
+      ctx.quadraticCurveTo(wx + 15, wy + 2, wx + 19, wy);
+    }
+    ctx.stroke();
   }
-  ctx.stroke();
   if (d >= 2 && r(66) > 0.6) {
     // mancha oleosa rara, de posição e giro variados, do roxo ao verde-veneno e bem fraca
     const px = x + 6 + r(63) * 20, py = y + 6 + r(64) * 20;
@@ -133,16 +137,6 @@ function drawBlackWater(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, l
     ctx.fillStyle = sheen;
     ctx.beginPath(); ctx.ellipse(px, py, 7 + r(60) * 8, 2.6 + r(61) * 3, r(62) * 3, 0, TAU); ctx.fill();
   }
-  DIRS.forEach(([dx, dy], k) => {
-    if (neighbours[k] === "water") return;
-    // lama escura onde a água encontra a terra
-    const g = dx
-      ? ctx.createLinearGradient(x + (dx > 0 ? 32 : 0), 0, x + (dx > 0 ? 21 : 11), 0)
-      : ctx.createLinearGradient(0, y + (dy > 0 ? 32 : 0), 0, y + (dy > 0 ? 21 : 11));
-    g.addColorStop(0, "rgba(58,46,36,.6)"); g.addColorStop(1, "rgba(58,46,36,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-  });
   if (d === 1 && r(70) > 0.9) {
     // galho afogado
     const px = x + 8 + r(71) * 16, py = y + 10 + r(72) * 12;
@@ -150,15 +144,9 @@ function drawBlackWater(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, l
     ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 6, py - 5); ctx.moveTo(px + 3, py - 2.5); ctx.lineTo(px + 7, py + 1); ctx.stroke();
   }
 }
-/** Margem de terra junto ao lago negro: lama batida e juncos secos e tortos. */
+/** Margem de terra junto ao lago negro: juncos secos e tortos (a lama molhada vem da camada do lago, ADR 0039). */
 function drawBlackShore(ctx: CanvasRenderingContext2D, x: number, y: number, k: number,
   dx: number, dy: number, r: (i: number) => number): void {
-  const mud = dx
-    ? ctx.createLinearGradient(x + (dx > 0 ? 32 : 0), 0, x + (dx > 0 ? 18 : 14), 0)
-    : ctx.createLinearGradient(0, y + (dy > 0 ? 32 : 0), 0, y + (dy > 0 ? 18 : 14));
-  mud.addColorStop(0, "rgba(54,42,34,.62)"); mud.addColorStop(1, "rgba(54,42,34,0)");
-  ctx.fillStyle = mud;
-  ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
   if (r(80 + k) > 0.45) {
     const bx = dx ? x + (dx > 0 ? 24 : 8) : x + 6 + r(85 + k) * 20;
     const by = dy ? y + (dy > 0 ? 26 : 8) : y + 10 + r(86 + k) * 16;
@@ -207,7 +195,7 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
     return;
   }
   if (tile.ground === "water" && tile.biome === "black-lake") {
-    drawBlackWater(ctx, grid, lx, ly, x, y, r, neighbours);
+    drawBlackWater(ctx, grid, lx, ly, x, y, r);
     return;
   }
   if (tile.ground === "water") {
@@ -403,6 +391,9 @@ export function generateChunkCanvas(
     const relief = duneReliefCanvas(cx, cy, seed, look, (lx, ly) => grid.at(lx, ly).biome === biome);
     if (relief) { ctx.globalAlpha = .9; ctx.drawImage(relief, 0, 0); ctx.globalAlpha = 1; }
   }
+  // Lago negro: água com profundidade, costa orgânica, lama molhada e um fio de luz na borda (ADR 0039).
+  const lake = blackLakeLayerCanvas(cx, cy, seed, (lx, ly) => { const t = grid.at(lx, ly); return t.ground === "water" && t.biome === "black-lake"; });
+  if (lake) ctx.drawImage(lake, 0, 0);
   for (let y = 0; y < CHUNK_TILES; y++)
     for (let x = 0; x < CHUNK_TILES; x++)
       drawDetails(ctx, grid, x, y, x * TILE_SIZE, y * TILE_SIZE, seed);

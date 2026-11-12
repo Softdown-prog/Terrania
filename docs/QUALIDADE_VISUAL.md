@@ -15,7 +15,7 @@ Referência de qualidade: monstros (`src/render/creatures/`), espadas (`src/rend
 | 2 | Estradas e trilhas | marcas de roda sempre horizontais, mesmo em estrada vertical; emenda abrupta com a areia | **feito** (ADR 0034) |
 | 3 | Pedras do deserto | a mesma pedra cinza com musgo verde em todo lugar; falta arenito | **feito** (ADR 0035) |
 | 4 | Decoração do deserto | só pedras: faltam cacto, capim seco, ossos, rastros (peças registradas no contrato de arte) | **feito** (ADR 0036; rastros ficaram de fora) |
-| 5 | Lago negro | costa em degraus de tile, sem borda irregular nem areia úmida suave | pendente |
+| 5 | Lago negro | costa em degraus de tile, sem borda irregular nem areia úmida suave | **feito** (ADR 0039) |
 | 6 | Ruínas | peças pequenas e chapadas | pendente |
 | 7 | Torres (exterior) | volume bom, superfície plana, pouco detalhe de desgaste | pendente |
 | 8 | Cidade do Poço Negro | pavimento roxo chapado, edifícios pequenos e planos ao lado dos personagens | pendente |

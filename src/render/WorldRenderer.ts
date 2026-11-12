@@ -66,14 +66,17 @@ export class WorldRenderer {
           });
           const x0 = tx * TILE_SIZE, y0 = ty * TILE_SIZE, p = tile.decoration * 9;
           const S = TILE_SIZE;
+          // No lago negro a costa é orgânica (ADR 0039): a espuma só corre no meio de cada aresta, onde a costa fica na
+          // borda do tile, e não passa pelas quinas arredondadas.
+          const inset = black ? 8 : 0;
           if (getTile(tx, ty - 1, this.seed).ground !== "water")
-            foam.push({ x1: x0, y1: y0 + 1, x2: x0 + S, y2: y0 + 1, phase: p, nx: 0, ny: -1, ...(black ? { black: true as const } : {}) });
+            foam.push({ x1: x0 + inset, y1: y0 + 1, x2: x0 + S - inset, y2: y0 + 1, phase: p, nx: 0, ny: -1, ...(black ? { black: true as const } : {}) });
           if (getTile(tx, ty + 1, this.seed).ground !== "water")
-            foam.push({ x1: x0, y1: y0 + S - 1, x2: x0 + S, y2: y0 + S - 1, phase: p + 2, nx: 0, ny: 1, ...(black ? { black: true as const } : {}) });
+            foam.push({ x1: x0 + inset, y1: y0 + S - 1, x2: x0 + S - inset, y2: y0 + S - 1, phase: p + 2, nx: 0, ny: 1, ...(black ? { black: true as const } : {}) });
           if (getTile(tx - 1, ty, this.seed).ground !== "water")
-            foam.push({ x1: x0 + 1, y1: y0, x2: x0 + 1, y2: y0 + S, phase: p + 4, nx: -1, ny: 0, ...(black ? { black: true as const } : {}) });
+            foam.push({ x1: x0 + 1, y1: y0 + inset, x2: x0 + 1, y2: y0 + S - inset, phase: p + 4, nx: -1, ny: 0, ...(black ? { black: true as const } : {}) });
           if (getTile(tx + 1, ty, this.seed).ground !== "water")
-            foam.push({ x1: x0 + S - 1, y1: y0, x2: x0 + S - 1, y2: y0 + S, phase: p + 6, nx: 1, ny: 0, ...(black ? { black: true as const } : {}) });
+            foam.push({ x1: x0 + S - 1, y1: y0 + inset, x2: x0 + S - 1, y2: y0 + S - inset, phase: p + 6, nx: 1, ny: 0, ...(black ? { black: true as const } : {}) });
         }
       }
     const regional = getRegionalLandmarkForCell(
