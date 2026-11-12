@@ -167,14 +167,3 @@ export function southCityGroundColors(ground:string):{lo:string;hi:string}{
     ? {lo:C.stone[1],hi:C.stone[0]}
     : {lo:C.sand[2],hi:C.sand[0]};
 }
-/** Lajes irregulares iluminadas de noroeste; não alteram colisão. */
-export const paintSouthCityPaving = (
-  ctx:CanvasRenderingContext2D,x:number,y:number,noise:(index:number)=>number,
-):void=>{
-  for(let row=0;row<3;row++)for(let col=0;col<3;col++){
-    const dx=x+col*11+(row%2)*4,dy=y+row*11;
-    ctx.fillStyle=noise(row*3+col+390)>.5?C.stone[0]:C.stone[1];
-    ctx.fillRect(dx+1,dy+1,9,8);
-    ctx.fillStyle="#78677d60";ctx.fillRect(dx+1,dy+1,9,1);
-  }
-};

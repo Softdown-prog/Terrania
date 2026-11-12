@@ -71,6 +71,7 @@ import { drawTowerWallFace } from "../../src/render/south/towers/interior/wallFa
 import { drawTowerWindow } from "../../src/render/south/towers/interior/window.ts";
 import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintSouthCity } from "../../src/render/southCityArt.ts";
+import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
 import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
@@ -245,6 +246,12 @@ export const ASSETS: ArtAsset[] = [
     draw: c => paintRuinPot(c, RUIN_PIECES[3][i]!, i === 5 ? 0 : 1) })),
   ...([0, 1, 2, 3] as const).map<ArtAsset>(v => ({ id: "ruína: chão em volta " + RUIN_NAMES[v], tier: "prop", fn: "paintRuinGround",
     draw: c => paintRuinGround(c, v) })),
+  // Piso da cidade do Poço Negro (ADR 0042): um tile de pedra, um com meio-fio e um da praça com o anel de bronze.
+  { id: "piso da cidade: lajes", tier: "prop", fn: "paintCityPaving", draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15493, seed: 842136, plaza: false }) },
+  { id: "piso da cidade: meio-fio e areia", tier: "prop", fn: "paintCityPaving",
+    draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15493, seed: 842136, plaza: false, edges: { n: true, e: true, s: false, w: true } }) },
+  { id: "piso da cidade: anel de bronze da praça", tier: "prop", fn: "paintCityPaving",
+    draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15500, seed: 842136, plaza: true }) },
   { id: "Poço Negro: portão, muralha, torre e poço", tier: "structure",
     fn: "paintSouthCity", draw: c => {
       const kinds:readonly SouthCityPropKind[]=["well","gate","tower","wall","torch","building","tent"];

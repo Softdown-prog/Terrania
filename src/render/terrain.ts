@@ -8,7 +8,9 @@ import {
 } from "../world/terrain.ts";
 import { hash2, valueNoise } from "../world/random.ts";
 import { ellipse, mix, TAU, blade } from "./draw.ts";
-import { southCityGroundColors, paintSouthCityPaving } from "./southCityArt.ts";
+import { southCityGroundColors } from "./southCityArt.ts";
+import { CityCurb, paintCityPaving, type PavedEdges } from "./south/city/paving/index.ts";
+import { isSouthCityPlaza } from "../world/south/cityPlaza.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
 import { southCityGround, southCitySafe } from "../world/southCity.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
@@ -191,8 +193,17 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
   }
 
   if (southCitySafe(tx,ty) && tile.ground==="path") {
-    paintSouthCityPaving(ctx,x,y,r);
+    // Piso de pedra da cidade (ADR 0042): meio-fio nos lados que encostam na areia, anéis de bronze na praça.
+    const edges: PavedEdges = { n: grid.at(lx, ly - 1).ground !== "path", s: grid.at(lx, ly + 1).ground !== "path",
+      w: grid.at(lx - 1, ly).ground !== "path", e: grid.at(lx + 1, ly).ground !== "path" };
+    paintCityPaving(ctx, { x, y, tx, ty, seed, plaza: isSouthCityPlaza(tx, ty), edges });
     return;
+  }
+  if (southCitySafe(tx,ty) && tile.ground==="sand") {
+    // Na areia da cidade, o piso lança uma sombra suave nos lados em que encosta.
+    const sides: PavedEdges = { n: grid.at(lx, ly - 1).ground === "path", s: grid.at(lx, ly + 1).ground === "path",
+      w: grid.at(lx - 1, ly).ground === "path", e: grid.at(lx + 1, ly).ground === "path" };
+    if (sides.n || sides.s || sides.w || sides.e) new CityCurb(ctx).shade(x, y, sides);
   }
   if (tile.ground === "water" && tile.biome === "black-lake") {
     drawBlackWater(ctx, grid, lx, ly, x, y, r);

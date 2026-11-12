@@ -90,6 +90,7 @@
 - [`docs/adr/0039-lago-negro-acabamento.md`](../../docs/adr/0039-lago-negro-acabamento.md)
 - [`docs/adr/0040-ruinas-acabamento.md`](../../docs/adr/0040-ruinas-acabamento.md)
 - [`docs/adr/0041-torres-acabamento.md`](../../docs/adr/0041-torres-acabamento.md)
+- [`docs/adr/0042-cidade-piso-e-praca.md`](../../docs/adr/0042-cidade-piso-e-praca.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)
