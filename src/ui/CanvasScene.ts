@@ -78,6 +78,7 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   tracksVisible=false, leadingHorse=false): void {
   ctx.fillStyle = '#506f50'; ctx.fillRect(0, 0, width, height);
   world.render(ctx, cameraX, cameraY, width, height, time, animated);
+  world.warmAhead(cameraX, cameraY, width, height, time);
   const left = cameraX - width / 2, top = cameraY - height / 2;
   effects?.renderGround(ctx, left, top);
   const actors: Array<{ y: number; draw: () => void }> = [];

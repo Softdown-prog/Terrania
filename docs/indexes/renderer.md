@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (190)
+## Todos os arquivos deste módulo (191)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -34,6 +34,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/caveStyles/luminous/palette.ts`](../../src/render/caveStyles/luminous/palette.ts)
 - [`src/render/caveStyles/luminous/placement.ts`](../../src/render/caveStyles/luminous/placement.ts)
 - [`src/render/caveStyles/paletteFor.ts`](../../src/render/caveStyles/paletteFor.ts)
+- [`src/render/chunkPrefetch.ts`](../../src/render/chunkPrefetch.ts)
 - [`src/render/coinDrop.ts`](../../src/render/coinDrop.ts)
 - [`src/render/creatures/center/slimes/slime.ts`](../../src/render/creatures/center/slimes/slime.ts)
 - [`src/render/creatures/east/crabs/coralCrab.ts`](../../src/render/creatures/east/crabs/coralCrab.ts)

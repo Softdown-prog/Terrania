@@ -95,6 +95,7 @@
 - [`docs/adr/0044-cidade-predios-moradias.md`](../../docs/adr/0044-cidade-predios-moradias.md)
 - [`docs/adr/0045-fronteiras-e-kit-do-sul.md`](../../docs/adr/0045-fronteiras-e-kit-do-sul.md)
 - [`docs/adr/0046-orcamentos-de-custo.md`](../../docs/adr/0046-orcamentos-de-custo.md)
+- [`docs/adr/0047-geracao-de-chunks-em-fatias.md`](../../docs/adr/0047-geracao-de-chunks-em-fatias.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

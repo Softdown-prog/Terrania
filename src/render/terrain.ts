@@ -375,12 +375,17 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
   }
 }
 
+/** Quantos tiles se pintam entre dois passos da geração em fatias (ADR 0047). */
+export const CHUNK_STEP_TILES = 36;
+
 /** Static terrain is rasterized once per chunk. No downloaded image assets. */
-export function generateChunkCanvas(
-  cx: number,
-  cy: number,
-  seed: number,
-): HTMLCanvasElement {
+/**
+ * Geração do chunk em passos pequenos (ADR 0047). Cada `yield` marca um ponto em que dá para parar e continuar no quadro
+ * seguinte: um lote de `CHUNK_STEP_TILES` tiles de chão, o desfoque, cada camada de relevo, o lago, e um lote de tiles de
+ * detalhe. O desenho é exatamente o de `generateChunkCanvas` (mesma ordem de chamadas); quem fatia só decide quantos passos
+ * dar por quadro. Não usa relógio: o orçamento de um quadro é um número de passos, então continua determinístico.
+ */
+export function* generateChunkSteps(cx: number, cy: number, seed: number): Generator<void, HTMLCanvasElement, void> {
   const canvas = document.createElement("canvas");
   canvas.width = CHUNK_PIXELS;
   canvas.height = CHUNK_PIXELS;
@@ -391,25 +396,44 @@ export function generateChunkCanvas(
   const ground = padded.getContext("2d");
   if (!ground) throw new Error("Canvas 2D indisponível.");
   const grid = new Grid(cx, cy, seed);
+  let batch = 0;
   for (let y = -1; y <= CHUNK_TILES; y++)
-    for (let x = -1; x <= CHUNK_TILES; x++)
+    for (let x = -1; x <= CHUNK_TILES; x++) {
       drawGround(ground, grid, x, y, (x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE, seed);
+      if (++batch % CHUNK_STEP_TILES === 0) yield;
+    }
+  yield;
   // Padding uses global neighboring tiles, preventing seams at chunk boundaries.
   ctx.filter = "blur(4px)";
   ctx.drawImage(padded, -TILE_SIZE, -TILE_SIZE);
   ctx.filter = "none";
+  yield;
   // Dunas do Sul: relevo contínuo sombreado por cima da cor lisa, sem costura entre chunks (ADR 0033).
   for (const [look, biome] of [[DUNES_LOOK, "dunes"], [HARDPAN_LOOK, "ruins"]] as const) {
     const relief = duneReliefCanvas(cx, cy, seed, look, (lx, ly) => grid.at(lx, ly).biome === biome);
     if (relief) { ctx.globalAlpha = .9; ctx.drawImage(relief, 0, 0); ctx.globalAlpha = 1; }
+    yield;
   }
   // Lago negro: água com profundidade, costa orgânica, lama molhada e um fio de luz na borda (ADR 0039).
   const lake = blackLakeLayerCanvas(cx, cy, seed, (lx, ly) => { const t = grid.at(lx, ly); return t.ground === "water" && t.biome === "black-lake"; });
   if (lake) ctx.drawImage(lake, 0, 0);
+  yield;
+  batch = 0;
   for (let y = 0; y < CHUNK_TILES; y++)
-    for (let x = 0; x < CHUNK_TILES; x++)
+    for (let x = 0; x < CHUNK_TILES; x++) {
       drawDetails(ctx, grid, x, y, x * TILE_SIZE, y * TILE_SIZE, seed);
+      if (++batch % CHUNK_STEP_TILES === 0) yield;
+    }
   return canvas;
+}
+
+/** O chunk inteiro de uma vez: percorre todos os passos de `generateChunkSteps` sem parar. */
+export function generateChunkCanvas(cx: number, cy: number, seed: number): HTMLCanvasElement {
+  const steps = generateChunkSteps(cx, cy, seed);
+  for (;;) {
+    const next = steps.next();
+    if (next.done) return next.value;
+  }
 }
 
 
