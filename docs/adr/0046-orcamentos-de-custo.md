@@ -32,3 +32,5 @@
 - **O custo estrutural continua:** o chunk é desenhado de uma vez quando aparece. Em celular lento, os chunks da cidade (~25 ms no desktop) ainda podem causar um tranco. O remédio de verdade é desenhar os chunks vizinhos antes de precisarem, um por quadro (próxima entrega desta rodada).
 - Os tempos foram medidos no desktop; nunca em Android físico.
 - O orçamento de tempo é uma rede de segurança grossa (pega 2 a 3 vezes mais lento), não um medidor fino; o fino é o de custo contado.
+
+**Atualização (ADR 0054):** a medição de tempo passou a ser intercalada, com o quartil inferior das rodadas, e o limite dos chunks da cidade subiu de 3,5× para 4,5× as dunas, com o motivo registrado lá. Também ficou registrado que não se corta arte para aparelho fraco.

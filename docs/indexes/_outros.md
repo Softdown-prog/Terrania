@@ -102,6 +102,7 @@
 - [`docs/adr/0051-rocha-continua-das-cavernas.md`](../../docs/adr/0051-rocha-continua-das-cavernas.md)
 - [`docs/adr/0052-pocas-da-gruta-luminosa.md`](../../docs/adr/0052-pocas-da-gruta-luminosa.md)
 - [`docs/adr/0053-formacoes-das-cavernas.md`](../../docs/adr/0053-formacoes-das-cavernas.md)
+- [`docs/adr/0054-qualidade-primeiro-aparelho-alvo.md`](../../docs/adr/0054-qualidade-primeiro-aparelho-alvo.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)
