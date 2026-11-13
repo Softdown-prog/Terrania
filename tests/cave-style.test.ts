@@ -94,9 +94,9 @@ test("a paleta luminosa é própria de cada tema, mais azulada e escura na rocha
 
 test("cada peça da Gruta Luminosa tem o seu arquivo e está registrada no contrato de arte", () => {
   const files = readdirSync(new URL("../src/render/caveStyles/luminous/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["glowPool", "index", "mushroom", "palette", "placement"], "cada assunto no seu arquivo");
+  assert.deepEqual(files, ["fairyRing", "glowPool", "glowPuddle", "index", "mushroom", "palette", "placement", "poolHalo", "poolShape"], "cada assunto no seu arquivo");
   for (const theme of THEMES) {
-    for (const [id, fn] of [["cogumelos luminosos ", "drawGlowMushroom"], ["poça de musgo luminoso ", "drawGlowPool"]] as const) {
+    for (const [id, fn] of [["cogumelos luminosos ", "drawGlowMushroom"], ["poça de musgo luminoso ", "drawGlowPool"], ["poça de água luminosa ", "drawGlowPuddle"], ["círculo de cogumelos ", "drawFairyRing"]] as const) {
       const asset = ASSETS.find(a => a.id === id + theme);
       assert.equal(asset?.tier, "prop", id + theme);
       assert.equal(asset.fn, fn);
@@ -143,7 +143,7 @@ test("a colocação é determinística, fica no chão aberto e dos cogumelos só
     const pieces = luminousPieces(floor, seedOf(floor));
     assert.deepEqual(luminousPieces(floor, seedOf(floor)), pieces, theme + ": determinística");
     assert.notDeepEqual(luminousPieces(floor, seedOf(floor) + 1), pieces, theme + ": outra semente muda");
-    const pools = pieces.filter(p => p.kind === "pool"), mushrooms = pieces.filter(p => p.kind === "mushroom");
+    const pools = pieces.filter(p => p.kind !== "mushroom"), mushrooms = pieces.filter(p => p.kind === "mushroom");
     assert.ok(pools.length > 20 && mushrooms.length > 20, `${theme}: ${pools.length} poças, ${mushrooms.length} cogumelos`);
     for (const piece of pieces) {
       const tx = Math.floor(piece.x / TILE_SIZE), ty = Math.floor((piece.y - (piece.kind === "mushroom" ? 3 : 0)) / TILE_SIZE);
@@ -181,7 +181,7 @@ test("o piso de uma gruta luminosa desenha exatamente as peças da lista, e a co
     const entrance = cell(theme, "luminous"), floor = new CaveFloor(entrance);
     const pieces = luminousPieces(floor, seedOf(floor));
     assert.deepEqual(halos(entrance), { mushrooms: pieces.filter(p => p.kind === "mushroom").length,
-      pools: pieces.filter(p => p.kind === "pool").length, formations: 0 },
+      pools: pieces.filter(p => p.kind !== "mushroom").length, formations: 0 },
     theme + ": uma peça pintada por item da lista, e nenhuma formação comum");
     const plain = halos(cell(theme, "plain"));
     assert.deepEqual([plain.mushrooms, plain.pools], [0, 0], theme + ": a comum não pinta nada luminoso");

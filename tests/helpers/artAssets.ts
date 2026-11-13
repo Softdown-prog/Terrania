@@ -87,6 +87,8 @@ import { drawRoadStones } from "../../src/render/roads/roadStones.ts";
 import { drawRoadVerge } from "../../src/render/roads/roadVerge.ts";
 import { drawGlowMushroom } from "../../src/render/caveStyles/luminous/mushroom.ts";
 import { drawGlowPool } from "../../src/render/caveStyles/luminous/glowPool.ts";
+import { drawGlowPuddle } from "../../src/render/caveStyles/luminous/glowPuddle.ts";
+import { drawFairyRing } from "../../src/render/caveStyles/luminous/fairyRing.ts";
 import type { CaveTheme, CaveEntranceKind, CaveEntrance } from "../../src/world/caves.ts";
 import type { RegionalLandmarkKind } from "../../src/world/regionalLandmarks.ts";
 import { NPCS } from "../../src/world/npcs.ts";
@@ -337,6 +339,10 @@ export const ASSETS: ArtAsset[] = [
         draw: c => drawGlowMushroom(c, theme, 0, 0, .61) },
       { id: "poça de musgo luminoso " + theme, tier: "prop", fn: "drawGlowPool",
         draw: c => drawGlowPool(c, theme, 0, 0, .61) },
+      { id: "poça de água luminosa " + theme, tier: "prop", fn: "drawGlowPuddle",
+        draw: c => drawGlowPuddle(c, theme, 0, 0, .61) },
+      { id: "círculo de cogumelos " + theme, tier: "prop", fn: "drawFairyRing",
+        draw: c => drawFairyRing(c, theme, 0, 0, .61) },
       { id: "escada subterrânea " + theme, tier: "prop", fn: "drawCaveExitStair",
         draw: c => drawCaveExitStair(c, theme, 0, 0) },
       { id: "escada de descida " + theme, tier: "prop", fn: "drawCaveDownStair",

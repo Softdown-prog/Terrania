@@ -13,7 +13,7 @@ import type { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { CAVE_EXIT, CAVE_HEIGHT, CAVE_STAIRS_DOWN, CAVE_WIDTH, type CaveFloor } from "../world/caveFloor.ts";
 import { drawCaveDownStair } from "./caveStairsDownArt.ts";
 import { caveStyleFor } from "../world/caveStyle/index.ts";
-import { cavePaletteFor, drawGlowMushroom, drawGlowPool, luminousPieces } from "./caveStyles/index.ts";
+import { cavePaletteFor, drawFairyRing, drawGlowMushroom, drawGlowPool, drawGlowPuddle, luminousPieces } from "./caveStyles/index.ts";
 import { paintTowerFloor } from "./south/towers/interior/floor.ts";
 import { caveRockCanvas } from "./caveRock/index.ts";
 
@@ -151,7 +151,11 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
   // Gruta Luminosa: o halo passa do tile, então as peças só se pintam depois de todos os tiles (ADR 0032).
   if (style === "luminous") {
     const pieces = luminousPieces(floor, seed);
-    for (const piece of pieces) if (piece.kind === "pool") drawGlowPool(ctx, floor.theme, piece.x, piece.y, piece.variation);
+    for (const piece of pieces) {
+      if (piece.kind === "pool") drawGlowPool(ctx, floor.theme, piece.x, piece.y, piece.variation);
+      else if (piece.kind === "puddle") drawGlowPuddle(ctx, floor.theme, piece.x, piece.y, piece.variation);
+      else if (piece.kind === "ring") drawFairyRing(ctx, floor.theme, piece.x, piece.y, piece.variation);
+    }
     for (const piece of pieces) if (piece.kind === "mushroom") drawGlowMushroom(ctx, floor.theme, piece.x, piece.y, piece.variation);
   }
   // A cut-stone stairwell, with a dark recess and perspective rather than a flat circle.
