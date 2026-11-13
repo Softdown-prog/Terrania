@@ -30,38 +30,6 @@ function flame(ctx:CanvasRenderingContext2D,poison:boolean,t:number):void{
   rect(ctx,-31,-61,62,62,"#00000000");
   ctx.fillStyle=g;ctx.fillRect(-31,-61,62,62);
 }
-function wall(ctx:CanvasRenderingContext2D,variant:number):void{
-  rect(ctx,-32,-30,64,30,C.clay[2]);rect(ctx,-32,-34,64,30,C.clay[1]);
-  rect(ctx,-32,-34,64,4,C.clay[0]);rect(ctx,-32,-15,64,2,C.clay[2]);
-  for(let i=-2;i<=2;i++){rect(ctx,i*15-5,-39,10,8,C.clay[0]);
-    poly(ctx,[[i*15-5,-39],[i*15,-49],[i*15+5,-39]],C.bone[1]);}
-  for(let i=0;i<5;i++)rect(ctx,-26+i*12+(variant%2)*2,-26+(i%2)*8,7,2,C.clay[2]);
-}
-function tower(ctx:CanvasRenderingContext2D,time:number):void{
-  ellipse(ctx,0,1,29,9,C.stone[2]);
-  rect(ctx,-23,-74,46,74,C.stone[2]);
-  rect(ctx,-19,-73,38,67,C.clay[1]);
-  for(let i=0;i<5;i++)rect(ctx,-22+i*10,-82,8,11,C.bone[1]);
-  rect(ctx,-14,-59,7,16,C.stone[2]);rect(ctx,8,-59,7,16,C.stone[2]);
-  rect(ctx,-27,-82,54,9,C.clay[0]);
-  rect(ctx,-4,-72,8,4,C.bronze[1]);
-  flame(ctx,false,time);
-}
-function well(ctx:CanvasRenderingContext2D,time:number):void{
-  ellipse(ctx,0,4,67,45,C.stone[2]);ellipse(ctx,0,0,60,40,C.stone[0]);
-  ellipse(ctx,0,-2,54,34,C.stone[2]);
-  const water=ctx.createRadialGradient(-16,-20,2,0,-5,60);
-  water.addColorStop(0,C.stone[0]);water.addColorStop(.65,"#2b3547");
-  water.addColorStop(1,C.stone[2]);
-  ctx.fillStyle=water;ctx.beginPath();ctx.ellipse(0,-5,49,30,0,0,Math.PI*2);ctx.fill();
-  ellipse(ctx,-8,-8,35,17,"#314052");
-  ctx.strokeStyle=C.stone[0];ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,-5,55,35,0,0,Math.PI*2);ctx.stroke();
-  ellipse(ctx,-15+Math.sin(time*1.1)*7,-8,10,1.5,"#5a4a6350");
-  rect(ctx,-4,-48,8,43,C.bone[2]);rect(ctx,-9,-47,18,7,C.clay[1]);
-  skull(ctx,0,-53,1.5);
-  ctx.strokeStyle=C.bronze[1];ctx.lineWidth=2;ctx.beginPath();
-  ctx.moveTo(7,-40);ctx.lineTo(7,-17);ctx.stroke();
-}
 function tent(ctx:CanvasRenderingContext2D,variant:number):void{
   const colors=[C.wine[0],C.wine[1],C.poison[1],C.bronze[1]][Math.abs(variant)%4]!;
   rect(ctx,-36,-18,72,20,C.clay[2]);
@@ -86,14 +54,6 @@ function corral(ctx:CanvasRenderingContext2D):void{
 }
 export function paintSouthCity(ctx:CanvasRenderingContext2D,prop:SouthCityProp,time:number):void{
   switch(prop.kind){
-    case "wall":wall(ctx,prop.variant);break;
-    case "tower":tower(ctx,time);break;
-    case "gate":
-      rect(ctx,-81,-74,162,11,C.clay[2]);
-      rect(ctx,-79,-76,158,9,C.clay[0]);
-      for(let x=-77;x<80;x+=16)poly(ctx,[[x,-76],[x+6,-88],[x+12,-76]],C.bone[1]);
-      rect(ctx,-21,-72,42,25,C.wine[1]);skull(ctx,0,-56,.7);break;
-    case "well":well(ctx,time);break;
     case "tent":tent(ctx,prop.variant);break;
     case "arena":arena(ctx);break;
     case "corral":corral(ctx);break;

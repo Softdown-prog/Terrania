@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (139)
+## Todos os arquivos deste módulo (140)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -133,6 +133,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/south-city-buildings.test.ts`](../../tests/south-city-buildings.test.ts)
 - [`tests/south-city-homes.test.ts`](../../tests/south-city-homes.test.ts)
 - [`tests/south-city-paving.test.ts`](../../tests/south-city-paving.test.ts)
+- [`tests/south-city-props.test.ts`](../../tests/south-city-props.test.ts)
 - [`tests/south-city.test.ts`](../../tests/south-city.test.ts)
 - [`tests/south-common-bestiary.test.ts`](../../tests/south-common-bestiary.test.ts)
 - [`tests/south-decor-world.test.ts`](../../tests/south-decor-world.test.ts)

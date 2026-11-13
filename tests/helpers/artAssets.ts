@@ -72,6 +72,7 @@ import { drawTowerWindow } from "../../src/render/south/towers/interior/window.t
 import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
+import { paintCityGate, paintCityPropAnimation, paintCityWall, paintCityWatchtower, paintCityWell } from "../../src/render/south/city/props/index.ts";
 import { paintBarracaSobreEstacas, paintBazar, paintBuildingFlame, paintCasaDeArgila, paintCasaDeVenenos, paintCasebreDeOssos, paintEstabulo,
   paintFornalha, paintFortaleza, paintHospedaria, paintOssuario, paintTemplo, paintTendaDeCouro } from "../../src/render/south/city/buildings/index.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
@@ -261,15 +262,24 @@ export const ASSETS: ArtAsset[] = [
     draw: c => { paintFornalha(c); paintBuildingFlame(c, 1, 0.4); } },
   { id: "prédio com chama: Casa de Venenos", tier: "structure", fn: "paintBuildingFlame",
     draw: c => { paintCasaDeVenenos(c); paintBuildingFlame(c, 4, 0.4); } },
+  // Muralha, portão, torres de guarda e poço da cidade (ADR 0049): um pintor por peça; o fogo e a água animados entram junto.
+  ...([0, 1, 2, 3] as const).map<ArtAsset>(v => ({ id: "muralha da cidade " + v, tier: "structure", fn: "paintCityWall", draw: c => paintCityWall(c, v) })),
+  ...([0, 1] as const).map<ArtAsset>(v => ({ id: v === 0 ? "Portão das Presas" : "Portão dos Ossos", tier: "structure", fn: "paintCityGate", draw: c => paintCityGate(c, v) })),
+  ...([0, 1] as const).map<ArtAsset>(v => ({ id: "torre de guarda " + v, tier: "structure", fn: "paintCityWatchtower", draw: c => paintCityWatchtower(c, v) })),
+  { id: "Poço Negro (o poço)", tier: "structure", fn: "paintCityWell", draw: c => paintCityWell(c) },
+  { id: "torre de guarda com fogo", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWatchtower(c, 0); paintCityPropAnimation(c, "tower", 0, 0.4); } },
+  { id: "poço com reflexos na água", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWell(c); paintCityPropAnimation(c, "well", 0, 0.4); } },
   // Piso da cidade do Poço Negro (ADR 0042): um tile de pedra, um com meio-fio e um da praça com o anel de bronze.
   { id: "piso da cidade: lajes", tier: "prop", fn: "paintCityPaving", draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15493, seed: 842136, plaza: false }) },
   { id: "piso da cidade: meio-fio e areia", tier: "prop", fn: "paintCityPaving",
     draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15493, seed: 842136, plaza: false, edges: { n: true, e: true, s: false, w: true } }) },
   { id: "piso da cidade: anel de bronze da praça", tier: "prop", fn: "paintCityPaving",
     draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 5, ty: 15500, seed: 842136, plaza: true }) },
-  { id: "Poço Negro: portão, muralha, torre e poço", tier: "structure",
+  // Os objetos da cidade que ainda seguem no desenho antigo (parte 4b do acabamento): a muralha, o portão, as torres e o poço
+  // já têm pintor próprio e estão registrados acima.
+  { id: "Poço Negro: tendas, barracas, tochas, barris, palmeira, ossos, placa e curral", tier: "structure",
     fn: "paintSouthCity", draw: c => {
-      const kinds:readonly SouthCityPropKind[]=["well","gate","tower","wall","torch","building","tent"];
+      const kinds:readonly SouthCityPropKind[]=["tent","stall","torch","barrel","palm","bones","sign","corral"];
       kinds.forEach((kind,i) => paintSouthCity(c,{kind,x:i*80,y:0,variant:i%3},1));
     } },
   // Uma peça por torre, cada uma com o nome do seu próprio pintor (um arquivo por torre em render/south/towers/).

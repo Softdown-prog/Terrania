@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (200)
+## Todos os arquivos deste módulo (206)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -140,6 +140,12 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/south/city/paving/paving.ts`](../../src/render/south/city/paving/paving.ts)
 - [`src/render/south/city/paving/ring.ts`](../../src/render/south/city/paving/ring.ts)
 - [`src/render/south/city/paving/slabs.ts`](../../src/render/south/city/paving/slabs.ts)
+- [`src/render/south/city/props/animation.ts`](../../src/render/south/city/props/animation.ts)
+- [`src/render/south/city/props/gate.ts`](../../src/render/south/city/props/gate.ts)
+- [`src/render/south/city/props/index.ts`](../../src/render/south/city/props/index.ts)
+- [`src/render/south/city/props/wall.ts`](../../src/render/south/city/props/wall.ts)
+- [`src/render/south/city/props/watchtower.ts`](../../src/render/south/city/props/watchtower.ts)
+- [`src/render/south/city/props/well.ts`](../../src/render/south/city/props/well.ts)
 - [`src/render/south/city/sceneryPainter.ts`](../../src/render/south/city/sceneryPainter.ts)
 - [`src/render/south/decor/bones.ts`](../../src/render/south/decor/bones.ts)
 - [`src/render/south/decor/cactus.ts`](../../src/render/south/decor/cactus.ts)
