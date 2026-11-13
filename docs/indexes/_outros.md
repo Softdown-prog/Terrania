@@ -99,6 +99,7 @@
 - [`docs/adr/0048-cadastro-de-cenario-por-regiao.md`](../../docs/adr/0048-cadastro-de-cenario-por-regiao.md)
 - [`docs/adr/0049-cidade-muralha-portao-torres-e-poco.md`](../../docs/adr/0049-cidade-muralha-portao-torres-e-poco.md)
 - [`docs/adr/0050-cidade-feira-e-terra.md`](../../docs/adr/0050-cidade-feira-e-terra.md)
+- [`docs/adr/0051-rocha-continua-das-cavernas.md`](../../docs/adr/0051-rocha-continua-das-cavernas.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

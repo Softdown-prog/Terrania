@@ -19,7 +19,7 @@ Referência de qualidade: monstros (`src/render/creatures/`), espadas (`src/rend
 | 6 | Ruínas | peças pequenas e chapadas | **feito** (ADR 0040) |
 | 7 | Torres (exterior) | volume bom, superfície plana, pouco detalhe de desgaste | **feito** (ADR 0041) |
 | 8 | Cidade do Poço Negro | pavimento roxo chapado, edifícios pequenos e planos ao lado dos personagens | **concluída** (piso e praça, ADR 0042; os doze prédios, ADR 0043 e 0044; muralha, portões, torres e poço, ADR 0049; tendas, barracas, tochas, ossos, barris, palmeiras, placas, arena, curral e a terra, ADR 0050) |
-| 9 | Cavernas (piso e formações) | linguagem de protótipo; as poças da Gruta Luminosa se repetem | pendente |
+| 9 | Cavernas (piso e formações) | linguagem de protótipo; as poças da Gruta Luminosa se repetem | **parte 1 feita** (rocha contínua: chão, paredes e água sem degraus nem quadrados, ADR 0051); faltam formações e as poças da Gruta Luminosa |
 
 ## Como entregar uma fatia
 

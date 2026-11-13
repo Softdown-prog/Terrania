@@ -15,6 +15,7 @@ import { drawCaveDownStair } from "./caveStairsDownArt.ts";
 import { caveStyleFor } from "../world/caveStyle/index.ts";
 import { cavePaletteFor, drawGlowMushroom, drawGlowPool, luminousPieces } from "./caveStyles/index.ts";
 import { paintTowerFloor } from "./south/towers/interior/floor.ts";
+import { caveRockCanvas } from "./caveRock/index.ts";
 
 const PALETTE = CAVE_PALETTE;
 
@@ -41,6 +42,13 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
 
   ctx.fillStyle = p.wall;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Rocha contínua (ADR 0051): chão e parede com o mesmo relevo, quinas arredondadas e sombra junto das paredes. Sem Canvas
+  // completo (testes sem pixels), o andar segue com o preenchimento por tile de antes.
+  const rock = caveRockCanvas({ width: CAVE_WIDTH, height: CAVE_HEIGHT, open: isOpen, wet: (x, y) => floor.at(x, y) === 2 }, seed, p);
+  if (rock) {
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(rock, 0, 0, canvas.width, canvas.height);
+  }
 
   for (let y = 0; y < CAVE_HEIGHT; y++) for (let x = 0; x < CAVE_WIDTH; x++) {
     const tile = floor.at(x, y), sx = x * TILE_SIZE, sy = y * TILE_SIZE;
@@ -48,10 +56,12 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
     // The same low-frequency noise continues through adjacent tiles; no checkerboard.
     const wide = valueNoise((x + .5) / 7, (y + .5) / 7, seed + 51);
     if (tile === 0) {
-      ctx.fillStyle = mix(p.wall, p.ground, .02 + wide * .15);
-      ctx.fillRect(sx, sy, TILE_SIZE, TILE_SIZE);
+      if (!rock) {
+        ctx.fillStyle = mix(p.wall, p.ground, .02 + wide * .15);
+        ctx.fillRect(sx, sy, TILE_SIZE, TILE_SIZE);
+      }
       // Large mineral seams are uncommon, not stamped identically on every block.
-      if (fine > .88) {
+      if (!rock && fine > .88) {
         const ox = 4 + n(x, y, 72) * 13, oy = 4 + n(x, y, 76) * 14;
         ctx.strokeStyle = rgba(shade(p.rim, -.36), .5);
         ctx.lineWidth = 1.1 + n(x, y, 82);
@@ -70,6 +80,7 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
       continue;
     }
 
+    if (tile === 2 && rock) continue;
     if (tile === 2) {
       const water = ctx.createLinearGradient(sx, sy, sx + 32, sy + 32);
       water.addColorStop(0, mix(p.water, p.light, .18 + wide * .13));
@@ -89,8 +100,10 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
     }
 
     // Floor is a shared expanse: one continuous shade field and sparse local texture.
-    ctx.fillStyle = mix(p.ground, p.light, .11 + wide * .15);
-    ctx.fillRect(sx, sy, TILE_SIZE, TILE_SIZE);
+    if (!rock) {
+      ctx.fillStyle = mix(p.ground, p.light, .11 + wide * .15);
+      ctx.fillRect(sx, sy, TILE_SIZE, TILE_SIZE);
+    }
     if (fine > .77) {
       const px = sx + 5 + n(x, y, 73) * 19, py = sy + 5 + n(x, y, 79) * 19;
       ellipse(ctx, px + 1, py + 1, 5, 2.5, rgba(shade(p.ground, -.38), .21));
@@ -109,15 +122,15 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
       ctx.stroke();
     }
 
-    // Contact shadows exist only next to physical wall, not at every 32px seam.
-    if (!isOpen(x, y - 1)) {
+    // Contact shadows exist only next to physical wall, not at every 32px seam (com a rocha contínua, a oclusão já vem dela).
+    if (!rock && !isOpen(x, y - 1)) {
       const shadeEdge = ctx.createLinearGradient(0, sy, 0, sy + 19);
       shadeEdge.addColorStop(0, rgba(OUTLINE, .52));
       shadeEdge.addColorStop(1, rgba(OUTLINE, 0));
       ctx.fillStyle = shadeEdge;
       ctx.fillRect(sx, sy, TILE_SIZE, 19);
     }
-    if (!isOpen(x - 1, y)) {
+    if (!rock && !isOpen(x - 1, y)) {
       const shadeEdge = ctx.createLinearGradient(sx, 0, sx + 14, 0);
       shadeEdge.addColorStop(0, rgba(OUTLINE, .28));
       shadeEdge.addColorStop(1, rgba(OUTLINE, 0));
