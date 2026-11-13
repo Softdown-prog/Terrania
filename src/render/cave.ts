@@ -16,6 +16,7 @@ import { caveStyleFor } from "../world/caveStyle/index.ts";
 import { cavePaletteFor, drawFairyRing, drawGlowMushroom, drawGlowPool, drawGlowPuddle, luminousPieces } from "./caveStyles/index.ts";
 import { paintTowerFloor } from "./south/towers/interior/floor.ts";
 import { caveRockCanvas } from "./caveRock/index.ts";
+import { formationPieces } from "./caveFormations/index.ts";
 
 const PALETTE = CAVE_PALETTE;
 
@@ -137,16 +138,13 @@ function paintFloor(floor: CaveFloor): HTMLCanvasElement {
       ctx.fillStyle = shadeEdge;
       ctx.fillRect(sx, sy, 14, TILE_SIZE);
     }
-
-    // Theme-specific formations live at wall edges and do not change walkability.
-    // A Gruta Luminosa troca as formações por cogumelos e poças, pintados num passe próprio mais abaixo.
-    if (style === "luminous") continue;
-    const besideWall = !isOpen(x, y + 1) || !isOpen(x - 1, y) || !isOpen(x + 1, y);
-    if (!besideWall || n(x, y, 107) < .83) continue;
-    const cx = sx + 7 + n(x, y, 113) * 17;
-    const cy = sy + 11 + n(x, y, 119) * 14;
-    drawCaveFormation(ctx, floor.theme, cx, cy + 3, fine);
   }
+
+  // Formações do tema junto às paredes (ADR 0053): num passe próprio depois de todos os tiles, de trás para frente, porque
+  // passam do tile e os detalhes dos vizinhos não podem cobri-las. Não mudam a colisão. A Gruta Luminosa troca as formações
+  // por cogumelos e poças, pintados mais abaixo.
+  if (style !== "luminous")
+    for (const piece of formationPieces(floor, seed)) drawCaveFormation(ctx, floor.theme, piece.x, piece.y, piece.variation);
 
   // Gruta Luminosa: o halo passa do tile, então as peças só se pintam depois de todos os tiles (ADR 0032).
   if (style === "luminous") {

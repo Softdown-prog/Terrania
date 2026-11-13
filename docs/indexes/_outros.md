@@ -101,6 +101,7 @@
 - [`docs/adr/0050-cidade-feira-e-terra.md`](../../docs/adr/0050-cidade-feira-e-terra.md)
 - [`docs/adr/0051-rocha-continua-das-cavernas.md`](../../docs/adr/0051-rocha-continua-das-cavernas.md)
 - [`docs/adr/0052-pocas-da-gruta-luminosa.md`](../../docs/adr/0052-pocas-da-gruta-luminosa.md)
+- [`docs/adr/0053-formacoes-das-cavernas.md`](../../docs/adr/0053-formacoes-das-cavernas.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

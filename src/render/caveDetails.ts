@@ -5,6 +5,7 @@
  */
 import { ellipse, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
 import type { CaveTheme } from "../world/caves.ts";
+import { formationKindFor, formationOutline, formationParts, type FormationPart } from "./caveFormations/index.ts";
 
 export interface CavePalette {
   readonly ground: string;
@@ -25,44 +26,28 @@ export const CAVE_PALETTE: Record<CaveTheme, CavePalette> = {
 const OUTLINE = "#142a2a";
 const GLINT = "#fff6dc";
 
-type Formation = "crystal" | "root" | "stone";
-function formationFor(theme: CaveTheme): Formation {
-  return theme === "glacial" || theme === "basalt" ? "crystal"
-    : theme === "marsh" || theme === "verdant" ? "root" : "stone";
-}
-function formationOutline(ctx: CanvasRenderingContext2D, kind: Formation): void {
-  ctx.beginPath();
-  if (kind === "crystal") {
-    ctx.moveTo(-7, 0);
-    ctx.quadraticCurveTo(-7, -5, -4, -12);
-    ctx.lineTo(1, -20);
-    ctx.quadraticCurveTo(3, -19, 7, -10);
-    ctx.lineTo(7, -2);
-    ctx.quadraticCurveTo(6, 1, -7, 0);
-  } else if (kind === "root") {
-    ctx.moveTo(-8, 0);
-    ctx.quadraticCurveTo(-9, -6, -5, -12);
-    ctx.quadraticCurveTo(-1, -19, 1, -17);
-    ctx.quadraticCurveTo(2, -9, 7, -11);
-    ctx.quadraticCurveTo(8, -6, 6, 0);
-  } else {
-    ctx.moveTo(-10, 0);
-    ctx.quadraticCurveTo(-12, -4, -7, -9);
-    ctx.quadraticCurveTo(-2, -14, 3, -11);
-    ctx.quadraticCurveTo(9, -10, 11, -3);
-    ctx.quadraticCurveTo(10, 1, -10, 0);
-  }
-  ctx.closePath();
-}
-
-/** Sombra, silhueta, volume, veios recortados, nervuras, oclusão, contorno, facetas e brilho. */
+/**
+ * Formação do subsolo (ADR 0053): uma peça principal e, às vezes, uma ou duas menores ao lado, com escala, largura, inclinação
+ * e silhueta que saem da variação. Cada peça tem sombra, silhueta, volume, veios recortados, nervuras, oclusão, contorno, facetas
+ * e brilho.
+ */
 export function drawCaveFormation(ctx: CanvasRenderingContext2D, theme: CaveTheme,
   sx: number, sy: number, variation = 0.5): void {
-  const p = CAVE_PALETTE[theme];
-  const kind = formationFor(theme);
-  const v = Math.max(0, Math.min(1, Number.isFinite(variation) ? variation : 0.5));
+  const kind = formationKindFor(theme);
+  for (const part of formationParts(variation)) {
+    ctx.save();
+    ctx.translate(sx + part.dx, sy);
+    // largura e altura próprias e uma inclinação que leva o alto para o lado, sem virar a peça (a luz é sempre a noroeste)
+    ctx.transform(part.width, 0, part.lean, part.scale, 0, 0);
+    drawFormationPart(ctx, theme, kind, part);
+    ctx.restore();
+  }
+}
+
+/** Uma peça da formação, com a base em (0, 0): sombra, silhueta, volume, veios, nervura, oclusão, contorno, faceta e brilho. */
+function drawFormationPart(ctx: CanvasRenderingContext2D, theme: CaveTheme, kind: ReturnType<typeof formationKindFor>, part: FormationPart): void {
+  const p = CAVE_PALETTE[theme], shape = part.shape, v = part.v;
   ctx.save();
-  ctx.translate(sx, sy);
   // 1. Contato com o piso, limitado ao tamanho da formação.
   softShadow(ctx, 1, 1.5, 11, 3.1, .3);
   // 2-3. Corpo orgânico ou cristal mineral com luz superior esquerda.
@@ -70,12 +55,12 @@ export function drawCaveFormation(ctx: CanvasRenderingContext2D, theme: CaveThem
   volume.addColorStop(0, mix(p.light, GLINT, .2));
   volume.addColorStop(.45, mix(p.rim, p.ground, .26 + v * .12));
   volume.addColorStop(1, shade(p.wall, -.2));
-  formationOutline(ctx, kind);
+  formationOutline(kind, shape, ctx);
   ctx.fillStyle = volume;
   ctx.fill();
   // 4. Material recortado no volume, nunca pintado fora da silhueta.
   ctx.save();
-  formationOutline(ctx, kind);
+  formationOutline(kind, shape, ctx);
   ctx.clip();
   for (let i = 0; i < 4; i++) {
     const dx = -7 + i * 4 + v * 1.5;
@@ -110,7 +95,7 @@ export function drawCaveFormation(ctx: CanvasRenderingContext2D, theme: CaveThem
   // 6. Oclusão no ponto de contato, sem encobrir a silhueta inteira.
   ellipse(ctx, 0, .3, 8, 1.5, rgba(OUTLINE, .32));
   // 7. Contorno único da silhueta.
-  formationOutline(ctx, kind);
+  formationOutline(kind, shape, ctx);
   ctx.strokeStyle = OUTLINE;
   ctx.lineWidth = 1.1;
   ctx.stroke();
