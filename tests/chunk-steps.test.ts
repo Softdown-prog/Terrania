@@ -26,13 +26,13 @@ function harness(): { doc: object; recorder: Recorder } {
   return { doc: { createElement: () => ({ width: 0, height: 0, getContext: () => proxy }) }, recorder };
 }
 
-test("o chunk em passos tem 21 passos: nove de chão, desfoque, relevo duas vezes, lago e sete de detalhes", () => {
+test("o chunk em passos tem 22 passos: nove de chão, desfoque, relevo duas vezes, terra da cidade, lago e sete de detalhes", () => {
   const { doc } = harness();
   let yields = 0;
   withDocument(doc, () => { const steps = generateChunkSteps(0, 968, SEED); for (;;) { const n = steps.next(); if (n.done) break; yields++; } });
   assert.equal(CHUNK_STEP_TILES, 36);
-  // 18 × 18 = 324 tiles de chão em lotes de 36 (9), o desfoque (1), duas camadas de relevo (2), o lago (1), 256 tiles de detalhe em lotes de 36 (7), mais o fim do chão (1)
-  assert.equal(yields, 9 + 1 + 1 + 2 + 1 + 7);
+  // 18 × 18 = 324 tiles de chão em lotes de 36 (9), o desfoque (1), duas camadas de relevo (2), a terra da cidade (1), o lago (1), 256 tiles de detalhe em lotes de 36 (7), mais o fim do chão (1)
+  assert.equal(yields, 9 + 1 + 1 + 2 + 1 + 1 + 7);
 });
 
 test("o desenho em passos é exatamente o do chunk inteiro, em qualquer tipo de lugar", () => {

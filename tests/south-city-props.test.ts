@@ -41,13 +41,13 @@ function spy(draw: (c: CanvasRenderingContext2D) => void): Spy {
 const signature = (draw: (c: CanvasRenderingContext2D) => void): string => { const r = new Recorder(); draw(r.ctx); return r.metrics().signature; };
 const tone = (s: Spy, hex: string): boolean => s.raw.some(r => r.toLowerCase() === hex);
 
-test("cada peça está no seu arquivo, na pasta da cidade; o desenho antigo delas saiu", () => {
+test("cada peça está no seu arquivo, na pasta da cidade; o desenho antigo saiu de vez", () => {
   const files = readdirSync(new URL("../src/render/south/city/props/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["animation", "gate", "index", "wall", "watchtower", "well"]);
-  assert.deepEqual(Object.keys(CITY_PROP_ART).sort(), ["gate", "tower", "wall", "well"]);
+  assert.deepEqual(files, ["animation", "arena", "barrel", "bones", "corral", "gate", "index", "palm", "sign", "stall", "tent", "torch", "wall", "watchtower", "well"]);
+  assert.deepEqual(Object.keys(CITY_PROP_ART).sort(), ["arena", "barrel", "bones", "corral", "gate", "palm", "sign", "stall", "tent", "torch", "tower", "wall", "well"]);
   const old = readFileSync("src/render/southCityArt.ts", "utf8");
-  for (const fn of ["function wall(", "function tower(", "function well("]) assert.equal(old.includes(fn), false, fn);
-  for (const kind of ["wall", "tower", "well", "gate"]) assert.equal(old.includes(`case "${kind}"`), false, `${kind} saiu do desenho antigo`);
+  assert.equal(old.includes("paintSouthCity"), false, "o desenho antigo da cidade não existe mais");
+  for (const fn of ["function wall(", "function tower(", "function well(", "function tent(", "function stall(", "function torch(", "function palm("]) assert.equal(old.includes(fn), false, fn);
 });
 
 test("a muralha: quatro variações estáveis e o que cruza a emenda tem período fixo (ameias, fiadas e juntas)", () => {
@@ -118,8 +118,8 @@ test("o poço: anel de 22 blocos, água com degradê e a mesma elipse da animaç
   assert.equal(signature(c => paintCityWell(c)), signature(c => paintCityWell(c)));
 });
 
-test("a animação existe só para a torre (fogo) e o poço (reflexos), com cores certas e tempo inválido sem efeito", () => {
-  assert.deepEqual(["tower", "well", "wall", "gate", "tent"].map(cityPropAnimates), [true, true, false, false, false]);
+test("a animação existe só para a torre e a tocha (fogo) e o poço (reflexos), com cores certas e tempo inválido sem efeito", () => {
+  assert.deepEqual(["tower", "well", "torch", "wall", "gate", "tent", "palm"].map(cityPropAnimates), [true, true, true, false, false, false, false]);
   assert.deepEqual(spy(c => paintCityPropAnimation(c, "wall", 0, 1)).calls, {});
   assert.deepEqual(spy(c => paintCityPropAnimation(c, "tower", 0, Number.NaN)).calls, {});
   const l = spy(c => paintCityPropAnimation(c, "tower", 0, 0.4)), r = spy(c => paintCityPropAnimation(c, "tower", 1, 0.4));
@@ -136,7 +136,7 @@ test("a animação existe só para a torre (fogo) e o poço (reflexos), com core
   for (const [kind, v] of [["tower", 0], ["well", 0]] as const) { const rec = new Recorder(); paintCityPropAnimation(rec.ctx, kind, v, 0.3); assert.equal(rec.metrics().saves, rec.metrics().restores, kind); }
 });
 
-test("o cenário põe o corpo de cada peça no cache, uma vez por variação, e anima só a torre e o poço a cada quadro", () => {
+test("o cenário põe o corpo de cada peça no cache, uma vez por variação, e anima só a torre, a tocha e o poço a cada quadro", () => {
   clearSceneryCache();
   let created = 0;
   const doc = { createElement: () => { created++; return { width: 0, height: 0, getContext: () => new Recorder().ctx }; } };
@@ -152,18 +152,23 @@ test("o cenário põe o corpo de cada peça no cache, uma vez por variação, e 
   assert.equal(created, 9, "torres 0 e 1 e o poço");
   assert.ok((t0.calls.createRadialGradient ?? 0) >= 1 && (t1.calls.createRadialGradient ?? 0) >= 1, "o fogo é pintado em todo quadro");
   assert.equal(wall.calls.createRadialGradient ?? 0, 0, "a muralha não anima");
-  const before = created, tent = frame("tent", 0, 0.1);
-  assert.equal(created, before, "uma tenda ainda segue o desenho antigo, sem sprite");
-  assert.ok((tent.calls.fill ?? 0) + (tent.calls.fillRect ?? 0) > 3, "e é desenhada");
+  const before = created;
+  frame("tent", 0, 0.1); frame("tent", 5, 0.2); frame("tent", 4, 0.3);
+  assert.equal(created, before + 2, "tendas 0 e 4; o 5 volta à 0");
+  const t2 = frame("torch", 0, 0.1), t3 = frame("torch", 0, 0.7), b1 = frame("barrel", 0, 0.1), b2 = frame("barrel", 0, 0.9);
+  assert.equal(created, before + 4, "uma tocha e um barril");
+  assert.ok((t2.calls.createRadialGradient ?? 0) >= 1 && (t3.calls.createRadialGradient ?? 0) >= 1, "o fogo da tocha é pintado em todo quadro");
+  assert.equal(b1.calls.createRadialGradient ?? 0, 0); assert.equal(b2.calls.createRadialGradient ?? 0, 0);
   clearSceneryCache();
 });
 
-test("o pintor de cenário da cidade usa o cadastro de peças e preserva o desenho antigo para o resto", () => {
+test("o pintor de cenário da cidade usa só o cadastro de peças e não desenha tipo sem pintor", () => {
   const source = readFileSync("src/render/south/city/sceneryPainter.ts", "utf8");
   assert.match(source, /CITY_PROP_ART\[kind\]/);
   assert.match(source, /sprite\(`south-city-\$\{kind\}-\$\{v\}`, w, h, ox, oy,/);
   assert.match(source, /if \(cityPropAnimates\(kind\)\) paintCityPropAnimation\(ctx, kind, v, time\)/);
-  assert.match(source, /paintSouthCity\(ctx, \{ kind,/);
+  assert.equal(source.includes("paintSouthCity"), false);
+  assert.equal(source.includes("southCityArt"), false);
   for (const [kind, art] of Object.entries(CITY_PROP_ART)) {
     assert.ok(art && art.variants >= 1 && art.box.every(n => n > 0), kind);
     assert.ok(art.box[2] <= art.box[0] && art.box[3] <= art.box[1], `${kind}: a origem fica dentro do sprite`);

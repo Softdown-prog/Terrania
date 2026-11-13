@@ -19,7 +19,8 @@ import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/region
 import { buildRoadMask, drawRoadStones, drawRoadVerge, drawWheelRut, planRoadTile, quantizeVariation, roadProfile, roadSprite,
   type RoadMask, type RoadPiece } from "./roads/index.ts";
 import { blackLakeLayerCanvas } from "./south/terrain/blackLake/index.ts";
-import { DUNES_LOOK, HARDPAN_LOOK, duneReliefCanvas } from "./south/terrain/dunes/index.ts";
+import { CITY_EARTH_LOOK, DUNES_LOOK, HARDPAN_LOOK, duneReliefCanvas } from "./south/terrain/dunes/index.ts";
+import { CityEarth } from "./south/city/earth.ts";
 import { southRuinsInArea } from "../world/southRuins.ts";
 import { southTowersInArea } from "../world/towers/placement.ts";
 import { caveEntrancesInArea } from "../world/caves.ts";
@@ -205,6 +206,7 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
     const sides: PavedEdges = { n: grid.at(lx, ly - 1).ground === "path", s: grid.at(lx, ly + 1).ground === "path",
       w: grid.at(lx - 1, ly).ground === "path", e: grid.at(lx + 1, ly).ground === "path" };
     if (sides.n || sides.s || sides.w || sides.e) new CityCurb(ctx).shade(x, y, sides);
+    new CityEarth(ctx).paint(x, y, tx, ty, seed);
   }
   if (tile.ground === "water" && tile.biome === "black-lake") {
     drawBlackWater(ctx, grid, lx, ly, x, y, r);
@@ -414,6 +416,14 @@ export function* generateChunkSteps(cx: number, cy: number, seed: number): Gener
     if (relief) { ctx.globalAlpha = .9; ctx.drawImage(relief, 0, 0); ctx.globalAlpha = 1; }
     yield;
   }
+  // Terra pisada de dentro dos muros da cidade, com o seu próprio relevo suave por cima da terra batida (ADR 0050).
+  const earth = duneReliefCanvas(cx, cy, seed, CITY_EARTH_LOOK, (lx, ly) => {
+    if (grid.at(lx, ly).ground !== "sand") return false;
+    const [tx, ty] = grid.global(lx, ly);
+    return southCitySafe(tx, ty);
+  });
+  if (earth) { ctx.globalAlpha = .92; ctx.drawImage(earth, 0, 0); ctx.globalAlpha = 1; }
+  yield;
   // Lago negro: água com profundidade, costa orgânica, lama molhada e um fio de luz na borda (ADR 0039).
   const lake = blackLakeLayerCanvas(cx, cy, seed, (lx, ly) => { const t = grid.at(lx, ly); return t.ground === "water" && t.biome === "black-lake"; });
   if (lake) ctx.drawImage(lake, 0, 0);

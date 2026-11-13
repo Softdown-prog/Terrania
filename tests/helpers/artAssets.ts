@@ -70,9 +70,9 @@ import { drawTowerSconce } from "../../src/render/south/towers/interior/sconce.t
 import { drawTowerWallFace } from "../../src/render/south/towers/interior/wallFace.ts";
 import { drawTowerWindow } from "../../src/render/south/towers/interior/window.ts";
 import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/southRuins.ts";
-import { paintSouthCity } from "../../src/render/southCityArt.ts";
 import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
-import { paintCityGate, paintCityPropAnimation, paintCityWall, paintCityWatchtower, paintCityWell } from "../../src/render/south/city/props/index.ts";
+import { paintCityArena, paintCityBarrel, paintCityBones, paintCityCorral, paintCityGate, paintCityPalm, paintCityPropAnimation, paintCitySign,
+  paintCityStall, paintCityTent, paintCityTorch, paintCityWall, paintCityWatchtower, paintCityWell } from "../../src/render/south/city/props/index.ts";
 import { paintBarracaSobreEstacas, paintBazar, paintBuildingFlame, paintCasaDeArgila, paintCasaDeVenenos, paintCasebreDeOssos, paintEstabulo,
   paintFornalha, paintFortaleza, paintHospedaria, paintOssuario, paintTemplo, paintTendaDeCouro } from "../../src/render/south/city/buildings/index.ts";
 import type { SouthCityPropKind } from "../../src/world/southCity.ts";
@@ -275,13 +275,17 @@ export const ASSETS: ArtAsset[] = [
     draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15493, seed: 842136, plaza: false, edges: { n: true, e: true, s: false, w: true } }) },
   { id: "piso da cidade: anel de bronze da praça", tier: "prop", fn: "paintCityPaving",
     draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 5, ty: 15500, seed: 842136, plaza: true }) },
-  // Os objetos da cidade que ainda seguem no desenho antigo (parte 4b do acabamento): a muralha, o portão, as torres e o poço
-  // já têm pintor próprio e estão registrados acima.
-  { id: "Poço Negro: tendas, barracas, tochas, barris, palmeira, ossos, placa e curral", tier: "structure",
-    fn: "paintSouthCity", draw: c => {
-      const kinds:readonly SouthCityPropKind[]=["tent","stall","torch","barrel","palm","bones","sign","corral"];
-      kinds.forEach((kind,i) => paintSouthCity(c,{kind,x:i*80,y:0,variant:i%3},1));
-    } },
+  // A feira e a vida da cidade (ADR 0050): tendas, barraca, tochas (com fogo), ossos, barril, placa, palmeira, arena e curral.
+  ...([0, 1, 2, 3, 4] as const).map<ArtAsset>(v => ({ id: "tenda da feira " + v, tier: "structure", fn: "paintCityTent", draw: c => paintCityTent(c, v) })),
+  { id: "barraca de feira", tier: "structure", fn: "paintCityStall", draw: c => paintCityStall(c) },
+  ...([0, 1] as const).map<ArtAsset>(v => ({ id: "tocha da cidade " + v, tier: "prop", fn: "paintCityTorch", draw: c => paintCityTorch(c, v) })),
+  { id: "tocha da cidade com fogo", tier: "prop", fn: "paintCityPropAnimation", draw: c => { paintCityTorch(c, 0); paintCityPropAnimation(c, "torch", 0, 0.4); } },
+  { id: "ossos espalhados", tier: "prop", fn: "paintCityBones", draw: c => paintCityBones(c) },
+  { id: "barril da cidade", tier: "prop", fn: "paintCityBarrel", draw: c => paintCityBarrel(c) },
+  { id: "placa da cidade", tier: "prop", fn: "paintCitySign", draw: c => paintCitySign(c) },
+  { id: "palmeira do oásis", tier: "structure", fn: "paintCityPalm", draw: c => paintCityPalm(c) },
+  { id: "arena de lagartos", tier: "structure", fn: "paintCityArena", draw: c => paintCityArena(c) },
+  { id: "curral dos lagartos", tier: "structure", fn: "paintCityCorral", draw: c => paintCityCorral(c) },
   // Uma peça por torre, cada uma com o nome do seu próprio pintor (um arquivo por torre em render/south/towers/).
   ...TOWERS.map<ArtAsset>(tower => ({ id: "torre " + tower.name, tier: "structure",
     fn: ({ "vigia-caida": "paintTorreDoVigiaCaida", miragem: "paintTorreDaMiragem", "sol-negro": "paintTorreDoSolNegro" } as const)[tower.id],

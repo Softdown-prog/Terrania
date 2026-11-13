@@ -18,6 +18,17 @@ const HARDPAN_STOPS: Stops = [
   [0.74, [0xcb, 0xb9, 0x95]],
   [1, [0xe0, 0xd2, 0xb0]],
 ];
+/**
+ * Terra pisada de dentro da cidade (ADR 0050): mais quente e escura que a terra batida das planícies, de tanta gente e tanto
+ * lagarto passando; o relevo que sobra são só marcas suaves de pisada, não dunas.
+ */
+const CITY_EARTH_STOPS: Stops = [
+  [0, [0x8a, 0x66, 0x42]],
+  [0.3, [0xa6, 0x80, 0x56]],
+  [0.5, [0xbd, 0x98, 0x68]],
+  [0.74, [0xd2, 0xb0, 0x7c]],
+  [1, [0xe6, 0xca, 0x9a]],
+];
 export const RAMP_STEPS = 64;
 
 /** Cor da rampa de duna para t de 0 a 1, em RGB (inteiros 0..255). */
@@ -45,5 +56,6 @@ export interface ReliefLook {
 }
 export const DUNES_LOOK: ReliefLook = { ramp: ramp(DUNE_STOPS), contrast: 0.95 };
 export const HARDPAN_LOOK: ReliefLook = { ramp: ramp(HARDPAN_STOPS), contrast: 0.5 };
+export const CITY_EARTH_LOOK: ReliefLook = { ramp: ramp(CITY_EARTH_STOPS), contrast: 0.42 };
 /** Compatibilidade: a rampa das dunas. */
 export const SAND_RAMP = DUNES_LOOK.ramp;
