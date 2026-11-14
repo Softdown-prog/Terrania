@@ -112,7 +112,7 @@ test("materials from both bestiary waves round-trip as owned inventory objects",
 
 test("surface encounters use habitat at each actual tile, including marsh transition",()=>{
   let observed=0;
-  for(const [cx,cy] of [[-1550,0],[1550,0],[0,-1550],[0,1550],[1550,1550]]){
+  for(const [cx,cy] of [[-650,0],[650,0],[0,-650],[0,650],[650,650]]){
     for(let offset=0;offset<50;offset++){
       const seed=842136;
       const x=cx+(cy===0?offset:0),y=cy+(cy!==0?offset:0);

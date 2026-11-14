@@ -99,7 +99,7 @@ test("ruínas: cada ruína tem dois moradores (diabrete, elfo ou goblin) perto d
 });
 
 test("fora do Sul não mora ninguém, e valores inválidos não geram nada", () => {
-  for (const [cx, cy] of [[0, 0], [3, -500], [600, 4], [-600, 4], [0, 200], [10, -2000]] as const)
+  for (const [cx, cy] of [[0, 0], [3, -500], [600, 4], [-600, 4], [0, 100], [10, -2000]] as const)
     assert.deepEqual(southSiteSpawns(cx, cy, SEED), [], `${cx},${cy}`);
   assert.deepEqual(southSiteSpawns(Number.NaN, 1, SEED), []);
   assert.deepEqual(southSiteSpawns(1.5, 2, SEED), []);

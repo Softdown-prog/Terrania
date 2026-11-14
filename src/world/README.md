@@ -14,7 +14,7 @@ A regra de progresso da missão da Aela fica em `aelaQuest.ts`. As falas da vila
 
 **Limites:** Não permitir atravessar colisões; cuidado com divergência entre cliente e servidor.
 
-**Escala do atlas:** `atlas.ts` partilha com `collision.ts` o limite técnico de movimento (±1.000.000 px em cada eixo; tiles de 32 px). O gerador `getTile` continua procedural, sem borda geográfica explícita. Os nove setores são divisões de coordenadas e as classificações de terreno são amostragens reprodutíveis; não se deve tratá-las como garantia de travessia ou mapa totalmente revelado. O render fica em `src/render/terrain.ts`, fora do domínio.
+**Escala do atlas:** `atlas.ts` partilha com `collision.ts` o limite técnico de movimento (±500.000 px em cada eixo, ou ±15.625 tiles de 32 px; ADR 0059). Todos os números do tamanho do mapa (parede, regiões, costa, pântano e o Poço Negro) moram em `mapSize.ts`; `mapMigration.ts` leva saves do mapa antigo ao novo. O gerador `getTile` continua procedural, sem borda geográfica explícita. Os nove setores são divisões de coordenadas e as classificações de terreno são amostragens reprodutíveis; não se deve tratá-las como garantia de travessia ou mapa totalmente revelado. O render fica em `src/render/terrain.ts`, fora do domínio.
 
 **Regionalização:** consulte [docs/MACRO_REGIONS.md](../../docs/MACRO_REGIONS.md) para biomas, risco, rotas e conteúdo pendente. A geração de ambos os lados do multiplayer usa as mesmas regras de `terrain.ts`.
 

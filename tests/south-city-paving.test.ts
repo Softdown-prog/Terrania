@@ -134,7 +134,7 @@ test("a cor da laje varia por laje dentro do tom e nunca sai do limite", () => {
 });
 
 test("o piso pinta o tile inteiro sobre a argamassa, com lajes, rachaduras e uma laje de destaque, e é estável", () => {
-  const input = { x: 5, y: 7, tx: 3, ty: TY - 7, seed: SEED, plaza: false };
+  const input = { x: 5, y: 7, tx: 2, ty: TY - 7, seed: SEED, plaza: false };
   const s = spy(c => paintCityPaving(c, input));
   assert.deepEqual(s.args.fillRect![0], [5, 7, 32, 32], "argamassa em todo o tile");
   assert.ok(s.raw.includes(MORTAR));
@@ -144,7 +144,7 @@ test("o piso pinta o tile inteiro sobre a argamassa, com lajes, rachaduras e uma
   assert.equal(s.calls.quadraticCurveTo, cracks + 2, `${cracks} rachaduras de uma curva e a da laje de destaque, de duas`);
   assert.ok((s.calls.arc ?? 0) >= 1, "quina gasta");
   assert.equal(signature(c => paintCityPaving(c, input)), signature(c => paintCityPaving(c, input)));
-  assert.notEqual(signature(c => paintCityPaving(c, input)), signature(c => paintCityPaving(c, { ...input, tx: 4 })));
+  assert.notEqual(signature(c => paintCityPaving(c, input)), signature(c => paintCityPaving(c, { ...input, tx: 3 })));
   assert.notEqual(signature(c => paintCityPaving(c, input)), signature(c => paintCityPaving(c, { ...input, seed: SEED + 1 })));
   const r = new Recorder(); paintCityPaving(r.ctx, input);
   assert.equal(r.metrics().saves, r.metrics().restores);

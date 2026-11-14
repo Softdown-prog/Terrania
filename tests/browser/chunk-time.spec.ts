@@ -24,7 +24,7 @@ test("desenhar um chunk de cidade, de lago ou de mata não passa dos tetos de te
     const K = (globalThis as unknown as { K: { generateChunkCanvas(cx: number, cy: number, seed: number): unknown;
       measureChunkTimes(spots: Array<{ name: string; cx: number; cy: number }>, rounds: number, seed: number, draw: (cx: number, cy: number, seed: number) => unknown, now: () => number): Record<string, number>;
       TIMING_ROUNDS: number } }).K;
-    const spots = [{ name: "praca", cx: 0, cy: 968 }, { name: "cidadeNorte", cx: 0, cy: 966 }, { name: "cidadeSul", cx: 0, cy: 970 }, { name: "lago", cx: 5, cy: 973 },
+    const spots = [{ name: "praca", cx: 0, cy: 484 }, { name: "cidadeNorte", cx: 0, cy: 482 }, { name: "cidadeSul", cx: 0, cy: 486 }, { name: "lago", cx: 5, cy: 973 },
       { name: "dunas", cx: 1, cy: 977 }, { name: "mata", cx: -9, cy: 0 }, { name: "norte", cx: 0, cy: 18 },
       { name: "capitalPraca", cx: -1, cy: -50 }, { name: "capitalPortao", cx: -1, cy: -52 }];
     return K.measureChunkTimes(spots, K.TIMING_ROUNDS, seed, K.generateChunkCanvas, () => performance.now());
@@ -59,7 +59,7 @@ test("andando pela cidade, o render não gera chunk e quase nenhum quadro passa 
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d")!, world = new K.WorldRenderer(842136);
     let x = -1100, t = 0;
-    const y = 15500 * 32, frames: number[] = [];
+    const y = 7756 * 32, frames: number[] = [];
     world.render(ctx, x, y, W, H, 0, false);
     const initial = world.stats().generatedInRender;
     let maxCache = 0;

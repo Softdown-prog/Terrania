@@ -1,3 +1,4 @@
+import { REGION_BLEND_END_TILES } from "../src/world/mapSize.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { SOUTH_CITY,SOUTH_BUILDINGS,SOUTH_SIGNS,SOUTH_CITY_PROPS,
@@ -58,7 +59,7 @@ test("muralhas barram entrada lateral, os dois portões são transitáveis, poç
       assert.equal(canMoveOnSeed(building.x,building.y-20,seed),false,building.id);
     }
   }
-  assert.ok(y>10000);
+  assert.ok(y>REGION_BLEND_END_TILES,"a cidade fica na região do Sul pura, além do fim da mistura");
 });
 test("combate normal, mágico, espinhos e explosão não violam a proteção",()=>{
   const hero=new Player(),p=southPoint(0,7);

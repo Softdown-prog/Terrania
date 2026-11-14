@@ -4,8 +4,9 @@ import { villageBlocks } from "./village.ts";
 import { southCityBlocks } from "./southCity.ts";
 import { capitalBuildingBlocks, capitalMonumentBlocks, capitalWallBlocks } from "./center/capital/index.ts";
 import { southDecorBlocks } from "./south/decor/index.ts";
-/** Limite técnico por eixo da colisão, não uma fronteira geográfica desenhada. */
-export const WORLD_EDGE_PIXELS = 1_000_000;
+import { MAP_EDGE_TILES } from "./mapSize.ts";
+/** Limite técnico por eixo da colisão (a parede invisível, ADR 0059), não uma fronteira geográfica desenhada. */
+export const WORLD_EDGE_PIXELS = MAP_EDGE_TILES * TILE_SIZE;
 /** Interface sem dependência de DOM, compartilhada entre navegador e servidor. */
 export interface CollisionMap {
   canMove(x: number, y: number): boolean;

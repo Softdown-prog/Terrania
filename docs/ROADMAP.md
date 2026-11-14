@@ -85,7 +85,7 @@ A implementação dos itens marcados não certifica o lançamento, apenas indica
 
 ### Mapa e patrulha de QA online
 
-- [x] Atlas na terceira aba do inventário, oculto durante o jogo, com mundo amostrado completo (limite técnico de 62.500×62.500 tiles), nove setores cartográficos, classificação amostrada de terreno e visão detalhada de 128 tiles
+- [x] Atlas na terceira aba do inventário, oculto durante o jogo, com mundo amostrado completo (limite técnico de 31.250×31.250 tiles desde o ADR 0059; antes 62.500×62.500), nove setores cartográficos, classificação amostrada de terreno e visão detalhada de 128 tiles
 - [x] Marcadores dos jogadores online próximos provenientes de snapshots, limpos após desconexão
 - [ ] Avaliar legibilidade do atlas dentro do inventário no Android físico (a parte sobre sala com vários jogadores ficou obsoleta com o ADR 0012)
 - [x] Patrulha do QA-BOT-001 contra movimentação, colisões e snapshots da sala Node em diferentes regiões, com relatório reproduzível e sem acessar VPS em produção

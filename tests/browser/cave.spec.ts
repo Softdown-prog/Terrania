@@ -118,6 +118,6 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
   await page.locator("#inventoryButton").click();
   await page.locator("#inventoryTabMap").click();
   await expect(page.locator("#caveMapTitle")).toHaveCount(0);
-  await expect(page.locator("#worldMapDimensions")).toContainText("62.500");
+  await expect(page.locator("#worldMapDimensions")).toContainText("31.250");
   expect(errors).toEqual([]);
 });

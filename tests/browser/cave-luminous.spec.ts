@@ -8,7 +8,7 @@ import { caveStyleFor } from "../../src/world/caveStyle/index.ts";
  */
 const SEED = 842136;
 /** Duas grutas do mesmo tema (mata), uma comum e uma luminosa, nesta semente. */
-const CELLS = { plain: [71, -80], luminous: [73, -80] } as const;
+const CELLS = { plain: [10, -8], luminous: [8, -10] } as const;
 
 /** Pixels verde-água claros (o brilho): bem mais verdes e azuis do que vermelhos, e luminosos. */
 async function mintPixels(page: Page): Promise<number> {

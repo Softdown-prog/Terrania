@@ -296,7 +296,7 @@ export const ASSETS: ArtAsset[] = [
   { id: "piso da cidade: meio-fio e areia", tier: "prop", fn: "paintCityPaving",
     draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 15493, seed: 842136, plaza: false, edges: { n: true, e: true, s: false, w: true } }) },
   { id: "piso da cidade: anel de bronze da praça", tier: "prop", fn: "paintCityPaving",
-    draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 5, ty: 15500, seed: 842136, plaza: true }) },
+    draw: c => paintCityPaving(c, { x: 0, y: 0, tx: 3, ty: 7756, seed: 842136, plaza: true }) },
   // A feira e a vida da cidade (ADR 0050): tendas, barraca, tochas (com fogo), ossos, barril, placa, palmeira, arena e curral.
   ...([0, 1, 2, 3, 4] as const).map<ArtAsset>(v => ({ id: "tenda da feira " + v, tier: "structure", fn: "paintCityTent", draw: c => paintCityTent(c, v) })),
   { id: "barraca de feira", tier: "structure", fn: "paintCityStall", draw: c => paintCityStall(c) },

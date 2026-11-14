@@ -10,7 +10,7 @@ import { CHUNK_TIME_LIMITS, TIMING_ROUNDS, lowerQuartile, measureChunkTimes, typ
  * ficou de verdade mais pesado.
  */
 const SPOTS: readonly TimingSpot[] = [
-  { name: "dunas", cx: 1, cy: 977 }, { name: "praca", cx: 0, cy: 968 }, { name: "cidadeSul", cx: 0, cy: 970 }, { name: "lago", cx: 5, cy: 973 },
+  { name: "dunas", cx: 1, cy: 977 }, { name: "praca", cx: 0, cy: 484 }, { name: "cidadeSul", cx: 0, cy: 486 }, { name: "lago", cx: 5, cy: 973 },
 ];
 /** Custo verdadeiro de cada lugar (ms): a praça e a cidade custam cerca de 2,6 vezes as dunas. */
 const COST: Record<string, number> = { dunas: 10, praca: 25, cidadeSul: 26, lago: 11 };
@@ -69,16 +69,16 @@ test("a medição intercala os lugares, gira a ordem a cada rodada, aquece antes
   const calls: Array<[number, number, number]> = [];
   let t = 0;
   const times = measureChunkTimes(SPOTS, 3, 100, (cx, cy, seed) => { calls.push([cx, cy, seed]); }, () => (t += 1));
-  assert.deepEqual(calls.slice(0, 8), [1, 977, 0, 968, 0, 970, 5, 973].reduce<Array<[number, number, number]>>((out, _, i, a) => {
+  assert.deepEqual(calls.slice(0, 8), [1, 977, 0, 484, 0, 486, 5, 973].reduce<Array<[number, number, number]>>((out, _, i, a) => {
     if (i % 2) return out;
     out.push([a[i]!, a[i + 1]!, 100], [a[i]!, a[i + 1]!, 199]);
     return out;
   }, []), "aquece cada lugar duas vezes, com duas sementes");
   const measured = calls.slice(8);
   assert.equal(measured.length, 3 * SPOTS.length);
-  assert.deepEqual(measured.slice(0, 4).map(c => c[0] + "," + c[1]), ["1,977", "0,968", "0,970", "5,973"], "rodada 1 começa nas dunas");
-  assert.deepEqual(measured.slice(4, 8).map(c => c[0] + "," + c[1]), ["0,968", "0,970", "5,973", "1,977"], "rodada 2 gira a ordem");
-  assert.deepEqual(measured.slice(8, 12).map(c => c[0] + "," + c[1]), ["0,970", "5,973", "1,977", "0,968"], "rodada 3 gira de novo");
+  assert.deepEqual(measured.slice(0, 4).map(c => c[0] + "," + c[1]), ["1,977", "0,484", "0,486", "5,973"], "rodada 1 começa nas dunas");
+  assert.deepEqual(measured.slice(4, 8).map(c => c[0] + "," + c[1]), ["0,484", "0,486", "5,973", "1,977"], "rodada 2 gira a ordem");
+  assert.deepEqual(measured.slice(8, 12).map(c => c[0] + "," + c[1]), ["0,486", "5,973", "1,977", "0,484"], "rodada 3 gira de novo");
   assert.deepEqual(measured.slice(0, 4).map(c => c[2]), [101, 101, 101, 101], "a semente muda a cada rodada");
   assert.deepEqual(measured.slice(8, 12).map(c => c[2]), [103, 103, 103, 103]);
   assert.deepEqual(Object.keys(times), SPOTS.map(s => s.name));

@@ -95,7 +95,7 @@ const done = (): void => { delete (globalThis as Record<string, unknown>).docume
 test("andando 12 s pela cidade a 170 px/s, o render não gera chunk nenhum depois do primeiro quadro", () => {
   const w = world();
   try {
-    let x = -1100, y = 15500 * 32, t = 0;
+    let x = -1100, y = 7756 * 32, t = 0;
     draw(w, x, y, t);
     const initial = w.stats().generatedInRender;
     assert.ok(initial >= 6 && initial <= 12, "a tela inicial: " + initial);

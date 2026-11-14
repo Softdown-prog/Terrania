@@ -1,4 +1,5 @@
 import { MAX_COINS } from "./coins/wallet.ts";
+import { WORLD_EDGE_PIXELS } from "../../world/collision.ts";
 
 /** Gel no chão, deixado por um slime. */
 export interface GelDrop {
@@ -33,7 +34,7 @@ export function normalizeDrops(value: unknown): LootDrop[] {
         drop.id.length < 1 || drop.id.length > 80 || seen.has(drop.id) ||
         typeof drop.x !== "number" || !Number.isFinite(drop.x) ||
         typeof drop.y !== "number" || !Number.isFinite(drop.y) ||
-        Math.abs(drop.x) > 1_000_000 || Math.abs(drop.y) > 1_000_000) continue;
+        Math.abs(drop.x) > WORLD_EDGE_PIXELS || Math.abs(drop.y) > WORLD_EDGE_PIXELS) continue;
     if (drop.item === "coin" && !(typeof coin.amount === "number" && Number.isSafeInteger(coin.amount) &&
         coin.amount >= 1 && coin.amount <= MAX_COINS)) continue;
     seen.add(drop.id);

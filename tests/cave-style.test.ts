@@ -28,9 +28,9 @@ const entrances = (): CaveEntrance[] => {
 };
 /** Uma gruta comum e uma luminosa de cada tema, nesta semente (achadas por varredura e conferidas abaixo). */
 const CELLS: Record<CaveTheme, { plain: readonly [number, number]; luminous: readonly [number, number] }> = {
-  verdant: { plain: [71, -80], luminous: [73, -80] }, glacial: { plain: [-124, -130], luminous: [-129, -130] },
-  desert: { plain: [1, 70], luminous: [-2, 69] }, coastal: { plain: [128, -128], luminous: [129, -129] },
-  basalt: { plain: [-128, -125], luminous: [-130, -127] }, marsh: { plain: [99, 94], luminous: [95, 94] },
+  verdant: { plain: [10, -8], luminous: [8, -10] }, glacial: { plain: [-92, -99], luminous: [-91, -101] },
+  desert: { plain: [0, 101], luminous: [2, 100] }, coastal: { plain: [100, -17], luminous: [100, -21] },
+  basalt: { plain: [-101, -20], luminous: [-98, -20] }, marsh: { plain: [79, 81], luminous: [80, 79] },
 };
 const cell = (theme: CaveTheme, style: "plain" | "luminous"): CaveEntrance =>
   caveEntranceInCell(CELLS[theme][style][0], CELLS[theme][style][1], SEED)!;

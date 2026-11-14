@@ -8,19 +8,19 @@ import {
 } from "../src/world/atlas.ts";
 
 test("atlas exibe o limite de movimentação existente sem fabricar o fim do terreno", () => {
-  assert.equal(WORLD_EDGE_PIXELS, 1_000_000);
-  assert.equal(WORLD_HALF_TILES, 31_250);
-  assert.equal(WORLD_SPAN_TILES, 62_500);
-  assert.equal(atlasFrame("world", 100, -100).spanTiles, 62_500);
+  assert.equal(WORLD_EDGE_PIXELS, 500_000);
+  assert.equal(WORLD_HALF_TILES, 15_625);
+  assert.equal(WORLD_SPAN_TILES, 31_250);
+  assert.equal(atlasFrame("world", 100, -100).spanTiles, 31_250);
   assert.equal(atlasFrame("nearby", 100, -100).spanTiles, 128);
   assert.equal(canMoveOnSeed(WORLD_EDGE_PIXELS + 1, 16, 842136), false);
   assert.equal(canMoveOnSeed(16, -WORLD_EDGE_PIXELS - 1, 842136), false);
 });
 
 test("atlas orienta corretamente os nove setores e as coordenadas negativas", () => {
-  assert.equal(sectorIndex(-31_249, -31_249), 0);
+  assert.equal(sectorIndex(-15_624, -15_624), 0);
   assert.equal(sectorIndex(0, 0), 4);
-  assert.equal(sectorIndex(31_249, 31_249), 8);
+  assert.equal(sectorIndex(15_624, 15_624), 8);
   assert.equal(sectorIndex(99_999, 0), 5);
   assert.equal(sectorIndex(0, Number.NaN), 4);
   for (let id = 0; id < 9; id++) {

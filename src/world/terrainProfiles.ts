@@ -1,5 +1,6 @@
 import { valueNoise } from "./random.ts";
 import { getRegionWeights, getWorldRegion, type RegionWeights, type WorldRegion } from "./regions.ts";
+import { COAST_FULL_TILES, COAST_START_TILES } from "./mapSize.ts";
 
 export interface TerrainProfile {
   readonly region: WorldRegion;
@@ -30,7 +31,7 @@ export function getTerrainProfile(x: number, y: number, seed: number): TerrainPr
       weights.south * 0.47 - weights.west * 0.14 + (moisture - 0.5) * 0.44),
     altitude: clamp(0.36 + weights.west * 0.5 - weights.east * 0.22 +
       (ridge - 0.5) * 0.47),
-    coast: clamp(weights.east * smooth(7100, 23000, x) +
+    coast: clamp(weights.east * smooth(COAST_START_TILES, COAST_FULL_TILES, x) +
       (wide - 0.5) * weights.east * 0.28),
     ruggedness: clamp(weights.west * 0.7 + (ridge - 0.5) * 0.48),
   };

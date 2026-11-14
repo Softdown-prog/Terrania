@@ -11,12 +11,12 @@ test("deserto: abre com o relevo das dunas, desenha areia e não dá erro (deskt
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.addInitScript(({ seed, x, y }) => {
-    localStorage.setItem("terrania-origins-v1", JSON.stringify({ seed, x, y, hp: 100, kills: 0, defeated: [], experience: 3000 }));
+    localStorage.setItem("terrania-origins-v1", JSON.stringify({ mapVersion: 2, seed, x, y, hp: 100, kills: 0, defeated: [], experience: 3000 }));
     localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false }));
-  }, { seed: SEED, x: 20.5 * TILE, y: 15640.5 * TILE });
+  }, { seed: SEED, x: 20.5 * TILE, y: 15590.5 * TILE });
   await page.goto("/jogar/?modo=solo");
   await expect(page.locator("canvas#game")).toBeVisible();
-  await expect(page.locator("#coords")).toContainText("15640");
+  await expect(page.locator("#coords")).toContainText("15590");
   await page.waitForTimeout(1200);
   const png = (await page.locator("canvas#game").screenshot({ path: test.info().outputPath("deserto.png") })).toString("base64");
   const sand = await page.evaluate(async data => {

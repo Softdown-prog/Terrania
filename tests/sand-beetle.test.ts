@@ -57,7 +57,7 @@ test("Besouro: defesa +2 exclusivamente quando a vida cai abaixo de 20%",()=>{
 test("Besouro: surge em tiles válidos no Sul, incluindo dunas e trilhas, nunca na vila",()=>{
   assert.deepEqual(southCommonSpawns(0,0,842136),[]);
   let found=0;
-  for(let cx=-40;cx<40;cx++)for(let cy=1550;cy<1555;cy++){
+  for(let cx=-40;cx<40;cx++)for(let cy=650;cy<655;cy++){
     const mobs=southCommonSpawns(cx,cy,842136);
     assert.deepEqual(mobs.map(m=>[m.id,m.kind,m.x,m.y]),
       southCommonSpawns(cx,cy,842136).map(m=>[m.id,m.kind,m.x,m.y]));

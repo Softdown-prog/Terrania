@@ -43,9 +43,9 @@ test("superfície: monstros estáveis por seed, ausentes da vila central", () =>
   assert.deepEqual(regionalSurfaceSpawns(0,0,842136),[]);
   let count=0;
   for(let i=0;i<90;i++){
-    const first=regionalSurfaceSpawns(-1550-i,0,842136);
+    const first=regionalSurfaceSpawns(-650-i,0,842136);
     assert.deepEqual(first.map(x=>[x.id,x.kind,x.x,x.y]),
-      regionalSurfaceSpawns(-1550-i,0,842136).map(x=>[x.id,x.kind,x.x,x.y]));
+      regionalSurfaceSpawns(-650-i,0,842136).map(x=>[x.id,x.kind,x.x,x.y]));
     for(const mob of first){
       assert.ok(mob instanceof RegionalMonster);
       assert.equal(getWorldRegion(Math.floor(mob.x/32),Math.floor(mob.y/32)),"west");

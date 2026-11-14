@@ -1,4 +1,5 @@
 import { valueNoise } from "./random.ts";
+import { REGION_BLEND_END_TILES, REGION_BLEND_START_TILES, REGION_NOISE_SCALE_TILES, REGION_NOISE_SHIFT_TILES } from "./mapSize.ts";
 
 /** Coordenadas globais, com norte no eixo Y negativo. Sem depender da interface. */
 export type WorldRegion = "center" | "north" | "south" | "east" | "west";
@@ -30,9 +31,9 @@ function smooth(a: number, b: number, x: number): number {
 export function getRegionWeights(tileX: number, tileY: number): RegionWeights {
   if (!Number.isFinite(tileX) || !Number.isFinite(tileY))
     return { center: 1, north: 0, south: 0, east: 0, west: 0 };
-  const x = tileX + (valueNoise(tileX / 4700, tileY / 4700, 119) - 0.5) * 950;
-  const y = tileY + (valueNoise(tileX / 4700, tileY / 4700, 251) - 0.5) * 950;
-  const wilderness = smooth(3800, 9700, Math.max(Math.abs(x), Math.abs(y)));
+  const x = tileX + (valueNoise(tileX / REGION_NOISE_SCALE_TILES, tileY / REGION_NOISE_SCALE_TILES, 119) - 0.5) * REGION_NOISE_SHIFT_TILES;
+  const y = tileY + (valueNoise(tileX / REGION_NOISE_SCALE_TILES, tileY / REGION_NOISE_SCALE_TILES, 251) - 0.5) * REGION_NOISE_SHIFT_TILES;
+  const wilderness = smooth(REGION_BLEND_START_TILES, REGION_BLEND_END_TILES, Math.max(Math.abs(x), Math.abs(y)));
   const total = Math.abs(x) + Math.abs(y) || 1;
   return {
     center: 1 - wilderness,

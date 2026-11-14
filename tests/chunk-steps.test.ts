@@ -10,7 +10,7 @@ import { withDocument } from "./helpers/paintChunk.ts";
  */
 const SEED = 842136;
 /** Chunks de tipos diferentes: praça da cidade, lago, dunas, mata e vilarejo. */
-const SPOTS: ReadonlyArray<readonly [string, number, number]> = [["praça", 0, 968], ["lago", 5, 973], ["dunas", 1, 977], ["mata", -9, 0], ["vilarejo", 0, 0]];
+const SPOTS: ReadonlyArray<readonly [string, number, number]> = [["praça", 0, 484], ["lago", 5, 973], ["dunas", 1, 977], ["mata", -9, 0], ["vilarejo", 0, 0]];
 
 /** Um Canvas gravador (com `createImageData`) para todos os canvases do chunk, e um jeito de ler o que foi gravado até agora. */
 function harness(): { doc: object; recorder: Recorder } {

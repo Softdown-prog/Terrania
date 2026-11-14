@@ -5,6 +5,8 @@ import { canMoveOnSeed } from "./collision.ts";
 import { southCitySafe } from "./southCity.ts";
 import { nearCapital } from "./center/capital/index.ts";
 import type { TowerId } from "./towers/types.ts";
+import { MARSH_START_TILES } from "./mapSize.ts";
+import { insideSiteFootprint } from "./siteFootprints.ts";
 
 /** A cave has its own finite local space; surface tiles never double as dungeon coordinates. */
 export const CAVE_CELL_TILES = 96;
@@ -30,13 +32,14 @@ const THEMES: Record<CaveTheme, string> = {
 };
 export function caveThemeAt(tx: number, ty: number): CaveTheme {
   // Southeast transition deserves its own wet underworld, not generic desert/coast.
-  if (tx > 9000 && ty > 9000 && tx / ty > .35 && tx / ty < 2.8) return "marsh";
+  if (tx > MARSH_START_TILES && ty > MARSH_START_TILES && tx / ty > .35 && tx / ty < 2.8) return "marsh";
   const region = getWorldRegion(tx, ty);
   return region === "north" ? "glacial" : region === "south" ? "desert" :
     region === "west" ? "basalt" : region === "east" ? "coastal" : "verdant";
 }
 function safeEntrance(tx: number, ty: number, seed: number): boolean {
   if (southCitySafe(tx,ty) || nearCapital(tx,ty)) return false; // cavernas sempre fora das cidades e da terra limpa da capital
+  if (insideSiteFootprint(tx, ty, seed)) return false; // e fora da área de uma ruína ou de uma torre (ADR 0059)
   if (!canMoveOnSeed((tx + .5) * TILE_SIZE, (ty + .5) * TILE_SIZE, seed)) return false;
   for (let dy = -1; dy <= 1; dy++)
     for (let dx = -1; dx <= 1; dx++)

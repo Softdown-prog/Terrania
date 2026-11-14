@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
  */
 const SEED = 842136, TILE = 32;
 const SPOTS = [
-  ["deserto-vertical", 2, 15640], ["leste-horizontal", 300, 0], ["norte-vertical", 1, 300],
+  ["deserto-vertical", 2, 15590], ["leste-horizontal", 300, 0], ["norte-vertical", 1, 300],
 ] as const;
 
 for (const [name, tx, ty] of SPOTS) {
@@ -15,7 +15,7 @@ for (const [name, tx, ty] of SPOTS) {
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(error.message));
     await page.addInitScript(({ seed, x, y }) => {
-      localStorage.setItem("terrania-origins-v1", JSON.stringify({ seed, x, y, hp: 100, kills: 0, defeated: [], experience: 3000 }));
+      localStorage.setItem("terrania-origins-v1", JSON.stringify({ mapVersion: 2, seed, x, y, hp: 100, kills: 0, defeated: [], experience: 3000 }));
       localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false }));
     }, { seed: SEED, x: (tx + .5) * TILE, y: (ty + .5) * TILE });
     await page.goto("/jogar/?modo=solo");

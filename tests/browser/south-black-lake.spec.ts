@@ -11,12 +11,12 @@ test("lago negro: abre com água escura e areia ao lado, sem erro (desktop/Andro
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.addInitScript(({ seed, x, y }) => {
-    localStorage.setItem("terrania-origins-v1", JSON.stringify({ seed, x, y, hp: 100, kills: 0, defeated: [], experience: 3000 }));
+    localStorage.setItem("terrania-origins-v1", JSON.stringify({ mapVersion: 2, seed, x, y, hp: 100, kills: 0, defeated: [], experience: 3000 }));
     localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false }));
-  }, { seed: SEED, x: 76.5 * TILE, y: 15552.5 * TILE });
+  }, { seed: SEED, x: 75.5 * TILE, y: 15551.5 * TILE });
   await page.goto("/jogar/?modo=solo");
   await expect(page.locator("canvas#game")).toBeVisible();
-  await expect(page.locator("#coords")).toContainText("15552");
+  await expect(page.locator("#coords")).toContainText("15551");
   await page.waitForTimeout(1200);
   const png = (await page.locator("canvas#game").screenshot({ path: test.info().outputPath("lago-negro.png") })).toString("base64");
   const counts = await page.evaluate(async data => {

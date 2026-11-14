@@ -46,7 +46,7 @@ test("sul: muitos encontros de baixo tier, determinísticos e só em biomas e ti
   const seed=842136;
   let observed=0,eligible=0;
   const species=new Set<string>();
-  for(let cx=-40;cx<40;cx++)for(let cy=1550;cy<1553;cy++){
+  for(let cx=-40;cx<40;cx++)for(let cy=650;cy<653;cy++){
     const first=southCommonSpawns(cx,cy,seed);
     assert.deepEqual(first.map(m=>[m.id,m.kind,m.x,m.y]),
       southCommonSpawns(cx,cy,seed).map(m=>[m.id,m.kind,m.x,m.y]));

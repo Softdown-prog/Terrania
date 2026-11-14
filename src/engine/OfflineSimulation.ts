@@ -10,6 +10,7 @@ import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { SeedCollision, canMoveOnSeed, freeSpotNear } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
+import { MAP_VERSION } from "../world/mapSize.ts";
 import { faceTarget } from "./combat/combat.ts";
 import type { ClassicTileWalker, WalkDirection } from "./movement/ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./character/Inventory.ts";
@@ -40,6 +41,8 @@ export interface OfflineSave {
   mounts?: MountSave;
   /** Missão "A Água Escura" (ADR 0031); ausente enquanto não começou. */
   wellQuest?: WellQuestState;
+  /** Versão do tamanho do mapa em que o save foi feito (ADR 0059); sem ela, o save é do mapa antigo e a posição é migrada ao carregar. */
+  mapVersion?: number;
   /** Relógio da aventura, em segundos de jogo (ADR 0029). */
   time?: number;
   /** Quando cada criatura derrotada volta, em segundos do relógio. */
@@ -290,6 +293,7 @@ export class OfflineSimulation {
   }
   snapshot(): OfflineSave {
     return {
+      mapVersion: MAP_VERSION,
       seed: this.seed,
       x: this.player.x,
       y: this.player.y,

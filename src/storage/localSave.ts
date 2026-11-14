@@ -5,6 +5,8 @@ import { maxHpForExperience, normalizeExperience } from '../engine/character/Exp
 import { hasNutrition, normalizeNutrition } from '../engine/character/Food.ts';
 import { normalizeWellQuest, wellQuestStarted } from '../engine/quests/south/well/index.ts';
 import { normalizeMountSave } from '../engine/mounts/MountStable.ts';
+import { MAP_VERSION } from '../world/mapSize.ts';
+import { migrateMapPoint, needsMapMigration } from '../world/mapMigration.ts';
 
 const SAVE_KEY = 'terrania-origins-v1';
 /** Adaptador de persistência do navegador. Não deve ser usado no backend. */
@@ -20,7 +22,9 @@ export function loadLocalSave(): OfflineSave | null {
       !Array.isArray(save.defeated) || !save.defeated.every(id => typeof id === 'string')) return null;
     const experience = normalizeExperience(save.experience);
     const awaitingRespawn = save.awaitingRespawn === true && save.hp === 0;
-    return { seed: save.seed >>> 0, x: save.x, y: save.y,
+    // Save do mapa antigo (ADR 0059): a posição do herói e a dos itens no chão seguem o Poço Negro para o lugar novo.
+    const old = needsMapMigration(save.mapVersion), at = old ? migrateMapPoint(save.x, save.y) : { x: save.x, y: save.y };
+    return { mapVersion: MAP_VERSION, seed: save.seed >>> 0, x: at.x, y: at.y,
       hp: awaitingRespawn ? 0 : Math.min(maxHpForExperience(experience), Math.max(1, save.hp)),
       ...(awaitingRespawn ? { awaitingRespawn: true } : {}),
       kills: normalizeKills(save.kills),
@@ -32,11 +36,20 @@ export function loadLocalSave(): OfflineSave | null {
       inventory: normalizeInventory(save.inventory),
       ...(hasNutrition(normalizeNutrition(save.nutrition)) && !awaitingRespawn ?
         { nutrition: normalizeNutrition(save.nutrition) } : {}),
-      drops: normalizeDrops(save.drops),
+      drops: normalizeDrops(old ? migrateDrops(save.drops) : save.drops),
       ...(Object.keys(normalizeMountSave(save.mounts)).length ?
         { mounts: normalizeMountSave(save.mounts) } : {}),
       ...(wellQuestStarted(normalizeWellQuest(save.wellQuest)) ? { wellQuest: normalizeWellQuest(save.wellQuest) } : {}) };
   } catch { return null; }
+}
+/** Leva os itens no chão de um save do mapa antigo para o novo; o que não é um item com posição segue como está (e `normalizeDrops` descarta). */
+function migrateDrops(value: unknown): unknown {
+  if (!Array.isArray(value)) return value;
+  return value.map((drop: unknown) => {
+    if (!drop || typeof drop !== 'object') return drop;
+    const d = drop as { x?: unknown; y?: unknown };
+    return typeof d.x === 'number' && typeof d.y === 'number' ? { ...drop, ...migrateMapPoint(d.x, d.y) } : drop;
+  });
 }
 export function saveLocal(save: OfflineSave): void {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }

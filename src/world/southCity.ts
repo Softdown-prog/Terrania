@@ -1,10 +1,11 @@
+import { SOUTH_CITY_DISTANCE_TILES } from "./mapSize.ts";
 /**
  * Poço Negro, cidade central dos Ermos do Sul. Coordenadas fixas (independentes da
  * seed), na antiga estrada norte-sul. Apenas O(1) por tile: sem varrer o deserto.
  * Os portões ficam abertos; a lei local protege qualquer visitante dentro do muro.
  */
 export const SOUTH_CITY = {
-  name: "Poço Negro", centerX: 0, centerY: 15500,
+  name: "Poço Negro", centerX: 0, centerY: SOUTH_CITY_DISTANCE_TILES,
   minX: -28, maxX: 27, minY: -24, maxY: 23,
   northGate: "Portão das Presas", southGate: "Portão dos Ossos",
 } as const;

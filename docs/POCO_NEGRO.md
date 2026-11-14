@@ -5,11 +5,11 @@ não importada como textura). A implementação usa Canvas 2D procedural, a ilum
 vem de cima/esquerda e o negro da água é azul ardósia, jamais preto puro.
 
 ## Localização no mundo
-- Centro fixo em **(tile X 0, tile Y 15500)**, na estrada norte–sul já existente;
+- Centro fixo em **(tile X 0, tile Y 7756)**, na estrada norte–sul já existente (era 15500 até o ADR 0059, que reduziu o mapa à metade em cada lado; 7756 e 15500 deixam o mesmo resto na grade de 16 tiles dos chunks);
   escala de **56 × 48 tiles**, maior que a Travessia já expandida (39 × 31).
-- Muros em torno de X -28..27 e Y 15476..15523.
-- **Portão das Presas**: meio do muro norte (Y 15476); **Portão dos Ossos**:
-  meio do muro sul (Y 15523). Os cinco tiles centrais formam passagens livres.
+- Muros em torno de X -28..27 e Y 7732..7779.
+- **Portão das Presas**: meio do muro norte (Y 7732); **Portão dos Ossos**:
+  meio do muro sul (Y 7779). Os cinco tiles centrais formam passagens livres.
 - Estradas de argila no eixo central; ramais externos levam às dunas, ao
   oásis e ao Obelisco Soterrado. Não foram criados teletransportes artificiais.
 

@@ -17,9 +17,9 @@ const fnv = (cells: Uint8Array): string => {
 const BASELINE: ReadonlyArray<readonly [number, number, string, string]> = [
   [0, 125, "desert", "8e105d7d"], [4, 125, "desert", "dcdfc89a"],
   [0, -125, "glacial", "15d22ce1"], [5, -125, "glacial", "2ff1ad62"],
-  [127, 0, "coastal", "d4d14945"], [129, 0, "coastal", "57cea9d5"],
+  [127, 0, "coastal", "d4d14945"], [100, -17, "coastal", "693dac23"],
   [-124, 0, "basalt", "82c7f924"], [-121, 0, "basalt", "857b2760"],
-  [125, 125, "marsh", "86efa20f"], [126, 125, "marsh", "7da5ebc4"],
+  [124, 125, "marsh", "4bed6a4f"], [126, 125, "marsh", "7581eadb"],
   [4, 3, "verdant", "f126c2ef"], [7, 3, "verdant", "77c6fd54"],
 ];
 

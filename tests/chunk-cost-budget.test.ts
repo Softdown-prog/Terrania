@@ -12,8 +12,8 @@ import { chunkCost } from "./helpers/chunkCost.ts";
 const SEED = 842136;
 /** Medido em 2026-11-12, com ~20 % de folga. */
 const BUDGETS: ReadonlyArray<{ name: string; cx: number; cy: number; ops: number; gradients: number }> = [
-  { name: "praça da cidade (o chunk mais pesado)", cx: 0, cy: 968, ops: 10_800, gradients: 170 },
-  { name: "cidade, norte", cx: 0, cy: 966, ops: 4_700, gradients: 290 },
+  { name: "praça da cidade (o chunk mais pesado)", cx: 0, cy: 484, ops: 10_800, gradients: 170 },
+  { name: "cidade, norte", cx: 0, cy: 482, ops: 4_700, gradients: 290 },
   // A capital dos povos humanos (ADR 0057), medida em 2026-11-14, com ~20 % de folga.
   { name: "capital, praça (rosa dos ventos)", cx: -1, cy: -50, ops: 6_500, gradients: 75 },
   { name: "capital, Grande Portão do Norte", cx: -1, cy: -52, ops: 10_200, gradients: 60 },
@@ -37,13 +37,13 @@ test("cada tipo de chunk fica dentro do seu orçamento de operações e degradê
 });
 
 test("o custo é exato: o mesmo chunk e a mesma semente custam o mesmo, e a semente muda o desenho", () => {
-  assert.deepEqual(chunkCost(0, 968, SEED), chunkCost(0, 968, SEED));
-  assert.notDeepEqual(chunkCost(0, 968, SEED), chunkCost(0, 968, SEED + 1));
+  assert.deepEqual(chunkCost(0, 484, SEED), chunkCost(0, 484, SEED));
+  assert.notDeepEqual(chunkCost(0, 484, SEED), chunkCost(0, 484, SEED + 1));
 });
 
 test("uma varredura de chunks pelas quatro regiões e pela cidade nunca passa do teto de qualquer chunk", () => {
   let worst = { ops: 0, gradients: 0, at: "" }, count = 0;
-  for (const [x0, x1, y0, y1] of [[-20, 20, -6, 6], [-20, 20, 14, 30], [10, 40, -10, 10], [-20, 20, -40, -20], [-6, 6, 960, 976], [-30, -10, 965, 975], [10, 30, 965, 980], [-4, 3, -53, -48]] as const)
+  for (const [x0, x1, y0, y1] of [[-20, 20, -6, 6], [-20, 20, 14, 30], [10, 40, -10, 10], [-20, 20, -40, -20], [-6, 6, 476, 492], [-30, -10, 481, 491], [10, 30, 481, 496], [-4, 3, -53, -48]] as const)
     for (let cx = x0; cx <= x1; cx += 4) for (let cy = y0; cy <= y1; cy += 4) {
       const c = chunkCost(cx, cy, SEED); count++;
       if (c.ops > worst.ops) worst = { ops: c.ops, gradients: worst.gradients, at: `${cx},${cy}` };
@@ -56,7 +56,7 @@ test("uma varredura de chunks pelas quatro regiões e pela cidade nunca passa do
 
 test("o piso da cidade está otimizado: um degradê de polimento só a cada três tiles e quinas sem tiras com transparência", () => {
   // Antes da otimização (ADR 0046) a praça custava 12.141 operações e 510 degradês, e levava 29 ms para ser desenhada.
-  const plaza = chunkCost(0, 968, SEED), north = chunkCost(0, 966, SEED);
+  const plaza = chunkCost(0, 484, SEED), north = chunkCost(0, 482, SEED);
   assert.ok(plaza.ops < 10_000, "praça: " + plaza.ops);
   assert.ok(plaza.gradients < 170, "o degradê de polimento só existe em um de cada três tiles (antes: um por tile): " + plaza.gradients);
   assert.ok(north.ops < plaza.ops, "o chunk só de calçada (a praça) é o mais caro da cidade");

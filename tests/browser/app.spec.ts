@@ -445,7 +445,7 @@ test('atlas escondido no inventário cobre todo o limite técnico com setores re
   await expect(canvas).toBeVisible();
   await expect(page.locator('.atlas-map-frame')).toBeVisible();
   await expect(page.locator('.atlas-legend .atlas-swatch')).toHaveCount(7);
-  await expect(page.locator('#worldMapDimensions')).toContainText('62.500 × 62.500');
+  await expect(page.locator('#worldMapDimensions')).toContainText('31.250 × 31.250');
   await expect(page.locator('#atlasCurrentRegion')).toContainText('Terras da Travessia');
   await expect(page.locator('#atlasBiome')).not.toBeEmpty();
   await expect(page.locator('#atlasDifficulty')).toContainText('1 / 5');
@@ -462,7 +462,7 @@ test('atlas escondido no inventário cobre todo o limite técnico com setores re
   expect(await sample()).toMatchObject({ width: 256, height: 256, center: [255, 255, 255, 255] });
   await page.locator('[data-atlas-sector="0"]').click();
   await expect(page.locator('[data-atlas-sector="0"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('#atlasScaleDetails')).toContainText('20833 tiles');
+  await expect(page.locator('#atlasScaleDetails')).toContainText('10417 tiles');
   await page.locator('#mapScaleNearby').click();
   await expect(page.locator('#atlasScaleDetails')).toContainText('128 tiles');
   await expect.poll(async () => (await sample()).colors).toBeGreaterThan(3);
