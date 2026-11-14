@@ -36,12 +36,16 @@ Uma guilda para cada herói: **cavaleiro, arqueiro e mago**. O **Arquivo dos Exp
 - A muralha de calcário com ameias (134 peças), os dois **Grandes Portões** de 9 tiles, com a grade erguida, lanternas e o brasão do sol dourado, e **8 torres redondas**: 4 de canto com telhado cônico de ardósia e pendão azul, e 4 de portão com coroa de ameias e o estandarte da capital.
 - A muralha e as torres **bloqueiam** o herói de verdade; só se entra pelos portões.
 - A arte mora na pasta da região central (`src/render/center/`), com cores próprias: calcário claro, ardósia, o azul e o dourado da capital.
-- Os terrenos dos edifícios e o monumento da praça ainda **não** bloqueiam: sem a arte deles, seria parede invisível.
+- Os terrenos dos edifícios ainda **não** bloqueiam: sem a arte deles, seria parede invisível.
+
+**Parte 3 — piso, praça e monumento** ([ADR 0057](adr/0057-capital-piso-praca-monumento.md)):
+- As ruas ganham **granito escuro** em fiadas de pedra com meio-fio de calcário na beira do gramado; a Praça dos Povos, **lajes de calcário** claras com a **rosa dos ventos** de pedra incrustada (anéis azuis e dourados e oito raios) em volta do monumento.
+- O **monumento da Concórdia** no centro da praça: estrado de três degraus, **cinco pilares com a gema e o pendão de cada povo** (Centro, Norte, Sul, Leste e Oeste) e, no meio, o sol dourado da capital. É a ideia da conciliação: cinco povos em volta de uma mesma luz.
+- O monumento **bloqueia** o herói (72 px de raio); anda-se livre em volta dele.
 
 ## O que vem depois
-1. Piso da cidade e praça com o monumento da Concórdia (arte e colisão juntas).
-2. Edifícios, por bairro (um arquivo por edifício, na pasta da região central), com a colisão ligada junto.
-3. Moradores e diálogos, interiores, missões e o serviço de cada guilda.
-4. Tochas e fogo nos portões e nas torres.
+1. Edifícios, por bairro (um arquivo por edifício, na pasta da região central), com a colisão ligada junto; a Cidadela dos Povos primeiro.
+2. Moradores e diálogos, interiores, missões e o serviço de cada guilda.
+3. Tochas e fogo nos portões e nas torres.
 
-Ver [ADR 0055](adr/0055-capital-do-centro-planta.md) e [ADR 0056](adr/0056-capital-muralha-portoes-torres.md).
+Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md) e [ADR 0057](adr/0057-capital-piso-praca-monumento.md).

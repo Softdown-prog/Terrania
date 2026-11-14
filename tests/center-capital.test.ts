@@ -172,9 +172,9 @@ test("a muralha, as fundações e o monumento bloqueiam; os portões, as ruas e 
   assert.equal(free(8, 0), true, "a praça é livre fora do monumento");
   assert.equal(free(0, 0), false, "o monumento bloqueia");
   const m = capitalPoint(0, 0);
-  assert.equal(CAPITAL_MONUMENT.radiusTiles, 2.5);
-  assert.equal(capitalBlocks(m.x + 80 + 8, m.y, 7), false, "88 px do centro: livre");
-  assert.equal(capitalBlocks(m.x + 80 + 6, m.y, 7), true, "86 px do centro: o corpo encosta (80 de monumento mais 7 de corpo)");
+  assert.equal(CAPITAL_MONUMENT.radiusTiles, 2.25);
+  assert.equal(capitalBlocks(m.x + 72 + 8, m.y, 7), false, "80 px do centro: livre");
+  assert.equal(capitalBlocks(m.x + 72 + 6, m.y, 7), true, "78 px do centro: o corpo encosta (72 de monumento mais 7 de corpo)");
   assert.equal(capitalBlocks(0, 0, 7), false, "longe da capital (na vila) não bloqueia");
   assert.equal(capitalBlocks(Number.NaN, 0, 7), true);
   assert.equal(capitalBlocks(m.x, m.y, Number.POSITIVE_INFINITY), true);
@@ -215,7 +215,7 @@ test("nenhuma caverna nasce dentro da capital nem na terra limpa em volta, mesmo
 
 test("cada peça está no seu arquivo, na pasta da região central, e sem relógio nem sorteio solto", () => {
   const files = readdirSync(new URL("../src/world/center/capital/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["blocks", "districts", "ground", "index", "layout", "plots", "props", "safe", "streets", "towers"]);
+  assert.deepEqual(files, ["blocks", "districts", "ground", "index", "layout", "plaza", "plots", "props", "safe", "streets", "towers"]);
   for (const f of files) for (const bad of ["Math.random", "Date.now", "performance.now", "new Date("])
     assert.equal(readFileSync(`src/world/center/capital/${f}.ts`, "utf8").includes(bad), false, `${f}: ${bad}`);
   const terrain = readFileSync("src/world/terrain.ts", "utf8");

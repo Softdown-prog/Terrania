@@ -71,7 +71,8 @@ import { drawTowerWallFace } from "../../src/render/south/towers/interior/wallFa
 import { drawTowerWindow } from "../../src/render/south/towers/interior/window.ts";
 import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
-import { paintCapitalGate, paintCapitalTower, paintCapitalWall, paintCapitalWallSide } from "../../src/render/center/capital/props/index.ts";
+import { paintCapitalGate, paintCapitalMonument, paintCapitalTower, paintCapitalWall, paintCapitalWallSide } from "../../src/render/center/capital/props/index.ts";
+import { paintCapitalPaving } from "../../src/render/center/capital/paving/index.ts";
 import { paintCityArena, paintCityBarrel, paintCityBones, paintCityCorral, paintCityGate, paintCityPalm, paintCityPropAnimation, paintCitySign,
   paintCityStall, paintCityTent, paintCityTorch, paintCityWall, paintCityWatchtower, paintCityWell } from "../../src/render/south/city/props/index.ts";
 import { paintBarracaSobreEstacas, paintBazar, paintBuildingFlame, paintCasaDeArgila, paintCasaDeVenenos, paintCasebreDeOssos, paintEstabulo,
@@ -275,6 +276,13 @@ export const ASSETS: ArtAsset[] = [
   ...([0, 1] as const).map<ArtAsset>(v => ({ id: "muro de lado da capital " + v, tier: "structure", fn: "paintCapitalWallSide", draw: c => paintCapitalWallSide(c, v) })),
   { id: "Grande Portão da capital", tier: "structure", fn: "paintCapitalGate", draw: c => paintCapitalGate(c, 0) },
   ...([0, 1] as const).map<ArtAsset>(v => ({ id: v === 0 ? "torre de canto da capital" : "torre do portão da capital", tier: "structure", fn: "paintCapitalTower", draw: c => paintCapitalTower(c, v) })),
+  // Piso da capital e o monumento da praça (ADR 0057): as pedras das ruas, o meio-fio, um anel e um raio da rosa dos ventos.
+  { id: "piso da capital: pedras da rua", tier: "prop", fn: "paintCapitalPaving", draw: c => paintCapitalPaving(c, { x: 0, y: 0, tx: -1, ty: -830, seed: 842136, plaza: false }) },
+  { id: "piso da capital: meio-fio", tier: "prop", fn: "paintCapitalPaving",
+    draw: c => paintCapitalPaving(c, { x: 0, y: 0, tx: -1, ty: -830, seed: 842136, plaza: false, edges: { n: true, e: true, s: false, w: true } }) },
+  { id: "piso da capital: anel da praça", tier: "prop", fn: "paintCapitalPaving", draw: c => paintCapitalPaving(c, { x: 0, y: 0, tx: -4, ty: -803, seed: 842136, plaza: true }) },
+  { id: "piso da capital: raio da praça", tier: "prop", fn: "paintCapitalPaving", draw: c => paintCapitalPaving(c, { x: 0, y: 0, tx: -3, ty: -794, seed: 842136, plaza: true }) },
+  { id: "monumento da Concórdia", tier: "structure", fn: "paintCapitalMonument", draw: c => paintCapitalMonument(c, 0) },
   { id: "torre de guarda com fogo", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWatchtower(c, 0); paintCityPropAnimation(c, "tower", 0, 0.4); } },
   { id: "poço com reflexos na água", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWell(c); paintCityPropAnimation(c, "well", 0, 0.4); } },
   // Piso da cidade do Poço Negro (ADR 0042): um tile de pedra, um com meio-fio e um da praça com o anel de bronze.

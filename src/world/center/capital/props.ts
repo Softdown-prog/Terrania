@@ -1,8 +1,8 @@
 import { CAPITAL, CAPITAL_TILE, capitalPoint } from "./layout.ts";
 import { CAPITAL_TOWERS, TOWER_TILES } from "./towers.ts";
 
-/** O que se desenha na muralha: trecho de frente (muros norte e sul), trecho de lado (leste e oeste), portão e torre. */
-export type CapitalPropKind = "wall" | "wall-side" | "gate" | "tower";
+/** O que se desenha na capital: trecho de muralha de frente (muros norte e sul) e de lado (leste e oeste), portão, torre e o monumento da praça. */
+export type CapitalPropKind = "wall" | "wall-side" | "gate" | "tower" | "monument";
 /** Uma peça de cenário da capital, em pixels do mundo: a base fica no pé da peça. `variant` escolhe a variação do desenho. */
 export interface CapitalProp { readonly kind: CapitalPropKind; readonly x: number; readonly y: number; readonly variant: number; readonly id?: string }
 
@@ -39,7 +39,9 @@ function makeProps(): readonly CapitalProp[] {
   // Torres: a base fica na borda de baixo do bloco de 2 × 2 tiles.
   for (const t of CAPITAL_TOWERS)
     props.push({ kind: "tower", x: edgeX(t.lx + TOWER_TILES / 2), y: edgeY(t.ly + TOWER_TILES), variant: t.kind === "corner" ? 0 : 1, id: t.id });
+  // O monumento da Concórdia, no centro da praça: a base fica no centro do tile do meio.
+  props.push({ kind: "monument", x: capitalPoint(0, 0).x, y: capitalPoint(0, 0).y, variant: 0, id: "monumento-da-concordia" });
   return props;
 }
-/** Todas as peças de muralha da capital, determinísticas e fixas (independentes da semente). */
+/** Todas as peças da capital (muralha, portões, torres e monumento), determinísticas e fixas (independentes da semente). */
 export const CAPITAL_PROPS: readonly CapitalProp[] = makeProps();

@@ -18,16 +18,16 @@ import { signature, spy, type Spy } from "./helpers/spyContext.ts";
 const count = (s: Spy, method: string, pick: (a: number[]) => boolean): number => (s.args[method] ?? []).filter(pick).length;
 const balanced = (draw: (c: CanvasRenderingContext2D) => void): boolean => { const r = new Recorder(); draw(r.ctx); const m = r.metrics(); return m.saves === m.restores; };
 
-test("cada peça está no seu arquivo, na pasta da região central, e o cadastro tem os quatro tipos com a quantidade de variações", () => {
-  assert.deepEqual(readdirSync(new URL("../src/render/center/capital/props/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort(), ["gate", "index", "tower", "wall", "wallSide"]);
+test("cada peça está no seu arquivo, na pasta da região central, e o cadastro tem os cinco tipos com a quantidade de variações", () => {
+  assert.deepEqual(readdirSync(new URL("../src/render/center/capital/props/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort(), ["gate", "index", "monument", "tower", "wall", "wallSide"]);
   assert.deepEqual(readdirSync(new URL("../src/render/center/kit/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort(), ["banner", "brush", "index", "palette"]);
-  assert.deepEqual(Object.keys(CAPITAL_PROP_ART).sort(), ["gate", "tower", "wall", "wall-side"]);
-  assert.deepEqual(["wall", "wall-side", "gate", "tower"].map(k => CAPITAL_PROP_ART[k]!.variants), [8, 2, 1, 2]);
+  assert.deepEqual(Object.keys(CAPITAL_PROP_ART).sort(), ["gate", "monument", "tower", "wall", "wall-side"]);
+  assert.deepEqual(["wall", "wall-side", "gate", "tower", "monument"].map(k => CAPITAL_PROP_ART[k]!.variants), [8, 2, 1, 2, 1]);
   for (const [kind, art] of Object.entries(CAPITAL_PROP_ART)) {
     assert.ok(art.box.every(n => n > 0), kind);
     assert.ok(art.box[2] < art.box[0] && art.box[3] < art.box[1], `${kind}: a origem fica dentro do sprite`);
   }
-  for (const f of ["props/wall", "props/wallSide", "props/tower", "props/gate", "sceneryPainter"]) {
+  for (const f of ["props/wall", "props/wallSide", "props/tower", "props/gate", "props/monument", "sceneryPainter"]) {
     const src = readFileSync(`src/render/center/capital/${f}.ts`, "utf8");
     for (const bad of ["Math.random", "Date.now", "performance.now", "new Date(", "render/south", "world/south"]) assert.equal(src.includes(bad), false, `${f}: ${bad}`);
   }
@@ -154,6 +154,7 @@ test("o cenário põe cada peça da capital no cache, uma vez por variação, e 
   assert.equal(created, 8, "8 e 9 reaproveitam os sprites 0 e 1");
   draw("wall-side", 0); draw("wall-side", 1); draw("wall-side", 3);
   assert.equal(created, 10); draw("gate", 0); draw("gate", 5); assert.equal(created, 11); draw("tower", 0); draw("tower", 1); assert.equal(created, 13);
+  draw("monument", 0); draw("monument", 7); assert.equal(created, 14, "o monumento tem um sprite só, qualquer que seja a variação");
   const before = created;
   const unknown = draw("inexistente", 0), none = draw(undefined, 0);
   assert.equal(created, before); assert.equal(unknown.calls.drawImage ?? 0, 0); assert.equal(none.calls.drawImage ?? 0, 0);

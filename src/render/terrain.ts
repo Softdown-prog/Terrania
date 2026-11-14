@@ -13,6 +13,8 @@ import { CityCurb, paintCityPaving, type PavedEdges } from "./south/city/paving/
 import { isSouthCityPlaza } from "../world/south/cityPlaza.ts";
 import { VILLAGE_RESPAWN } from "../world/village.ts";
 import { southCityGround, southCitySafe } from "../world/southCity.ts";
+import { capitalGround, isCapitalPlaza } from "../world/center/capital/index.ts";
+import { CapitalCurb, paintCapitalPaving, type PavedEdges as CapitalEdges } from "./center/capital/paving/index.ts";
 import { atlasFrame, type AtlasScale, WORLD_HALF_TILES } from "../world/atlas.ts";
 import type { Biome } from "../world/biomes.ts";
 import { LANDMARK_CELL_TILES, getRegionalLandmarkForCell } from "../world/regionalLandmarks.ts";
@@ -194,6 +196,14 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
     return;
   }
 
+  if (capitalGround(tx, ty) === "path") {
+    // Piso da capital (ADR 0057): pedras de granito nas ruas, lajes e a rosa dos ventos na praça, meio-fio onde encosta no gramado.
+    const edges: CapitalEdges = { n: grid.at(lx, ly - 1).ground !== "path", s: grid.at(lx, ly + 1).ground !== "path",
+      w: grid.at(lx - 1, ly).ground !== "path", e: grid.at(lx + 1, ly).ground !== "path" };
+    paintCapitalPaving(ctx, { x, y, tx, ty, seed, plaza: isCapitalPlaza(tx, ty), edges });
+    return;
+  }
+
   // Salpicos de luz e terra: dão grão ao solo sem repetir padrão.
   for (let i = 0; i < 7; i++) {
     const a = r(i), b = r(i + 20);
@@ -201,6 +211,12 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
     ctx.fillRect(x + 3 + a * 26, y + 3 + b * 26, 1 + a * 2.6, 1 + b * 1.4);
   }
 
+  if (capitalGround(tx, ty) === "grass") {
+    // No gramado da capital, o piso lança uma sombra suave nos lados em que encosta.
+    const sides: CapitalEdges = { n: grid.at(lx, ly - 1).ground === "path", s: grid.at(lx, ly + 1).ground === "path",
+      w: grid.at(lx - 1, ly).ground === "path", e: grid.at(lx + 1, ly).ground === "path" };
+    if (sides.n || sides.s || sides.w || sides.e) new CapitalCurb(ctx).verge(x, y, sides);
+  }
   if (southCitySafe(tx,ty) && tile.ground==="sand") {
     // Na areia da cidade, o piso lança uma sombra suave nos lados em que encosta.
     const sides: PavedEdges = { n: grid.at(lx, ly - 1).ground === "path", s: grid.at(lx, ly + 1).ground === "path",

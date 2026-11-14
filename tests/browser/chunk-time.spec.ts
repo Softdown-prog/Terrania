@@ -25,13 +25,14 @@ test("desenhar um chunk de cidade, de lago ou de mata não passa dos tetos de te
       measureChunkTimes(spots: Array<{ name: string; cx: number; cy: number }>, rounds: number, seed: number, draw: (cx: number, cy: number, seed: number) => unknown, now: () => number): Record<string, number>;
       TIMING_ROUNDS: number } }).K;
     const spots = [{ name: "praca", cx: 0, cy: 968 }, { name: "cidadeNorte", cx: 0, cy: 966 }, { name: "cidadeSul", cx: 0, cy: 970 }, { name: "lago", cx: 5, cy: 973 },
-      { name: "dunas", cx: 1, cy: 977 }, { name: "mata", cx: -9, cy: 0 }, { name: "norte", cx: 0, cy: 18 }];
+      { name: "dunas", cx: 1, cy: 977 }, { name: "mata", cx: -9, cy: 0 }, { name: "norte", cx: 0, cy: 18 },
+      { name: "capitalPraca", cx: -1, cy: -50 }, { name: "capitalPortao", cx: -1, cy: -52 }];
     return K.measureChunkTimes(spots, K.TIMING_ROUNDS, seed, K.generateChunkCanvas, () => performance.now());
   }, SEED);
   test.info().annotations.push({ type: "tempos (ms)", description: JSON.stringify(Object.fromEntries(Object.entries(medians).map(([k, v]) => [k, +v.toFixed(1)]))) });
   for (const [name, ms] of Object.entries(medians)) expect(ms, `${name}: ${ms.toFixed(1)} ms por chunk`).toBeLessThan(CHUNK_TIME_LIMITS.absoluteMs);
   const base = medians.dunas!;
-  for (const name of ["praca", "cidadeNorte", "cidadeSul"] as const) expect(medians[name]! / base, `${name} contra dunas`).toBeLessThan(CHUNK_TIME_LIMITS.city);
+  for (const name of ["praca", "cidadeNorte", "cidadeSul", "capitalPraca", "capitalPortao"] as const) expect(medians[name]! / base, `${name} contra dunas`).toBeLessThan(CHUNK_TIME_LIMITS.city);
   expect(medians.lago! / base, "lago contra dunas").toBeLessThan(CHUNK_TIME_LIMITS.lake);
   expect(medians.mata! / base, "mata contra dunas").toBeLessThan(CHUNK_TIME_LIMITS.forest);
 });

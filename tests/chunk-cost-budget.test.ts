@@ -14,6 +14,9 @@ const SEED = 842136;
 const BUDGETS: ReadonlyArray<{ name: string; cx: number; cy: number; ops: number; gradients: number }> = [
   { name: "praça da cidade (o chunk mais pesado)", cx: 0, cy: 968, ops: 10_800, gradients: 170 },
   { name: "cidade, norte", cx: 0, cy: 966, ops: 4_700, gradients: 290 },
+  // A capital dos povos humanos (ADR 0057), medida em 2026-11-14, com ~20 % de folga.
+  { name: "capital, praça (rosa dos ventos)", cx: -1, cy: -50, ops: 6_500, gradients: 75 },
+  { name: "capital, Grande Portão do Norte", cx: -1, cy: -52, ops: 10_200, gradients: 60 },
   { name: "lago negro", cx: 5, cy: 973, ops: 2_800, gradients: 25 },
   { name: "dunas", cx: 1, cy: 977, ops: 2_700, gradients: 10 },
   { name: "ruínas", cx: 13, cy: 902, ops: 2_700, gradients: 12 },
@@ -40,7 +43,7 @@ test("o custo é exato: o mesmo chunk e a mesma semente custam o mesmo, e a seme
 
 test("uma varredura de chunks pelas quatro regiões e pela cidade nunca passa do teto de qualquer chunk", () => {
   let worst = { ops: 0, gradients: 0, at: "" }, count = 0;
-  for (const [x0, x1, y0, y1] of [[-20, 20, -6, 6], [-20, 20, 14, 30], [10, 40, -10, 10], [-20, 20, -40, -20], [-6, 6, 960, 976], [-30, -10, 965, 975], [10, 30, 965, 980]] as const)
+  for (const [x0, x1, y0, y1] of [[-20, 20, -6, 6], [-20, 20, 14, 30], [10, 40, -10, 10], [-20, 20, -40, -20], [-6, 6, 960, 976], [-30, -10, 965, 975], [10, 30, 965, 980], [-4, 3, -53, -48]] as const)
     for (let cx = x0; cx <= x1; cx += 4) for (let cy = y0; cy <= y1; cy += 4) {
       const c = chunkCost(cx, cy, SEED); count++;
       if (c.ops > worst.ops) worst = { ops: c.ops, gradients: worst.gradients, at: `${cx},${cy}` };

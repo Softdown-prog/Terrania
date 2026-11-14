@@ -3,7 +3,8 @@ import { CAPITAL, capitalPoint } from "../../src/world/center/capital/index.ts";
 
 /**
  * Muralha, Grandes Portões e torres da capital no jogo de verdade (ADR 0056): as peças aparecem pintadas (o azul dos estandartes
- * da capital) e o herói não atravessa o muro, mas passa pelo portão. O trecho de andar sai das funções do mundo.
+ * da capital) e o herói não atravessa o muro, mas passa pelo portão. Praça dos Povos (ADR 0057): o piso de pedra com a rosa dos
+ * ventos dourada aparece, e o herói para diante do monumento e passa ao lado dele. O trecho de andar sai das funções do mundo.
  */
 const SEED = 842136, T = 32, MAX_WALK_MS = 25_000;
 
@@ -74,6 +75,65 @@ for (const mode of ["muro", "portao"] as const) {
       expect(end, "e parou antes da linha de pedra, sem atravessar").toBeLessThan(wallTop);
     } else {
       expect(end, "passou pelo vão do portão e entrou na cidade").toBeGreaterThanOrEqual(goal);
+    }
+    expect(errors).toEqual([]);
+  });
+}
+
+/** Pixels do dourado incrustado na praça (#d9a63c): vermelho alto, verde médio e pouco azul; não pega a grama nem o granito das ruas. */
+async function goldPixels(page: Page): Promise<number> {
+  const png = (await page.locator("canvas#game").screenshot()).toString("base64");
+  return page.evaluate(async data => {
+    const image = new Image();
+    image.src = "data:image/png;base64," + data;
+    await image.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width; canvas.height = image.height;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(image, 0, 0);
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let gold = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i]!, g = pixels[i + 1]!, b = pixels[i + 2]!;
+      if (r >= 190 && r <= 245 && g >= 140 && g <= 195 && b <= 95 && r - b >= 110) gold++;
+    }
+    return gold;
+  }, png);
+}
+
+test("a Praça dos Povos aparece pintada: rosa dos ventos dourada no piso e o monumento no meio (desktop/Android)", async ({ page }) => {
+  const errors = await start(page, 0, -7);
+  await page.waitForTimeout(1500);
+  const gold = await goldPixels(page), royal = await royalPixels(page);
+  test.info().annotations.push({ type: "pixels dourados / azul-real", description: `${gold} / ${royal}` });
+  expect(gold, "dourado da rosa dos ventos e do sol na tela").toBeGreaterThan(400);
+  expect(royal, "azul-real dos anéis, dos raios e das gemas").toBeGreaterThan(150);
+  await page.locator("canvas#game").screenshot({ path: test.info().outputPath("praca-dos-povos.png") });
+  expect(errors).toEqual([]);
+});
+
+for (const lane of ["eixo", "lado"] as const) {
+  test(`andar para o sul na praça: ${lane === "eixo" ? "o herói para diante do monumento" : "passa ao lado do monumento"} (desktop/Android)`, async ({ page }) => {
+    const errors = await start(page, lane === "eixo" ? 0 : 6, -8);
+    const first = await readY(page);
+    expect(first).toBe(CAPITAL.centerY - 8);
+    const goal = CAPITAL.centerY + 3;
+    await page.keyboard.down("s");
+    let last = first, since = Date.now();
+    const began = Date.now();
+    while (Date.now() - began < MAX_WALK_MS) {
+      await page.waitForTimeout(250);
+      const y = await readY(page);
+      if (lane === "lado" && y >= goal) break;
+      if (y !== last) { last = y; since = Date.now(); } else if (Date.now() - since > 1500) break;
+    }
+    await page.keyboard.up("s");
+    const end = await readY(page);
+    if (lane === "eixo") {
+      expect(end, "o herói avançou até o estrado").toBeGreaterThan(first);
+      expect(end, "e parou antes do centro, sem atravessar o monumento").toBeLessThan(CAPITAL.centerY);
+    } else {
+      expect(end, "a 6 tiles do eixo a praça é livre: o herói passou da linha do monumento").toBeGreaterThanOrEqual(goal);
     }
     expect(errors).toEqual([]);
   });
