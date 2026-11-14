@@ -105,6 +105,7 @@
 - [`docs/adr/0053-formacoes-das-cavernas.md`](../../docs/adr/0053-formacoes-das-cavernas.md)
 - [`docs/adr/0054-qualidade-primeiro-aparelho-alvo.md`](../../docs/adr/0054-qualidade-primeiro-aparelho-alvo.md)
 - [`docs/adr/0055-capital-do-centro-planta.md`](../../docs/adr/0055-capital-do-centro-planta.md)
+- [`docs/adr/0056-capital-muralha-portoes-torres.md`](../../docs/adr/0056-capital-muralha-portoes-torres.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

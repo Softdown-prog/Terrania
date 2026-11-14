@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { SCENERY_PAINTERS, mergePainters, regionPainterFor } from "../src/render/props/registry.ts";
 import { SOUTH_SCENERY_PAINTERS } from "../src/render/south/sceneryPainters.ts";
+import { CENTER_SCENERY_PAINTERS } from "../src/render/center/sceneryPainters.ts";
 import { blit, clearSpriteCache, sprite } from "../src/render/props/spriteCache.ts";
 import { renderScenery, clearSceneryCache, type Scenery } from "../src/render/scenery.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
@@ -13,13 +14,15 @@ import { withDocument } from "./helpers/paintChunk.ts";
  * um pintor que mora na pasta dela e entra no cadastro. Uma região nova acrescenta uma linha, sem editar `scenery.ts`.
  */
 const SOUTH_KINDS = ["south-city", "south-decor", "south-ruin", "south-tower"];
+const CENTER_KINDS = ["center-capital"];
 const COMMON_KINDS = ["tree", "rock", "arch", "sign", "fire", "house", "regional-landmark"];
 const noopPainter = (): void => undefined;
 
-test("o cadastro tem exatamente os quatro tipos do Sul, e os tipos comuns não estão nele", () => {
-  assert.deepEqual([...SCENERY_PAINTERS.keys()].sort(), SOUTH_KINDS);
+test("o cadastro tem exatamente os tipos do Sul (quatro) e do Centro (um), e os tipos comuns não estão nele", () => {
+  assert.deepEqual([...SCENERY_PAINTERS.keys()].sort(), [...CENTER_KINDS, ...SOUTH_KINDS]);
   assert.deepEqual(Object.keys(SOUTH_SCENERY_PAINTERS).sort(), SOUTH_KINDS);
-  for (const kind of SOUTH_KINDS) assert.equal(typeof regionPainterFor(kind), "function", kind);
+  assert.deepEqual(Object.keys(CENTER_SCENERY_PAINTERS).sort(), CENTER_KINDS);
+  for (const kind of [...SOUTH_KINDS, ...CENTER_KINDS]) assert.equal(typeof regionPainterFor(kind), "function", kind);
   for (const kind of COMMON_KINDS) assert.equal(regionPainterFor(kind), undefined, `${kind} é comum`);
   assert.equal(regionPainterFor("nada"), undefined);
   assert.equal(regionPainterFor(""), undefined);
@@ -105,7 +108,8 @@ test("cada pintor regional desenha o seu tipo e nunca cai na fogueira quando fal
   assert.equal(draw({ kind: "south-tower", towerId: "miragem", variant: 0, x: 0, y: 0 }).created, 1);
   assert.equal(draw({ kind: "south-decor", decorKind: "cactus", variant: 0.3, x: 0, y: 0 }).created, 1);
   assert.equal(draw({ kind: "south-city", cityKind: "building", variant: 0, x: 0, y: 0 }).created, 1);
-  for (const kind of SOUTH_KINDS) {
+  assert.equal(draw({ kind: "center-capital", capitalKind: "gate", variant: 0, x: 0, y: 0 }).created, 1, "a muralha da capital: um sprite");
+  for (const kind of [...SOUTH_KINDS, ...CENTER_KINDS]) {
     const missing = draw({ kind, variant: 0.5, x: 3, y: 4 } as Scenery);
     assert.deepEqual(missing, { calls: 0, created: 0 }, `${kind} sem o campo do tipo não desenha nada (e a fogueira antiga não aparece)`);
   }
@@ -115,8 +119,8 @@ test("cada pintor regional desenha o seu tipo e nunca cai na fogueira quando fal
 test("os tipos comuns continuam no scenery.ts e os regionais saíram dele", () => {
   const source = readFileSync("src/render/scenery.ts", "utf8");
   for (const kind of COMMON_KINDS.filter(k => k !== "fire")) assert.match(source, new RegExp(`prop\\.kind === "${kind}"`), kind);
-  for (const kind of SOUTH_KINDS) assert.equal(source.includes(`prop.kind === "${kind}"`), false, `${kind} saiu do scenery.ts`);
-  assert.equal(/south\/(ruins|towers|city|decor)\//.test(source), false, "scenery.ts não importa as peças de região cadastradas");
+  for (const kind of [...SOUTH_KINDS, ...CENTER_KINDS]) assert.equal(source.includes(`prop.kind === "${kind}"`), false, `${kind} saiu do scenery.ts`);
+  assert.equal(/(south\/(ruins|towers|city|decor)|center\/capital)\//.test(source), false, "scenery.ts não importa as peças de região cadastradas");
   assert.match(source, /regionPainterFor\(prop\.kind\)/);
   assert.match(source, /regional\(\{ ctx, prop, time, flip \}\)/);
   assert.ok(source.split("\n").length < 400, "scenery.ts encolheu: " + source.split("\n").length + " linhas");
@@ -124,8 +128,10 @@ test("os tipos comuns continuam no scenery.ts e os regionais saíram dele", () =
 
 test("o cadastro só conhece regiões: ele importa apenas dos pintores de região e cada pintor mora na pasta da sua peça", () => {
   const registry = readFileSync("src/render/props/registry.ts", "utf8");
-  assert.deepEqual([...registry.matchAll(/from "(\.[^"]+)"/g)].map(m => m[1]).sort(), ["../south/sceneryPainters.ts", "./types.ts"]);
+  assert.deepEqual([...registry.matchAll(/from "(\.[^"]+)"/g)].map(m => m[1]).sort(), ["../center/sceneryPainters.ts", "../south/sceneryPainters.ts", "./types.ts"]);
   const south = readFileSync("src/render/south/sceneryPainters.ts", "utf8");
   assert.deepEqual([...south.matchAll(/from "\.\/(\w+)\/sceneryPainter\.ts"/g)].map(m => m[1]).sort(), ["city", "decor", "ruins", "towers"]);
-  assert.match(registry, /const REGION_PAINTERS: readonly RegionPainters\[\] = \[SOUTH_SCENERY_PAINTERS\];/);
+  const center = readFileSync("src/render/center/sceneryPainters.ts", "utf8");
+  assert.deepEqual([...center.matchAll(/from "\.\/(\w+)\/sceneryPainter\.ts"/g)].map(m => m[1]).sort(), ["capital"]);
+  assert.match(registry, /const REGION_PAINTERS: readonly RegionPainters\[\] = \[SOUTH_SCENERY_PAINTERS, CENTER_SCENERY_PAINTERS\];/);
 });

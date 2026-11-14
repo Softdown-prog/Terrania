@@ -5,4 +5,6 @@ export { CAPITAL_DISTRICTS, type CapitalDistrictId } from "./districts.ts";
 export { CAPITAL_PLOTS, doorApproach, inPlot, type CapitalPlot, type DoorSide, type PlotKind } from "./plots.ts";
 export { capitalGround } from "./ground.ts";
 export { capitalSafe, nearCapital } from "./safe.ts";
-export { CAPITAL_MONUMENT, capitalBlocks } from "./blocks.ts";
+export { CAPITAL_MONUMENT, capitalBlocks, capitalWallBlocks } from "./blocks.ts";
+export { CAPITAL_TOWERS, TOWER_TILES, isCapitalTowerTile, type CapitalTower } from "./towers.ts";
+export { CAPITAL_PROPS, WALL_SEGMENT_TILES, type CapitalProp, type CapitalPropKind } from "./props.ts";

@@ -26,16 +26,22 @@ Grande Avenida (norte-sul, 9 de largura), Avenida dos Povos (leste-oeste, 5), **
 
 Uma guilda para cada herói: **cavaleiro, arqueiro e mago**. O **Arquivo dos Exploradores** é o coração dos mistérios: lá o que os heróis descobrem vira registro.
 
-## O que já existe (parte 1: a planta)
+## O que já existe
+**Parte 1 — a planta** ([ADR 0055](adr/0055-capital-do-centro-planta.md)):
 - Terreno: dentro da muralha só há rua (caminho) e grama, sem árvore, pedra nem água, em qualquer semente.
 - Zona protegida: dentro da muralha (sem a muralha), vale para todos os monstros da superfície, como no Poço Negro e na Vila da Travessia.
 - Nenhuma caverna nasce dentro da capital nem na terra limpa em volta.
-- A planta (`capitalBlocks`) já sabe quais tiles são muralha, fundação e monumento, mas **não está ligada à colisão**: sem a arte da muralha e dos edifícios, seria parede invisível.
+
+**Parte 2 — muralha, portões e torres** ([ADR 0056](adr/0056-capital-muralha-portoes-torres.md)):
+- A muralha de calcário com ameias (134 peças), os dois **Grandes Portões** de 9 tiles, com a grade erguida, lanternas e o brasão do sol dourado, e **8 torres redondas**: 4 de canto com telhado cônico de ardósia e pendão azul, e 4 de portão com coroa de ameias e o estandarte da capital.
+- A muralha e as torres **bloqueiam** o herói de verdade; só se entra pelos portões.
+- A arte mora na pasta da região central (`src/render/center/`), com cores próprias: calcário claro, ardósia, o azul e o dourado da capital.
+- Os terrenos dos edifícios e o monumento da praça ainda **não** bloqueiam: sem a arte deles, seria parede invisível.
 
 ## O que vem depois
-1. Muralha, portões, torres, ligados à colisão (arte e colisão juntas).
-2. Piso da cidade e praça com o monumento.
-3. Edifícios, por bairro (um arquivo por edifício, na pasta da região central).
-4. Moradores e diálogos, interiores, missões e o serviço de cada guilda.
+1. Piso da cidade e praça com o monumento da Concórdia (arte e colisão juntas).
+2. Edifícios, por bairro (um arquivo por edifício, na pasta da região central), com a colisão ligada junto.
+3. Moradores e diálogos, interiores, missões e o serviço de cada guilda.
+4. Tochas e fogo nos portões e nas torres.
 
-Ver [ADR 0055](adr/0055-capital-do-centro-planta.md).
+Ver [ADR 0055](adr/0055-capital-do-centro-planta.md) e [ADR 0056](adr/0056-capital-muralha-portoes-torres.md).

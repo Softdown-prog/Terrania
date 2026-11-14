@@ -4,16 +4,19 @@ import type { TowerId } from "../../world/towers/types.ts";
 import type { DecorKind } from "../../world/south/decor/index.ts";
 import type { RockStyle } from "../rocks/index.ts";
 import type { RuinLayer } from "../south/ruins/index.ts";
+import type { CapitalPropKind } from "../../world/center/capital/index.ts";
 
 /** Um objeto do cenário a desenhar (ADR 0048). Os campos `south-*` só valem para o tipo da região correspondente. */
 export interface Scenery {
-  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-tower" | "south-city" | "south-decor";
+  kind: "tree" | "rock" | "arch" | "sign" | "fire" | "house" | "regional-landmark" | "south-ruin" | "south-tower" | "south-city" | "south-decor" | "center-capital";
   /** Só `rock`: o estilo da pedra, escolhido pelo bioma (ausente = pedra de musgo de sempre). */
   rockStyle?: RockStyle;
   /** Só `south-decor`: o tipo de decoração do deserto (sem colisão, só visual). */
   decorKind?: DecorKind;
   /** Só `south-tower`: qual torre desenhar. */
   towerId?: TowerId;
+  /** Só `center-capital`: qual peça da muralha da capital desenhar. */
+  capitalKind?: CapitalPropKind;
   cityKind?: SouthCityPropKind;
   cityId?: string;
   landmarkKind?: RegionalLandmarkKind;

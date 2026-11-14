@@ -12,6 +12,7 @@ import { TOWER_CELL_TILES, getSouthTowerForCell } from "../world/towers/placemen
 import { RUIN_BACK_DEPTH, RUIN_FRONT_DEPTH } from "./south/ruins/depth.ts";
 import { BUILDINGS } from "../world/village.ts";
 import { SOUTH_CITY, SOUTH_CITY_PROPS } from "../world/southCity.ts";
+import { CAPITAL, CAPITAL_PROPS, capitalPoint } from "../world/center/capital/index.ts";
 import { generateChunkSteps } from "./terrain.ts";
 import { PREFETCH_LIMITS, prefetchPlan } from "./chunkPrefetch.ts";
 import type { Scenery } from "./scenery.ts";
@@ -254,6 +255,12 @@ export class WorldRenderer {
         if (prop.x>left-135&&prop.x<right+135&&prop.y>top-155&&prop.y<bottom+45)
           result.push({kind:"south-city",cityKind:prop.kind,
             ...(prop.id?{cityId:prop.id}:{}),x:prop.x,y:prop.y,variant:prop.variant});
+    // A muralha da capital (ADR 0056): custo fixo, e só entra na câmera de quem está perto dela.
+    const capital = capitalPoint(0, 0);
+    if (Math.abs(cameraX - capital.x) < (CAPITAL.maxX + 12) * TILE_SIZE && Math.abs(cameraY - capital.y) < (CAPITAL.maxY + 12) * TILE_SIZE)
+      for (const prop of CAPITAL_PROPS)
+        if (prop.x > left - 190 && prop.x < right + 190 && prop.y > top - 190 && prop.y < bottom + 40)
+          result.push({ kind: "center-capital", capitalKind: prop.kind, x: prop.x, y: prop.y, variant: prop.variant });
     for (const prop of LANDMARKS)
       if (
         prop.x > left - 40 &&

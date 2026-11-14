@@ -71,6 +71,7 @@ import { drawTowerWallFace } from "../../src/render/south/towers/interior/wallFa
 import { drawTowerWindow } from "../../src/render/south/towers/interior/window.ts";
 import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
+import { paintCapitalGate, paintCapitalTower, paintCapitalWall, paintCapitalWallSide } from "../../src/render/center/capital/props/index.ts";
 import { paintCityArena, paintCityBarrel, paintCityBones, paintCityCorral, paintCityGate, paintCityPalm, paintCityPropAnimation, paintCitySign,
   paintCityStall, paintCityTent, paintCityTorch, paintCityWall, paintCityWatchtower, paintCityWell } from "../../src/render/south/city/props/index.ts";
 import { paintBarracaSobreEstacas, paintBazar, paintBuildingFlame, paintCasaDeArgila, paintCasaDeVenenos, paintCasebreDeOssos, paintEstabulo,
@@ -269,6 +270,11 @@ export const ASSETS: ArtAsset[] = [
   ...([0, 1] as const).map<ArtAsset>(v => ({ id: v === 0 ? "Portão das Presas" : "Portão dos Ossos", tier: "structure", fn: "paintCityGate", draw: c => paintCityGate(c, v) })),
   ...([0, 1] as const).map<ArtAsset>(v => ({ id: "torre de guarda " + v, tier: "structure", fn: "paintCityWatchtower", draw: c => paintCityWatchtower(c, v) })),
   { id: "Poço Negro (o poço)", tier: "structure", fn: "paintCityWell", draw: c => paintCityWell(c) },
+  // Muralha, portão e torres da capital dos povos humanos (ADR 0056): um pintor por peça, na pasta da região central.
+  ...([0, 1, 2, 3, 4, 5, 6, 7] as const).map<ArtAsset>(v => ({ id: v < 4 ? "muralha da capital " + v : "meio trecho da muralha da capital " + (v - 4), tier: "structure", fn: "paintCapitalWall", draw: c => paintCapitalWall(c, v) })),
+  ...([0, 1] as const).map<ArtAsset>(v => ({ id: "muro de lado da capital " + v, tier: "structure", fn: "paintCapitalWallSide", draw: c => paintCapitalWallSide(c, v) })),
+  { id: "Grande Portão da capital", tier: "structure", fn: "paintCapitalGate", draw: c => paintCapitalGate(c, 0) },
+  ...([0, 1] as const).map<ArtAsset>(v => ({ id: v === 0 ? "torre de canto da capital" : "torre do portão da capital", tier: "structure", fn: "paintCapitalTower", draw: c => paintCapitalTower(c, v) })),
   { id: "torre de guarda com fogo", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWatchtower(c, 0); paintCityPropAnimation(c, "tower", 0, 0.4); } },
   { id: "poço com reflexos na água", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWell(c); paintCityPropAnimation(c, "well", 0, 0.4); } },
   // Piso da cidade do Poço Negro (ADR 0042): um tile de pedra, um com meio-fio e um da praça com o anel de bronze.
