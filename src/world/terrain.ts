@@ -2,6 +2,7 @@ import { hash2, valueNoise } from './random.ts';
 import { BLACK_LAKE_THRESHOLD, blackLakeNoise } from "./south/blackLake.ts";
 import { villageGround, starterCaveTrail } from './village.ts';
 import { southCityGround, SOUTH_CITY } from './southCity.ts';
+import { capitalGround, nearCapital } from './center/capital/index.ts';
 import { classifyBiome, type Biome } from './biomes.ts';
 import { getTerrainProfile } from './terrainProfiles.ts';
 export const TILE_SIZE = 32;
@@ -26,6 +27,10 @@ export function getTile(tx: number, ty: number, seed: number): Tile {
   const south = southCityGround(tx,ty);
   if (south) return { ground:south, biome:south==='path'?'trail':'ruins',
     tree:false,rock:false,decoration:detail };
+  // Capital dos povos humanos (ADR 0055): dentro da muralha só rua e grama, sem árvore, pedra nem água.
+  const capital = capitalGround(tx, ty);
+  if (capital) return { ground: capital, biome: capital === 'path' ? 'trail' : 'meadow',
+    tree: false, rock: false, decoration: detail };
   const village = villageGround(tx, ty) ?? (starterCaveTrail(tx, ty) ? 'path' : null);
   if (village) return { ground: village, biome: village === 'path' ? 'trail' : 'meadow',
     tree: false, rock: false, decoration: detail };
@@ -63,9 +68,12 @@ export function getTile(tx: number, ty: number, seed: number): Tile {
   else if (!center && p.weights.center > 0.3 &&
       (Math.abs(ty - river) < 3.25 || terrain < 0.322)) ground = 'sand';
   else if (!center && forest > 0.52 && (starterArea || p.humidity > 0.39)) ground = 'forest';
-  const tree = (ground === 'forest' && detail > 0.80) ||
-    (biome === 'tundra' && ground === 'grass' && detail > 0.987);
-  const rock = ground !== 'water' && ground !== 'path' && !center &&
+  // A terra em volta da capital é limpa: lago, margem de areia e mata viram campo, sem árvore nem pedra (ADR 0055).
+  const cleared = nearCapital(tx, ty);
+  if (cleared && (ground === 'water' || ground === 'forest' || ground === 'sand')) ground = 'grass';
+  const tree = !cleared && ((ground === 'forest' && detail > 0.80) ||
+    (biome === 'tundra' && ground === 'grass' && detail > 0.987));
+  const rock = !cleared && ground !== 'water' && ground !== 'path' && !center &&
     detail < (p.weights.west > 0.4 ? 0.09 : 0.022);
   return { ground, biome: ground === 'path' ? 'trail' :
     ground === 'water' && isBlackLake(tx, ty, seed, p.weights.south) ? 'black-lake' :

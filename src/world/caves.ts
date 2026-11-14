@@ -3,6 +3,7 @@ import { isWalkable, TILE_SIZE } from "./terrain.ts";
 import { getWorldRegion } from "./regions.ts";
 import { canMoveOnSeed } from "./collision.ts";
 import { southCitySafe } from "./southCity.ts";
+import { nearCapital } from "./center/capital/index.ts";
 import type { TowerId } from "./towers/types.ts";
 
 /** A cave has its own finite local space; surface tiles never double as dungeon coordinates. */
@@ -35,7 +36,7 @@ export function caveThemeAt(tx: number, ty: number): CaveTheme {
     region === "west" ? "basalt" : region === "east" ? "coastal" : "verdant";
 }
 function safeEntrance(tx: number, ty: number, seed: number): boolean {
-  if (southCitySafe(tx,ty)) return false; // cavernas sempre fora da cidade
+  if (southCitySafe(tx,ty) || nearCapital(tx,ty)) return false; // cavernas sempre fora das cidades e da terra limpa da capital
   if (!canMoveOnSeed((tx + .5) * TILE_SIZE, (ty + .5) * TILE_SIZE, seed)) return false;
   for (let dy = -1; dy <= 1; dy++)
     for (let dx = -1; dx <= 1; dx++)

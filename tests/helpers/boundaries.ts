@@ -1,7 +1,7 @@
 import { posix } from "node:path";
 
 /** Nomes das regiões do mundo: pastas com esse nome, em qualquer camada, guardam só o que aparece naquela região. */
-export const REGIONS: readonly string[] = ["south", "north", "west", "east"];
+export const REGIONS: readonly string[] = ["south", "north", "west", "east", "center"];
 /** Subpastas de região que podem ser usadas por irmãs: o kit compartilhado da região (ADR 0045). */
 export const SHARED_SUBFOLDERS: readonly string[] = ["kit"];
 

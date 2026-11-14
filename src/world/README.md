@@ -49,3 +49,5 @@ fugitivo no mapa da vila, sem criar terrenos secretos nem colisões novas.
 **Camadas (ADR 0016):** `world` fica na base e só importa `world`. O vocabulário das montarias (`mountIds.ts`) mora aqui para que `mountQuests.ts` não dependa de `actors/`; `tests/layering.test.ts` confere. Única exceção hoje: `npcs.ts` (reexportação de `npcs/`), que sai junto com o PR da vila.
 
 **Planta de andar (ADR 0018):** `caveFloor.ts` gera as paredes, a água funda, a colisão e as escadas de um andar de caverna; não sabe nada de criaturas. As entradas continuam em `caves.ts`.
+
+**Capital do Centro (ADR 0055):** `center/capital/` guarda a planta da capital dos povos humanos (muralha, ruas, quatro bairros, 21 terrenos, zona protegida e terra limpa em volta). Só dados determinísticos; a colisão (`capitalBlocks`) ainda não está ligada, porque a muralha e os edifícios só são desenhados nas partes seguintes.
