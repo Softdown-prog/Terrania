@@ -215,7 +215,7 @@ test("nenhuma caverna nasce dentro da capital nem na terra limpa em volta, mesmo
 
 test("cada peça está no seu arquivo, na pasta da região central, e sem relógio nem sorteio solto", () => {
   const files = readdirSync(new URL("../src/world/center/capital/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort();
-  assert.deepEqual(files, ["blocks", "districts", "ground", "index", "layout", "plaza", "plots", "props", "safe", "streets", "towers"]);
+  assert.deepEqual(files, ["blocks", "buildings", "districts", "ground", "index", "layout", "plaza", "plots", "props", "safe", "streets", "towers", "view"]);
   for (const f of files) for (const bad of ["Math.random", "Date.now", "performance.now", "new Date("])
     assert.equal(readFileSync(`src/world/center/capital/${f}.ts`, "utf8").includes(bad), false, `${f}: ${bad}`);
   const terrain = readFileSync("src/world/terrain.ts", "utf8");

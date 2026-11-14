@@ -107,6 +107,7 @@
 - [`docs/adr/0055-capital-do-centro-planta.md`](../../docs/adr/0055-capital-do-centro-planta.md)
 - [`docs/adr/0056-capital-muralha-portoes-torres.md`](../../docs/adr/0056-capital-muralha-portoes-torres.md)
 - [`docs/adr/0057-capital-piso-praca-monumento.md`](../../docs/adr/0057-capital-piso-praca-monumento.md)
+- [`docs/adr/0058-capital-cidadela-dos-povos.md`](../../docs/adr/0058-capital-cidadela-dos-povos.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

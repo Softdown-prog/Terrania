@@ -16,10 +16,10 @@ const kinds = (k: CapitalProp["kind"]): CapitalProp[] => CAPITAL_PROPS.filter(p 
 const px = (lx: number, ly: number) => capitalPoint(lx, ly);
 const passable = (lx: number, ly: number, seed: number): boolean => { const p = px(lx, ly); return canMoveOnSeed(p.x, p.y, seed); };
 
-test("as peças da muralha: 64 trechos de frente (2 de meio trecho), 60 de lado, 2 portões, 8 torres e o monumento, sem repetir id", () => {
-  assert.equal(CAPITAL_PROPS.length, 135);
-  assert.equal(kinds("wall").length, 64); assert.equal(kinds("wall-side").length, 60); assert.equal(kinds("gate").length, 2); assert.equal(kinds("tower").length, 8); assert.equal(kinds("monument").length, 1);
-  assert.equal(new Set(CAPITAL_PROPS.map(p => p.id)).size, 135);
+test("as peças da muralha: 64 trechos de frente (2 de meio trecho), 60 de lado, 2 portões, 8 torres, o monumento e 4 edifícios, sem repetir id", () => {
+  assert.equal(CAPITAL_PROPS.length, 139);
+  assert.equal(kinds("wall").length, 64); assert.equal(kinds("wall-side").length, 60); assert.equal(kinds("gate").length, 2); assert.equal(kinds("tower").length, 8); assert.equal(kinds("monument").length, 1); assert.equal(kinds("building").length, 4);
+  assert.equal(new Set(CAPITAL_PROPS.map(p => p.id)).size, 139);
   assert.deepEqual(kinds("wall").filter(p => p.variant >= 4).map(p => p.id).sort(), ["muro-norte-leste-15", "muro-sul-leste-15"]);
   assert.ok(kinds("wall").every(p => p.variant >= 0 && p.variant <= 7 && Number.isInteger(p.variant)));
   assert.ok(kinds("wall-side").every(p => p.variant === 0 || p.variant === 1));
@@ -137,14 +137,14 @@ test("de fora só se entra pelos portões: com os dois fechados a praça é inal
   assert.equal(viaNorth.has(`0,${CAPITAL.maxY}`), false, "mas a boca do portão sul está fechada neste teste");
 });
 
-test("o monumento bloqueia o jogo (tem arte), os edifícios ainda não (sem arte, seriam parede invisível); a planta já os conhece", () => {
+test("o monumento bloqueia o jogo (tem arte); os terrenos ainda sem edifício não (seriam parede invisível); a planta já os conhece", () => {
   for (const seed of SEEDS) {
-    const conselho = CAPITAL_PLOTS.find(p => p.id === "conselho")!;
-    assert.equal(passable(conselho.x + 3, conselho.y + 3, seed), true, "o terreno do Conselho ainda é livre no jogo");
+    const conselho = CAPITAL_PLOTS.find(p => p.id === "templo")!;
+    assert.equal(passable(conselho.x + 3, conselho.y + 3, seed), true, "o terreno do Templo ainda é livre no jogo");
     assert.equal(passable(0, 0, seed), false, "mas o centro da praça, onde está o monumento, bloqueia");
     assert.equal(passable(3, 0, seed), true, "e a praça em volta do monumento é livre");
   }
-  const c = px(CAPITAL_PLOTS.find(p => p.id === "conselho")!.x + 3, CAPITAL_PLOTS.find(p => p.id === "conselho")!.y + 3);
+  const c = px(CAPITAL_PLOTS.find(p => p.id === "templo")!.x + 3, CAPITAL_PLOTS.find(p => p.id === "templo")!.y + 3);
   assert.equal(capitalWallBlocks(c.x, c.y, 7), false, "a muralha não inclui os edifícios");
 });
 
@@ -155,7 +155,7 @@ test("o desenho recebe as peças da capital perto dela e nenhuma longe, e cada u
   const gate = px(0, CAPITAL.minY), near = world.objects(gate.x, gate.y + 150, 1280, 720).filter(o => o.kind === "center-capital");
   assert.ok(near.length > 8 && near.length < 40, `${near.length} peças na tela do portão norte`);
   for (const o of near) {
-    assert.ok(["wall", "wall-side", "gate", "tower", "monument"].includes(o.capitalKind!), String(o.capitalKind));
+    assert.ok(["wall", "wall-side", "gate", "tower", "monument", "building"].includes(o.capitalKind!), String(o.capitalKind));
     const src = CAPITAL_PROPS.find(p => p.x === o.x && p.y === o.y && p.kind === o.capitalKind)!;
     assert.ok(src, "toda peça entregue vem da lista"); assert.equal(o.variant, src.variant);
   }
@@ -165,5 +165,5 @@ test("o desenho recebe as peças da capital perto dela e nenhuma longe, e cada u
   assert.equal(world.objects(0, 0, 1280, 720).filter(o => o.kind === "center-capital").length, 0, "na vila não há peça da capital");
   assert.equal(world.objects(cx * T + 4000, cy * T, 1280, 720).filter(o => o.kind === "center-capital").length, 0, "longe, também não");
   const all = world.objects(px(0, 0).x, px(0, 0).y, 3200, 2400).filter(o => o.kind === "center-capital");
-  assert.equal(all.length, 135, "com a cidade toda na tela, entram as 135 peças");
+  assert.equal(all.length, 139, "com a cidade toda na tela, entram as 139 peças");
 });

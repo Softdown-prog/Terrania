@@ -28,7 +28,7 @@ export function capitalMonumentBlocks(x: number, y: number, r: number): boolean 
   return Math.hypot(x - c.x, y - c.y) < CAPITAL_MONUMENT.radiusTiles * CAPITAL_TILE + r;
 }
 
-/** Tudo o que é sólido na planta: a muralha, as torres e o monumento, mais as fundações dos edifícios (que ainda não têm arte e por isso não estão ligadas à colisão do jogo). */
+/** Tudo o que é sólido na planta: a muralha, as torres e o monumento, mais as fundações de todos os terrenos. No jogo só bloqueiam os terrenos já construídos (`capitalBuildingBlocks`, em `buildings.ts`); os outros ainda não têm arte. */
 export function capitalBlocks(x: number, y: number, r: number): boolean {
   if (capitalWallBlocks(x, y, r) || capitalMonumentBlocks(x, y, r)) return true;
   if (![x, y, r].every(Number.isFinite)) return true;

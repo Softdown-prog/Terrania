@@ -27,6 +27,8 @@ export function sprite(key: string, w: number, h: number, ox: number, oy: number
   sprites.set(key, made);
   return made;
 }
+/** O sprite de `key` já foi pintado (ou já se sabe que não há Canvas)? Serve para preparar sprites grandes antes de aparecerem. */
+export function hasSprite(key: string): boolean { return sprites.has(key); }
 /** Carimba um sprite já pintado com a origem dele na origem atual do contexto (o sprite vem primeiro: não é um desenhador). */
 export function blit(s: Sprite, ctx: CanvasRenderingContext2D): void {
   ctx.drawImage(s.canvas, -s.ox, -s.oy, s.canvas.width / RES, s.canvas.height / RES);

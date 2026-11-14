@@ -1,10 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
-import { CAPITAL, capitalPoint } from "../../src/world/center/capital/index.ts";
+import { CAPITAL, CAPITAL_PLOTS, capitalPoint, doorApproach } from "../../src/world/center/capital/index.ts";
 
 /**
  * Muralha, Grandes Portões e torres da capital no jogo de verdade (ADR 0056): as peças aparecem pintadas (o azul dos estandartes
  * da capital) e o herói não atravessa o muro, mas passa pelo portão. Praça dos Povos (ADR 0057): o piso de pedra com a rosa dos
- * ventos dourada aparece, e o herói para diante do monumento e passa ao lado dele. O trecho de andar sai das funções do mundo.
+ * ventos dourada aparece, e o herói para diante do monumento e passa ao lado dele. Cidadela dos Povos (ADR 0058): os edifícios
+ * aparecem pintados (o violeta da Academia Arcana), o herói para diante da parede do Conselho e a Grande Avenida, entre o Quartel
+ * e o Conselho, continua aberta até o portão. O trecho de andar sai das funções do mundo.
  */
 const SEED = 842136, T = 32, MAX_WALK_MS = 25_000;
 
@@ -134,6 +136,66 @@ for (const lane of ["eixo", "lado"] as const) {
       expect(end, "e parou antes do centro, sem atravessar o monumento").toBeLessThan(CAPITAL.centerY);
     } else {
       expect(end, "a 6 tiles do eixo a praça é livre: o herói passou da linha do monumento").toBeGreaterThanOrEqual(goal);
+    }
+    expect(errors).toEqual([]);
+  });
+}
+
+/** Pixels violeta (o vidro e os panos da Academia Arcana, #8a5ad0 a #cdaaf5): muito azul, vermelho médio e pouco verde; não pega a ardósia nem o azul-real. */
+async function violetPixels(page: Page): Promise<number> {
+  const png = (await page.locator("canvas#game").screenshot()).toString("base64");
+  return page.evaluate(async data => {
+    const image = new Image();
+    image.src = "data:image/png;base64," + data;
+    await image.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width; canvas.height = image.height;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(image, 0, 0);
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let violet = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i]!, g = pixels[i + 1]!, b = pixels[i + 2]!;
+      if (b >= 190 && r >= 120 && r <= 225 && g >= 70 && g <= 185 && b - g >= 55 && r - g >= 30) violet++;
+    }
+    return violet;
+  }, png);
+}
+
+test("a Cidadela aparece pintada: a Academia Arcana com as janelas e os panos violeta (desktop/Android)", async ({ page }) => {
+  const academy = CAPITAL_PLOTS.find(p => p.id === "academia-arcana")!, [ax, ay] = doorApproach(academy);
+  const errors = await start(page, ax, ay + 1);
+  await page.waitForTimeout(1500);
+  const violet = await violetPixels(page);
+  test.info().annotations.push({ type: "pixels violeta", description: String(violet) });
+  expect(violet, "o violeta da Academia na tela (sem o edifício são uns 300, da interface)").toBeGreaterThan(1200);
+  await page.locator("canvas#game").screenshot({ path: test.info().outputPath("academia-arcana.png") });
+  expect(errors).toEqual([]);
+});
+
+for (const way of ["parede", "avenida"] as const) {
+  test(`andar para o norte na Cidadela: ${way === "parede" ? "o herói para diante da porta do Conselho" : "a Grande Avenida segue aberta entre o Quartel e o Conselho"} (desktop/Android)`, async ({ page }) => {
+    const council = CAPITAL_PLOTS.find(p => p.id === "conselho")!, [ax, ay] = doorApproach(council);
+    const errors = await start(page, way === "parede" ? ax : 0, ay + 1);
+    const first = await readY(page);
+    expect(first).toBe(CAPITAL.centerY + ay + 1);
+    const goal = CAPITAL.centerY + council.y - 1; // a rua atrás dos edifícios, ao norte do terreno
+    await page.keyboard.down("w");
+    let last = first, since = Date.now();
+    const began = Date.now();
+    while (Date.now() - began < MAX_WALK_MS) {
+      await page.waitForTimeout(250);
+      const y = await readY(page);
+      if (way === "avenida" && y <= goal) break;
+      if (y !== last) { last = y; since = Date.now(); } else if (Date.now() - since > 1500) break;
+    }
+    await page.keyboard.up("w");
+    const end = await readY(page);
+    if (way === "parede") {
+      expect(end, "o herói chegou à frente da porta").toBe(CAPITAL.centerY + ay);
+      expect(end, "e não entrou no terreno do edifício").toBeGreaterThanOrEqual(CAPITAL.centerY + council.y + council.h);
+    } else {
+      expect(end, "pela avenida ele passa dos edifícios e chega à rua de trás").toBeLessThanOrEqual(goal);
     }
     expect(errors).toEqual([]);
   });

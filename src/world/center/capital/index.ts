@@ -8,4 +8,6 @@ export { capitalSafe, nearCapital } from "./safe.ts";
 export { CAPITAL_MONUMENT, capitalBlocks, capitalMonumentBlocks, capitalWallBlocks } from "./blocks.ts";
 export { isCapitalPlaza, isCapitalPlazaLocal } from "./plaza.ts";
 export { CAPITAL_TOWERS, TOWER_TILES, isCapitalTowerTile, type CapitalTower } from "./towers.ts";
-export { CAPITAL_PROPS, WALL_SEGMENT_TILES, type CapitalProp, type CapitalPropKind } from "./props.ts";
+export { CAPITAL_BUILDINGS, CAPITAL_BUILT, capitalBuildingBlocks, type CapitalBuilding } from "./buildings.ts";
+export { CAPITAL_PROP_REACH, capitalPropsInView } from "./view.ts";
+export { BUILDING_MARGIN, BUILDING_RISE, CAPITAL_PROPS, WALL_SEGMENT_TILES, type CapitalProp, type CapitalPropKind } from "./props.ts";

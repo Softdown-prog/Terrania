@@ -7,6 +7,7 @@ import type { GearState } from '../engine/character/Equipment.ts';
 import type { WeaponId } from '../engine/character/Weapons.ts';
 import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
+import { warmRegionSprites } from '../render/props/registry.ts';
 import { NPCS, NPC_TALK_RANGE, npcPositionAt } from '../world/npcs.ts';
 import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
@@ -79,6 +80,8 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   ctx.fillStyle = '#506f50'; ctx.fillRect(0, 0, width, height);
   world.render(ctx, cameraX, cameraY, width, height, time, animated);
   world.warmAhead(cameraX, cameraY, width, height, time);
+  // Sprites grandes de cenário (os edifícios da capital) são pintados antes de aparecer, um por quadro (ADR 0058).
+  warmRegionSprites(cameraX, cameraY);
   const left = cameraX - width / 2, top = cameraY - height / 2;
   effects?.renderGround(ctx, left, top);
   const actors: Array<{ y: number; draw: () => void }> = [];

@@ -19,7 +19,7 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/mountLocations.ts`](../../src/world/mountLocations.ts)
 - [`src/world/mountQuests.ts`](../../src/world/mountQuests.ts)
 
-## Todos os arquivos deste módulo (55)
+## Todos os arquivos deste módulo (57)
 
 - [`src/world/README.md`](../../src/world/README.md)
 - [`src/world/aelaQuest.ts`](../../src/world/aelaQuest.ts)
@@ -32,6 +32,7 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/caveStyle/style.ts`](../../src/world/caveStyle/style.ts)
 - [`src/world/caves.ts`](../../src/world/caves.ts)
 - [`src/world/center/capital/blocks.ts`](../../src/world/center/capital/blocks.ts)
+- [`src/world/center/capital/buildings.ts`](../../src/world/center/capital/buildings.ts)
 - [`src/world/center/capital/districts.ts`](../../src/world/center/capital/districts.ts)
 - [`src/world/center/capital/ground.ts`](../../src/world/center/capital/ground.ts)
 - [`src/world/center/capital/index.ts`](../../src/world/center/capital/index.ts)
@@ -42,6 +43,7 @@ Mundo procedural determinístico regionalizado, biomas, dificuldade, tiles, coli
 - [`src/world/center/capital/safe.ts`](../../src/world/center/capital/safe.ts)
 - [`src/world/center/capital/streets.ts`](../../src/world/center/capital/streets.ts)
 - [`src/world/center/capital/towers.ts`](../../src/world/center/capital/towers.ts)
+- [`src/world/center/capital/view.ts`](../../src/world/center/capital/view.ts)
 - [`src/world/collision.ts`](../../src/world/collision.ts)
 - [`src/world/entrances.ts`](../../src/world/entrances.ts)
 - [`src/world/landmarks.ts`](../../src/world/landmarks.ts)

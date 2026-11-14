@@ -73,6 +73,7 @@ import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/south
 import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
 import { paintCapitalGate, paintCapitalMonument, paintCapitalTower, paintCapitalWall, paintCapitalWallSide } from "../../src/render/center/capital/props/index.ts";
 import { paintCapitalPaving } from "../../src/render/center/capital/paving/index.ts";
+import { paintArcaneAcademy, paintCouncilHall, paintGuardBarracks, paintKnightsHall } from "../../src/render/center/capital/buildings/index.ts";
 import { paintCityArena, paintCityBarrel, paintCityBones, paintCityCorral, paintCityGate, paintCityPalm, paintCityPropAnimation, paintCitySign,
   paintCityStall, paintCityTent, paintCityTorch, paintCityWall, paintCityWatchtower, paintCityWell } from "../../src/render/south/city/props/index.ts";
 import { paintBarracaSobreEstacas, paintBazar, paintBuildingFlame, paintCasaDeArgila, paintCasaDeVenenos, paintCasebreDeOssos, paintEstabulo,
@@ -283,6 +284,11 @@ export const ASSETS: ArtAsset[] = [
   { id: "piso da capital: anel da praça", tier: "prop", fn: "paintCapitalPaving", draw: c => paintCapitalPaving(c, { x: 0, y: 0, tx: -4, ty: -803, seed: 842136, plaza: true }) },
   { id: "piso da capital: raio da praça", tier: "prop", fn: "paintCapitalPaving", draw: c => paintCapitalPaving(c, { x: 0, y: 0, tx: -3, ty: -794, seed: 842136, plaza: true }) },
   { id: "monumento da Concórdia", tier: "structure", fn: "paintCapitalMonument", draw: c => paintCapitalMonument(c, 0) },
+  // Edifícios da Cidadela dos Povos (ADR 0058): um pintor por edifício, na pasta da região central.
+  { id: "Salão do Conselho dos Povos", tier: "structure", fn: "paintCouncilHall", draw: paintCouncilHall },
+  { id: "Quartel da Guarda", tier: "structure", fn: "paintGuardBarracks", draw: paintGuardBarracks },
+  { id: "Salão da Ordem dos Cavaleiros", tier: "structure", fn: "paintKnightsHall", draw: paintKnightsHall },
+  { id: "Academia Arcana", tier: "structure", fn: "paintArcaneAcademy", draw: paintArcaneAcademy },
   { id: "torre de guarda com fogo", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWatchtower(c, 0); paintCityPropAnimation(c, "tower", 0, 0.4); } },
   { id: "poço com reflexos na água", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWell(c); paintCityPropAnimation(c, "well", 0, 0.4); } },
   // Piso da cidade do Poço Negro (ADR 0042): um tile de pedra, um com meio-fio e um da praça com o anel de bronze.
