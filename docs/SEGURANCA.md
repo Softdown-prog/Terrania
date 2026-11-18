@@ -13,8 +13,9 @@ Estado inicial (2026-11-18): `npm audit` de produção sem avisos nos dois pacot
 - O servidor Node (`server/`): `health`, presença e mercado. Sem WebSocket e sem contas.
 - Os fluxos de deploy (`.github/workflows/deploy-*.yml`), que usam segredos do repositório.
 
-## Teste ativo com o Strix (planejado)
-O [Strix](https://github.com/usestrix/strix) é uma ferramenta de código aberto (Apache 2.0) que usa agentes de IA para atacar o app rodando e confirmar cada falha com uma prova. Regras para usá-lo aqui:
-- Só contra **uma cópia local** do Terrania e um servidor local, nunca contra o site publicado.
-- Exige Docker e uma chave de um provedor de IA; o **código é enviado ao provedor** escolhido, então a escolha do provedor é do dono do projeto.
-- Os achados entram aqui como issues, com a falha, a prova e a correção; nada é corrigido às cegas.
+## Teste ativo com o Strix (avaliado e adiado)
+O [Strix](https://github.com/usestrix/strix) é uma ferramenta de código aberto (Apache 2.0) que usa agentes de IA para atacar o app rodando e confirmar cada falha com uma prova. Foi avaliado em 2026-11-18 e **o dono decidiu não usá-lo por ora**. Fica registrado o que se apurou, caso a ideia volte:
+- Exige Docker e uma chave de um provedor de IA, com custo por conta do dono (o Strix aceita um teto, `--max-budget`, e modos `quick`, `standard` e `deep`).
+- O **código é enviado ao provedor** escolhido.
+- A pasta alvo é montada **com permissão de escrita** no sandbox: rodar só numa **cópia** do repositório, nunca no repositório de trabalho, e nunca contra o site publicado.
+- A superfície do Terrania é pequena (ver acima) e `npm audit` de produção está limpo; a varredura gratuita acima cobre boa parte do mesmo terreno.
