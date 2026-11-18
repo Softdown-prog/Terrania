@@ -46,6 +46,7 @@
 - [`docs/REVISAO_MULTIPLAYER_20261108.md`](../../docs/REVISAO_MULTIPLAYER_20261108.md)
 - [`docs/ROADMAP.md`](../../docs/ROADMAP.md)
 - [`docs/ROADMAP_ANTERIOR_20261104.md`](../../docs/ROADMAP_ANTERIOR_20261104.md)
+- [`docs/SEGURANCA.md`](../../docs/SEGURANCA.md)
 - [`docs/SITE_E_ALFA_03.md`](../../docs/SITE_E_ALFA_03.md)
 - [`docs/TEMA-PURPURA.md`](../../docs/TEMA-PURPURA.md)
 - [`docs/TYPESCRIPT-7.md`](../../docs/TYPESCRIPT-7.md)

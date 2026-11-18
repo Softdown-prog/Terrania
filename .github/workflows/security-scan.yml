@@ -1,0 +1,45 @@
+name: Segurança do Terrania (CodeQL e dependências, somente análise)
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Toda segunda, 06:17 UTC: novos avisos aparecem mesmo sem commit.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+# Só leitura do código; o CodeQL grava os alertas na aba Segurança. Nada aqui publica ou faz deploy.
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    name: CodeQL (JavaScript e TypeScript)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript-typescript
+
+  dependencias:
+    name: npm audit (dependências de produção, nível alto)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Jogo (raiz)
+        run: npm ci --ignore-scripts && npm audit --omit=dev --audit-level=high
+      - name: Servidor
+        run: npm ci --prefix server --ignore-scripts && npm audit --omit=dev --audit-level=high --prefix server
