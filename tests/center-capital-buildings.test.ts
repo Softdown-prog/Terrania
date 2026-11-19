@@ -28,17 +28,17 @@ const count = (s: Spy, method: string, pick: (a: number[]) => boolean = () => tr
 const paint = (id: string): Spy => spy(c => CAPITAL_BUILDING_ART[id]!.paint(c));
 const tileCenter = (lx: number, ly: number) => capitalPoint(lx, ly);
 
-test("os quatro edifícios construídos são os terrenos da Cidadela, com a base no meio da borda sul e o tamanho do terreno", () => {
-  assert.deepEqual([...CAPITAL_BUILT], ["ordem-cavaleiros", "quartel", "conselho", "academia-arcana"]);
-  assert.equal(CAPITAL_BUILDINGS.length, 4);
-  assert.deepEqual(CAPITAL_PLOTS.filter(p => p.district === "cidadela").map(p => p.id).sort(), [...CAPITAL_BUILT].sort(), "a Cidadela inteira está construída");
+test("os oito edifícios construídos são os terrenos da Cidadela e da Alameda, com a base no meio da borda sul e o tamanho do terreno", () => {
+  assert.deepEqual([...CAPITAL_BUILT], ["ordem-cavaleiros", "quartel", "conselho", "academia-arcana", "arqueiros", "hospedaria", "casa-da-moeda", "templo"]);
+  assert.equal(CAPITAL_BUILDINGS.length, 8);
+  assert.deepEqual(CAPITAL_PLOTS.filter(p => p.district === "cidadela" || p.district === "alameda").map(p => p.id).sort(), [...CAPITAL_BUILT].sort(), "a Cidadela e a Alameda inteiras estão construídas");
   for (const [i, b] of CAPITAL_BUILDINGS.entries()) {
     const plot = CAPITAL_PLOTS.find(p => p.id === CAPITAL_BUILT[i])!;
     assert.equal(b.id, plot.id); assert.equal(b.plot, plot); assert.equal(b.name, plot.name);
     assert.equal(b.width, plot.w * T); assert.equal(b.depth, plot.h * T);
     assert.equal(b.x, (CAPITAL.centerX + plot.x + plot.w / 2) * T, "meio do terreno");
     assert.equal(b.y, (CAPITAL.centerY + plot.y + plot.h) * T, "borda sul do terreno");
-    assert.equal(plot.door, "s", "a porta dá para a Rua da Cidadela, ao sul");
+    assert.equal(plot.door, "s", "a porta dá para a rua ao sul do bairro");
   }
 });
 
@@ -61,7 +61,7 @@ test("o bloqueio de um edifício é o terreno inteiro mais o corpo de quem anda,
   assert.equal(capitalBuildingBlocks(Number.NaN, 0, 7), true); assert.equal(capitalBuildingBlocks(0, 0, Number.POSITIVE_INFINITY), true);
 });
 
-test("no jogo, todo tile dos quatro edifícios bloqueia o herói; a frente da porta, as ruas em volta e os terrenos sem edifício seguem livres", () => {
+test("no jogo, todo tile dos oito edifícios bloqueia o herói; a frente da porta, as ruas em volta e os terrenos sem edifício seguem livres", () => {
   for (const seed of SEEDS) {
     let solid = 0, ring = 0, open = 0;
     for (const b of CAPITAL_BUILDINGS) {
@@ -79,8 +79,8 @@ test("no jogo, todo tile dos quatro edifícios bloqueia o herói; a frente da po
     }
     for (const p of CAPITAL_PLOTS.filter(p => !CAPITAL_BUILT.includes(p.id as never)))
       for (let ly = p.y; ly < p.y + p.h; ly++) for (let lx = p.x; lx < p.x + p.w; lx++) { const c = tileCenter(lx, ly); assert.equal(canMoveOnSeed(c.x, c.y, seed), true, `${p.id} bloqueado em ${lx},${ly} sem ter arte`); open++; }
-    assert.equal(solid, 12 * 11 + 18 * 11 + 18 * 11 + 11 * 11);
-    assert.ok(ring > 150, `ruas em volta conferidas: ${ring}`); assert.ok(open > 1500, `tiles de terrenos sem edifício: ${open}`);
+    assert.equal(solid, 12 * 11 + 18 * 11 + 18 * 11 + 11 * 11 + 12 * 13 + 11 * 13 * 3, "tiles dos oito edifícios");
+    assert.ok(ring > 150, `ruas em volta conferidas: ${ring}`); assert.ok(open > 1000, `tiles de terrenos sem edifício: ${open}`);
     for (let ly = CAPITAL.minY + 1; ly <= -3; ly++) { const c = tileCenter(0, ly); assert.equal(canMoveOnSeed(c.x, c.y, seed), true, `Grande Avenida em ${ly}`); }
   }
   assert.match(readFileSync("src/world/collision.ts", "utf8"), /capitalMonumentBlocks\(x, y, radius\) \|\| capitalBuildingBlocks\(x, y, radius\)/);
@@ -88,7 +88,7 @@ test("no jogo, todo tile dos quatro edifícios bloqueia o herói; a frente da po
 
 test("cada edifício é uma peça da capital: a variação é a posição na lista e o alcance cobre o sprite inteiro", () => {
   const props = CAPITAL_PROPS.filter(p => p.kind === "building");
-  assert.equal(props.length, 4);
+  assert.equal(props.length, 8);
   for (const [i, b] of CAPITAL_BUILDINGS.entries()) {
     const prop = props[i]!, art = CAPITAL_BUILDING_ART[b.id]!;
     assert.deepEqual([prop.x, prop.y, prop.variant, prop.id], [b.x, b.y, i, b.id]);
@@ -169,15 +169,15 @@ test("o cadastro tem um pintor por edifício construído, com o tamanho do terre
     assert.equal(capitalBuildingArtFor(i), art); assert.equal(capitalBuildingArtFor(i + 0.2), art);
     assert.deepEqual(buildingBox(art.size), [b.width + BUILDING_PAD.left + BUILDING_PAD.right, b.depth + art.size.rise + BUILDING_PAD.bottom, b.width / 2 + BUILDING_PAD.left, b.depth + art.size.rise]);
   }
-  for (const bad of [-1, 4, 99, Number.NaN, Number.POSITIVE_INFINITY]) assert.equal(capitalBuildingArtFor(bad), undefined, String(bad));
-  assert.deepEqual(readdirSync(new URL("../src/render/center/capital/buildings/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort(), ["academy", "barracks", "council", "index", "kit", "knights", "palette"]);
-  for (const f of ["academy", "barracks", "council", "kit", "knights", "palette"]) for (const bad of ["Math.random", "Date.now", "performance.now", "new Date(", "render/south", "world/south"])
+  for (const bad of [-1, 8, 99, Number.NaN, Number.POSITIVE_INFINITY]) assert.equal(capitalBuildingArtFor(bad), undefined, String(bad));
+  assert.deepEqual(readdirSync(new URL("../src/render/center/capital/buildings/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort(), ["academy", "archers", "barracks", "council", "index", "inn", "kit", "knights", "mint", "palette", "temple", "timber"]);
+  for (const f of ["academy", "archers", "barracks", "council", "inn", "kit", "knights", "mint", "palette", "temple", "timber"]) for (const bad of ["Math.random", "Date.now", "performance.now", "new Date(", "render/south", "world/south"])
     assert.equal(readFileSync(`src/render/center/capital/buildings/${f}.ts`, "utf8").includes(bad), false, `${f}: ${bad}`);
 });
 
 test("cada edifício tem um desenho próprio, estável, com save e restore em par, e tudo o que pinta cabe no sprite", () => {
   const sigs = CAPITAL_BUILT.map(id => signature(c => CAPITAL_BUILDING_ART[id]!.paint(c)));
-  assert.equal(new Set(sigs).size, 4, "quatro desenhos diferentes");
+  assert.equal(new Set(sigs).size, 8, "oito desenhos diferentes");
   assert.deepEqual(CAPITAL_BUILT.map(id => signature(c => CAPITAL_BUILDING_ART[id]!.paint(c))), sigs, "estável");
   for (const id of CAPITAL_BUILT) {
     const art = CAPITAL_BUILDING_ART[id]!, [w, h, ox, oy] = buildingBox(art.size), s = paint(id);
@@ -302,11 +302,11 @@ test("o cenário põe cada edifício no cache, um sprite por edifício no tamanh
     assert.deepEqual([made[i]!.width, made[i]!.height], [w * RES, h * RES], `${b.id}: tamanho do sprite`);
     assert.equal(hasSprite(capitalBuildingSpriteKey(i)), true);
   }
-  assert.equal(made.length, 4);
-  for (let i = 0; i < 4; i++) draw(i);
-  assert.equal(made.length, 4, "desenhar de novo reaproveita os sprites");
-  for (const bad of [4, -1, Number.NaN]) { assert.equal(draw(bad).calls.drawImage ?? 0, 0, `variação ${bad}`); assert.equal(capitalBuildingSprite(bad), undefined); }
-  assert.equal(made.length, 4);
+  assert.equal(made.length, 8);
+  for (let i = 0; i < 8; i++) draw(i);
+  assert.equal(made.length, 8, "desenhar de novo reaproveita os sprites");
+  for (const bad of [8, -1, Number.NaN]) { assert.equal(draw(bad).calls.drawImage ?? 0, 0, `variação ${bad}`); assert.equal(capitalBuildingSprite(bad), undefined); }
+  assert.equal(made.length, 8);
   // sem Canvas (no Node), o edifício é pintado direto no contexto
   clearSceneryCache();
   const direct = spy(c => renderScenery(c, { kind: "center-capital", capitalKind: "building", x: 5, y: 5, variant: 2 } as unknown as Scenery, 0, 0, 0));
@@ -323,18 +323,18 @@ test("os sprites dos edifícios são preparados um por quadro, só com a câmera
     assert.equal(warmCapitalSprites(0, 0), false, "na vila"); assert.equal(warmCapitalSprites(center.x + edgeX, center.y), false, "na borda do alcance");
     assert.equal(warmCapitalSprites(center.x, center.y - edgeY), false); assert.equal(warmCapitalSprites(Number.NaN, center.y), false); assert.equal(warmCapitalSprites(center.x, Number.POSITIVE_INFINITY), false);
     assert.equal(created, 0, "longe da capital nada é pintado");
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 8; i++) {
       assert.equal(warmCapitalSprites(center.x + edgeX - 1, center.y - edgeY + 1), true, `quadro ${i}: pinta um`);
       assert.equal(created, i + 1, "um sprite por chamada"); assert.equal(hasSprite(capitalBuildingSpriteKey(i)), true, "na ordem da lista");
-      if (i < 3) assert.equal(hasSprite(capitalBuildingSpriteKey(i + 1)), false);
+      if (i < 7) assert.equal(hasSprite(capitalBuildingSpriteKey(i + 1)), false);
     }
-    assert.equal(warmCapitalSprites(center.x, center.y), false, "com todos prontos, não há o que fazer"); assert.equal(created, 4);
+    assert.equal(warmCapitalSprites(center.x, center.y), false, "com todos prontos, não há o que fazer"); assert.equal(created, 8);
     // o que o preparo pintou é o mesmo sprite que o cenário carimba
     const s = spy(c => renderScenery(c, { kind: "center-capital", capitalKind: "building", x: 0, y: 0, variant: 1 } as unknown as Scenery, 0, 0, 0));
-    assert.equal(s.calls.drawImage, 1); assert.equal(created, 4);
+    assert.equal(s.calls.drawImage, 1); assert.equal(created, 8);
     clearSceneryCache();
     assert.equal(warmRegionSprites(0, 0), false);
-    assert.equal(warmRegionSprites(center.x, center.y), true, "o cadastro das regiões chama o preparo da capital"); assert.equal(created, 5);
+    assert.equal(warmRegionSprites(center.x, center.y), true, "o cadastro das regiões chama o preparo da capital"); assert.equal(created, 9);
   });
   clearSceneryCache();
   const scene = readFileSync("src/ui/CanvasScene.ts", "utf8");

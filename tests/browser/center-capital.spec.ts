@@ -6,7 +6,9 @@ import { CAPITAL, CAPITAL_PLOTS, capitalPoint, doorApproach } from "../../src/wo
  * da capital) e o herói não atravessa o muro, mas passa pelo portão. Praça dos Povos (ADR 0057): o piso de pedra com a rosa dos
  * ventos dourada aparece, e o herói para diante do monumento e passa ao lado dele. Cidadela dos Povos (ADR 0058): os edifícios
  * aparecem pintados (o violeta da Academia Arcana), o herói para diante da parede do Conselho e a Grande Avenida, entre o Quartel
- * e o Conselho, continua aberta até o portão. O trecho de andar sai das funções do mundo.
+ * e o Conselho, continua aberta até o portão. Alameda das Guildas (ADR 0060): o telhado de cobre do Templo e o de barro da
+ * Hospedaria aparecem, o herói para diante da porta do Templo e a avenida segue aberta entre a Hospedaria e a Casa da Moeda.
+ * O trecho de andar sai das funções do mundo.
  */
 const SEED = 842136, T = 32, MAX_WALK_MS = 25_000;
 
@@ -195,7 +197,79 @@ for (const way of ["parede", "avenida"] as const) {
       expect(end, "o herói chegou à frente da porta").toBe(CAPITAL.centerY + ay);
       expect(end, "e não entrou no terreno do edifício").toBeGreaterThanOrEqual(CAPITAL.centerY + council.y + council.h);
     } else {
-      expect(end, "pela avenida ele passa dos edifícios e chega à rua de trás").toBeLessThanOrEqual(goal);
+      expect(end, "pela passagem ele chega ao fim da Alameda e à rua de trás").toBeLessThanOrEqual(goal);
+    }
+    expect(errors).toEqual([]);
+  });
+}
+
+/** Conta pixels de uma faixa de cor: `test` recebe (r, g, b) e diz se o pixel conta. */
+async function countPixels(page: Page, kind: "copper" | "clay"): Promise<number> {
+  const png = (await page.locator("canvas#game").screenshot()).toString("base64");
+  return page.evaluate(async ({ data, which }) => {
+    const image = new Image();
+    image.src = "data:image/png;base64," + data;
+    await image.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width; canvas.height = image.height;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(image, 0, 0);
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let n = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i]!, g = pixels[i + 1]!, b = pixels[i + 2]!;
+      // cobre do templo (#4fa896 a #9fe0cc): verde-azulado, com azul alto; a grama tem azul baixo e a interface é escura
+      if (which === "copper" ? (g >= 130 && b >= 115 && r <= 150 && g - r >= 45 && b - r >= 35) : (r >= 150 && r <= 235 && g >= 60 && g <= 135 && b >= 35 && b <= 105 && r - g >= 60 && r - b >= 85)) n++;
+    }
+    return n;
+  }, { data: png, which: kind });
+}
+
+test("a Alameda aparece pintada: o telhado de cobre do Templo e o de barro da Hospedaria (desktop/Android)", async ({ page }) => {
+  const temple = CAPITAL_PLOTS.find(p => p.id === "templo")!, [tx, ty] = doorApproach(temple);
+  const errors = await start(page, tx, ty + 1);
+  await page.waitForTimeout(1500);
+  const copper = await countPixels(page, "copper");
+  test.info().annotations.push({ type: "pixels cobre", description: String(copper) });
+  expect(copper, "o telhado de cobre do Templo na tela").toBeGreaterThan(5000);
+  await page.locator("canvas#game").screenshot({ path: test.info().outputPath("templo.png") });
+  expect(errors).toEqual([]);
+});
+
+test("a Hospedaria aparece pintada com o telhado de barro (desktop/Android)", async ({ page }) => {
+  const inn = CAPITAL_PLOTS.find(p => p.id === "hospedaria")!, [ix, iy] = doorApproach(inn);
+  const errors = await start(page, ix, iy + 1);
+  await page.waitForTimeout(1500);
+  const clay = await countPixels(page, "clay");
+  test.info().annotations.push({ type: "pixels barro", description: String(clay) });
+  expect(clay, "o telhado de barro da Hospedaria na tela").toBeGreaterThan(5000);
+  expect(errors).toEqual([]);
+});
+
+for (const way of ["parede", "avenida"] as const) {
+  test(`andar para o norte na Alameda: ${way === "parede" ? "o herói para diante da porta do Templo" : "a passagem entre a Hospedaria e a Casa da Moeda segue aberta"} (desktop/Android)`, async ({ page }) => {
+    const temple = CAPITAL_PLOTS.find(p => p.id === "templo")!, [ax, ay] = doorApproach(temple);
+    // a 6 tiles do eixo: o centro da praça é o monumento, e daí a passagem segue entre a Hospedaria (x -22..-12) e a Casa da Moeda (x 12..22)
+    const errors = await start(page, way === "parede" ? ax : 6, ay + 1);
+    const first = await readY(page);
+    expect(first).toBe(CAPITAL.centerY + ay + 1);
+    const goal = CAPITAL.centerY + temple.y - 1; // a rua atrás dos edifícios, ao norte do terreno
+    await page.keyboard.down("w");
+    let last = first, since = Date.now();
+    const began = Date.now();
+    while (Date.now() - began < MAX_WALK_MS) {
+      await page.waitForTimeout(250);
+      const y = await readY(page);
+      if (way === "avenida" && y <= goal) break;
+      if (y !== last) { last = y; since = Date.now(); } else if (Date.now() - since > 1500) break;
+    }
+    await page.keyboard.up("w");
+    const end = await readY(page);
+    if (way === "parede") {
+      expect(end, "o herói chegou à frente da porta").toBe(CAPITAL.centerY + ay);
+      expect(end, "e não entrou no terreno do edifício").toBeGreaterThanOrEqual(CAPITAL.centerY + temple.y + temple.h);
+    } else {
+      expect(end, "pela passagem ele chega ao fim da Alameda e à rua de trás").toBeLessThanOrEqual(goal);
     }
     expect(errors).toEqual([]);
   });

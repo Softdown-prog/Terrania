@@ -110,6 +110,7 @@
 - [`docs/adr/0057-capital-piso-praca-monumento.md`](../../docs/adr/0057-capital-piso-praca-monumento.md)
 - [`docs/adr/0058-capital-cidadela-dos-povos.md`](../../docs/adr/0058-capital-cidadela-dos-povos.md)
 - [`docs/adr/0059-mapa-pela-metade.md`](../../docs/adr/0059-mapa-pela-metade.md)
+- [`docs/adr/0060-capital-alameda-das-guildas.md`](../../docs/adr/0060-capital-alameda-das-guildas.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

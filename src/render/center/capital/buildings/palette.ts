@@ -12,3 +12,15 @@ export const TERRACE: Ramp = { light: "#bdb8ab", base: "#969186", dark: "#605c55
 export const STRAW: Ramp = { light: "#ecd68a", base: "#c9a850", dark: "#8a6c2a" };
 /** O escuro de dentro de uma porta ou de uma fresta. */
 export const HOLLOW = "#0d1118";
+
+/** Cores da Alameda das Guildas (ADR 0060): a guilda dos arqueiros (verde-floresta), as telhas de madeira, de barro e de cobre. */
+export const FOREST: Ramp = { light: "#8dc26a", base: "#4f8a3e", dark: "#2b5a2a" };
+export const SHINGLE: Ramp = { light: "#b08a5a", base: "#7d5a38", dark: "#4a3320" };
+export const TERRACOTTA: Ramp = { light: "#e08a62", base: "#b4502f", dark: "#6e2c1a" };
+export const COPPER: Ramp = { light: "#9fe0cc", base: "#4fa896", dark: "#2a6460" };
+/** Mármore claro do templo, o reboco das casas de madeira aparente e o escuro das vigas. */
+export const MARBLE: Ramp = { light: "#f6f1e6", base: "#d6cfbd", dark: "#948d7c" };
+export const PLASTER: Ramp = { light: "#f3ead2", base: "#dccfae", dark: "#a89b7a" };
+export const TIMBER: Ramp = { light: "#7a5436", base: "#553823", dark: "#35221a" };
+/** Listras de toldo: vermelho e creme. */
+export const AWNING = { red: "#b8322e", redDark: "#7d1f1f", cream: "#f0e6cc" } as const;

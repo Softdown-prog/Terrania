@@ -48,9 +48,14 @@ Uma guilda para cada herói: **cavaleiro, arqueiro e mago**. O **Arquivo dos Exp
 - Os quatro **bloqueiam** o herói; a frente das portas e as ruas em volta ficam livres. As portas ainda não abrem (sem interiores).
 - Os outros 17 terrenos continuam sem edifício e **livres**.
 
+**Parte 5 — a Alameda das Guildas** ([ADR 0060](adr/0060-capital-alameda-das-guildas.md)):
+- Os quatro edifícios do segundo bairro: a **Irmandade dos Arqueiros** (pavilhão de madeira aparente com torre de vigia verde, alvos de treino; verde-floresta), a **Hospedaria dos Viajantes** (estalagem de telhado de barro, chaminés que fumegam, toldo listrado e placa), a **Casa da Moeda e dos Mercadores** (banco de pedra com arcada, feira de toldos, cofre e a grande moeda do sol) e o **Templo da Concórdia** (mármore e cobre, pórtico, campanário com sino e sol de ouro, braseiros acesos).
+- Os oito edifícios (Cidadela e Alameda) **bloqueiam** o herói; a frente das portas e as ruas ficam livres. As portas ainda não abrem.
+- Os 13 terrenos restantes (Ofícios e Bairro Residencial) continuam sem edifício e **livres**; todos têm a porta ao norte.
+
 ## O que vem depois
-1. Os edifícios dos outros três bairros (Alameda das Guildas, Quarteirão dos Ofícios e Saberes e Bairro Residencial e Cura), com a colisão ligada junto.
+1. Os edifícios dos dois bairros que faltam (Quarteirão dos Ofícios e Saberes e Bairro Residencial e Cura, de porta ao norte), com a colisão ligada junto; antes, soltar os sprites da memória fora da cidade.
 2. Moradores e diálogos, interiores, missões e o serviço de cada guilda.
 3. Tochas e fogo nos portões e nas torres.
 
-Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md) e [ADR 0058](adr/0058-capital-cidadela-dos-povos.md).
+Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md), [ADR 0058](adr/0058-capital-cidadela-dos-povos.md) e [ADR 0060](adr/0060-capital-alameda-das-guildas.md).

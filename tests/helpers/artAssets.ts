@@ -73,7 +73,7 @@ import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/south
 import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
 import { paintCapitalGate, paintCapitalMonument, paintCapitalTower, paintCapitalWall, paintCapitalWallSide } from "../../src/render/center/capital/props/index.ts";
 import { paintCapitalPaving } from "../../src/render/center/capital/paving/index.ts";
-import { paintArcaneAcademy, paintCouncilHall, paintGuardBarracks, paintKnightsHall } from "../../src/render/center/capital/buildings/index.ts";
+import { paintArcaneAcademy, paintArchersLodge, paintConcordTemple, paintCouncilHall, paintGuardBarracks, paintKnightsHall, paintMintHall, paintTravelersInn } from "../../src/render/center/capital/buildings/index.ts";
 import { paintCityArena, paintCityBarrel, paintCityBones, paintCityCorral, paintCityGate, paintCityPalm, paintCityPropAnimation, paintCitySign,
   paintCityStall, paintCityTent, paintCityTorch, paintCityWall, paintCityWatchtower, paintCityWell } from "../../src/render/south/city/props/index.ts";
 import { paintBarracaSobreEstacas, paintBazar, paintBuildingFlame, paintCasaDeArgila, paintCasaDeVenenos, paintCasebreDeOssos, paintEstabulo,
@@ -289,6 +289,11 @@ export const ASSETS: ArtAsset[] = [
   { id: "Quartel da Guarda", tier: "structure", fn: "paintGuardBarracks", draw: paintGuardBarracks },
   { id: "Salão da Ordem dos Cavaleiros", tier: "structure", fn: "paintKnightsHall", draw: paintKnightsHall },
   { id: "Academia Arcana", tier: "structure", fn: "paintArcaneAcademy", draw: paintArcaneAcademy },
+  // Edifícios da Alameda das Guildas (ADR 0060).
+  { id: "Irmandade dos Arqueiros", tier: "structure", fn: "paintArchersLodge", draw: paintArchersLodge },
+  { id: "Hospedaria dos Viajantes", tier: "structure", fn: "paintTravelersInn", draw: paintTravelersInn },
+  { id: "Casa da Moeda e dos Mercadores", tier: "structure", fn: "paintMintHall", draw: paintMintHall },
+  { id: "Templo da Concórdia", tier: "structure", fn: "paintConcordTemple", draw: paintConcordTemple },
   { id: "torre de guarda com fogo", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWatchtower(c, 0); paintCityPropAnimation(c, "tower", 0, 0.4); } },
   { id: "poço com reflexos na água", tier: "structure", fn: "paintCityPropAnimation", draw: c => { paintCityWell(c); paintCityPropAnimation(c, "well", 0, 0.4); } },
   // Piso da cidade do Poço Negro (ADR 0042): um tile de pedra, um com meio-fio e um da praça com o anel de bronze.
