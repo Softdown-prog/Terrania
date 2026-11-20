@@ -33,5 +33,17 @@ export function hasSprite(key: string): boolean { return sprites.has(key); }
 export function blit(s: Sprite, ctx: CanvasRenderingContext2D): void {
   ctx.drawImage(s.canvas, -s.ox, -s.oy, s.canvas.width / RES, s.canvas.height / RES);
 }
+/**
+ * Solta da memória o sprite de `key`, se existir (ADR 0061): zera o tamanho do canvas, para o navegador devolver a memória na
+ * hora em vez de esperar o coletor de lixo, e esquece a chave, então a próxima vez que ele for pedido é pintado de novo.
+ * Devolve se havia um sprite pintado. Quem chama garante que ele não está sendo desenhado neste quadro.
+ */
+export function releaseSprite(key: string): boolean {
+  const s = sprites.get(key);
+  if (!s) return false;
+  s.canvas.width = 0; s.canvas.height = 0;
+  sprites.delete(key);
+  return true;
+}
 /** Libera os canvases (troca de qualidade/contexto). */
 export function clearSpriteCache(): void { sprites.clear(); }

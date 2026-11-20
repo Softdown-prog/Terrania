@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (161)
+## Todos os arquivos deste módulo (163)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -28,6 +28,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/atlas.test.ts`](../../tests/atlas.test.ts)
 - [`tests/bestiary-audit.test.ts`](../../tests/bestiary-audit.test.ts)
 - [`tests/browser/app.spec.ts`](../../tests/browser/app.spec.ts)
+- [`tests/browser/capital-sprite-release.spec.ts`](../../tests/browser/capital-sprite-release.spec.ts)
 - [`tests/browser/catalog.spec.ts`](../../tests/browser/catalog.spec.ts)
 - [`tests/browser/cave-floors.spec.ts`](../../tests/browser/cave-floors.spec.ts)
 - [`tests/browser/cave-luminous.spec.ts`](../../tests/browser/cave-luminous.spec.ts)
@@ -57,6 +58,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/south-well-quest.spec.ts`](../../tests/browser/south-well-quest.spec.ts)
 - [`tests/browser/tower-interior.spec.ts`](../../tests/browser/tower-interior.spec.ts)
 - [`tests/bundle-budget.test.ts`](../../tests/bundle-budget.test.ts)
+- [`tests/capital-sprite-release.test.ts`](../../tests/capital-sprite-release.test.ts)
 - [`tests/cave-art-contract.test.ts`](../../tests/cave-art-contract.test.ts)
 - [`tests/cave-floor.test.ts`](../../tests/cave-floor.test.ts)
 - [`tests/cave-floors.test.ts`](../../tests/cave-floors.test.ts)

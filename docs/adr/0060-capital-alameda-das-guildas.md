@@ -22,7 +22,7 @@
 ## Memória e desempenho
 
 - Pintar cada edifício leva de 4 a 8 ms na máquina de teste (ops: 4.500 a 5.300; 75 a 88 degradês), pelo mesmo caminho do telhado sem recorte do ADR 0058.
-- **Correção de uma estimativa do ADR 0058.** Lá escrevi que os 21 edifícios somariam "perto de 40 MB". A conta certa, pelo tamanho de cada sprite (em dobro de resolução, 4 bytes por pixel), dá **26,6 MB para os oito de agora** (de 2,8 a 4,2 MB cada, média 3,3) e **uns 70 MB para os 21**. Num celular de 4 GB isso pesa. Antes de terminar a capital, os sprites precisam ser **soltos da memória quando o herói sai da cidade** (e repintados na volta), sem cortar nenhuma arte (ADR 0054). Fica registrado como a próxima providência de desempenho.
+- **Correção de uma estimativa do ADR 0058.** Lá escrevi que os 21 edifícios somariam "perto de 40 MB". A conta certa, pelo tamanho de cada sprite (em dobro de resolução, 4 bytes por pixel), dá **26,6 MB para os oito de agora** (de 2,8 a 4,2 MB cada, média 3,3) e **uns 70 MB para os 21**. Num celular de 4 GB isso pesa. Antes de terminar a capital, os sprites precisam ser **soltos da memória quando o herói sai da cidade** (e repintados na volta), sem cortar nenhuma arte (ADR 0054). Foi feito logo depois, no [ADR 0061](0061-soltar-sprites-fora-da-capital.md).
 
 ## Limites
 

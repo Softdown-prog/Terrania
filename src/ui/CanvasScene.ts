@@ -7,7 +7,7 @@ import type { GearState } from '../engine/character/Equipment.ts';
 import type { WeaponId } from '../engine/character/Weapons.ts';
 import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
-import { warmRegionSprites } from '../render/props/registry.ts';
+import { releaseRegionSprites, warmRegionSprites } from '../render/props/registry.ts';
 import { NPCS, NPC_TALK_RANGE, npcPositionAt } from '../world/npcs.ts';
 import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
@@ -82,6 +82,8 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   world.warmAhead(cameraX, cameraY, width, height, time);
   // Sprites grandes de cenário (os edifícios da capital) são pintados antes de aparecer, um por quadro (ADR 0058).
   warmRegionSprites(cameraX, cameraY);
+  // E solta da memória os que ficaram longe: ao se afastar da capital, uns 27 MB (e uns 70 MB com os 21 edifícios) voltam (ADR 0061).
+  releaseRegionSprites(cameraX, cameraY, width, height);
   const left = cameraX - width / 2, top = cameraY - height / 2;
   effects?.renderGround(ctx, left, top);
   const actors: Array<{ y: number; draw: () => void }> = [];

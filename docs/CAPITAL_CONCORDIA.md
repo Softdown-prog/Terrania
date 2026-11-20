@@ -54,8 +54,10 @@ Uma guilda para cada herói: **cavaleiro, arqueiro e mago**. O **Arquivo dos Exp
 - Os 13 terrenos restantes (Ofícios e Bairro Residencial) continuam sem edifício e **livres**; todos têm a porta ao norte.
 
 ## O que vem depois
-1. Os edifícios dos dois bairros que faltam (Quarteirão dos Ofícios e Saberes e Bairro Residencial e Cura, de porta ao norte), com a colisão ligada junto; antes, soltar os sprites da memória fora da cidade.
+1. Os edifícios dos dois bairros que faltam (Quarteirão dos Ofícios e Saberes e Bairro Residencial e Cura, de porta ao norte), com a colisão ligada junto.
+
+**Já feito (ADR 0061):** os sprites dos edifícios são soltos da memória quando a câmera se afasta da capital e repintados, um por quadro, ao voltar.
 2. Moradores e diálogos, interiores, missões e o serviço de cada guilda.
 3. Tochas e fogo nos portões e nas torres.
 
-Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md), [ADR 0058](adr/0058-capital-cidadela-dos-povos.md) e [ADR 0060](adr/0060-capital-alameda-das-guildas.md).
+Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md), [ADR 0058](adr/0058-capital-cidadela-dos-povos.md) e [ADR 0060](adr/0060-capital-alameda-das-guildas.md) e [ADR 0061](adr/0061-soltar-sprites-fora-da-capital.md).

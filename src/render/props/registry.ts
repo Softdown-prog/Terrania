@@ -1,4 +1,4 @@
-import { CENTER_SCENERY_PAINTERS, CENTER_SPRITE_WARMERS } from "../center/sceneryPainters.ts";
+import { CENTER_SCENERY_PAINTERS, CENTER_SPRITE_RELEASERS, CENTER_SPRITE_WARMERS } from "../center/sceneryPainters.ts";
 import { SOUTH_SCENERY_PAINTERS } from "../south/sceneryPainters.ts";
 import type { SceneryPainter } from "./types.ts";
 
@@ -36,4 +36,21 @@ const REGION_WARMERS: readonly SpriteWarmer[] = [...CENTER_SPRITE_WARMERS];
 export function warmRegionSprites(cameraX: number, cameraY: number): boolean {
   for (const warm of REGION_WARMERS) if (warm(cameraX, cameraY)) return true;
   return false;
+}
+
+/** Um soltador de sprites de uma região: solta o que está longe demais da câmera e devolve quantos soltou. */
+export type SpriteReleaser = (cameraX: number, cameraY: number, width: number, height: number) => number;
+/** Os soltadores das regiões, uma linha por região que tenha sprites grandes (ADR 0061). */
+const REGION_RELEASERS: readonly SpriteReleaser[] = [...CENTER_SPRITE_RELEASERS];
+
+/** Chama cada soltador e soma o que soltaram (separado de `releaseRegionSprites` para valer para várias regiões). */
+export function releaseWith(releasers: readonly SpriteReleaser[], cameraX: number, cameraY: number, width: number, height: number): number {
+  let released = 0;
+  for (const release of releasers) released += release(cameraX, cameraY, width, height);
+  return released;
+}
+
+/** Solta da memória os sprites grandes de cenário de toda região que ficou longe da câmera. Devolve quantos soltou. */
+export function releaseRegionSprites(cameraX: number, cameraY: number, width: number, height: number): number {
+  return releaseWith(REGION_RELEASERS, cameraX, cameraY, width, height);
 }
