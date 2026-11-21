@@ -10,7 +10,7 @@ Quando um terreno ganha função, ele entra em `CAPITAL_ENTERABLE` (`src/world/c
 | --- | --- | --- | --- | --- |
 | Hospedaria dos Viajantes | sim | descansar por moedas (vida cheia, sem veneno nem queimadura) | estalagem: duas camas e balcão | **pronto** (ADR 0062) |
 | Templo da Concórdia | sim | cura e bênção | nave com altar | proposta |
-| Casa da Moeda e dos Mercadores | sim | câmbio de moedas (100 → próxima moeda) e guarda de valores | balcão com grade e cofre | proposta |
+| Casa da Moeda e dos Mercadores | sim | **banco**: guarda o dinheiro do herói e paga juros (ver "O banco") | balcão com grade e cofre | decidido pelo dono (2026-11-21); regra de juros proposta, a confirmar |
 | Salão do Conselho dos Povos | sim | missões e decretos da capital | salão com mesa do conselho | a decidir (história) |
 | Quartel da Guarda | sim | missões de caça e defesa | sala de armas | a decidir (história) |
 | Salão da Ordem dos Cavaleiros | sim | guilda do cavaleiro | salão de guilda | a decidir |
@@ -26,6 +26,19 @@ Quando um terreno ganha função, ele entra em `CAPITAL_ENTERABLE` (`src/world/c
 | Celeiros da Capital | não | só fachada | — | não desenhado |
 
 A Casa de Cura e o Templo se sobrepõem (as duas curam): antes de desenhar a Casa de Cura, decidir o que a separa do Templo (por exemplo, o Templo abençoa e a Casa de Cura trata).
+
+## O banco (Casa da Moeda)
+
+Decisão do dono (2026-11-21): em vez de trocar moedas, o morador da Casa da Moeda é um **banqueiro** que guarda o dinheiro do jogador, **com juros**. Hoje o herói não perde moedas ao morrer, então os juros é que dão motivo para depositar.
+
+Regra proposta (os números esperam confirmação do dono):
+- **Depositar e sacar** qualquer quantia, só no balcão do banco. O saldo vai no save, separado da carteira.
+- **Juros:** 0,5% a cada 10 minutos de jogo (3% por hora), contados só pelo relógio da aventura: nada rende com o jogo fechado, o que evita ganho sem jogar e mantém o resultado igual em qualquer tela.
+- **Teto dos juros:** só rendem os primeiros 10.000 Terrania Gold do saldo (no máximo 300 por hora). Um chefe que deixe uma Eclipse Crown não vira máquina de dinheiro.
+- **Pagamento:** os juros entram no saldo quando o herói fala com o banqueiro (cálculo na hora, sem rodar nada em segundo plano), com acúmulo de no máximo 24 horas de jogo entre visitas.
+- **Teto do saldo:** o mesmo da carteira (`MAX_COINS`), e o save normaliza o saldo como as outras moedas.
+
+Se um dia a morte passar a tirar moedas da carteira, o banco ganha um segundo uso sem mudar nada.
 
 ## Moradores
 
