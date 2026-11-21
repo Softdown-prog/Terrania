@@ -98,6 +98,8 @@ function drawFurniture(ctx: CanvasRenderingContext2D, f: Furniture, wood: string
 export function drawInterior(ctx: CanvasRenderingContext2D, room: InteriorRoom, time = 0): void {
   const palette = room.building.id.startsWith("south-")
     ? {wall:"#a8683e",floor:"#5a4a63",wood:"#b97a2a"}
+    : room.building.id.startsWith("capital-")
+    ? {wall:"#7d8aa6",floor:"#8d8678",wood:"#a9744a"} // a capital: parede de pedra azulada, piso de lajes claras e madeira de carvalho
     : ([
         { wall: "#586b5c", floor: "#8e7859", wood: "#b39a6c" },
         { wall: "#69645a", floor: "#6c685e", wood: "#a68b6b" },

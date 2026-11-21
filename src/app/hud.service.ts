@@ -423,10 +423,10 @@ export class HudService implements GameUi {
     if (++this.npcPage >= this.npcLines.length) return false;
     this.updateNpcPage(); return true;
   }
-  setInterior(name: string): void {
+  setInterior(name: string, place = 'Vila da Travessia'): void {
     this.talkVisible.set(true); this.talkLabel.set('Sair (E)');
     this.quest.set(name); this.questProgress.set('E ou porta: sair');
-    this.coords.set('Interior · Vila da Travessia');
+    this.coords.set('Interior · ' + place);
   }
   updateHero(hero: HeroHudState, quest: AelaQuestProgress, well?: WellQuestSummary): void {
     this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);

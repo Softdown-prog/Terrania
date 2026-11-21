@@ -45,7 +45,7 @@ Uma guilda para cada herói: **cavaleiro, arqueiro e mago**. O **Arquivo dos Exp
 
 **Parte 4 — a Cidadela dos Povos** ([ADR 0058](adr/0058-capital-cidadela-dos-povos.md)):
 - Os quatro edifícios do bairro norte, cada um ocupando o seu terreno inteiro: o **Salão do Conselho dos Povos** (colunata, frontão com o sol dourado e cúpula azul), o **Quartel da Guarda** (fortaleza com terraço de treino, torre de menagem e a bandeira da capital), o **Salão da Ordem dos Cavaleiros** (nave de pedra com rosácea, brasão das espadas cruzadas e estátuas; a cor da Ordem é o vermelho) e a **Academia Arcana** (observatório de cúpula violeta, telescópio e cristais; a cor da Academia é o violeta).
-- Os quatro **bloqueiam** o herói; a frente das portas e as ruas em volta ficam livres. As portas ainda não abrem (sem interiores).
+- Os quatro **bloqueiam** o herói; a frente das portas e as ruas em volta ficam livres. As portas ainda não abriam (sem interiores; a primeira abriu no ADR 0062).
 - Os outros 17 terrenos continuam sem edifício e **livres**.
 
 **Parte 5 — a Alameda das Guildas** ([ADR 0060](adr/0060-capital-alameda-das-guildas.md)):
@@ -53,11 +53,15 @@ Uma guilda para cada herói: **cavaleiro, arqueiro e mago**. O **Arquivo dos Exp
 - Os oito edifícios (Cidadela e Alameda) **bloqueiam** o herói; a frente das portas e as ruas ficam livres. As portas ainda não abrem.
 - Os 13 terrenos restantes (Ofícios e Bairro Residencial) continuam sem edifício e **livres**; todos têm a porta ao norte.
 
+**Parte 6 — a primeira porta** ([ADR 0062](adr/0062-capital-hospedaria-piloto.md)):
+- A decisão do dono: só entra quem tem função de jogo (14 dos 21 terrenos abrem; casas e celeiros são fachada). O registro de cada terreno está em [CAPITAL_EDIFICIOS.md](CAPITAL_EDIFICIOS.md).
+- Piloto: a **Hospedaria dos Viajantes** abre. Por dentro, duas camas e o balcão; na frente da porta, **Dona Brígida** cura por 24 Terrania Gold, como a Madame Víbora. O painel mostra "Interior · Concórdia".
+
 ## O que vem depois
 1. Os edifícios dos dois bairros que faltam (Quarteirão dos Ofícios e Saberes e Bairro Residencial e Cura, de porta ao norte), com a colisão ligada junto.
 
 **Já feito (ADR 0061):** os sprites dos edifícios são soltos da memória quando a câmera se afasta da capital e repintados, um por quadro, ao voltar.
-2. Moradores e diálogos, interiores, missões e o serviço de cada guilda.
+2. Função e interior dos outros edifícios, na ordem de [CAPITAL_EDIFICIOS.md](CAPITAL_EDIFICIOS.md); missões e o serviço de cada guilda.
 3. Tochas e fogo nos portões e nas torres.
 
-Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md), [ADR 0058](adr/0058-capital-cidadela-dos-povos.md) e [ADR 0060](adr/0060-capital-alameda-das-guildas.md) e [ADR 0061](adr/0061-soltar-sprites-fora-da-capital.md).
+Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md), [ADR 0058](adr/0058-capital-cidadela-dos-povos.md), [ADR 0060](adr/0060-capital-alameda-das-guildas.md), [ADR 0061](adr/0061-soltar-sprites-fora-da-capital.md) e [ADR 0062](adr/0062-capital-hospedaria-piloto.md).

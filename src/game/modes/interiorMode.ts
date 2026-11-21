@@ -1,4 +1,4 @@
-import type { InteriorRoom } from "../../engine/rooms/InteriorRoom.ts";
+import { interiorPlace, type InteriorRoom } from "../../engine/rooms/InteriorRoom.ts";
 import type { Frame, ModeHost } from "./types.ts";
 
 /**
@@ -15,7 +15,7 @@ export function tickInterior(host: ModeHost, room: InteriorRoom, frame: Frame): 
   timers.saveClock += dt;
   if (timers.saveClock > 12) { timers.saveClock = 0; host.save(); }
   host.updateHud();
-  host.hud.setInterior(room.building.name);
+  host.hud.setInterior(room.building.name, interiorPlace(room.building.id));
   host.scene.renderInterior(room, host.travel.navigator.target, timers.clock);
   return true;
 }

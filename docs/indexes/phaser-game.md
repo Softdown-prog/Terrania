@@ -18,7 +18,7 @@ Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir reg
 - [`src/game/modes/caveMode.ts`](../../src/game/modes/caveMode.ts)
 - [`src/game/modes/interiorMode.ts`](../../src/game/modes/interiorMode.ts)
 
-## Todos os arquivos deste módulo (25)
+## Todos os arquivos deste módulo (26)
 
 - [`src/game/Game.ts`](../../src/game/Game.ts)
 - [`src/game/PhaserGame.ts`](../../src/game/PhaserGame.ts)
@@ -29,6 +29,7 @@ Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir reg
 - [`src/game/actions/shopContext.ts`](../../src/game/actions/shopContext.ts)
 - [`src/game/actions/south/alchemyActions.ts`](../../src/game/actions/south/alchemyActions.ts)
 - [`src/game/interactions.ts`](../../src/game/interactions.ts)
+- [`src/game/messages/capitalInn.ts`](../../src/game/messages/capitalInn.ts)
 - [`src/game/messages/inventoryFeedback.ts`](../../src/game/messages/inventoryFeedback.ts)
 - [`src/game/messages/mountMessages.ts`](../../src/game/messages/mountMessages.ts)
 - [`src/game/messages/south/well/analysis-needs-sample.ts`](../../src/game/messages/south/well/analysis-needs-sample.ts)

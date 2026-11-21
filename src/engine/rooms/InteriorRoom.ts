@@ -1,7 +1,8 @@
 import { Player } from "../../actors/Player.ts";
 import type { CollisionMap } from "../../world/collision.ts";
 import { BUILDINGS, type Building } from "../../world/village.ts";
-import { SOUTH_BUILDINGS, type SouthBuilding } from "../../world/southCity.ts";
+import { SOUTH_BUILDINGS, SOUTH_CITY, type SouthBuilding } from "../../world/southCity.ts";
+import { CAPITAL, capitalInteriorFor, type CapitalInterior } from "../../world/center/capital/index.ts";
 
 export const ROOM_WIDTH = 360;
 export const ROOM_HEIGHT = 264;
@@ -65,7 +66,21 @@ export const ROOM_FURNITURE: Readonly<Record<string, readonly Furniture[]>> = {
     {x:260,y:75,width:75,height:81,kind:"bed"},
     {x:135,y:100,width:91,height:46,kind:"table"},
   ],
+  // Hospedaria dos Viajantes, na capital (ADR 0062): o molde da estalagem, com duas camas e o balcão no meio.
+  "capital-hospedaria":[
+    {x:28,y:76,width:76,height:80,kind:"bed"},
+    {x:258,y:76,width:76,height:80,kind:"bed"},
+    {x:130,y:100,width:100,height:42,kind:"table"},
+  ],
 };
+/** Em que lugar fica o interior de uma porta, para o painel: a capital, o Poço Negro ou, por omissão, a Vila da Travessia. */
+export function interiorPlace(doorId: string): string {
+  return doorId.startsWith("capital-") ? CAPITAL.name : doorId.startsWith("south-") ? SOUTH_CITY.name : "Vila da Travessia";
+}
+/** Existe um interior que abre para esta porta (da Vila, do Poço Negro ou da capital)? */
+export function hasInterior(doorId: string): boolean {
+  return BUILDINGS.some(b => b.id === doorId) || SOUTH_BUILDINGS.some(b => b.id === doorId && b.interior) || capitalInteriorFor(doorId) !== undefined;
+}
 /** A lógica de colisão recebe os mesmos objetos que o Canvas desenha. */
 export function interiorCollision(furniture: readonly Furniture[]): CollisionMap {
   return {
@@ -82,12 +97,12 @@ export function interiorCollision(furniture: readonly Furniture[]): CollisionMap
 /** O motor interno é independente do mundo persistente e do multiplayer. */
 export class InteriorRoom {
   readonly player = new Player();
-  readonly building: Building|SouthBuilding;
+  readonly building: Building|SouthBuilding|CapitalInterior;
   readonly furniture: readonly Furniture[];
   readonly collision: CollisionMap;
   constructor(buildingId: string) {
     const building = BUILDINGS.find(b => b.id === buildingId) ??
-      SOUTH_BUILDINGS.find(b=>b.id===buildingId && b.interior);
+      SOUTH_BUILDINGS.find(b=>b.id===buildingId && b.interior) ?? capitalInteriorFor(buildingId);
     if (!building) throw new Error("Interior desconhecido");
     const furniture=ROOM_FURNITURE[building.id];
     if(!furniture)throw new Error("Mobília não cadastrada");

@@ -3,6 +3,8 @@ import { SOUTH_BUILDINGS, SOUTH_SIGNS } from "../world/southCity.ts";
 import { SOUTH_NPCS, SOUTH_NPC_LOOKS, SOUTH_DIALOGUES } from "./south/index.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { CENTER_NPCS, CENTER_NPC_LOOKS, CENTER_NPC_DIALOGUES } from "./center/index.ts";
+import { CAPITAL_NPCS, CAPITAL_NPC_LOOKS, CAPITAL_NPC_DIALOGUES } from "./center/capital/index.ts";
+import { CAPITAL_DOORS } from "../world/center/capital/index.ts";
 import { aelaDialogue } from "./center/aela.ts";
 import type { Npc, NpcAppearance, NpcDialogueState } from "./types.ts";
 
@@ -23,7 +25,7 @@ export function npcPositionAt(npc: Npc, time = 0): { x: number; y: number; walki
 /** Somente os cinco NPCs reais; placas e portas não são NPCs. */
 export const NPC_CHARACTERS:readonly Npc[]=CENTER_NPCS;
 export const NPC_LOOKS:Readonly<Record<string,NpcAppearance>>={
-  ...CENTER_NPC_LOOKS,...SOUTH_NPC_LOOKS,
+  ...CENTER_NPC_LOOKS,...SOUTH_NPC_LOOKS,...CAPITAL_NPC_LOOKS,
 };
 export const NPCS:readonly Npc[]=[
   ...NPC_CHARACTERS,
@@ -34,6 +36,9 @@ export const NPCS:readonly Npc[]=[
   ...SOUTH_BUILDINGS.filter(b=>b.interior).map(b=>({
     id:b.id,name:b.name,role:"Interior",x:b.x,y:b.y+29,kind:"door" as const,
   })),
+  // A capital (ADR 0062): os moradores com função e, por último, as portas dos edifícios em que se pode entrar.
+  ...CAPITAL_NPCS,
+  ...CAPITAL_DOORS.map(d=>({id:d.id,name:d.name,role:"Interior",x:d.x,y:d.y,kind:"door" as const})),
 ];
 /** Sem alterar alcance, ordem nem restrição frontal das portas. */
 export function nearestNpc(x:number,y:number,time=0):Npc|null {
@@ -56,6 +61,8 @@ export function npcDialogue(npc:Npc,kills:number,forgeAvailable=false):readonly 
   if(dialogue)return dialogue(state);
   const south=SOUTH_DIALOGUES[npc.id];
   if(south)return south;
+  const capital=CAPITAL_NPC_DIALOGUES[npc.id];
+  if(capital)return capital;
   if(npc.id==="south-north-sign")return ["Portão das Presas — Estrada da Travessia ao norte.", "Dentro das muralhas vigora a paz de Gorrak."];
   if(npc.id==="south-south-sign")return ["Portão dos Ossos — deserto aberto, sem proteção contra monstros.", "Estrada das Ruínas e trilhas de caravanas ao sul."];
   if(npc.id==="south-well-sign")return ["Poço Negro. A água está escura e ninguém sabe a causa.", "Gorrak, Khemet e Sylrael conhecem três histórias diferentes."];

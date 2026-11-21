@@ -5,6 +5,8 @@ import { NPCS, NPC_CHARACTERS, NPC_LOOKS, NPC_TALK_RANGE, npcDialogue, nearestNp
 import { NPCS as legacyNPCS } from "../src/world/npcs.ts";
 import { CENTER_NPCS, CENTER_NPC_LOOKS } from "../src/npcs/center/index.ts";
 import { SOUTH_NPCS, SOUTH_NPC_LOOKS } from "../src/npcs/south/index.ts";
+import { CAPITAL_NPCS } from "../src/npcs/center/capital/index.ts";
+import { CAPITAL_DOORS } from "../src/world/center/capital/index.ts";
 import { SOUTH_SIGNS, SOUTH_BUILDINGS } from "../src/world/southCity.ts";
 import { BUILDINGS, SIGNS } from "../src/world/village.ts";
 
@@ -28,7 +30,7 @@ test("NPCs: cada personagem tem ficha única e objetos de vila mantêm ordem",()
   assert.deepEqual(files,["aela.ts","eron.ts","lina.ts","mira.ts","toren.ts"]);
   assert.strictEqual(NPCS,legacyNPCS);
   assert.equal(NPCS.length,5+SIGNS.length+BUILDINGS.length+
-    SOUTH_NPCS.length+SOUTH_SIGNS.length+SOUTH_BUILDINGS.filter(b=>b.interior).length);
+    SOUTH_NPCS.length+SOUTH_SIGNS.length+SOUTH_BUILDINGS.filter(b=>b.interior).length+CAPITAL_NPCS.length+CAPITAL_DOORS.length);
   assert.deepEqual(NPCS.slice(0,5),NPC_CHARACTERS);
   assert.equal(NPCS[5]?.kind,"sign");
   assert.equal(NPCS[NPCS.length-1]?.kind,"door");

@@ -12,11 +12,13 @@ Personagens não jogáveis separados por região, com diálogo e aparência em f
 - [`src/npcs/center/index.ts`](../../src/npcs/center/index.ts)
 - [`src/npcs/types.ts`](../../src/npcs/types.ts)
 
-## Todos os arquivos deste módulo (14)
+## Todos os arquivos deste módulo (16)
 
 - [`src/npcs/README.md`](../../src/npcs/README.md)
 - [`src/npcs/catalog.ts`](../../src/npcs/catalog.ts)
 - [`src/npcs/center/aela.ts`](../../src/npcs/center/aela.ts)
+- [`src/npcs/center/capital/index.ts`](../../src/npcs/center/capital/index.ts)
+- [`src/npcs/center/capital/innkeeper.ts`](../../src/npcs/center/capital/innkeeper.ts)
 - [`src/npcs/center/eron.ts`](../../src/npcs/center/eron.ts)
 - [`src/npcs/center/index.ts`](../../src/npcs/center/index.ts)
 - [`src/npcs/center/lina.ts`](../../src/npcs/center/lina.ts)

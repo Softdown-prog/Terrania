@@ -78,5 +78,5 @@ export interface GameUi {
   setCave(location: CaveMapState | null): void;
   setNearbyAction(action: NearbyAction | null): void;
   showNpcDialogue(name: string, role: string, lines: readonly string[], offer?: NpcOffer): void;
-  setInterior(name: string): void;
+  setInterior(name: string, place?: string): void;
 }

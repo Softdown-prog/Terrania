@@ -5,13 +5,16 @@ import type { WeaponId } from "../../engine/character/Weapons.ts";
 import { FOODS } from "../../engine/character/Food.ts";
 import { experienceProgress } from "../../engine/character/Experience.ts";
 import { nearestNpc } from "../../world/npcs.ts";
+import { INNKEEPER_ID } from "../../npcs/center/capital/index.ts";
 import { MARKET_NPC, describeCoins, type MarketId } from "../../engine/character/coins/index.ts";
 import { INVENTORY_FEEDBACK } from "../messages/inventoryFeedback.ts";
+import { CAPITAL_INN_RESTED } from "../messages/capitalInn.ts";
 import { say } from "./say.ts";
 import type { ShopContext, ShopResult } from "./shopContext.ts";
 export type { ShopContext, ShopResult } from "./shopContext.ts";
 
 const nearMadame = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === "south-madame";
+const nearBrigida = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === INNKEEPER_ID;
 const nearLina = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === "lina";
 
 export function usePotion({ sim, hero, caveHeroDown }: ShopContext): ShopResult {
@@ -28,12 +31,17 @@ export function tradeGelForPotion({ sim, inInterior, menuOpen }: ShopContext): S
   return say(result, result === "traded");
 }
 
-/** Descanso pago na Hospedaria Sombra do Escorpião (Poço Negro): só ao lado de Madame Víbora, com o diálogo aberto. */
+/**
+ * Descanso pago, com o diálogo aberto e ao lado de quem o vende: Madame Víbora, na Hospedaria Sombra do Escorpião (Poço Negro), ou
+ * Dona Brígida, na Hospedaria dos Viajantes (capital, ADR 0062). O preço e o efeito são os mesmos; só a fala muda.
+ */
 export function restAtInn({ sim, hero, inInterior, menuOpen }: ShopContext): ShopResult {
-  if (inInterior || !menuOpen || !nearMadame(sim)) return say("too-far-from-inn");
+  const capital = nearBrigida(sim);
+  if (inInterior || !menuOpen || !(capital || nearMadame(sim))) return say("too-far-from-inn");
   if (sim.awaitingRespawn || hero.hp <= 0) return say("unavailable");
   const result = sim.inventory.restAtInn(hero);
-  return say(result, result === "rested");
+  const rested = result === "rested";
+  return capital && rested ? { message: CAPITAL_INN_RESTED, changed: true } : say(result, rested);
 }
 
 /**

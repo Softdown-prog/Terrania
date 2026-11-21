@@ -12,13 +12,11 @@ import type { GameUi, Preferences } from "../ui/GameUi.ts";
 import { nearestNpc, npcDialogue } from "../world/npcs.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { QUEST_REWARD_POTIONS } from "../engine/character/Inventory.ts";
-import { InteriorRoom } from "../engine/rooms/InteriorRoom.ts";
+import { InteriorRoom, hasInterior } from "../engine/rooms/InteriorRoom.ts";
 import { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { nearbyStairsMove, roomAfterMove } from "../engine/rooms/caveStairs.ts";
 import type { CaveEntrance } from "../world/caves.ts";
 import { dungeonEntranceNear } from "../world/entrances.ts";
-import { BUILDINGS } from "../world/village.ts";
-import { SOUTH_BUILDINGS } from "../world/southCity.ts";
 import { nearestCombatCreature } from "../engine/combat/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
@@ -205,8 +203,7 @@ export class Game {
     const npc = nearestNpc(this.sim.player.x, this.sim.player.y, this.timers.clock);
     if (!npc) return;
     this.input.clear();
-    if (npc.kind === "door" && (BUILDINGS.some(b => b.id === npc.id) ||
-        SOUTH_BUILDINGS.some(b => b.id === npc.id && b.interior))) {
+    if (npc.kind === "door" && hasInterior(npc.id)) {
       this.travel.combat.cancel();
       this.travel.pursuit.reset();
       this.hud.setCombatTarget(null);
