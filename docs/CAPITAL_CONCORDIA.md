@@ -61,6 +61,9 @@ Uma guilda para cada herói: **cavaleiro, arqueiro e mago**. O **Arquivo dos Exp
 - A segunda porta: a **Casa da Moeda e dos Mercadores** abre. O banqueiro **Mestre Aurélio**, na rua ao lado da porta, guarda o dinheiro do herói (botões de 100, 1.000 e tudo) e paga juros: 0,5% a cada 10 minutos de jogo sobre os primeiros 10.000 do saldo, no máximo um dia de jogo acumulado, pagos ao conversar com ele.
 - O relógio da aventura passou a voltar com o save (antes zerava ao reabrir o jogo).
 
+**Parte 8 — o Templo, lugar de renascimento** ([ADR 0064](adr/0064-capital-templo-renascimento.md)):
+- A terceira porta: o **Templo da Concórdia** abre (nave com altar e dois bancos). A sacerdotisa **Irmã Maelis**, na rua ao lado da porta, deixa o herói escolher onde renascer: na **Vila** (o padrão) ou à **porta do Templo**. A escolha vale até mudar e fica no save.
+
 ## O que vem depois
 1. Os edifícios dos dois bairros que faltam (Quarteirão dos Ofícios e Saberes e Bairro Residencial e Cura, de porta ao norte), com a colisão ligada junto.
 
@@ -68,4 +71,4 @@ Uma guilda para cada herói: **cavaleiro, arqueiro e mago**. O **Arquivo dos Exp
 2. Função e interior dos outros edifícios, na ordem de [CAPITAL_EDIFICIOS.md](CAPITAL_EDIFICIOS.md); missões e o serviço de cada guilda.
 3. Tochas e fogo nos portões e nas torres.
 
-Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md), [ADR 0058](adr/0058-capital-cidadela-dos-povos.md), [ADR 0060](adr/0060-capital-alameda-das-guildas.md), [ADR 0061](adr/0061-soltar-sprites-fora-da-capital.md), [ADR 0062](adr/0062-capital-hospedaria-piloto.md) e [ADR 0063](adr/0063-capital-banco-da-casa-da-moeda.md).
+Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md), [ADR 0058](adr/0058-capital-cidadela-dos-povos.md), [ADR 0060](adr/0060-capital-alameda-das-guildas.md), [ADR 0061](adr/0061-soltar-sprites-fora-da-capital.md), [ADR 0062](adr/0062-capital-hospedaria-piloto.md), [ADR 0063](adr/0063-capital-banco-da-casa-da-moeda.md) e [ADR 0064](adr/0064-capital-templo-renascimento.md).

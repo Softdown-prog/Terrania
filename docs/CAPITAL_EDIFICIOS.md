@@ -9,7 +9,7 @@ Quando um terreno ganha função, ele entra em `CAPITAL_ENTERABLE` (`src/world/c
 | Terreno | Entra? | Função | Interior (molde) | Estado |
 | --- | --- | --- | --- | --- |
 | Hospedaria dos Viajantes | sim | descansar por moedas (vida cheia, sem veneno nem queimadura) | estalagem: duas camas e balcão | **pronto** (ADR 0062) |
-| Templo da Concórdia | sim | cura e bênção | nave com altar | proposta |
+| Templo da Concórdia | sim | **lugar de renascimento**: a sacerdotisa consagra o Templo (ou a Vila) como onde o herói renasce | nave com altar e dois bancos | **pronto** (ADR 0064) |
 | Casa da Moeda e dos Mercadores | sim | **banco**: guarda o dinheiro do herói e paga juros (ver "O banco") | balcão com grade e cofre | **pronto** (ADR 0063) |
 | Salão do Conselho dos Povos | sim | missões e decretos da capital | salão com mesa do conselho | a decidir (história) |
 | Quartel da Guarda | sim | missões de caça e defesa | sala de armas | a decidir (história) |
@@ -25,7 +25,7 @@ Quando um terreno ganha função, ele entra em `CAPITAL_ENTERABLE` (`src/world/c
 | 4 casas do Bairro Oeste, 2 do Leste | não | só fachada | — | não desenhadas |
 | Celeiros da Capital | não | só fachada | — | não desenhado |
 
-A Casa de Cura e o Templo se sobrepõem (as duas curam): antes de desenhar a Casa de Cura, decidir o que a separa do Templo (por exemplo, o Templo abençoa e a Casa de Cura trata).
+O Templo não cura: ele é o lugar de renascimento, então não se sobrepõe à Hospedaria nem à Casa de Cura. Decisão do dono (2026-11-22): uma bênção temporária de vida máxima serviria pouco; o renascimento serve mais, e deixa espaço para uma NPC e uma missão do Templo depois. A Casa de Cura, quando for desenhada, trata veneno e queimadura.
 
 ## O banco (Casa da Moeda)
 
@@ -40,13 +40,21 @@ Regra entregue (ADR 0063), com os números confirmados pelo dono:
 
 Se um dia a morte passar a tirar moedas da carteira, o banco ganha um segundo uso sem mudar nada.
 
+## O Templo (renascimento)
+
+Decisão do dono (2026-11-22): o Templo da Concórdia é **onde o herói renasce**. Como a capital fica a uns 800 tiles da Vila, a escolha é do jogador:
+- O herói **começa renascendo na Vila da Travessia**, como sempre foi.
+- Ao falar com a **sacerdotisa (Irmã Maelis)** no Templo, escolhe **renascer no Templo** (à porta do edifício) ou **voltar à Vila**. A escolha vale até mudar e fica no save.
+- Cada cidade que tiver templo vira uma opção (o Poço Negro, no futuro).
+- A sacerdotisa é também o ponto de partida natural de uma futura missão do Templo.
+
 ## Moradores
 
-Cada interior com serviço tem um morador na frente da porta (como a Madame Víbora no Poço Negro). Hoje: **Dona Brígida**, hospedeira da Hospedaria (`innkeeper.ts`), e **Mestre Aurélio**, banqueiro da Casa da Moeda (`banker.ts`), ambos em `src/npcs/center/capital/`.
+Cada interior com serviço tem um morador na frente da porta (como a Madame Víbora no Poço Negro). Hoje: **Dona Brígida**, hospedeira da Hospedaria (`innkeeper.ts`), **Mestre Aurélio**, banqueiro da Casa da Moeda (`banker.ts`), e **Irmã Maelis**, sacerdotisa do Templo (`priestess.ts`), todos em `src/npcs/center/capital/`.
 
 ## Ordem de trabalho
 
 1. Hospedaria (piloto, feito).
-2. Casa da Moeda (banco, feito) e Templo, que já têm edifício desenhado e função clara.
+2. Casa da Moeda (banco, feito) e Templo (renascimento, feito).
 3. Conselho, Quartel e as três guildas, quando o dono decidir a função de cada um.
 4. Só depois, os 13 terrenos que faltam desenhar (Ofícios e Bairro Residencial, porta ao norte, vistos de trás), e apenas os que têm função.

@@ -31,10 +31,10 @@ function world(coins = 0) {
   return { sim, context, goTo };
 }
 
-test("só os edifícios com função abrem a porta (Hospedaria e banco, por enquanto): a lista é de decisão do dono, e cada porta é de um edifício construído e fica à frente dele", () => {
-  assert.deepEqual([...CAPITAL_ENTERABLE], ["hospedaria", "casa-da-moeda"]);
-  assert.equal(CAPITAL_DOORS.length, 2);
-  assert.deepEqual(CAPITAL_DOORS.map(d => d.id), ["capital-hospedaria", "capital-casa-da-moeda"]);
+test("só os edifícios com função abrem a porta (Hospedaria, banco e Templo, por enquanto): a lista é de decisão do dono, e cada porta é de um edifício construído e fica à frente dele", () => {
+  assert.deepEqual([...CAPITAL_ENTERABLE], ["hospedaria", "casa-da-moeda", "templo"]);
+  assert.equal(CAPITAL_DOORS.length, 3);
+  assert.deepEqual(CAPITAL_DOORS.map(d => d.id), ["capital-hospedaria", "capital-casa-da-moeda", "capital-templo"]);
   assert.deepEqual({ ...door }, { id: "capital-hospedaria", name: "Hospedaria dos Viajantes", x: inn.x, y: inn.y + CAPITAL_DOOR_REACH });
   assert.equal(CAPITAL_DOOR_REACH, 29); assert.equal(capitalDoorId("hospedaria"), "capital-hospedaria");
   for (const d of CAPITAL_DOORS) assert.ok(CAPITAL_BUILDINGS.some(b => capitalDoorId(b.id) === d.id), "porta de um edifício construído");
@@ -49,7 +49,7 @@ test("só os edifícios com função abrem a porta (Hospedaria e banco, por enqu
 
 test("o interior de uma porta: só as portas da capital que abrem têm sala, e as da Vila e do Poço Negro seguem como estavam", () => {
   assert.deepEqual(capitalInteriorFor("capital-hospedaria"), { id: "capital-hospedaria", name: "Hospedaria dos Viajantes", variant: 0 });
-  for (const bad of ["hospedaria", "capital-templo", "capital-conselho", "", "capital-"]) assert.equal(capitalInteriorFor(bad), undefined, bad);
+  for (const bad of ["hospedaria", "templo", "capital-conselho", "capital-quartel", "", "capital-"]) assert.equal(capitalInteriorFor(bad), undefined, bad);
   assert.equal(hasInterior("capital-hospedaria"), true); assert.equal(hasInterior("inn"), true, "a hospedaria da Vila"); assert.equal(hasInterior("south-inn"), true);
   assert.equal(hasInterior("hospedaria"), false); assert.equal(hasInterior("lina"), false);
   assert.equal(hasInterior(SOUTH_BUILDINGS.find(b => !b.interior)!.id), false, "um prédio do Poço Negro sem interior");
@@ -63,8 +63,8 @@ test("a porta se usa da frente do edifício: dentro do alcance de 25 × 28 px da
     const near = nearestNpc(door.x + dx, door.y + dy)?.id;
     if (hit) assert.equal(near, "capital-hospedaria", `${dx},${dy}`); else assert.notEqual(near, "capital-hospedaria", `${dx},${dy}`);
   }
-  assert.equal(nearestNpc(inn.x, inn.y + 7)?.kind, "door"); assert.deepEqual(NPCS.slice(-2).map(n => n.id), ["capital-hospedaria", "capital-casa-da-moeda"], "as portas da capital vêm por último");
-  assert.equal(npcDialogue(NPCS.at(-2)!, 0).join(" "), "Use E perto da porta para entrar em Hospedaria dos Viajantes.");
+  assert.equal(nearestNpc(inn.x, inn.y + 7)?.kind, "door"); assert.deepEqual(NPCS.slice(-3).map(n => n.id), ["capital-hospedaria", "capital-casa-da-moeda", "capital-templo"], "as portas da capital vêm por último");
+  assert.equal(npcDialogue(NPCS.at(-3)!, 0).join(" "), "Use E perto da porta para entrar em Hospedaria dos Viajantes.");
 });
 
 test("a sala da Hospedaria: duas camas e o balcão, mobília que bloqueia, saída pela porta de baixo e paleta própria da capital", () => {
@@ -76,7 +76,7 @@ test("a sala da Hospedaria: duas camas e o balcão, mobília que bloqueia, saíd
   for (const f of room.furniture) assert.equal(room.collision.canMove(f.x + f.width / 2, f.y + f.height / 2), false, `${f.kind} bloqueia`);
   assert.equal(interiorCollision(room.furniture).canMove(ROOM_WIDTH / 2, 70), true, "o corredor do meio está livre");
   assert.equal(room.reachedExit, false); room.player.y = ROOM_HEIGHT - 30; assert.equal(room.reachedExit, true, "chegar à porta de baixo é sair");
-  assert.throws(() => new InteriorRoom("capital-templo"), /Interior desconhecido/);
+  assert.throws(() => new InteriorRoom("capital-conselho"), /Interior desconhecido/);
   assert.equal(interiorPlace("capital-hospedaria"), "Concórdia", "o painel diz o lugar certo"); assert.equal(interiorPlace("south-inn"), "Poço Negro"); assert.equal(interiorPlace("inn"), "Vila da Travessia"); assert.equal(interiorPlace("council"), "Vila da Travessia");
   assert.match(readFileSync("src/game/modes/interiorMode.ts", "utf8"), /host\.hud\.setInterior\(room\.building\.name, interiorPlace\(room\.building\.id\)\);/);
   assert.match(readFileSync("src/app/hud.service.ts", "utf8"), /setInterior\(name: string, place = 'Vila da Travessia'\)/);

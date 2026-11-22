@@ -78,6 +78,12 @@ export const ROOM_FURNITURE: Readonly<Record<string, readonly Furniture[]>> = {
     {x:255,y:85,width:75,height:44,kind:"shelf"},
     {x:115,y:100,width:130,height:42,kind:"table"},
   ],
+  // Templo da Concórdia (ADR 0064): o altar no meio e um banco de cada lado, na nave.
+  "capital-templo":[
+    {x:30,y:100,width:82,height:40,kind:"bench"},
+    {x:248,y:100,width:82,height:40,kind:"bench"},
+    {x:140,y:90,width:80,height:42,kind:"table"},
+  ],
 };
 /** Em que lugar fica o interior de uma porta, para o painel: a capital, o Poço Negro ou, por omissão, a Vila da Travessia. */
 export function interiorPlace(doorId: string): string {

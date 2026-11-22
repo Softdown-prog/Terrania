@@ -115,6 +115,7 @@
 - [`docs/adr/0061-soltar-sprites-fora-da-capital.md`](../../docs/adr/0061-soltar-sprites-fora-da-capital.md)
 - [`docs/adr/0062-capital-hospedaria-piloto.md`](../../docs/adr/0062-capital-hospedaria-piloto.md)
 - [`docs/adr/0063-capital-banco-da-casa-da-moeda.md`](../../docs/adr/0063-capital-banco-da-casa-da-moeda.md)
+- [`docs/adr/0064-capital-templo-renascimento.md`](../../docs/adr/0064-capital-templo-renascimento.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)

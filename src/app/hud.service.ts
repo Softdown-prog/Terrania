@@ -11,6 +11,7 @@ import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './i
 import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { SOUTH_MOUNT_SALES } from '../engine/mounts/southMountSales.ts';
 import { BANK_STEPS } from '../engine/character/center/bank/index.ts';
+import { DEFAULT_RESPAWN_POINT, RESPAWN_POINTS, type RespawnPointId } from '../engine/character/center/shrine/index.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
 import { ELIXIR_RECIPES, elixirRecipe, emptyElixirCounts, type ElixirCounts, type ElixirId } from '../engine/character/south/alchemy/index.ts';
@@ -97,6 +98,9 @@ export class HudService implements GameUi {
   /** Saldo do banco da capital, em Terrania Gold (ADR 0063). */
   readonly bankBalance = signal(0);
   readonly bankSteps = BANK_STEPS;
+  /** Onde o herói renasce (ADR 0064): a Vila ou o Templo da capital. */
+  readonly respawnPoint = signal<RespawnPointId>(DEFAULT_RESPAWN_POINT);
+  readonly respawnPoints = RESPAWN_POINTS;
   readonly creatureMaterials = signal<Readonly<Record<string,number>>>({}, {
     equal: (a,b) => a===b || (Object.keys(a).length===Object.keys(b).length &&
       Object.entries(a).every(([key,quantity])=>b[key]===quantity)),
@@ -229,6 +233,7 @@ export class HudService implements GameUi {
   private talkCallback: () => void = () => {};
   private potionTradeCallback: () => string = () => '';
   private innRestCallback: () => string = () => '';
+  private shrineChooseCallback: (point: RespawnPointId) => string = () => '';
   private bankDepositCallback: (amount: number | 'all') => string = () => '';
   private bankWithdrawCallback: (amount: number | 'all') => string = () => '';
   private elixirCraftCallback: (id: ElixirId) => string = () => '';
@@ -276,6 +281,7 @@ export class HudService implements GameUi {
   onFoodTrade(callback: (id: FoodId) => string): void { this.foodTradeCallback = callback; }
   onSwordPurchase(callback: () => string): void { this.swordPurchaseCallback = callback; }
   onInnRest(callback: () => string): void { this.innRestCallback = callback; }
+  onShrineChoose(callback: (point: RespawnPointId) => string): void { this.shrineChooseCallback = callback; }
   onBankDeposit(callback: (amount: number | 'all') => string): void { this.bankDepositCallback = callback; }
   onBankWithdraw(callback: (amount: number | 'all') => string): void { this.bankWithdrawCallback = callback; }
   onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void { this.materialSaleCallback = callback; }
@@ -307,6 +313,8 @@ export class HudService implements GameUi {
   talk(): void { this.talkCallback(); }
   tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
   restAtInn(): void { this.npcTradeFeedback.set(this.innRestCallback()); }
+  chooseRespawnPoint(point: RespawnPointId): void { this.npcTradeFeedback.set(this.shrineChooseCallback(point)); }
+  updateRespawnPoint(point: RespawnPointId): void { this.respawnPoint.set(point); }
   bankDeposit(amount: number | 'all'): void { this.npcTradeFeedback.set(this.bankDepositCallback(amount)); }
   bankWithdraw(amount: number | 'all'): void { this.npcTradeFeedback.set(this.bankWithdrawCallback(amount)); }
   updateBank(balance: number): void { this.bankBalance.set(balance); }

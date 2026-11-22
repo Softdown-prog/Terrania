@@ -31,6 +31,7 @@ import { tickSurface } from "./modes/surfaceMode.ts";
 import { tickInterior } from "./modes/interiorMode.ts";
 import { mountQuestAction, npcOffer, questStepId } from "./interactions.ts";
 import { bankDeposit, bankOnTalk, bankWithdraw } from "./actions/center/bankActions.ts";
+import { chooseRespawnPoint } from "./actions/center/shrineActions.ts";
 import { BANKER_ID } from "../npcs/center/capital/index.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
 import { wellQuestSummary } from "../engine/quests/south/well/index.ts";
@@ -87,6 +88,7 @@ export class Game {
     this.hud.onPotionTrade(() => this.shop(tradeGelForPotion));
     this.hud.onSwordPurchase(() => this.shop(buySword));
     this.hud.onInnRest(() => this.shop(restAtInn));
+    this.hud.onShrineChoose(point => this.shop(context => chooseRespawnPoint(context, point)));
     this.hud.onBankDeposit(amount => this.shop(context => bankDeposit(context, amount)));
     this.hud.onBankWithdraw(amount => this.shop(context => bankWithdraw(context, amount)));
     this.hud.onMaterialSale((market, material, quantity) => this.shop(context => sellMaterial(context, market, material, quantity)));
@@ -127,6 +129,7 @@ export class Game {
     }, aelaQuestProgress(this.sim.trainingKills), wellQuestSummary(this.sim.well.view));
     this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins, inventory.elixirs);
     this.hud.updateBank(this.sim.bank.balance);
+    this.hud.updateRespawnPoint(this.sim.respawnPoint);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateGear(inventory.gear);
     this.hud.updateMount(this.sim.mounts.view(kills));

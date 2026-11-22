@@ -4,6 +4,7 @@ import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import type { ElixirCounts, ElixirId } from '../engine/character/south/alchemy/index.ts';
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
 import type { MarketId } from '../engine/character/coins/index.ts';
+import type { RespawnPointId } from '../engine/character/center/shrine/index.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/character/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/character/Equipment.ts';
@@ -37,7 +38,7 @@ export interface CaveMapState {
   readonly tileX: number;
   readonly tileY: number;
 }
-export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary' | 'desert-stable' | 'alchemy' | 'bank'; price: number };
+export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary' | 'desert-stable' | 'alchemy' | 'bank' | 'shrine'; price: number };
 
 /** Data and commands exchanged between the game coordinator and the HUD. */
 export interface GameUi {
@@ -56,6 +57,9 @@ export interface GameUi {
   onBankDeposit(callback: (amount: number | 'all') => string): void;
   onBankWithdraw(callback: (amount: number | 'all') => string): void;
   updateBank(balance: number): void;
+  /** Templo da Concórdia (ADR 0064): escolher onde renascer, e mostrar onde já se renasce. */
+  onShrineChoose(callback: (point: RespawnPointId) => string): void;
+  updateRespawnPoint(point: RespawnPointId): void;
   onElixirCraft(callback: (id: ElixirId) => string): void;
   onElixirUse(callback: (id: ElixirId) => string): void;
   onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void;

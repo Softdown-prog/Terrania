@@ -9,7 +9,7 @@ import { Slime, slimeSpawns } from "../actors/Slime.ts";
 import { CREATURE_CATALOG } from "../actors/CreatureCatalog.ts";
 import { SeedCollision, canMoveOnSeed, freeSpotNear } from "../world/collision.ts";
 import { CHUNK_PIXELS, chunkOf } from "../world/terrain.ts";
-import { VILLAGE_RESPAWN } from "../world/village.ts";
+import { DEFAULT_RESPAWN_POINT, RESPAWN_POINTS, normalizeRespawnPoint, type RespawnPointId } from "./character/center/shrine/index.ts";
 import { MAP_VERSION } from "../world/mapSize.ts";
 import { faceTarget } from "./combat/combat.ts";
 import type { ClassicTileWalker, WalkDirection } from "./movement/ClassicTileWalker.ts";
@@ -44,6 +44,8 @@ export interface OfflineSave {
   wellQuest?: WellQuestState;
   /** Banco da Casa da Moeda (ADR 0063); ausente enquanto não há saldo. */
   bank?: BankState;
+  /** Onde o herói renasce (ADR 0064); ausente = a Vila da Travessia. */
+  respawnPoint?: RespawnPointId;
   /** Versão do tamanho do mapa em que o save foi feito (ADR 0059); sem ela, o save é do mapa antigo e a posição é migrada ao carregar. */
   mapVersion?: number;
   /** Relógio da aventura, em segundos de jogo (ADR 0029). */
@@ -71,6 +73,8 @@ export class OfflineSimulation {
   readonly well: WellInvestigation;
   /** Banco da Casa da Moeda da capital (ADR 0063). */
   readonly bank: Bank;
+  /** Onde o herói renasce depois de cair: a Vila, ou o Templo da capital se o consagrou (ADR 0064). */
+  respawnPoint: RespawnPointId = DEFAULT_RESPAWN_POINT;
   readonly mounts: MountStable;
   readonly drops = new Map<string, LootDrop>();
   readonly collision: SeedCollision;
@@ -130,6 +134,7 @@ export class OfflineSimulation {
     }
     // O banco depende do relógio já carregado: os juros devidos contam do instante gravado, nunca de um futuro.
     this.bank = new Bank(saved?.seed === seed ? saved.bank : undefined, this.clock);
+    if (saved?.seed === seed) this.respawnPoint = normalizeRespawnPoint(saved.respawnPoint);
   }
 
   /** Segundos de jogo desde o começo da aventura. */
@@ -171,8 +176,8 @@ export class OfflineSimulation {
     if (!this.awaitingRespawn) return false;
     this.mounts.dismount();
     this.player = new Player(maxHpForExperience(this.experience));
-    this.player.x = VILLAGE_RESPAWN.x;
-    this.player.y = VILLAGE_RESPAWN.y;
+    this.player.x = RESPAWN_POINTS[this.respawnPoint].x;
+    this.player.y = RESPAWN_POINTS[this.respawnPoint].y;
     this.spawnedChunk = "";
     return true;
   }
@@ -316,6 +321,7 @@ export class OfflineSimulation {
       ...(Object.keys(this.mounts.snapshot()).length ? { mounts: this.mounts.snapshot() } : {}),
       ...(wellQuestStarted(this.well.view) ? { wellQuest: this.well.snapshot() } : {}),
       ...(this.bank.used ? { bank: this.bank.snapshot() } : {}),
+      ...(this.respawnPoint !== DEFAULT_RESPAWN_POINT ? { respawnPoint: this.respawnPoint } : {}),
       ...(hasNutrition(this.player.nutrition) ? { nutrition: this.player.nutrition } : {}),
       drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),
     };

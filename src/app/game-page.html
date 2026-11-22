@@ -149,8 +149,8 @@
       <dialog #defeatDialog (cancel)="$event.preventDefault()" (close)="closed()" aria-labelledby="defeatTitle">
         <span class="dialog-kicker">AVENTURA SOLO</span>
         <h1 id="defeatTitle">Você foi derrotado</h1>
-        <p>Volte à Vila da Travessia com a vida cheia. Seu XP, sua bolsa e o progresso da missão estão guardados.</p>
-        <button class="primary-button" (click)="hud.respawn()" type="button" autofocus>Retornar à vila</button>
+        <p id="defeatPlace">Você renasce em {{ hud.respawnPoints[hud.respawnPoint()].name }} com a vida cheia. Seu XP, sua bolsa e o progresso da missão estão guardados.</p>
+        <button class="primary-button" (click)="hud.respawn()" type="button" autofocus>{{ hud.respawnPoint() === 'capital-temple' ? 'Renascer no Templo' : 'Retornar à vila' }}</button>
       </dialog>
       <dialog id="playersDialog" #playersDialog (close)="closed()" aria-labelledby="playersTitle">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar jogadores online">×</button>
@@ -497,7 +497,7 @@
           </div>
           <div>
             <dt>Vida zerada</dt>
-            <dd>Escolha retornar à Vila da Travessia com a vida cheia. O XP, os itens e a missão são preservados.</dd>
+            <dd>Você renasce com a vida cheia na Vila da Travessia ou, se consagrou o Templo da Concórdia na capital, à porta do Templo. O XP, os itens e a missão são preservados.</dd>
           </div>
         </dl>
         <p class="dialog-note">
@@ -602,6 +602,14 @@
                   [disabled]="hud.bankBalance() <= 0" (click)="hud.bankWithdraw('all')">Tudo</button>
               </div>
               <p class="dialog-note">Juros: 0,5% a cada 10 minutos de jogo, sobre os primeiros 10.000 Terrania Gold do saldo. Entram quando você fala com o banqueiro.</p>
+            </section>
+          } @else if (offer.item === 'shrine') {
+            <section class="mount-stable-panel" aria-label="Templo da Concórdia">
+              <p id="shrinePlace" class="dialog-note">Você renasce em: {{ hud.respawnPoints[hud.respawnPoint()].name }}</p>
+              <button type="button" class="secondary-button" id="shrine-temple"
+                [disabled]="hud.respawnPoint() === 'capital-temple'" (click)="hud.chooseRespawnPoint('capital-temple')">Renascer no Templo da Concórdia</button>
+              <button type="button" class="secondary-button" id="shrine-village"
+                [disabled]="hud.respawnPoint() === 'village'" (click)="hud.chooseRespawnPoint('village')">Renascer na Vila da Travessia</button>
             </section>
           } @else if (offer.item === 'sword') {
             <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes · {{ hud.weapons.forge.windup * 1000 }} ms até o impacto</p>
