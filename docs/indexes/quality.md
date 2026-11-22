@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (170)
+## Todos os arquivos deste módulo (171)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -112,6 +112,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/helpers/paintChunk.ts`](../../tests/helpers/paintChunk.ts)
 - [`tests/helpers/recordingContext.ts`](../../tests/helpers/recordingContext.ts)
 - [`tests/helpers/spyContext.ts`](../../tests/helpers/spyContext.ts)
+- [`tests/hero-classes.test.ts`](../../tests/hero-classes.test.ts)
 - [`tests/hero-pose.test.ts`](../../tests/hero-pose.test.ts)
 - [`tests/interactions.test.ts`](../../tests/interactions.test.ts)
 - [`tests/interior.test.ts`](../../tests/interior.test.ts)

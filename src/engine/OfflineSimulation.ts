@@ -22,6 +22,7 @@ import { grantExperience, levelForExperience, maxHpForExperience, normalizeExper
 import { hasNutrition, type NutritionState } from "./character/Food.ts";
 import { WellInvestigation, wellQuestStarted, type WellQuestState } from "./quests/south/well/index.ts";
 import { Bank, type BankState } from "./character/center/bank/index.ts";
+import { DEFAULT_HERO_CLASS, heroClassSheet, normalizeHeroClass, normalizeMana, regenerateMana, type HeroClassId } from "./character/classes/index.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
 export interface OfflineSave {
@@ -46,6 +47,10 @@ export interface OfflineSave {
   bank?: BankState;
   /** Onde o herói renasce (ADR 0064); ausente = a Vila da Travessia. */
   respawnPoint?: RespawnPointId;
+  /** Vocação do herói (ADR 0065); ausente = Cavaleiro. */
+  heroClass?: HeroClassId;
+  /** Mana atual do Mago; ausente = cheia (ou nenhuma, para o Cavaleiro). */
+  mana?: number;
   /** Versão do tamanho do mapa em que o save foi feito (ADR 0059); sem ela, o save é do mapa antigo e a posição é migrada ao carregar. */
   mapVersion?: number;
   /** Relógio da aventura, em segundos de jogo (ADR 0029). */
@@ -75,6 +80,9 @@ export class OfflineSimulation {
   readonly bank: Bank;
   /** Onde o herói renasce depois de cair: a Vila, ou o Templo da capital se o consagrou (ADR 0064). */
   respawnPoint: RespawnPointId = DEFAULT_RESPAWN_POINT;
+  /** A vocação deste herói: escolhida ao criar o mundo, nunca muda (ADR 0065). */
+  readonly heroClass: HeroClassId;
+  private manaPoints = 0;
   readonly mounts: MountStable;
   readonly drops = new Map<string, LootDrop>();
   readonly collision: SeedCollision;
@@ -135,13 +143,29 @@ export class OfflineSimulation {
     // O banco depende do relógio já carregado: os juros devidos contam do instante gravado, nunca de um futuro.
     this.bank = new Bank(saved?.seed === seed ? saved.bank : undefined, this.clock);
     if (saved?.seed === seed) this.respawnPoint = normalizeRespawnPoint(saved.respawnPoint);
+    this.heroClass = saved?.seed === seed ? normalizeHeroClass(saved.heroClass) : DEFAULT_HERO_CLASS;
+    // Sem mana no save (mundo novo ou save antigo), o Mago começa de mana cheia.
+    this.manaPoints = saved?.seed === seed && saved.mana !== undefined ? normalizeMana(saved.mana, this.maxMana) : this.maxMana;
   }
 
   /** Segundos de jogo desde o começo da aventura. */
   get time(): number { return this.clock; }
+  /** O nível do herói, que decide a mana máxima. */
+  private get level(): number { return levelForExperience(this.experience); }
+  get usesMana(): boolean { return heroClassSheet(this.heroClass).usesMana; }
+  /** Mana atual (0 para quem não usa mana) e o máximo do nível. */
+  get mana(): number { return this.manaPoints; }
+  get maxMana(): number { return heroClassSheet(this.heroClass).maxMana(this.level); }
+  /** Gasta mana, tudo ou nada: sem mana suficiente (ou sem mana nenhuma) nada muda. */
+  spendMana(cost: number): boolean {
+    if (!this.usesMana || !Number.isFinite(cost) || cost <= 0 || this.manaPoints < cost) return false;
+    this.manaPoints -= cost;
+    return true;
+  }
+  private regenerateMana(dt: number): void { this.manaPoints = regenerateMana(this.manaPoints, this.heroClass, this.level, dt); }
   /** Faz o relógio andar fora da superfície (na caverna, por exemplo); só valores positivos e finitos. */
   advanceClock(dt: number): void {
-    if (Number.isFinite(dt) && dt > 0) this.clock += Math.min(dt, 0.1);
+    if (Number.isFinite(dt) && dt > 0) { this.clock += Math.min(dt, 0.1); this.regenerateMana(Math.min(dt, 0.1)); }
   }
   /** Anota quando a criatura derrotada volta (ou que nunca volta). */
   noteDefeat(id: string, kind: CreatureKind): void {
@@ -179,6 +203,7 @@ export class OfflineSimulation {
     this.player.x = RESPAWN_POINTS[this.respawnPoint].x;
     this.player.y = RESPAWN_POINTS[this.respawnPoint].y;
     this.spawnedChunk = "";
+    this.manaPoints = this.maxMana;
     return true;
   }
 
@@ -234,6 +259,7 @@ export class OfflineSimulation {
   ): boolean {
     if (this.awaitingRespawn || !Number.isFinite(dt) || dt <= 0) return false;
     dt = Math.min(dt, 0.1);
+    this.regenerateMana(dt);
     // Cavalaria altera somente o tempo do passo, nunca a malha de colisão.
     const beforeX=this.player.x,beforeY=this.player.y;
     const collision = {
@@ -322,6 +348,7 @@ export class OfflineSimulation {
       ...(wellQuestStarted(this.well.view) ? { wellQuest: this.well.snapshot() } : {}),
       ...(this.bank.used ? { bank: this.bank.snapshot() } : {}),
       ...(this.respawnPoint !== DEFAULT_RESPAWN_POINT ? { respawnPoint: this.respawnPoint } : {}),
+      ...(this.heroClass !== DEFAULT_HERO_CLASS ? { heroClass: this.heroClass, mana: Math.round(this.manaPoints * 100) / 100 } : {}),
       ...(hasNutrition(this.player.nutrition) ? { nutrition: this.player.nutrition } : {}),
       drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),
     };

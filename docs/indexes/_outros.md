@@ -116,6 +116,7 @@
 - [`docs/adr/0062-capital-hospedaria-piloto.md`](../../docs/adr/0062-capital-hospedaria-piloto.md)
 - [`docs/adr/0063-capital-banco-da-casa-da-moeda.md`](../../docs/adr/0063-capital-banco-da-casa-da-moeda.md)
 - [`docs/adr/0064-capital-templo-renascimento.md`](../../docs/adr/0064-capital-templo-renascimento.md)
+- [`docs/adr/0065-heroi-mago-fundacao.md`](../../docs/adr/0065-heroi-mago-fundacao.md)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)
