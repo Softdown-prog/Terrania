@@ -31,9 +31,10 @@ function world(coins = 0) {
   return { sim, context, goTo };
 }
 
-test("só a Hospedaria abre a porta por enquanto: a lista é de decisão do dono, e cada porta é de um edifício construído e fica à frente dele", () => {
-  assert.deepEqual([...CAPITAL_ENTERABLE], ["hospedaria"]);
-  assert.equal(CAPITAL_DOORS.length, 1);
+test("só os edifícios com função abrem a porta (Hospedaria e banco, por enquanto): a lista é de decisão do dono, e cada porta é de um edifício construído e fica à frente dele", () => {
+  assert.deepEqual([...CAPITAL_ENTERABLE], ["hospedaria", "casa-da-moeda"]);
+  assert.equal(CAPITAL_DOORS.length, 2);
+  assert.deepEqual(CAPITAL_DOORS.map(d => d.id), ["capital-hospedaria", "capital-casa-da-moeda"]);
   assert.deepEqual({ ...door }, { id: "capital-hospedaria", name: "Hospedaria dos Viajantes", x: inn.x, y: inn.y + CAPITAL_DOOR_REACH });
   assert.equal(CAPITAL_DOOR_REACH, 29); assert.equal(capitalDoorId("hospedaria"), "capital-hospedaria");
   for (const d of CAPITAL_DOORS) assert.ok(CAPITAL_BUILDINGS.some(b => capitalDoorId(b.id) === d.id), "porta de um edifício construído");
@@ -43,7 +44,7 @@ test("só a Hospedaria abre a porta por enquanto: a lista é de decisão do dono
   assert.equal(canMoveOnSeed(door.x, door.y, SEED), true); assert.equal(capitalBuildingBlocks(door.x, door.y, 7), false);
   assert.equal(CAPITAL_PLOTS.find(p => p.id === "hospedaria")!.door, "s");
   // os outros edifícios construídos ainda são fachada: nenhuma porta abre
-  for (const b of CAPITAL_BUILDINGS.filter(b => b.id !== "hospedaria")) assert.equal(hasInterior(capitalDoorId(b.id)), false, `${b.id} ainda é só fachada`);
+  for (const b of CAPITAL_BUILDINGS.filter(b => !(CAPITAL_ENTERABLE as readonly string[]).includes(b.id))) assert.equal(hasInterior(capitalDoorId(b.id)), false, `${b.id} ainda é só fachada`);
 });
 
 test("o interior de uma porta: só as portas da capital que abrem têm sala, e as da Vila e do Poço Negro seguem como estavam", () => {
@@ -62,8 +63,8 @@ test("a porta se usa da frente do edifício: dentro do alcance de 25 × 28 px da
     const near = nearestNpc(door.x + dx, door.y + dy)?.id;
     if (hit) assert.equal(near, "capital-hospedaria", `${dx},${dy}`); else assert.notEqual(near, "capital-hospedaria", `${dx},${dy}`);
   }
-  assert.equal(nearestNpc(inn.x, inn.y + 7)?.kind, "door"); assert.equal(NPCS.at(-1)!.id, "capital-hospedaria", "as portas da capital vêm por último");
-  assert.equal(npcDialogue(NPCS.at(-1)!, 0).join(" "), "Use E perto da porta para entrar em Hospedaria dos Viajantes.");
+  assert.equal(nearestNpc(inn.x, inn.y + 7)?.kind, "door"); assert.deepEqual(NPCS.slice(-2).map(n => n.id), ["capital-hospedaria", "capital-casa-da-moeda"], "as portas da capital vêm por último");
+  assert.equal(npcDialogue(NPCS.at(-2)!, 0).join(" "), "Use E perto da porta para entrar em Hospedaria dos Viajantes.");
 });
 
 test("a sala da Hospedaria: duas camas e o balcão, mobília que bloqueia, saída pela porta de baixo e paleta própria da capital", () => {

@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (165)
+## Todos os arquivos deste módulo (168)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -28,6 +28,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/atlas.test.ts`](../../tests/atlas.test.ts)
 - [`tests/bestiary-audit.test.ts`](../../tests/bestiary-audit.test.ts)
 - [`tests/browser/app.spec.ts`](../../tests/browser/app.spec.ts)
+- [`tests/browser/capital-bank.spec.ts`](../../tests/browser/capital-bank.spec.ts)
 - [`tests/browser/capital-inn.spec.ts`](../../tests/browser/capital-inn.spec.ts)
 - [`tests/browser/capital-sprite-release.spec.ts`](../../tests/browser/capital-sprite-release.spec.ts)
 - [`tests/browser/catalog.spec.ts`](../../tests/browser/catalog.spec.ts)
@@ -69,8 +70,10 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/cave-rock.test.ts`](../../tests/cave-rock.test.ts)
 - [`tests/cave-style.test.ts`](../../tests/cave-style.test.ts)
 - [`tests/caves.test.ts`](../../tests/caves.test.ts)
+- [`tests/center-bank.test.ts`](../../tests/center-bank.test.ts)
 - [`tests/center-capital-alameda.test.ts`](../../tests/center-capital-alameda.test.ts)
 - [`tests/center-capital-art.test.ts`](../../tests/center-capital-art.test.ts)
+- [`tests/center-capital-bank.test.ts`](../../tests/center-capital-bank.test.ts)
 - [`tests/center-capital-buildings.test.ts`](../../tests/center-capital-buildings.test.ts)
 - [`tests/center-capital-inn.test.ts`](../../tests/center-capital-inn.test.ts)
 - [`tests/center-capital-monument.test.ts`](../../tests/center-capital-monument.test.ts)

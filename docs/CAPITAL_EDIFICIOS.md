@@ -10,7 +10,7 @@ Quando um terreno ganha função, ele entra em `CAPITAL_ENTERABLE` (`src/world/c
 | --- | --- | --- | --- | --- |
 | Hospedaria dos Viajantes | sim | descansar por moedas (vida cheia, sem veneno nem queimadura) | estalagem: duas camas e balcão | **pronto** (ADR 0062) |
 | Templo da Concórdia | sim | cura e bênção | nave com altar | proposta |
-| Casa da Moeda e dos Mercadores | sim | **banco**: guarda o dinheiro do herói e paga juros (ver "O banco") | balcão com grade e cofre | decidido pelo dono (2026-11-21); regra de juros proposta, a confirmar |
+| Casa da Moeda e dos Mercadores | sim | **banco**: guarda o dinheiro do herói e paga juros (ver "O banco") | balcão com grade e cofre | **pronto** (ADR 0063) |
 | Salão do Conselho dos Povos | sim | missões e decretos da capital | salão com mesa do conselho | a decidir (história) |
 | Quartel da Guarda | sim | missões de caça e defesa | sala de armas | a decidir (história) |
 | Salão da Ordem dos Cavaleiros | sim | guilda do cavaleiro | salão de guilda | a decidir |
@@ -31,7 +31,7 @@ A Casa de Cura e o Templo se sobrepõem (as duas curam): antes de desenhar a Cas
 
 Decisão do dono (2026-11-21): em vez de trocar moedas, o morador da Casa da Moeda é um **banqueiro** que guarda o dinheiro do jogador, **com juros**. Hoje o herói não perde moedas ao morrer, então os juros é que dão motivo para depositar.
 
-Regra proposta (os números esperam confirmação do dono):
+Regra entregue (ADR 0063), com os números confirmados pelo dono:
 - **Depositar e sacar** qualquer quantia, só no balcão do banco. O saldo vai no save, separado da carteira.
 - **Juros:** 0,5% a cada 10 minutos de jogo (3% por hora), contados só pelo relógio da aventura: nada rende com o jogo fechado, o que evita ganho sem jogar e mantém o resultado igual em qualquer tela.
 - **Teto dos juros:** só rendem os primeiros 10.000 Terrania Gold do saldo (no máximo 300 por hora). Um chefe que deixe uma Eclipse Crown não vira máquina de dinheiro.
@@ -42,11 +42,11 @@ Se um dia a morte passar a tirar moedas da carteira, o banco ganha um segundo us
 
 ## Moradores
 
-Cada interior com serviço tem um morador na frente da porta (como a Madame Víbora no Poço Negro). Hoje: **Dona Brígida**, hospedeira da Hospedaria (`src/npcs/center/capital/innkeeper.ts`).
+Cada interior com serviço tem um morador na frente da porta (como a Madame Víbora no Poço Negro). Hoje: **Dona Brígida**, hospedeira da Hospedaria (`innkeeper.ts`), e **Mestre Aurélio**, banqueiro da Casa da Moeda (`banker.ts`), ambos em `src/npcs/center/capital/`.
 
 ## Ordem de trabalho
 
 1. Hospedaria (piloto, feito).
-2. Templo e Casa da Moeda, que já têm edifício desenhado e função clara.
+2. Casa da Moeda (banco, feito) e Templo, que já têm edifício desenhado e função clara.
 3. Conselho, Quartel e as três guildas, quando o dono decidir a função de cada um.
 4. Só depois, os 13 terrenos que faltam desenhar (Ofícios e Bairro Residencial, porta ao norte, vistos de trás), e apenas os que têm função.

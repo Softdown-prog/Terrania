@@ -36,7 +36,7 @@ export function capitalBuildingBlocks(x: number, y: number, r: number): boolean 
  * Os edifícios em que o herói pode entrar (ADR 0062): só os que têm função de jogo, por decisão do dono (docs/CAPITAL_EDIFICIOS.md).
  * Os outros são fachada: a porta não abre. A lista cresce edifício a edifício, junto com a função e o interior de cada um.
  */
-export const CAPITAL_ENTERABLE = ["hospedaria"] as const;
+export const CAPITAL_ENTERABLE = ["hospedaria", "casa-da-moeda"] as const;
 
 /** O identificador da porta (e do interior) de um edifício da capital: o do terreno com o prefixo `capital-`, para nunca colidir com o da Vila. */
 export const capitalDoorId = (plotId: string): string => `capital-${plotId}`;

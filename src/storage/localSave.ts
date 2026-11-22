@@ -5,6 +5,7 @@ import { maxHpForExperience, normalizeExperience } from '../engine/character/Exp
 import { hasNutrition, normalizeNutrition } from '../engine/character/Food.ts';
 import { normalizeWellQuest, wellQuestStarted } from '../engine/quests/south/well/index.ts';
 import { normalizeMountSave } from '../engine/mounts/MountStable.ts';
+import { normalizeBank } from '../engine/character/center/bank/index.ts';
 import { MAP_VERSION } from '../world/mapSize.ts';
 import { migrateMapPoint, needsMapMigration } from '../world/mapMigration.ts';
 
@@ -21,6 +22,8 @@ export function loadLocalSave(): OfflineSave | null {
       typeof save.hp !== 'number' || !Number.isFinite(save.hp) ||
       !Array.isArray(save.defeated) || !save.defeated.every(id => typeof id === 'string')) return null;
     const experience = normalizeExperience(save.experience);
+    const clock = typeof save.time === 'number' && Number.isFinite(save.time) && save.time > 0 ? save.time : 0;
+    const bank = normalizeBank(save.bank, clock);
     const awaitingRespawn = save.awaitingRespawn === true && save.hp === 0;
     // Save do mapa antigo (ADR 0059): a posição do herói e a dos itens no chão seguem o Poço Negro para o lugar novo.
     const old = needsMapMigration(save.mapVersion), at = old ? migrateMapPoint(save.x, save.y) : { x: save.x, y: save.y };
@@ -39,7 +42,10 @@ export function loadLocalSave(): OfflineSave | null {
       drops: normalizeDrops(old ? migrateDrops(save.drops) : save.drops),
       ...(Object.keys(normalizeMountSave(save.mounts)).length ?
         { mounts: normalizeMountSave(save.mounts) } : {}),
-      ...(wellQuestStarted(normalizeWellQuest(save.wellQuest)) ? { wellQuest: normalizeWellQuest(save.wellQuest) } : {}) };
+      ...(wellQuestStarted(normalizeWellQuest(save.wellQuest)) ? { wellQuest: normalizeWellQuest(save.wellQuest) } : {}),
+      // O relógio da aventura volta com o save: os juros do banco contam por ele (ADR 0063).
+      ...(clock > 0 ? { time: clock } : {}),
+      ...(bank.balance > 0 ? { bank } : {}) };
   } catch { return null; }
 }
 /** Leva os itens no chão de um save do mapa antigo para o novo; o que não é um item com posição segue como está (e `normalizeDrops` descarta). */

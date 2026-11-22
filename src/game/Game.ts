@@ -30,6 +30,8 @@ import { tickCave } from "./modes/caveMode.ts";
 import { tickSurface } from "./modes/surfaceMode.ts";
 import { tickInterior } from "./modes/interiorMode.ts";
 import { mountQuestAction, npcOffer, questStepId } from "./interactions.ts";
+import { bankDeposit, bankOnTalk, bankWithdraw } from "./actions/center/bankActions.ts";
+import { BANKER_ID } from "../npcs/center/capital/index.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
 import { wellQuestSummary } from "../engine/quests/south/well/index.ts";
 import { WELL_LINES } from "./messages/south/well/index.ts";
@@ -85,6 +87,8 @@ export class Game {
     this.hud.onPotionTrade(() => this.shop(tradeGelForPotion));
     this.hud.onSwordPurchase(() => this.shop(buySword));
     this.hud.onInnRest(() => this.shop(restAtInn));
+    this.hud.onBankDeposit(amount => this.shop(context => bankDeposit(context, amount)));
+    this.hud.onBankWithdraw(amount => this.shop(context => bankWithdraw(context, amount)));
     this.hud.onMaterialSale((market, material, quantity) => this.shop(context => sellMaterial(context, market, material, quantity)));
     this.hud.onElixirCraft(id => this.shop(context => craftElixir(context, id)));
     this.hud.onElixirUse(id => this.shop(context => drinkElixir(context, id)));
@@ -122,6 +126,7 @@ export class Game {
       awaitingRespawn: player.hp <= 0,
     }, aelaQuestProgress(this.sim.trainingKills), wellQuestSummary(this.sim.well.view));
     this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins, inventory.elixirs);
+    this.hud.updateBank(this.sim.bank.balance);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateGear(inventory.gear);
     this.hud.updateMount(this.sim.mounts.view(kills));
@@ -218,7 +223,10 @@ export class Game {
       const lines = npcDialogue(npc, this.sim.trainingKills, offer?.item === "sword");
       const well = this.sim.well.talk(npc.id, this.sim.inventory);
       if (well.changed) { this.save(); this.updateHud(); }
-      const extra = [...(rewarded ? [`Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`] : []),
+      // O banqueiro paga os juros devidos ao começar a conversa (ADR 0063).
+      const bank = npc.id === BANKER_ID ? bankOnTalk(this.sim) : null;
+      if (bank?.changed) { this.save(); this.updateHud(); }
+      const extra = [...(bank?.line ? [bank.line] : []),...(rewarded ? [`Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`] : []),
         ...(well.event ? WELL_LINES[well.event] : [])];
       this.hud.showNpcDialogue(npc.name, npc.role, extra.length ? [...lines, ...extra] : lines, offer);
     }

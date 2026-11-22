@@ -580,6 +580,29 @@
             <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }} · Vida {{ hud.hp() }} / {{ hud.maxHp() }}</p>
             <button id="innRest" (click)="hud.restAtInn()" class="secondary-button" type="button"
               [disabled]="hud.coins() < offer.price">Descansar na hospedaria · {{ hud.coinText(offer.price) }}</button>
+          } @else if (offer.item === 'bank') {
+            <section class="mount-stable-panel" aria-label="Banco da Casa da Moeda">
+              <p id="bankProgress" class="dialog-note">Carteira: {{ hud.coinText(hud.coins()) }} · Saldo no banco: {{ hud.coinText(hud.bankBalance()) }}</p>
+              <div class="bank-row">
+                <span>Guardar</span>
+                @for (step of hud.bankSteps; track step) {
+                  <button type="button" class="secondary-button" [attr.id]="'bank-deposit-' + step"
+                    [disabled]="hud.coins() < step" (click)="hud.bankDeposit(step)">{{ hud.coinText(step) }}</button>
+                }
+                <button type="button" class="secondary-button" id="bank-deposit-all"
+                  [disabled]="hud.coins() <= 0" (click)="hud.bankDeposit('all')">Tudo</button>
+              </div>
+              <div class="bank-row">
+                <span>Retirar</span>
+                @for (step of hud.bankSteps; track step) {
+                  <button type="button" class="secondary-button" [attr.id]="'bank-withdraw-' + step"
+                    [disabled]="hud.bankBalance() < step" (click)="hud.bankWithdraw(step)">{{ hud.coinText(step) }}</button>
+                }
+                <button type="button" class="secondary-button" id="bank-withdraw-all"
+                  [disabled]="hud.bankBalance() <= 0" (click)="hud.bankWithdraw('all')">Tudo</button>
+              </div>
+              <p class="dialog-note">Juros: 0,5% a cada 10 minutos de jogo, sobre os primeiros 10.000 Terrania Gold do saldo. Entram quando você fala com o banqueiro.</p>
+            </section>
           } @else if (offer.item === 'sword') {
             <p class="dialog-note">Você tem {{ hud.coinText(hud.coins()) }} · {{ hud.weapons.forge.damage }} de dano · {{ hud.weapons.forge.interval }} s entre golpes · {{ hud.weapons.forge.windup * 1000 }} ms até o impacto</p>
             <button [disabled]="hud.loadout()?.forged" (click)="hud.buySword()" class="secondary-button" type="button">{{ hud.loadout()?.forged ? "Espada já adquirida" : "Comprar " + hud.weapons.forge.name + " por " + hud.coinText(offer.price) }}</button>

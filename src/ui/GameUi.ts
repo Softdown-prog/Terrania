@@ -37,7 +37,7 @@ export interface CaveMapState {
   readonly tileX: number;
   readonly tileY: number;
 }
-export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary' | 'desert-stable' | 'alchemy'; price: number };
+export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary' | 'desert-stable' | 'alchemy' | 'bank'; price: number };
 
 /** Data and commands exchanged between the game coordinator and the HUD. */
 export interface GameUi {
@@ -52,6 +52,10 @@ export interface GameUi {
   onFoodTrade(callback: (id: FoodId) => string): void;
   onSwordPurchase(callback: () => string): void;
   onInnRest(callback: () => string): void;
+  /** Banco da Casa da Moeda (ADR 0063): guardar e retirar moedas (valor em Terrania Gold ou "all"). */
+  onBankDeposit(callback: (amount: number | 'all') => string): void;
+  onBankWithdraw(callback: (amount: number | 'all') => string): void;
+  updateBank(balance: number): void;
   onElixirCraft(callback: (id: ElixirId) => string): void;
   onElixirUse(callback: (id: ElixirId) => string): void;
   onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void;

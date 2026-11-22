@@ -1,4 +1,4 @@
-import { INNKEEPER_ID } from "../npcs/center/capital/index.ts";
+import { BANKER_ID, INNKEEPER_ID } from "../npcs/center/capital/index.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { currentMountQuestStep, type MountQuestProgress } from "../engine/mounts/MountQuestState.ts";
 import { FORGE_SWORD_PRICE } from "../engine/character/Weapons.ts";
@@ -58,6 +58,7 @@ export function npcOffer(npcId: string): NpcOffer | undefined {
   if (npcId === "south-marn") return { item: "ossuary", price: 0 };
   if (npcId === "south-ixtal") return { item: "alchemy", price: 0 };
   if (npcId === "south-madame" || npcId === INNKEEPER_ID) return { item: "rest", price: INN_REST_PRICE };
+  if (npcId === BANKER_ID) return { item: "bank", price: 0 };
   if (npcId === "stablemaster") return { item: "stable", price: 0 };
   return undefined;
 }

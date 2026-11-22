@@ -72,6 +72,12 @@ export const ROOM_FURNITURE: Readonly<Record<string, readonly Furniture[]>> = {
     {x:258,y:76,width:76,height:80,kind:"bed"},
     {x:130,y:100,width:100,height:42,kind:"table"},
   ],
+  // Casa da Moeda e dos Mercadores, o banco da capital (ADR 0063): duas estantes de livros-razão e o balcão do banqueiro no meio.
+  "capital-casa-da-moeda":[
+    {x:30,y:85,width:75,height:44,kind:"shelf"},
+    {x:255,y:85,width:75,height:44,kind:"shelf"},
+    {x:115,y:100,width:130,height:42,kind:"table"},
+  ],
 };
 /** Em que lugar fica o interior de uma porta, para o painel: a capital, o Poço Negro ou, por omissão, a Vila da Travessia. */
 export function interiorPlace(doorId: string): string {

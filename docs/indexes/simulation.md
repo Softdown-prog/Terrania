@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (61)
+## Todos os arquivos deste módulo (68)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -30,6 +30,13 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/Food.ts`](../../src/engine/character/Food.ts)
 - [`src/engine/character/Inventory.ts`](../../src/engine/character/Inventory.ts)
 - [`src/engine/character/Weapons.ts`](../../src/engine/character/Weapons.ts)
+- [`src/engine/character/center/bank/Bank.ts`](../../src/engine/character/center/bank/Bank.ts)
+- [`src/engine/character/center/bank/constants.ts`](../../src/engine/character/center/bank/constants.ts)
+- [`src/engine/character/center/bank/index.ts`](../../src/engine/character/center/bank/index.ts)
+- [`src/engine/character/center/bank/interest.ts`](../../src/engine/character/center/bank/interest.ts)
+- [`src/engine/character/center/bank/normalize.ts`](../../src/engine/character/center/bank/normalize.ts)
+- [`src/engine/character/center/bank/results.ts`](../../src/engine/character/center/bank/results.ts)
+- [`src/engine/character/center/bank/state.ts`](../../src/engine/character/center/bank/state.ts)
 - [`src/engine/character/coins/cripta-coin.ts`](../../src/engine/character/coins/cripta-coin.ts)
 - [`src/engine/character/coins/drops.ts`](../../src/engine/character/coins/drops.ts)
 - [`src/engine/character/coins/eclipse-crown.ts`](../../src/engine/character/coins/eclipse-crown.ts)

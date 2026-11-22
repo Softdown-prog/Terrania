@@ -21,6 +21,7 @@ import type { CreatureKind } from "../actors/CreatureCatalog.ts";
 import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./character/Experience.ts";
 import { hasNutrition, type NutritionState } from "./character/Food.ts";
 import { WellInvestigation, wellQuestStarted, type WellQuestState } from "./quests/south/well/index.ts";
+import { Bank, type BankState } from "./character/center/bank/index.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
 export interface OfflineSave {
@@ -41,6 +42,8 @@ export interface OfflineSave {
   mounts?: MountSave;
   /** Missão "A Água Escura" (ADR 0031); ausente enquanto não começou. */
   wellQuest?: WellQuestState;
+  /** Banco da Casa da Moeda (ADR 0063); ausente enquanto não há saldo. */
+  bank?: BankState;
   /** Versão do tamanho do mapa em que o save foi feito (ADR 0059); sem ela, o save é do mapa antigo e a posição é migrada ao carregar. */
   mapVersion?: number;
   /** Relógio da aventura, em segundos de jogo (ADR 0029). */
@@ -66,6 +69,8 @@ export class OfflineSimulation {
   readonly inventory: Inventory;
   /** Missão "A Água Escura" (ADR 0031). */
   readonly well: WellInvestigation;
+  /** Banco da Casa da Moeda da capital (ADR 0063). */
+  readonly bank: Bank;
   readonly mounts: MountStable;
   readonly drops = new Map<string, LootDrop>();
   readonly collision: SeedCollision;
@@ -123,6 +128,8 @@ export class OfflineSimulation {
         if (this.defeated.has(drop.id.replace(/:coin$/, ""))) this.drops.set(drop.id, drop);
       }
     }
+    // O banco depende do relógio já carregado: os juros devidos contam do instante gravado, nunca de um futuro.
+    this.bank = new Bank(saved?.seed === seed ? saved.bank : undefined, this.clock);
   }
 
   /** Segundos de jogo desde o começo da aventura. */
@@ -308,6 +315,7 @@ export class OfflineSimulation {
       inventory: this.inventory.snapshot(),
       ...(Object.keys(this.mounts.snapshot()).length ? { mounts: this.mounts.snapshot() } : {}),
       ...(wellQuestStarted(this.well.view) ? { wellQuest: this.well.snapshot() } : {}),
+      ...(this.bank.used ? { bank: this.bank.snapshot() } : {}),
       ...(hasNutrition(this.player.nutrition) ? { nutrition: this.player.nutrition } : {}),
       drops: [...this.drops.values()].slice(0, MAX_WORLD_DROPS),
     };

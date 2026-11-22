@@ -257,3 +257,7 @@ noscript a {
 .market-row { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin: .3rem 0; }
 .market-row > span { flex: 1 1 14rem; font-size: .88rem; }
 .market-row > button { flex: 0 0 auto; }
+/* Banco da capital (ADR 0063): o rótulo e três botões numa só linha, para guardar e retirar caberem sem rolar o diálogo. */
+.bank-row { display: grid; grid-template-columns: 4.2rem repeat(3, minmax(0, 1fr)); align-items: stretch; gap: .35rem; margin: .3rem 0; }
+.bank-row > span { align-self: center; font-size: .88rem; }
+.bank-row > button { width: auto; min-width: 0; padding-inline: .3rem; font-size: .8rem; line-height: 1.2; }
