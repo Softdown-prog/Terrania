@@ -98,7 +98,8 @@ export class OfflineSimulation {
   private readonly respawnAt = new Map<string, number>();
   private nextRespawnScan = 0;
 
-  constructor(seed: number, saved?: OfflineSave) {
+  /** `startingClass`: a vocação escolhida ao criar este mundo; um save do mesmo mundo manda mais (a vocação nunca muda). */
+  constructor(seed: number, saved?: OfflineSave, startingClass?: HeroClassId) {
     this.seed = seed;
     this.collision = new SeedCollision(seed);
     this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined,
@@ -143,7 +144,7 @@ export class OfflineSimulation {
     // O banco depende do relógio já carregado: os juros devidos contam do instante gravado, nunca de um futuro.
     this.bank = new Bank(saved?.seed === seed ? saved.bank : undefined, this.clock);
     if (saved?.seed === seed) this.respawnPoint = normalizeRespawnPoint(saved.respawnPoint);
-    this.heroClass = saved?.seed === seed ? normalizeHeroClass(saved.heroClass) : DEFAULT_HERO_CLASS;
+    this.heroClass = normalizeHeroClass(saved?.seed === seed ? saved.heroClass : startingClass);
     // Sem mana no save (mundo novo ou save antigo), o Mago começa de mana cheia.
     this.manaPoints = saved?.seed === seed && saved.mana !== undefined ? normalizeMana(saved.mana, this.maxMana) : this.maxMana;
   }

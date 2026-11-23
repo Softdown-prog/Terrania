@@ -26,7 +26,8 @@ O [ROADMAP](../ROADMAP.md) dizia para concluir o Cavaleiro antes das outras voca
 | C | Cajados: ficha, desenho e o primeiro cajado (Aprendiz) | a fazer |
 | D | Combate à distância: projétil com mana, na superfície **e na caverna** (mesma fórmula de defesa e alvos), mana sincronizada na caverna, descanso devolve mana | a fazer |
 | E | Animação de conjurar, projétil e impacto, e a barra de mana na tela | a fazer |
-| F | Escolher a vocação ao criar o mundo; inventário e loja com cajados; **só aqui o Mago fica jogável** | a fazer |
+| F1 | Tela de escolha do herói ao criar o mundo, com o Mago bloqueado ("Em breve") | **feita** ([ADR 0066](0066-tela-de-escolha-do-heroi.md)) |
+| F2 | Inventário e loja com cajados; **liberar o Mago** (`playable` em `mage.ts`) | a fazer |
 | G | Cajados 2 a 11, em lotes | a fazer |
 
 Perguntas que ficam para as fatias seguintes: a vida do Mago (hoje a mesma do Cavaleiro; talvez menor), o custo de mana e o alcance de cada cajado, e como o Mago consegue cajados (loja da Academia Arcana? loot?).

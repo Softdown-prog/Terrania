@@ -5,6 +5,7 @@ import type { ElixirCounts, ElixirId } from '../engine/character/south/alchemy/i
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
 import type { MarketId } from '../engine/character/coins/index.ts';
 import type { RespawnPointId } from '../engine/character/center/shrine/index.ts';
+import type { HeroClassId } from '../engine/character/classes/index.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/character/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/character/Equipment.ts';
@@ -57,6 +58,8 @@ export interface GameUi {
   onBankDeposit(callback: (amount: number | 'all') => string): void;
   onBankWithdraw(callback: (amount: number | 'all') => string): void;
   updateBank(balance: number): void;
+  /** Tela de escolha do herói (ADR 0066): abre a janela e chama `onChoose` quando o jogador escolhe uma vocação jogável. */
+  promptHeroClass(onChoose: (heroClass: HeroClassId) => void): void;
   /** Templo da Concórdia (ADR 0064): escolher onde renascer, e mostrar onde já se renasce. */
   onShrineChoose(callback: (point: RespawnPointId) => string): void;
   updateRespawnPoint(point: RespawnPointId): void;

@@ -9,6 +9,6 @@ export const MAGE_MANA_PER_LEVEL = 10;
 export const MAGE_FULL_RECHARGE_SECONDS = 20;
 const maxMana = (level: number): number => MAGE_BASE_MANA + (Math.max(1, Math.floor(level)) - 1) * MAGE_MANA_PER_LEVEL;
 export const MAGE: HeroClassSheet = {
-  id: "mage", name: "Mago", usesMana: true, maxMana,
+  id: "mage", name: "Mago", playable: false, usesMana: true, maxMana,
   manaPerSecond: level => maxMana(level) / MAGE_FULL_RECHARGE_SECONDS,
 };

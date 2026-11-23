@@ -12,6 +12,8 @@ import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { SOUTH_MOUNT_SALES } from '../engine/mounts/southMountSales.ts';
 import { BANK_STEPS } from '../engine/character/center/bank/index.ts';
 import { DEFAULT_RESPAWN_POINT, RESPAWN_POINTS, type RespawnPointId } from '../engine/character/center/shrine/index.ts';
+import { HERO_CLASSES, HERO_CLASS_IDS, isHeroClassPlayable, type HeroClassId } from '../engine/character/classes/index.ts';
+import { HERO_CLASS_HINT, HERO_CLASS_INTRO, HERO_CLASS_LOCKED, HERO_CLASS_TITLE } from '../game/messages/classIntro.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
 import { ELIXIR_RECIPES, elixirRecipe, emptyElixirCounts, type ElixirCounts, type ElixirId } from '../engine/character/south/alchemy/index.ts';
@@ -98,6 +100,12 @@ export class HudService implements GameUi {
   /** Saldo do banco da capital, em Terrania Gold (ADR 0063). */
   readonly bankBalance = signal(0);
   readonly bankSteps = BANK_STEPS;
+  /** Tela de escolha do herói (ADR 0066): aberta enquanto o jogador ainda não escolheu. */
+  readonly heroClassPrompt = signal(false);
+  readonly heroClassIds = HERO_CLASS_IDS;
+  readonly heroClasses = HERO_CLASSES;
+  readonly heroClassIntro = HERO_CLASS_INTRO;
+  readonly heroClassText = { locked: HERO_CLASS_LOCKED, title: HERO_CLASS_TITLE, hint: HERO_CLASS_HINT };
   /** Onde o herói renasce (ADR 0064): a Vila ou o Templo da capital. */
   readonly respawnPoint = signal<RespawnPointId>(DEFAULT_RESPAWN_POINT);
   readonly respawnPoints = RESPAWN_POINTS;
@@ -233,6 +241,7 @@ export class HudService implements GameUi {
   private talkCallback: () => void = () => {};
   private potionTradeCallback: () => string = () => '';
   private innRestCallback: () => string = () => '';
+  private heroClassCallback: (heroClass: HeroClassId) => void = () => {};
   private shrineChooseCallback: (point: RespawnPointId) => string = () => '';
   private bankDepositCallback: (amount: number | 'all') => string = () => '';
   private bankWithdrawCallback: (amount: number | 'all') => string = () => '';
@@ -313,6 +322,13 @@ export class HudService implements GameUi {
   talk(): void { this.talkCallback(); }
   tradePotion(): void { this.npcTradeFeedback.set(this.potionTradeCallback()); }
   restAtInn(): void { this.npcTradeFeedback.set(this.innRestCallback()); }
+  promptHeroClass(onChoose: (heroClass: HeroClassId) => void): void { this.heroClassCallback = onChoose; this.heroClassPrompt.set(true); }
+  /** Só uma vocação jogável fecha a tela; a bloqueada ("Em breve") não faz nada. */
+  chooseHeroClass(heroClass: HeroClassId): void {
+    if (!this.heroClassPrompt() || !isHeroClassPlayable(heroClass)) return;
+    this.heroClassPrompt.set(false);
+    this.heroClassCallback(heroClass);
+  }
   chooseRespawnPoint(point: RespawnPointId): void { this.npcTradeFeedback.set(this.shrineChooseCallback(point)); }
   updateRespawnPoint(point: RespawnPointId): void { this.respawnPoint.set(point); }
   bankDeposit(amount: number | 'all'): void { this.npcTradeFeedback.set(this.bankDepositCallback(amount)); }

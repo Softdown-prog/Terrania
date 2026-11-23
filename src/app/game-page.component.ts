@@ -15,7 +15,7 @@ import { REGIONS, getWorldRegion } from '../world/regions.ts';
 import { getRegionDifficulty } from '../world/regionDifficulty.ts';
 import { getTile } from '../world/terrain.ts';
 
-@Component({ selector: 'app-game-page', templateUrl: './game-page.html', styleUrls: ['./styles/game-core.css', './styles/dialogs-and-controls.css', './styles/responsive.css', './styles/inventory.css', './styles/game-overlays.css', './styles/battle-list.css', './styles/world-atlas.css', './styles/mounts.css'],
+@Component({ selector: 'app-game-page', templateUrl: './game-page.html', styleUrls: ['./styles/game-core.css', './styles/dialogs-and-controls.css', './styles/responsive.css', './styles/inventory.css', './styles/game-overlays.css', './styles/battle-list.css', './styles/world-atlas.css', './styles/mounts.css', './styles/hero-select.css'],
   imports: [RouterLink, OnlinePlayersComponent, ItemIconComponent], providers: [HudService], changeDetection: ChangeDetectionStrategy.OnPush })
 export class GamePageComponent implements AfterViewInit {
   readonly hud = inject(HudService);
@@ -59,6 +59,9 @@ export class GamePageComponent implements AfterViewInit {
   private readonly mount = viewChild.required<ElementRef<HTMLElement>>('mount');
   private readonly npcDialog = viewChild.required<ElementRef<HTMLDialogElement>>('npcDialog');
   private readonly defeatDialog = viewChild<ElementRef<HTMLDialogElement>>('defeatDialog');
+  private readonly classDialog = viewChild<ElementRef<HTMLDialogElement>>('classDialog');
+  private readonly classKnight = viewChild<ElementRef<HTMLCanvasElement>>('classKnight');
+  private classPreviewFrame = 0;
   private readonly playersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('playersDialog');
   private readonly inventoryDialog = viewChild.required<ElementRef<HTMLDialogElement>>('inventoryDialog');
   private readonly inventoryHero = viewChild<ElementRef<HTMLCanvasElement>>('inventoryHero');
@@ -86,6 +89,20 @@ export class GamePageComponent implements AfterViewInit {
       }
     });
     effect(() => {
+      // Tela de escolha do herói (ADR 0066): abre enquanto o jogador novo não escolheu e fecha ao escolher.
+      const prompt = this.hud.heroClassPrompt();
+      const dialog = this.classDialog()?.nativeElement;
+      if (!dialog || dialog.open === prompt) return;
+      if (prompt) {
+        this.open(dialog);
+        cancelAnimationFrame(this.classPreviewFrame);
+        this.classPreviewFrame = requestAnimationFrame(now => this.drawClassPreview(now));
+      } else {
+        cancelAnimationFrame(this.classPreviewFrame);
+        dialog.close();
+      }
+    });
+    effect(() => {
       const awaitingRespawn = this.hud.awaitingRespawn();
       const dialog = this.defeatDialog()?.nativeElement;
       if (!dialog || dialog.open === awaitingRespawn) return;
@@ -102,6 +119,20 @@ export class GamePageComponent implements AfterViewInit {
     if (!Number.isInteger(id) || id < 0 || id > 8) return;
     this.selectedSector.set(id);
     this.atlasScale.set('sector');
+  }
+  /** O Cavaleiro da tela de escolha é o mesmo herói procedural do mundo, de frente e com a espada de treino. */
+  private drawClassPreview(time: number): void {
+    if (!this.hud.heroClassPrompt()) return;
+    const canvas = this.classKnight()?.nativeElement, ctx = canvas?.getContext('2d');
+    if (ctx && canvas) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height * 0.82);
+      ctx.scale(2.6, 2.6);
+      renderHero(ctx, { faceX: 0, faceY: 1, walkTime: 0, attackTime: 0, attackWeapon: 'starter', equippedWeapon: 'starter', vx: 0, vy: 0, id: 'class-preview' }, 0, 0, time / 1000);
+      ctx.restore();
+    }
+    this.classPreviewFrame = requestAnimationFrame(now => this.drawClassPreview(now));
   }
   rotateInventoryHero(): void { this.previewDirection.update(value => (value + 1) % 4); }
   /** Usa o mesmo personagem procedural do mundo, não uma ilustração independente. */
@@ -136,7 +167,7 @@ export class GamePageComponent implements AfterViewInit {
     } catch { /* Private browsing can block storage; closing still works this session. */ }
     // An open sidebar fits a desktop; Android stays collapsed until requested.
     this.battleOpen.set(window.matchMedia('(pointer: fine) and (min-width: 651px)').matches);
-    this.destroy.onDestroy(() => cancelAnimationFrame(this.previewFrame));
+    this.destroy.onDestroy(() => { cancelAnimationFrame(this.previewFrame); cancelAnimationFrame(this.classPreviewFrame); });
     // Só o contador de quem está jogando: anônimo, sem conta, e o jogo nunca depende da resposta.
     this.destroy.onDestroy(startPlayPresence({ endpoint: heartbeatEndpoint(runtimeConfig.multiplayerUrl, runtimeConfig.presenceUrl) }));
     try { this.destroy.onDestroy(mountGame(this.mount().nativeElement, this.hud)); }

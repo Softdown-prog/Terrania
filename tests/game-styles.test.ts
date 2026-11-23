@@ -6,7 +6,7 @@ const STYLES=[
   "./styles/game-core.css","./styles/dialogs-and-controls.css",
   "./styles/responsive.css","./styles/inventory.css",
   "./styles/game-overlays.css","./styles/battle-list.css",
-  "./styles/world-atlas.css","./styles/mounts.css",
+  "./styles/world-atlas.css","./styles/mounts.css","./styles/hero-select.css",
 ] as const;
 const contents=STYLES.map(p=>readFileSync(join("src/app",p),"utf8"));
 test("GamePage: CSSs carregados na ordem exata e sem folha duplicada",()=>{

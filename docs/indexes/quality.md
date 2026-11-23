@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (171)
+## Todos os arquivos deste módulo (174)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -45,6 +45,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/coin-drops.spec.ts`](../../tests/browser/coin-drops.spec.ts)
 - [`tests/browser/coin-shop.spec.ts`](../../tests/browser/coin-shop.spec.ts)
 - [`tests/browser/coins.spec.ts`](../../tests/browser/coins.spec.ts)
+- [`tests/browser/hero-select.spec.ts`](../../tests/browser/hero-select.spec.ts)
 - [`tests/browser/map-size.spec.ts`](../../tests/browser/map-size.spec.ts)
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/browser/roads.spec.ts`](../../tests/browser/roads.spec.ts)
@@ -59,6 +60,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/south-market.spec.ts`](../../tests/browser/south-market.spec.ts)
 - [`tests/browser/south-stable.spec.ts`](../../tests/browser/south-stable.spec.ts)
 - [`tests/browser/south-well-quest.spec.ts`](../../tests/browser/south-well-quest.spec.ts)
+- [`tests/browser/support/returning-player.ts`](../../tests/browser/support/returning-player.ts)
 - [`tests/browser/tower-interior.spec.ts`](../../tests/browser/tower-interior.spec.ts)
 - [`tests/bundle-budget.test.ts`](../../tests/bundle-budget.test.ts)
 - [`tests/capital-sprite-release.test.ts`](../../tests/capital-sprite-release.test.ts)
@@ -114,6 +116,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/helpers/spyContext.ts`](../../tests/helpers/spyContext.ts)
 - [`tests/hero-classes.test.ts`](../../tests/hero-classes.test.ts)
 - [`tests/hero-pose.test.ts`](../../tests/hero-pose.test.ts)
+- [`tests/hero-select.test.ts`](../../tests/hero-select.test.ts)
 - [`tests/interactions.test.ts`](../../tests/interactions.test.ts)
 - [`tests/interior.test.ts`](../../tests/interior.test.ts)
 - [`tests/inventory-storage.test.ts`](../../tests/inventory-storage.test.ts)

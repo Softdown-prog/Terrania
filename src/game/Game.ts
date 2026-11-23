@@ -32,6 +32,7 @@ import { tickInterior } from "./modes/interiorMode.ts";
 import { mountQuestAction, npcOffer, questStepId } from "./interactions.ts";
 import { bankDeposit, bankOnTalk, bankWithdraw } from "./actions/center/bankActions.ts";
 import { chooseRespawnPoint } from "./actions/center/shrineActions.ts";
+import { isHeroClassPlayable, type HeroClassId } from "../engine/character/classes/index.ts";
 import { BANKER_ID } from "../npcs/center/capital/index.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
 import { wellQuestSummary } from "../engine/quests/south/well/index.ts";
@@ -71,6 +72,8 @@ export class Game {
         ? parsed
         : (saved?.seed ?? 842136);
     this.replaceWorld(seed, saved && saved.seed === seed ? saved : undefined);
+    // Jogador novo (sem save deste mundo): escolhe o herói antes de jogar (ADR 0066).
+    if (!saved || saved.seed !== seed) this.askHeroClass();
     const preferences = this.hud.loadPreferences();
     this.configure(preferences);
     this.camera.zoom = preferences.zoom;
@@ -173,7 +176,16 @@ export class Game {
     this.camera.reducedMotion = !p.cameraMotion;
     this.effects.enabled = p.effects;
   }
-  private replaceWorld(seed: number, saved?: OfflineSave): void {
+  /** Abre a tela de escolha do herói; o jogo fica pausado até o jogador escolher. */
+  private askHeroClass(): void { this.hud.promptHeroClass(heroClass => this.startAs(heroClass)); }
+  /** Começa o mundo atual com a vocação escolhida e já salva, para a tela não voltar na próxima abertura. */
+  private startAs(heroClass: HeroClassId): void {
+    if (!isHeroClassPlayable(heroClass)) return;
+    if (heroClass !== this.sim.heroClass) this.replaceWorld(this.sim.seed, undefined, heroClass);
+    this.save();
+    this.updateHud();
+  }
+  private replaceWorld(seed: number, saved?: OfflineSave, startingClass?: HeroClassId): void {
     this.input.clear();
     this.travel.stopAll();
     this.travel.autoFollow = true;
@@ -185,7 +197,7 @@ export class Game {
     this.hud.setCave(null);
     this.world.clear();
     this.world = new WorldRenderer(seed);
-    this.sim = new OfflineSimulation(seed, saved);
+    this.sim = new OfflineSimulation(seed, saved, startingClass);
     this.camera.snap(this.sim.player.x, this.sim.player.y);
     this.effects.reset();
     this.timers.accumulator = 0;
@@ -314,7 +326,8 @@ export class Game {
     const url = new URL(location.href);
     url.searchParams.set("seed", String(seed));
     history.replaceState(null, "", url);
-    this.save();
+    // Mundo novo: o herói é escolhido agora, e só a escolha salva (ADR 0066).
+    this.askHeroClass();
   }
   private respawn(): void {
     if (!this.sim.respawn()) return;

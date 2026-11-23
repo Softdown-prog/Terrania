@@ -152,6 +152,33 @@
         <p id="defeatPlace">Você renasce em {{ hud.respawnPoints[hud.respawnPoint()].name }} com a vida cheia. Seu XP, sua bolsa e o progresso da missão estão guardados.</p>
         <button class="primary-button" (click)="hud.respawn()" type="button" autofocus>{{ hud.respawnPoint() === 'capital-temple' ? 'Renascer no Templo' : 'Retornar à vila' }}</button>
       </dialog>
+      <dialog id="classDialog" #classDialog (cancel)="$event.preventDefault()" (close)="closed()" aria-labelledby="classTitle" class="hero-select">
+        <span class="dialog-kicker">TERRANIA ORIGINS</span>
+        <h1 id="classTitle">{{ hud.heroClassText.title }}</h1>
+        <p class="hero-select-hint">{{ hud.heroClassText.hint }}</p>
+        <div class="hero-select-grid">
+          @for (id of hud.heroClassIds; track id) {
+            @let sheet = hud.heroClasses[id];
+            @let intro = hud.heroClassIntro[id];
+            <article class="hero-card" [class.locked]="!sheet.playable" [attr.data-hero]="id">
+              <div class="hero-card-art" aria-hidden="true">
+                @if (id === 'knight') { <canvas #classKnight width="170" height="190"></canvas> }
+                @else { <span class="hero-card-orb">✦</span> }
+              </div>
+              <h2>{{ sheet.name }}</h2>
+              @if (!sheet.playable) { <span class="hero-card-badge">{{ hud.heroClassText.locked }}</span> }
+              <p>{{ intro.tagline }}</p>
+              <ul>
+                @for (trait of intro.traits; track trait) { <li>{{ trait }}</li> }
+              </ul>
+              <button type="button" class="primary-button" [attr.id]="'choose-' + id"
+                [disabled]="!sheet.playable" (click)="hud.chooseHeroClass(id)">
+                {{ sheet.playable ? 'Jogar como ' + sheet.name : sheet.name + ' · ' + hud.heroClassText.locked }}
+              </button>
+            </article>
+          }
+        </div>
+      </dialog>
       <dialog id="playersDialog" #playersDialog (close)="closed()" aria-labelledby="playersTitle">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar jogadores online">×</button>
         <span class="dialog-kicker">COMUNIDADE · QUEM ESTÁ JOGANDO</span>

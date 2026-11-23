@@ -11,7 +11,7 @@ Páginas do site, navegação, HUD e ações de interface. Não calcula regras a
 - [`src/app/routes.ts`](../../src/app/routes.ts)
 - [`src/app/game-page.component.ts`](../../src/app/game-page.component.ts)
 
-## Todos os arquivos deste módulo (34)
+## Todos os arquivos deste módulo (35)
 
 - [`src/app/README.md`](../../src/app/README.md)
 - [`src/app/catalog-page.component.ts`](../../src/app/catalog-page.component.ts)
@@ -40,6 +40,7 @@ Páginas do site, navegação, HUD e ações de interface. Não calcula regras a
 - [`src/app/styles/dialogs-and-controls.css`](../../src/app/styles/dialogs-and-controls.css)
 - [`src/app/styles/game-core.css`](../../src/app/styles/game-core.css)
 - [`src/app/styles/game-overlays.css`](../../src/app/styles/game-overlays.css)
+- [`src/app/styles/hero-select.css`](../../src/app/styles/hero-select.css)
 - [`src/app/styles/inventory.css`](../../src/app/styles/inventory.css)
 - [`src/app/styles/mounts.css`](../../src/app/styles/mounts.css)
 - [`src/app/styles/responsive.css`](../../src/app/styles/responsive.css)

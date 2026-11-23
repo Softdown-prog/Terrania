@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { PROTOCOL_VERSION } from '../../src/shared/protocol.ts';
+import { NEW_PLAYER_STATE } from './support/returning-player.ts';
+
+// Estes testes montam o próprio save e só o gravam com o navegador vazio (para o progresso sobreviver ao recarregar): começam sem save.
+test.use({ storageState: NEW_PLAYER_STATE });
 
 for (const layout of ['normal', 'paisagem'] as const) {
   test(`derrota solo persiste e retorna à vila com o progresso preservado (${layout})`, async ({ page }, info) => {
@@ -240,6 +244,11 @@ test('o inventário solo mostra dez espaços e salva equipar e retirar o elmo', 
     await activate(page.locator('#gameMenuButton'));
     await activate(page.locator('#inventoryButton'));
   };
+  // Um jogador que já voltou (save de jogo recém-começado): a tela de escolha do herói é só para quem é novo.
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('terrania-origins-v1'))
+      localStorage.setItem('terrania-origins-v1', JSON.stringify({ seed: 842136, x: 16, y: 16, hp: 100, kills: 0, defeated: [] }));
+  });
   await page.goto('/jogar/?modo=solo');
   await openBag();
   const equipmentTab = page.locator('#inventoryTabEquipment');
