@@ -18,6 +18,23 @@ export interface SwordMountFrame {
   readonly gripY: number;
 }
 
+/** Onde o cajado do Mago fica na mão (ADR 0068): a origem do cajado, o quanto ele pende para fora e qual mão o segura. */
+export interface StaffMountFrame {
+  readonly ox: number;
+  readonly oy: number;
+  readonly rot: number;
+  readonly hand: number;
+  readonly gripX: number;
+  readonly gripY: number;
+}
+/** O Mago segura o cajado em pé, ao lado do corpo, pendendo um pouco para fora e oscilando com o passo; a mão é a mesma da espada. */
+export const STAFF_LEAN = 0.22;
+export function staffMount(player: { readonly faceX: number }, sway = 0): StaffMountFrame {
+  const hand = player.faceX < -.3 ? -1 : 1;
+  const gripX = hand * 10.2, gripY = -14.6;
+  return { ox: gripX, oy: gripY, rot: hand * STAFF_LEAN + sway, hand, gripX, gripY };
+}
+
 /** A mesma mão sustenta cabo, braço e rastro nas quatro orientações.
  * As coordenadas são visuais, relativas aos pés; não afetam combate ou colisões.
  */

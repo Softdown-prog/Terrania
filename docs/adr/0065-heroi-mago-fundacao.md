@@ -23,7 +23,7 @@ O [ROADMAP](../ROADMAP.md) dizia para concluir o Cavaleiro antes das outras voca
 | --- | --- | --- |
 | A | Fundação: vocação e mana no motor e no save | **feita (esta)** |
 | B | Corpo do herói mago: mistura de túnica azul-violeta, manto escuro e chapéu pontudo, desenhado por vocação, no contrato de arte | **feita** ([ADR 0067](0067-corpo-do-heroi-mago.md)) |
-| C | Cajados: ficha, desenho e o primeiro cajado (Aprendiz) | a fazer |
+| C | Cajados: ficha, desenho e o primeiro cajado (Aprendiz) | **feita** ([ADR 0068](0068-cajados-do-mago.md)) |
 | D | Combate à distância: projétil com mana, na superfície **e na caverna** (mesma fórmula de defesa e alvos), mana sincronizada na caverna, descanso devolve mana | a fazer |
 | E | Animação de conjurar, projétil e impacto, e a barra de mana na tela | a fazer |
 | F1 | Tela de escolha do herói ao criar o mundo, com o Mago bloqueado ("Em breve") | **feita** ([ADR 0066](0066-tela-de-escolha-do-heroi.md)) |

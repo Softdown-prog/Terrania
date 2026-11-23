@@ -55,6 +55,10 @@ import { MOUNTS, MOUNT_IDS } from "../../src/actors/MountCatalog.ts";
 import { REGIONAL_CREATURE_KINDS, SECOND_WAVE_KINDS, SOUTH_COMMON_KINDS, CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
 import { renderHero, renderSlime } from "../../src/render/actors.ts";
 import type { HeroDrawContext } from "../../src/render/hero/context.ts";
+import { STAFF_IDS, STAVES } from "../../src/engine/character/Staves.ts";
+import { drawMageStaff } from "../../src/render/staves.ts";
+import { paintStaffShaft } from "../../src/render/staves/shaft.ts";
+import { paintStaffHead } from "../../src/render/staves/head.ts";
 import { drawWizardHat } from "../../src/render/hero/mage/hat.ts";
 import { drawMageCloak } from "../../src/render/hero/mage/cloak.ts";
 import { drawMageRobe } from "../../src/render/hero/mage/robe.ts";
@@ -138,6 +142,10 @@ export const ASSETS: ArtAsset[] = [
   { id: "mago: manto escuro com capuz", tier: "prop", fn: "drawMageCloak", draw: c => drawMageCloak(c, mageCtx({ back: true })) },
   { id: "mago: barra da túnica", tier: "prop", fn: "drawMageRobe", draw: c => drawMageRobe(c, mageCtx()) },
   { id: "mago: detalhes do tronco", tier: "prop", fn: "drawMageTorso", draw: c => drawMageTorso(c, mageCtx()) },
+  // O cajado do Mago (ADR 0068): o cajado inteiro de cada ficha e as duas peças que o compõem, cada uma cumprindo o piso das peças pequenas.
+  ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "Cajado procedural " + kind, tier: "prop", fn: "drawMageStaff", draw: c => drawMageStaff(c, kind, 1) })),
+  { id: "cajado: haste de carvalho", tier: "prop", fn: "paintStaffShaft", draw: c => paintStaffShaft(c, STAVES.apprentice.visual, t => t) },
+  { id: "cajado: engaste com gema", tier: "prop", fn: "paintStaffHead", draw: c => paintStaffHead(c, STAVES.apprentice.visual, t => t, 1) },
   { id: "hero mago andando", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, walkTime: 0.9, vx: 70, vy: 0, faceX: 1, faceY: 0, heroClass: "mage" }, 0, 0, 1) },
   ...WEAPON_IDS.map<ArtAsset>(kind => ({
     id:"Espada procedural "+kind,tier:"prop",fn:"drawKnightSword",

@@ -2,7 +2,9 @@ import { drawKnightSword, drawKnightTrail } from "./swords.ts";
 import type { Player } from "../actors/Player.ts";
 import type { GearState } from "../engine/character/Equipment.ts";
 import type { WeaponId } from "../engine/character/Weapons.ts";
-import { attackBody, swordMount, swingTrail, type SwordMountFrame } from "./heroPose.ts";
+import { DEFAULT_STAFF, type StaffId } from "../engine/character/Staves.ts";
+import { drawMageStaff } from "./staves.ts";
+import { attackBody, staffMount, swordMount, swingTrail, type StaffMountFrame, type SwordMountFrame } from "./heroPose.ts";
 import { blink, gait, smoothTo } from "./animation.ts";
 import { clamp01, ellipse, hashString, limb, mix, rgba, smoothstep, softShadow } from "./draw.ts";
 import type { HeroClassId } from "../engine/character/classes/index.ts";
@@ -15,7 +17,8 @@ export type HeroVisual = Pick<
 > &
   Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> &
   { id?: string; gear?: GearState | undefined; equippedWeapon?: WeaponId | undefined;
-    /** Vocação do herói (ADR 0067): sem ela, é o Cavaleiro. */ heroClass?: HeroClassId | undefined };
+    /** Vocação do herói (ADR 0067): sem ela, é o Cavaleiro. */ heroClass?: HeroClassId | undefined;
+    /** O cajado que o Mago segura (ADR 0068); sem ele, o de Aprendiz. */ equippedStaff?: StaffId | undefined };
 
 const PAL = {
   skin: "#e2bb91", skinD: "#b98a64", skinL: "#f3d6b2",
@@ -50,6 +53,14 @@ function renderWeapon(ctx: CanvasRenderingContext2D, frame: SwordMountFrame, pla
   ctx.save();ctx.translate(frame.ox,frame.oy);ctx.rotate(frame.rot);
   ctx.scale(frame.scale, frame.scale);
   drawKnightSword(ctx,weapon,impact,tone,time);
+  ctx.restore();
+}
+
+/** O cajado do Mago na mão: na origem da empunhadura, pendendo para fora (ADR 0068). */
+function renderStaff(ctx: CanvasRenderingContext2D, mount: StaffMountFrame, staff: StaffId,
+  tone: (c: string) => string, time: number): void {
+  ctx.save(); ctx.translate(mount.ox, mount.oy); ctx.rotate(mount.rot);
+  drawMageStaff(ctx, staff, time, tone);
   ctx.restore();
 }
 
@@ -151,6 +162,13 @@ export function renderHero(
   // A aparência da vocação (ADR 0067): sem ela, é o Cavaleiro; o Mago não usa o equipamento do Cavaleiro (o dele virá com os cajados).
   const look = player.heroClass === "mage" ? MAGE_LOOK : null;
   const gear = look ? undefined : player.gear;
+  // O que o herói segura: a espada do Cavaleiro ou o cajado do Mago (ADR 0068); o braço, a mão e a ordem de camadas são os mesmos.
+  const staffSway = Math.sin(player.walkTime * 2) * g.moving * 0.05;
+  const held: { readonly hand: number; readonly gripX: number; readonly gripY: number } = look ? staffMount(player, staffSway) : frame;
+  const drawHeld = (): void => {
+    if (look) renderStaff(ctx, staffMount(player, staffSway), player.equippedStaff ?? DEFAULT_STAFF, tone, t);
+    else renderWeapon(ctx, frame, player, tone, atk.impact, t);
+  };
   const hasHelm = gear?.head === "trail-helm";
   const hasChest = gear?.chest === "quilted-vest";
   const hasShield = gear?.shield === "willow-shield";
@@ -169,7 +187,7 @@ export function renderHero(
   ctx.translate(0, g.bob + breath * 0.45);
   ctx.lineJoin = "round";
 
-  if (back && !look) renderWeapon(ctx, frame, player, tone, atk.impact, t);
+  if (back) drawHeld();
 
   // --- pernas, ordenadas por profundidade -------------------------------
   const leftFoot = { hip: -3.6 * wf, x: -3.6 * wf + g.a.along * mvx, y: g.a.along * mvy * 0.55 - g.a.lift, lift: g.a.lift };
@@ -300,9 +318,9 @@ export function renderHero(
 
   // --- braços --------------------------------------------------------------
   const swing = g.armSwing;
-  const swordSide = frame.hand;
+  const swordSide = held.hand;
   for (const s of [-1, 1]) {
-    if (s === swordSide && !look) continue; // o braço da espada é desenhado junto da arma (o Mago ainda não tem cajado)
+    if (s === swordSide) continue; // o braço que segura a arma (a espada ou o cajado) é desenhado junto dela
     const hx = s * 9.6 * wf + mvx * swing * -s * 4.2;
     const hy = -12.5 + mvy * swing * -s * 2.8 - swing * -s * 1.2 + breath * 0.3;
     drawArm(ctx, s * 8.6 * wf, -22.6, hx, hy, tone, look?.sleeve ?? PAL.tunic, look?.cuff);
@@ -313,10 +331,10 @@ export function renderHero(
     const hy = -12.5 + mvy * swing * -shieldSide * 2.8 - swing * -shieldSide * 1.2 + breath * 0.3;
     drawShield(ctx, hx, hy, shieldSide, swing, tone);
   }
-  const gripX = frame.gripX, gripY = frame.gripY;
+  const gripX = held.gripX, gripY = held.gripY;
   const swordArm = (): void => {
-    limb(ctx, swordSide * 8.6 * wf, -22.6, gripX, gripY, 4.6, tone(PAL.tunic));
-    limb(ctx, (swordSide * 8.6 * wf + gripX) / 2, (-22.6 + gripY) / 2, gripX, gripY, 4.7, tone(PAL.leatherD));
+    limb(ctx, swordSide * 8.6 * wf, -22.6, gripX, gripY, 4.6, tone(look?.sleeve ?? PAL.tunic));
+    limb(ctx, (swordSide * 8.6 * wf + gripX) / 2, (-22.6 + gripY) / 2, gripX, gripY, 4.7, tone(look?.cuff ?? PAL.leatherD));
   };
 
   // --- cabeça --------------------------------------------------------------
@@ -328,7 +346,7 @@ export function renderHero(
     ctx.fill(); ctx.strokeStyle = tone("#d7b581"); ctx.lineWidth = 0.9; ctx.stroke();
     ctx.fillStyle = tone("#c0a577"); ctx.fillRect(-2.2 * wf, -21, 4.4 * wf, 2.2);
   }
-  if (!back && !look) { swordArm(); renderWeapon(ctx, frame, player, tone, atk.impact, t); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); }
+  if (!back) { swordArm(); drawHeld(); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); }
   // rabo-de-cavalo/mecha traseira
   ctx.strokeStyle = tone(PAL.hair); ctx.lineWidth = 4.2; ctx.lineCap = "round";
   ctx.beginPath();
@@ -434,8 +452,8 @@ export function renderHero(
     ctx.fillRect(headX - 1, headY - 9.6, 2, 6.1);
   }
   look?.hat(ctx, hc);
-  if (back && !look) { swordArm(); }
-  if (back && !look) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); }
+  if (back) { swordArm(); }
+  if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); }
   // Rastro e brilho por cima de tudo para ler bem em qualquer direção.
   if (!look) renderTrail(ctx, player, frame);
   ctx.restore();

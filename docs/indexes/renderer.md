@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (269)
+## Todos os arquivos deste módulo (272)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -271,6 +271,9 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/south/towers/sol-negro.ts`](../../src/render/south/towers/sol-negro.ts)
 - [`src/render/south/towers/vigia-caida.ts`](../../src/render/south/towers/vigia-caida.ts)
 - [`src/render/southCityArt.ts`](../../src/render/southCityArt.ts)
+- [`src/render/staves.ts`](../../src/render/staves.ts)
+- [`src/render/staves/head.ts`](../../src/render/staves/head.ts)
+- [`src/render/staves/shaft.ts`](../../src/render/staves/shaft.ts)
 - [`src/render/swords.ts`](../../src/render/swords.ts)
 - [`src/render/swords/astral.ts`](../../src/render/swords/astral.ts)
 - [`src/render/swords/boreal.ts`](../../src/render/swords/boreal.ts)

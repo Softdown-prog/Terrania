@@ -119,6 +119,7 @@
 - [`docs/adr/0065-heroi-mago-fundacao.md`](../../docs/adr/0065-heroi-mago-fundacao.md)
 - [`docs/adr/0066-tela-de-escolha-do-heroi.md`](../../docs/adr/0066-tela-de-escolha-do-heroi.md)
 - [`docs/adr/0067-corpo-do-heroi-mago.md`](../../docs/adr/0067-corpo-do-heroi-mago.md)
+- [`docs/adr/0068-cajados-do-mago.md`](../../docs/adr/0068-cajados-do-mago.md)
 - [`docs/screenshots/heroi-mago-contra-cavaleiro.png`](../../docs/screenshots/heroi-mago-contra-cavaleiro.png)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)

@@ -46,17 +46,17 @@ test("o Mago veste as três ideias juntas: túnica azul-violeta, manto escuro co
   for (const tone of [MAGE_PAL.tunic.mid, MAGE_PAL.tunic.dark, MAGE_PAL.cloak.mid, MAGE_PAL.cloak.dark, MAGE_PAL.hat.mid, MAGE_PAL.hat.light,
     MAGE_PAL.lining, MAGE_PAL.gold, MAGE_PAL.goldD, MAGE_PAL.silver, MAGE_PAL.gem, MAGE_PAL.cuff]) assert.equal(usesTone(front, tone), true, `usa ${tone}`);
   // nada da túnica, da capa, da faixa e da mochila do Cavaleiro
-  // (o cinto e a bolsa de couro são comuns aos dois heróis de propósito)
+  // (o cinto, a fivela e a bolsa de couro são comuns aos dois heróis de propósito)
+  assert.ok(front.raw.filter(c => c.toLowerCase() === MAGE_PAL.cuff).length >= 2, "os dois braços, o livre e o do cajado, têm o punho violeta do Mago");
   for (const knight of ["#4e7681", "#79a3a8", "#2f5d6a", "#16303a", "#8a6c45", "#715c42"]) assert.equal(usesTone(front, knight), false, `não usa ${knight} (do Cavaleiro)`);
 });
 
-test("o Mago mostra a barra da túnica com a sombra no pé, e os dois braços de manga violeta (o Cavaleiro tem um braço livre e outro na espada)", () => {
+test("o Mago mostra a barra da túnica com a sombra no pé, e as mesmas duas mãos do Cavaleiro (uma livre e outra na arma), de manga violeta", () => {
   for (const [name, dir] of Object.entries(DIRS)) {
     assert.equal(spy(draw(mage(dir))).raw.includes("rgba(0,0,0,0.3)"), true, `${name}: sombra no pé da barra`);
     assert.equal(spy(draw({ ...base, ...dir })).raw.includes("rgba(0,0,0,0.3)"), false, `${name}: o Cavaleiro não tem essa barra`);
     const hands = (x: ReturnType<typeof spy>): number => (x.args["ellipse"] ?? []).filter(a => a[2] === 2.4 && a[3] === 2.4).length;
-    assert.equal(hands(spy(draw(mage(dir)))), 2, `${name}: duas mãos livres no Mago`);
-    if (name !== "costas") assert.equal(hands(spy(draw({ ...base, ...dir }))), 1, `${name}: o Cavaleiro tem uma mão livre e a outra na espada`);
+    assert.equal(hands(spy(draw(mage(dir)))), hands(spy(draw({ ...base, ...dir }))), `${name}: o Mago tem uma mão livre e a outra no cajado, como o Cavaleiro na espada`);
   }
 });
 
@@ -77,7 +77,7 @@ test("cada peça aparece onde deve: a fivela e o fecho com gema só de frente, o
   assert.equal(hood(back), true, "de costas o capuz cobre os ombros"); assert.equal(hood(front), false, "de frente o capuz não aparece atrás");
 });
 
-test("o Mago ainda não tem cajado: sem espada, sem rastro de golpe e sem equipamento de Cavaleiro, mesmo atacando ou equipado", () => {
+test("o Mago não usa a espada: sem lâmina, sem rastro de golpe e sem equipamento de Cavaleiro, mesmo atacando ou equipado (o cajado dele é testado em staves.test.ts)", () => {
   const knight = spy(draw({ ...base, attackWeapon: "forge", equippedWeapon: "forge" }));
   const blade = WEAPONS.forge.visual.blade.toLowerCase();
   assert.equal(usesTone(knight, blade), true, "o Cavaleiro mostra a lâmina da espada (controle do teste)");

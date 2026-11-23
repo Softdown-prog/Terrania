@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (78)
+## Todos os arquivos deste módulo (81)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -29,6 +29,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/Experience.ts`](../../src/engine/character/Experience.ts)
 - [`src/engine/character/Food.ts`](../../src/engine/character/Food.ts)
 - [`src/engine/character/Inventory.ts`](../../src/engine/character/Inventory.ts)
+- [`src/engine/character/Staves.ts`](../../src/engine/character/Staves.ts)
 - [`src/engine/character/Weapons.ts`](../../src/engine/character/Weapons.ts)
 - [`src/engine/character/center/bank/Bank.ts`](../../src/engine/character/center/bank/Bank.ts)
 - [`src/engine/character/center/bank/constants.ts`](../../src/engine/character/center/bank/constants.ts)
@@ -64,6 +65,8 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/south/alchemy/recipes/antidote.ts`](../../src/engine/character/south/alchemy/recipes/antidote.ts)
 - [`src/engine/character/south/alchemy/recipes/greater-potion.ts`](../../src/engine/character/south/alchemy/recipes/greater-potion.ts)
 - [`src/engine/character/south/alchemy/results.ts`](../../src/engine/character/south/alchemy/results.ts)
+- [`src/engine/character/weapons/staves/README.md`](../../src/engine/character/weapons/staves/README.md)
+- [`src/engine/character/weapons/staves/apprentice.ts`](../../src/engine/character/weapons/staves/apprentice.ts)
 - [`src/engine/character/weapons/swords/README.md`](../../src/engine/character/weapons/swords/README.md)
 - [`src/engine/character/weapons/swords/astral.ts`](../../src/engine/character/weapons/swords/astral.ts)
 - [`src/engine/character/weapons/swords/boreal.ts`](../../src/engine/character/weapons/swords/boreal.ts)
