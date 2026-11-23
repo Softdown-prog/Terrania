@@ -22,13 +22,14 @@ const finite = (point: Point): boolean =>
 
 /** Test attack reach using the direction to the target, never the last key. */
 export function inClassicAttackPosition(
-  player: Point, creature: Point, collision: CollisionMap,
+  player: Point, creature: Point, collision: CollisionMap, stop: number = CLASSIC_FOLLOW_STOP,
 ): boolean {
   if (!finite(player) || !finite(creature)) return false;
-  if (Math.hypot(creature.x - player.x, creature.y - player.y) >= CLASSIC_FOLLOW_STOP) return false;
+  if (Math.hypot(creature.x - player.x, creature.y - player.y) >= stop) return false;
   const facing = { x: player.x, y: player.y, faceX: 0, faceY: 1 };
   faceTarget(facing, creature);
-  return canStrike(facing, creature, collision);
+  // O alcance é a distância de parada mais a mesma margem da espada (ATTACK_REACH = CLASSIC_FOLLOW_STOP + 4).
+  return canStrike(facing, creature, collision, stop + (ATTACK_REACH - CLASSIC_FOLLOW_STOP));
 }
 
 /** Tile walking must aim at actual 32px endpoints, not a continuous ring. */
@@ -54,7 +55,7 @@ function approachPoints(creature: Point, tileSteps: boolean): Point[] {
 
 /** Search safe standing points around the target, not inside the creature. */
 export function findClassicApproach(
-  player: Point, creature: Point, collision: CollisionMap, tileSteps = false,
+  player: Point, creature: Point, collision: CollisionMap, tileSteps = false, stop: number = CLASSIC_FOLLOW_STOP,
 ): Point | null {
   if (!finite(player) || !finite(creature) || !collision.canMove(player.x, player.y))
     return null;
@@ -70,7 +71,7 @@ export function findClassicApproach(
   );
   for (const point of directions) {
     if (!collision.canMove(point.x, point.y)) continue;
-    if (!inClassicAttackPosition(point, creature, collision)) continue;
+    if (!inClassicAttackPosition(point, creature, collision, stop)) continue;
     // The navigator owns the A* computation. The chosen destination must be
     // line-of-sight valid from its final point to prevent wall-through swings.
     return point;
@@ -109,6 +110,8 @@ export class ClassicPursuit {
     collision: CollisionMap,
     tileSteps = false,
     committedStep: Point | null = null,
+    /** A distância em que para de seguir: a da espada, ou o alcance do cajado do Mago (ADR 0069). */
+    stop: number = CLASSIC_FOLLOW_STOP,
   ): Point {
     if (!Number.isFinite(dt) || dt < 0 || !selectedId || player.hp <= 0) {
       this.reset();
@@ -125,7 +128,7 @@ export class ClassicPursuit {
       this.trackedId = selectedId;
     }
     const from = committedStep ?? player;
-    if (inClassicAttackPosition(from, mob, collision)) {
+    if (inClassicAttackPosition(from, mob, collision, stop)) {
       this.navigator.cancel();
       this.lastCreature = { x: mob.x, y: mob.y };
       this.replanSeconds = 0;
@@ -139,7 +142,7 @@ export class ClassicPursuit {
       if (this.tileReplanSeconds === 0) {
         this.tileReplanSeconds = REPATH_SECONDS;
         const candidates = approachPoints(mob, true)
-          .filter(point => inClassicAttackPosition(point, mob, collision));
+          .filter(point => inClassicAttackPosition(point, mob, collision, stop));
         if (!this.navigator.goToTiles(from, candidates, collision, CLASSIC_FOLLOW_LIMIT))
           this.navigator.cancel();
       }
@@ -153,14 +156,14 @@ export class ClassicPursuit {
       this.lastCreature = { x: mob.x, y: mob.y };
       // Try multiple safe tiles around the monster: a single blocked
       // destination must not abort a reachable pursuit.
-      const first = findClassicApproach(player, mob, collision);
+      const first = findClassicApproach(player, mob, collision, false, stop);
       let found = first !== null && this.navigator.go(player, first, collision);
       if (!found) {
         this.navigator.cancel();
         for (const point of approachPoints(mob, false)) {
           if (found) break;
           if (!collision.canMove(point.x, point.y) ||
-              !inClassicAttackPosition(point, mob, collision)) continue;
+              !inClassicAttackPosition(point, mob, collision, stop)) continue;
           found = this.navigator.go(player, point, collision);
         }
       }

@@ -2,6 +2,7 @@ import { applyCaveVictories } from "../../engine/rooms/CaveRewards.ts";
 import type { CaveRoom } from "../../engine/rooms/CaveRoom.ts";
 import { nearbyStairsMove, reachedStairsMove } from "../../engine/rooms/caveStairs.ts";
 import { TILE_SIZE } from "../../world/terrain.ts";
+import { NO_MANA_MESSAGE } from "../messages/noMana.ts";
 import type { Frame, ModeHost } from "./types.ts";
 
 /** Um quadro na caverna: `true` = terminou aqui; `false` = o herói saiu (escada ou queda) e a superfície ainda roda NESTE quadro. */
@@ -11,15 +12,19 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
   timers.accumulator=0;
   if (!paused && dt > 0) {
     const focused = host.travel.combat.targetId;
+    const profile = host.sim.combatProfile;
     const classicStrike = host.travel.combat.tick(dt,cave.player,cave.monsters,
-      cave.collision,host.sim.inventory.weapon.interval,host.sim.inventory.loadout.equipped);
+      cave.collision,profile.interval,profile.weapon,profile.ranged);
+    // Ao alcance e sem mana: a magia não sai e a tela avisa uma vez (ADR 0069).
+    if (host.travel.combat.takeBlocked() === "no-mana") host.hud.setTravelNotice(NO_MANA_MESSAGE);
     const follow = host.travel.autoFollow && !manualActive && host.travel.navigator.target === null;
     const caveMovement = follow
-      ? host.travel.pursuit.direction(dt,cave.player,focused,cave.monsters,cave.collision)
+      ? host.travel.pursuit.direction(dt,cave.player,focused,cave.monsters,cave.collision,false,null,profile.followStop)
       : movement;
     cave.update(dt,caveMovement,attack || classicStrike,
       host.sim.inventory.loadout.equipped,host.sim.inventory.defense,
-      classicStrike ? host.travel.combat.strikeTargetId : undefined);
+      classicStrike ? host.travel.combat.strikeTargetId : undefined,
+      host.sim.usesMana ? { staff: host.sim.equippedStaff, spend: cost => host.sim.spendMana(cost) } : undefined);
     host.input.acknowledgeMovement();
     host.sim.advanceClock(dt); // o tempo de volta dos monstros também anda dentro da masmorra (ADR 0029)
     const changed = applyCaveVictories(host.sim, cave);

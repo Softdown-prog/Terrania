@@ -34,7 +34,7 @@ export function loadLocalSave(): OfflineSave | null {
     // Save do mapa antigo (ADR 0059): a posição do herói e a dos itens no chão seguem o Poço Negro para o lugar novo.
     const old = needsMapMigration(save.mapVersion), at = old ? migrateMapPoint(save.x, save.y) : { x: save.x, y: save.y };
     return { mapVersion: MAP_VERSION, seed: save.seed >>> 0, x: at.x, y: at.y,
-      hp: awaitingRespawn ? 0 : Math.min(maxHpForExperience(experience), Math.max(1, save.hp)),
+      hp: awaitingRespawn ? 0 : Math.min(maxHpForExperience(experience, heroClass), Math.max(1, save.hp)),
       ...(awaitingRespawn ? { awaitingRespawn: true } : {}),
       kills: normalizeKills(save.kills),
       // A missão da gruta usa contador separado; sem ele os saves carregados

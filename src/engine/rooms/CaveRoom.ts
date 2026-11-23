@@ -4,6 +4,8 @@ import { Slime } from "../../actors/Slime.ts";
 import { AELA_SLIME_GOAL } from "../../world/aelaQuest.ts";
 import { RegionalMonster, caveMonsterKinds } from "../../actors/RegionalMonster.ts";
 import { faceTarget } from "../combat/combat.ts";
+import { resolveSpellStrike, spellStrikeTargets } from "../combat/SpellCombat.ts";
+import type { StaffId } from "../character/Staves.ts";
 import type { WeaponId } from "../character/Weapons.ts";
 
 import { Player } from "../../actors/Player.ts";
@@ -114,17 +116,28 @@ export class CaveRoom {
   drainVictories(): Array<{kind:CreatureKind;id:string}> {
     return this.victories.splice(0);
   }
+  /** `caster`: o Mago lança a magia do cajado e paga a mana de fora (a mana é da simulação); sem ele, o herói bate com a espada (ADR 0069). */
   update(dt:number,movement:{x:number;y:number},attack=false,weapon:WeaponId="starter",defense=0,
-    targetId?: string | null):void {
+    targetId?: string | null,caster?: { readonly staff: StaffId; readonly spend: (cost: number) => boolean }):void {
     if(!Number.isFinite(dt)||dt<=0||this.player.hp<=0)return;
     dt=Math.min(dt,.1);
     this.player.update(dt,movement,this.collision);
-    if(attack)this.player.startAttack(weapon);
+    if(attack){
+      if(caster)this.player.startCast(caster.staff,cost=>typeof targetId==="string" && caster.spend(cost));
+      else this.player.startAttack(weapon);
+    }
     for(const [id,monster] of this.monsters){
       monster.update(dt,this.player,this.collision,defense,false);
       if(monster.hp<=0)this.defeat(id,monster,defense);
     }
     if(this.player.consumeStrike()){
+      const staff=this.player.attackStaff;
+      if(staff){
+        const hit=spellStrikeTargets(staff,this.player,this.monsters.values(),this.collision,targetId);
+        if(hit[0])faceTarget(this.player,hit[0]);
+        resolveSpellStrike(staff,this.player,hit,monster=>this.defeat(monster.id,monster,defense));
+        return;
+      }
       const equipped=this.player.attackWeapon;
       const targets=swordStrikeTargets(equipped,this.player,this.monsters.values(),
         this.collision,targetId);

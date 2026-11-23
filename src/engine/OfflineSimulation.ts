@@ -22,6 +22,10 @@ import { grantExperience, levelForExperience, maxHpForExperience, normalizeExper
 import { hasNutrition, type NutritionState } from "./character/Food.ts";
 import { WellInvestigation, wellQuestStarted, type WellQuestState } from "./quests/south/well/index.ts";
 import { Bank, type BankState } from "./character/center/bank/index.ts";
+import { DEFAULT_STAFF, STAVES, type StaffId } from "./character/Staves.ts";
+import { resolveSpellStrike, spellReach, spellStrikeTargets } from "./combat/SpellCombat.ts";
+import type { CombatProfile } from "./combat/CombatProfile.ts";
+import { CLASSIC_FOLLOW_STOP } from "./combat/ClassicPursuit.ts";
 import { DEFAULT_HERO_CLASS, heroClassSheet, normalizeHeroClass, normalizeMana, regenerateMana, type HeroClassId } from "./character/classes/index.ts";
 
 /** Dados de gameplay serializáveis, independentes do navegador. */
@@ -101,6 +105,8 @@ export class OfflineSimulation {
   /** `startingClass`: a vocação escolhida ao criar este mundo; um save do mesmo mundo manda mais (a vocação nunca muda). */
   constructor(seed: number, saved?: OfflineSave, startingClass?: HeroClassId) {
     this.seed = seed;
+    // A vocação vem antes de tudo o que depende dela (vida máxima, mana): a do save do mesmo mundo, ou a escolhida ao criá-lo.
+    this.heroClass = normalizeHeroClass(saved?.seed === seed ? saved.heroClass : startingClass);
     this.collision = new SeedCollision(seed);
     this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined,
       levelForExperience(saved?.seed === seed ? normalizeExperience(saved?.experience) : 0));
@@ -117,7 +123,7 @@ export class OfflineSimulation {
         this.player.y = spot.y;
       }
       this.experience = normalizeExperience(saved.experience);
-      this.player.maxHp = maxHpForExperience(this.experience);
+      this.player.maxHp = maxHpForExperience(this.experience, this.heroClass);
       this.player.hp = saved.awaitingRespawn === true && saved.hp === 0
         ? 0 : Number.isFinite(saved.hp) ? Math.min(this.player.maxHp, Math.max(1, saved.hp)) : this.player.maxHp;
       if (this.player.hp > 0) this.player.restoreNutrition(saved.nutrition);
@@ -144,7 +150,8 @@ export class OfflineSimulation {
     // O banco depende do relógio já carregado: os juros devidos contam do instante gravado, nunca de um futuro.
     this.bank = new Bank(saved?.seed === seed ? saved.bank : undefined, this.clock);
     if (saved?.seed === seed) this.respawnPoint = normalizeRespawnPoint(saved.respawnPoint);
-    this.heroClass = normalizeHeroClass(saved?.seed === seed ? saved.heroClass : startingClass);
+    // Um mundo novo começa de vida cheia no máximo da vocação (o do Mago é 80% do Cavaleiro).
+    if (!(saved && saved.seed === seed)) { this.player.maxHp = maxHpForExperience(this.experience, this.heroClass); this.player.hp = this.player.maxHp; }
     // Sem mana no save (mundo novo ou save antigo), o Mago começa de mana cheia.
     this.manaPoints = saved?.seed === seed && saved.mana !== undefined ? normalizeMana(saved.mana, this.maxMana) : this.maxMana;
   }
@@ -162,6 +169,15 @@ export class OfflineSimulation {
     if (!this.usesMana || !Number.isFinite(cost) || cost <= 0 || this.manaPoints < cost) return false;
     this.manaPoints -= cost;
     return true;
+  }
+  /** O cajado que o Mago segura; com um só cajado, o de Aprendiz (a escolha entre vários vem com o inventário, fatia F). */
+  get equippedStaff(): StaffId { return DEFAULT_STAFF; }
+  /** Como o herói ataca agora: o Cavaleiro de perto com a espada; o Mago de longe com o cajado, se houver mana (ADR 0069). */
+  get combatProfile(): CombatProfile {
+    const weapon = this.inventory.loadout.equipped;
+    if (!this.usesMana) return { interval: this.inventory.weapon.interval, weapon, followStop: CLASSIC_FOLLOW_STOP };
+    const staff = STAVES[this.equippedStaff], reach = spellReach(this.equippedStaff);
+    return { interval: staff.interval, weapon, ranged: { reach, ready: this.manaPoints >= staff.manaCost }, followStop: reach - 4 };
   }
   private regenerateMana(dt: number): void { this.manaPoints = regenerateMana(this.manaPoints, this.heroClass, this.level, dt); }
   /** Faz o relógio andar fora da superfície (na caverna, por exemplo); só valores positivos e finitos. */
@@ -200,7 +216,7 @@ export class OfflineSimulation {
   respawn(): boolean {
     if (!this.awaitingRespawn) return false;
     this.mounts.dismount();
-    this.player = new Player(maxHpForExperience(this.experience));
+    this.player = new Player(maxHpForExperience(this.experience, this.heroClass));
     this.player.x = RESPAWN_POINTS[this.respawnPoint].x;
     this.player.y = RESPAWN_POINTS[this.respawnPoint].y;
     this.spawnedChunk = "";
@@ -238,7 +254,7 @@ export class OfflineSimulation {
       for(const item of rollCreatureLoot(slime.kind,slime.id))this.inventory.addMaterial(item);
     }
     this.experience=grantExperience(this.experience,
-      CREATURE_CATALOG[slime.kind].experience,this.player);
+      CREATURE_CATALOG[slime.kind].experience,this.player,this.heroClass);
     if(slime.kind==="slime" && this.drops.size<MAX_WORLD_DROPS)
       this.drops.set(id,{id,item:"gel",x:slime.x,y:slime.y});
     // Toda criatura deixa moedas no chão, ao lado do gel (ADR 0024).
@@ -298,11 +314,23 @@ export class OfflineSimulation {
         if (this.awaitingRespawn) return true;
       }
     }
-    if (attack) this.player.startAttack(this.inventory.loadout.equipped);
+    // O Mago lança a magia do cajado (gasta mana, só com alvo escolhido); o Cavaleiro bate com a espada.
+    if (attack) {
+      if (this.usesMana) this.player.startCast(this.equippedStaff, cost => typeof strikeTargetId === "string" && this.spendMana(cost));
+      else this.player.startAttack(this.inventory.loadout.equipped);
+    }
     // Keep the swing facing the creature it was started against while walking.
     const focused = typeof strikeTargetId === "string" ? this.slimes.get(strikeTargetId) : null;
     if (focused && this.player.attackTime > 0) faceTarget(this.player, focused);
     if (this.player.consumeStrike()) {
+      const staff=this.player.attackStaff;
+      if (staff) {
+        const hit=spellStrikeTargets(staff,this.player,this.slimes.values(),this.collision,strikeTargetId);
+        resolveSpellStrike(staff,this.player,hit,mob=>{
+          this.registerDefeat(mob.id,mob,defense);
+          changed=true;
+        });
+      } else {
       const weapon=this.player.attackWeapon;
       // The astral arc can contact three; every other blade hits one primary.
       const primary=swordStrikeTargets(weapon,this.player,this.slimes.values(),
@@ -311,6 +339,7 @@ export class OfflineSimulation {
         this.registerDefeat(mob.id,mob,defense);
         changed=true;
       });
+      }
     }
     // O jogador recolhe automaticamente o gel ao se aproximar. Se a bolsa
     // estiver cheia, o item permanece visível no chão até haver espaço.

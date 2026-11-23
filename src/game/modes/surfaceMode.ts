@@ -2,6 +2,7 @@ import { currentMountQuestStep } from "../../engine/mounts/MountQuestState.ts";
 import { dungeonEntranceNear } from "../../world/entrances.ts";
 import { nearestNpc } from "../../world/npcs.ts";
 import { questStepId, surfaceNearbyAction } from "../interactions.ts";
+import { NO_MANA_MESSAGE } from "../messages/noMana.ts";
 import type { Frame, ModeHost } from "./types.ts";
 
 /** Um quadro na superfície: simulação a 60 Hz, efeitos, câmera, HUD e desenho do mundo. */
@@ -15,11 +16,14 @@ export function tickSurface(host: ModeHost, frame: Frame): void {
       timers.accumulator -= 1 / 60;
       const before = host.sim.player;
       const damageCount = before.damageCount;
+      const profile = host.sim.combatProfile;
       const classicStrike = host.travel.combat.tick(1 / 60, before, host.sim.slimes, host.sim.collision,
-        host.sim.inventory.weapon.interval,host.sim.inventory.loadout.equipped);
+        profile.interval, profile.weapon, profile.ranged);
+      // Ao alcance e sem mana: a magia não sai e a tela avisa uma vez (ADR 0069).
+      if (host.travel.combat.takeBlocked() === "no-mana") host.hud.setTravelNotice(NO_MANA_MESSAGE);
       const follow = !manualActive && !tileRoute && host.travel.autoFollow;
       if (follow) host.travel.pursuit.direction(1 / 60, before, host.travel.combat.targetId,
-        host.sim.slimes, host.sim.collision, true, host.travel.walker.destination);
+        host.sim.slimes, host.sim.collision, true, host.travel.walker.destination, profile.followStop);
       let routeTime = 1 / 60;
       const stepDirection = () => {
         if (manualActive) {
@@ -33,7 +37,7 @@ export function tickSurface(host: ModeHost, frame: Frame): void {
           return dir;
         }
         return follow ? host.travel.pursuit.direction(0, before, host.travel.combat.targetId,
-          host.sim.slimes, host.sim.collision, true) : still;
+          host.sim.slimes, host.sim.collision, true, null, profile.followStop) : still;
       };
       const changed = host.sim.update(1 / 60, stepDirection,
         classicStrike, host.travel.combat.strikeTargetId, host.travel.walker);

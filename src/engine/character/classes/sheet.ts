@@ -8,6 +8,8 @@ export interface HeroClassSheet {
   readonly playable: boolean;
   /** Só o Mago usa mana; para o Cavaleiro a barra nem existe. */
   readonly usesMana: boolean;
+  /** A vida máxima, em porcentagem da do Cavaleiro no mesmo nível (100 = igual). */
+  readonly hpPercent: number;
   /** Mana máxima no nível dado (inteiro, sempre 0 para quem não usa mana). */
   readonly maxMana: (level: number) => number;
   /** Quanto de mana volta por segundo de jogo no nível dado. */

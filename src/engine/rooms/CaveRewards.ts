@@ -21,7 +21,7 @@ export function applyCaveVictories(sim: OfflineSimulation, cave: CaveVictorySour
     if (sim.defeated.has(victory.id)) continue;
     sim.defeated.add(victory.id);
     sim.noteDefeat(victory.id, victory.kind);
-    sim.experience = grantExperience(sim.experience, CREATURE_CATALOG[victory.kind].experience, cave.player);
+    sim.experience = grantExperience(sim.experience, CREATURE_CATALOG[victory.kind].experience, cave.player, sim.heroClass);
     // O total histórico é um contador de slimes (usado também pela missão de montaria).
     if (victory.kind === "slime") sim.kills = Math.min(MAX_KILLS, sim.kills + 1);
     if (victory.kind === "slime" && victory.id.startsWith(`cave:${sim.seed}:0:0:floor:1:slime:`)) {

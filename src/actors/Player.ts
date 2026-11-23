@@ -5,6 +5,7 @@ import {
 } from "../engine/combat/combat.ts";
 import { BASE_MAX_HP } from "../engine/character/Experience.ts";
 import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
+import { STAVES, type StaffId } from "../engine/character/Staves.ts";
 import { FOODS, FOOD_EAT_COOLDOWN, FOOD_HEAL_INTERVAL, MAX_NUTRITION,
   normalizeNutrition, type FoodId, type FoodUseResult, type NutritionState } from "../engine/character/Food.ts";
 export class Player {
@@ -19,6 +20,10 @@ export class Player {
   walkTime = 0;
   attackTime = 0;
   attackWeapon: WeaponId = "starter";
+  /** O cajado da magia em andamento (ADR 0069); `null` é um golpe de espada. */
+  attackStaff: StaffId | null = null;
+  /** Segundos de preparo do golpe ou da magia em andamento, guardados ao começar. */
+  attackWindup: number = WEAPONS.starter.windup;
   attackCooldown = 0;
   hurtTime = 0;
   private receivedHits = 0;
@@ -201,19 +206,38 @@ export class Player {
     this.advanceDebuffs(dt);
   }
   get attackSequence(): number { return this.swingNumber; }
-  get strikeDamage(): number { return WEAPONS[this.attackWeapon].damage; }
+  get strikeDamage(): number { return this.attackStaff ? STAVES[this.attackStaff].damage : WEAPONS[this.attackWeapon].damage; }
+  /** O golpe em andamento é uma magia do cajado? */
+  get attackIsSpell(): boolean { return this.attackStaff !== null; }
   startAttack(weapon: WeaponId = "starter"): boolean {
     if (this.attackCooldown > 0 || this.hp <= 0 || this.stunned) return false;
     this.attackTime = ATTACK_DURATION;
     this.attackCooldown = WEAPONS[weapon].interval * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
     this.attackWeapon = weapon;
+    this.attackStaff = null;
+    this.attackWindup = WEAPONS[weapon].windup;
+    this.strikePending = true;
+    return true;
+  }
+  /**
+   * Começa uma magia do cajado (ADR 0069). Só gasta a mana se o herói pode atacar agora (recarga, vida e atordoamento valem como no golpe
+   * de espada); `spend` paga o custo e diz se havia mana. Devolve se a magia saiu.
+   */
+  startCast(staff: StaffId, spend: (cost: number) => boolean): boolean {
+    if (this.attackCooldown > 0 || this.hp <= 0 || this.stunned) return false;
+    const definition = STAVES[staff];
+    if (!spend(definition.manaCost)) return false;
+    this.attackTime = ATTACK_DURATION;
+    this.attackCooldown = definition.interval * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
+    this.attackStaff = staff;
+    this.attackWindup = definition.windup;
     this.strikePending = true;
     return true;
   }
   consumeStrike(): boolean {
     if (
       !this.strikePending ||
-      this.attackTime > ATTACK_DURATION - WEAPONS[this.attackWeapon].windup + 1e-9
+      this.attackTime > ATTACK_DURATION - this.attackWindup + 1e-9
     )
       return false;
     this.strikePending = false;

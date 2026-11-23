@@ -1,3 +1,5 @@
+import { DEFAULT_HERO_CLASS, heroClassSheet, type HeroClassId } from "./classes/index.ts";
+
 export const BASE_MAX_HP = 100;
 export const MAX_LEVEL = 100;
 
@@ -20,8 +22,10 @@ export function levelForExperience(experience: number): number {
   return level;
 }
 
-export function maxHpForExperience(experience: number): number {
-  return BASE_MAX_HP + (levelForExperience(experience) - 1) * 10;
+/** A vida máxima no nível da experiência: a do Cavaleiro (100 mais 10 por nível), e a do Mago é uma porcentagem dela (ADR 0069). */
+export function maxHpForExperience(experience: number, heroClass: HeroClassId = DEFAULT_HERO_CLASS): number {
+  const knight = BASE_MAX_HP + (levelForExperience(experience) - 1) * 10;
+  return Math.round(knight * heroClassSheet(heroClass).hpPercent / 100);
 }
 
 export interface ExperienceProgress {
@@ -42,9 +46,9 @@ export function experienceProgress(experience: number): ExperienceProgress {
 
 /** Called only after the simulation has credited a kill. */
 export function grantExperience(current: number, reward: number,
-  hero: { hp: number; maxHp: number }): number {
+  hero: { hp: number; maxHp: number }, heroClass: HeroClassId = DEFAULT_HERO_CLASS): number {
   const next = Math.min(MAX_EXPERIENCE, current + reward);
-  const maxHp = maxHpForExperience(next);
+  const maxHp = maxHpForExperience(next, heroClass);
   if (maxHp > hero.maxHp) {
     // Subir de nível aumenta a vida de quem está de pé; herói derrotado só volta por `respawn()`.
     if (hero.hp > 0) hero.hp = Math.min(maxHp, hero.hp + (maxHp - hero.maxHp));
