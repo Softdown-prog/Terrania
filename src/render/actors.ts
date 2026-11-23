@@ -5,13 +5,17 @@ import type { WeaponId } from "../engine/character/Weapons.ts";
 import { attackBody, swordMount, swingTrail, type SwordMountFrame } from "./heroPose.ts";
 import { blink, gait, smoothTo } from "./animation.ts";
 import { clamp01, ellipse, hashString, limb, mix, rgba, smoothstep, softShadow } from "./draw.ts";
+import type { HeroClassId } from "../engine/character/classes/index.ts";
+import type { HeroDrawContext } from "./hero/context.ts";
+import { MAGE_LOOK } from "./hero/mage/index.ts";
 
 export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
   Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> &
-  { id?: string; gear?: GearState | undefined; equippedWeapon?: WeaponId | undefined };
+  { id?: string; gear?: GearState | undefined; equippedWeapon?: WeaponId | undefined;
+    /** Vocação do herói (ADR 0067): sem ela, é o Cavaleiro. */ heroClass?: HeroClassId | undefined };
 
 const PAL = {
   skin: "#e2bb91", skinD: "#b98a64", skinL: "#f3d6b2",
@@ -81,9 +85,9 @@ function drawLeg(ctx: CanvasRenderingContext2D, hipX: number, footX: number, foo
 }
 
 function drawArm(ctx: CanvasRenderingContext2D, sx: number, sy: number, hx: number, hy: number,
-  tone: (c: string) => string, sleeve: string): void {
+  tone: (c: string) => string, sleeve: string, cuff: string = PAL.leatherD): void {
   limb(ctx, sx, sy, hx, hy, 4.6, tone(sleeve));
-  limb(ctx, (sx + hx) / 2, (sy + hy) / 2, hx, hy, 4.7, tone(PAL.leatherD));
+  limb(ctx, (sx + hx) / 2, (sy + hy) / 2, hx, hy, 4.7, tone(cuff));
   ellipse(ctx, hx, hy, 2.4, 2.4, tone(PAL.skin));
   ellipse(ctx, hx - 0.6, hy - 0.6, 1, 1, rgba("#ffffff", 0.3));
 }
@@ -144,7 +148,9 @@ export function renderHero(
   const wf = 1 - 0.2 * prof;
   const dirX = Math.cos(Math.atan2(player.faceY, player.faceX));
   const frame = swordMount(player);
-  const gear = player.gear;
+  // A aparência da vocação (ADR 0067): sem ela, é o Cavaleiro; o Mago não usa o equipamento do Cavaleiro (o dele virá com os cajados).
+  const look = player.heroClass === "mage" ? MAGE_LOOK : null;
+  const gear = look ? undefined : player.gear;
   const hasHelm = gear?.head === "trail-helm";
   const hasChest = gear?.chest === "quilted-vest";
   const hasShield = gear?.shield === "willow-shield";
@@ -163,7 +169,7 @@ export function renderHero(
   ctx.translate(0, g.bob + breath * 0.45);
   ctx.lineJoin = "round";
 
-  if (back) renderWeapon(ctx, frame, player, tone, atk.impact, t);
+  if (back && !look) renderWeapon(ctx, frame, player, tone, atk.impact, t);
 
   // --- pernas, ordenadas por profundidade -------------------------------
   const leftFoot = { hip: -3.6 * wf, x: -3.6 * wf + g.a.along * mvx, y: g.a.along * mvy * 0.55 - g.a.lift, lift: g.a.lift };
@@ -173,10 +179,14 @@ export function renderHero(
     hasBoots, hasLegs));
 
   // --- capa (por baixo do tronco de frente; sobre ele de costas) ----------
+  const headX = player.faceX * 1.3, headY = -31.5 + breath * 0.35 + Math.abs(Math.cos(player.walkTime)) * g.moving * -0.4 +
+    atk.lunge * 0.8;
+  const tailDir = side !== 0 ? -side : 1;
+  const tailSway = Math.sin(t * 2.4 + seed * 4) * 0.8 + Math.sin(player.walkTime * 2) * g.moving * 2.4 - mvx * g.moving * 3;
   const trailX = -mvx * g.moving * 5 + Math.sin(t * 2.1 + seed * 5) * (0.7 + g.moving * 0.5) +
     Math.cos(player.walkTime * 2) * g.moving * 1.3 - dirX * atk.lunge * 1.5;
   const trailY = -mvy * g.moving * 2.2 + Math.max(0, mvy) * -g.moving;
-  const drawCape = (): void => {
+  const drawKnightCape = (): void => {
     const cape = ctx.createLinearGradient(0, -25, 0, -2);
     cape.addColorStop(0, tone(PAL.capeT)); cape.addColorStop(1, tone(PAL.capeB));
     ctx.fillStyle = cape;
@@ -202,7 +212,11 @@ export function renderHero(
     ctx.quadraticCurveTo(11 * wf + trailX * 0.5, -12, 11.5 * wf + trailX, -3 + trailY);
     ctx.stroke();
   };
+  const hc: HeroDrawContext = { tone, wf, side, back, faceX: player.faceX, faceY: player.faceY, mvx, mvy, trailX, trailY,
+    walkTime: player.walkTime, moving: g.moving, liftA: g.a.lift, liftB: g.b.lift, headX, headY, tailSway, time: t };
+  const drawCape = (): void => { if (look) look.cloak(ctx, hc); else drawKnightCape(); };
   if (!back) drawCape();
+  look?.robe(ctx, hc);
   if (hasBackpack && !back) {
     // Mochila vista de frente: uma lateral da bolsa sob o ombro.
     ctx.save(); ctx.translate(-9 * wf - side * 3, -18);
@@ -218,7 +232,8 @@ export function renderHero(
   ctx.scale(1 + breath * 0.012, 1 - breath * 0.02);
   ctx.translate(0, 12);
   const body = ctx.createLinearGradient(-9 * wf, 0, 9 * wf, 0);
-  body.addColorStop(0, tone(PAL.tunicL)); body.addColorStop(0.45, tone(PAL.tunic)); body.addColorStop(1, tone(PAL.tunicD));
+  const tun = look?.tunic ?? { light: PAL.tunicL, mid: PAL.tunic, dark: PAL.tunicD };
+  body.addColorStop(0, tone(tun.light)); body.addColorStop(0.45, tone(tun.mid)); body.addColorStop(1, tone(tun.dark));
   ctx.fillStyle = body;
   ctx.beginPath();
   ctx.moveTo(-7.5 * wf, -25);
@@ -231,14 +246,15 @@ export function renderHero(
   ctx.closePath(); ctx.fill();
   ctx.strokeStyle = rgba(PAL.outline, 0.5); ctx.lineWidth = 1; ctx.stroke();
   if (back) {
-    ctx.fillStyle = rgba("#000000", 0.18);
-    ctx.fillRect(-0.6, -24, 1.2, 12);
+    if (!look) { ctx.fillStyle = rgba("#000000", 0.18); ctx.fillRect(-0.6, -24, 1.2, 12); }
   } else {
-    // costura, gola em V e brilho no peito
-    ctx.strokeStyle = rgba("#17313a", 0.45); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(side * 1.4, -22); ctx.lineTo(side * 1.4, -13); ctx.stroke();
-    ctx.fillStyle = tone(PAL.leather);
-    ctx.beginPath(); ctx.moveTo(-4.4 * wf, -25.2); ctx.lineTo(4.4 * wf, -25.2); ctx.lineTo(side * 0.8, -20.6); ctx.closePath(); ctx.fill();
+    // costura, gola em V e brilho no peito (o Mago tem decote e debrum próprios)
+    if (!look) {
+      ctx.strokeStyle = rgba("#17313a", 0.45); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(side * 1.4, -22); ctx.lineTo(side * 1.4, -13); ctx.stroke();
+      ctx.fillStyle = tone(PAL.leather);
+      ctx.beginPath(); ctx.moveTo(-4.4 * wf, -25.2); ctx.lineTo(4.4 * wf, -25.2); ctx.lineTo(side * 0.8, -20.6); ctx.closePath(); ctx.fill();
+    }
     ellipse(ctx, -3 * wf, -19, 2.4, 4.2, rgba("#ffffff", 0.14), -0.2);
   }
   if (hasChest) {
@@ -274,8 +290,9 @@ export function renderHero(
     ctx.fillRect(side * 1.4 - 0.8, -12.6, 1.6, 2);
     ellipse(ctx, -frame.hand * 8.2 * wf, -8.4, 2.6, 3, tone(PAL.leather));
   }
-  // ombreiras de couro
-  for (const s of [-1, 1]) {
+  // ombreiras de couro (o Mago tem o capuz do manto caído nos ombros)
+  if (look) look.torso(ctx, hc);
+  else for (const s of [-1, 1]) {
     ellipse(ctx, s * 8.3 * wf, -23.6, 3.8, 3, tone(PAL.leather));
     ellipse(ctx, s * 8.3 * wf - 0.6, -24.4, 2, 1.2, tone(PAL.leatherL));
   }
@@ -285,10 +302,10 @@ export function renderHero(
   const swing = g.armSwing;
   const swordSide = frame.hand;
   for (const s of [-1, 1]) {
-    if (s === swordSide) continue; // o braço da espada é desenhado junto da arma
+    if (s === swordSide && !look) continue; // o braço da espada é desenhado junto da arma (o Mago ainda não tem cajado)
     const hx = s * 9.6 * wf + mvx * swing * -s * 4.2;
     const hy = -12.5 + mvy * swing * -s * 2.8 - swing * -s * 1.2 + breath * 0.3;
-    drawArm(ctx, s * 8.6 * wf, -22.6, hx, hy, tone, PAL.tunic);
+    drawArm(ctx, s * 8.6 * wf, -22.6, hx, hy, tone, look?.sleeve ?? PAL.tunic, look?.cuff);
   }
   if (hasShield) {
     const shieldSide = -swordSide;
@@ -303,8 +320,6 @@ export function renderHero(
   };
 
   // --- cabeça --------------------------------------------------------------
-  const headX = player.faceX * 1.3, headY = -31.5 + breath * 0.35 + Math.abs(Math.cos(player.walkTime)) * g.moving * -0.4 +
-    atk.lunge * 0.8;
   if (back) drawCape();
   if (back && hasBackpack) {
     ctx.fillStyle = tone("#806b4b");
@@ -313,9 +328,7 @@ export function renderHero(
     ctx.fill(); ctx.strokeStyle = tone("#d7b581"); ctx.lineWidth = 0.9; ctx.stroke();
     ctx.fillStyle = tone("#c0a577"); ctx.fillRect(-2.2 * wf, -21, 4.4 * wf, 2.2);
   }
-  if (!back) { swordArm(); renderWeapon(ctx, frame, player, tone, atk.impact, t); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); }
-  const tailDir = side !== 0 ? -side : 1;
-  const tailSway = Math.sin(t * 2.4 + seed * 4) * 0.8 + Math.sin(player.walkTime * 2) * g.moving * 2.4 - mvx * g.moving * 3;
+  if (!back && !look) { swordArm(); renderWeapon(ctx, frame, player, tone, atk.impact, t); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); }
   // rabo-de-cavalo/mecha traseira
   ctx.strokeStyle = tone(PAL.hair); ctx.lineWidth = 4.2; ctx.lineCap = "round";
   ctx.beginPath();
@@ -384,7 +397,8 @@ export function renderHero(
     ctx.strokeStyle = rgba("#000000", 0.2);
     ctx.beginPath(); ctx.moveTo(headX, headY - 2); ctx.lineTo(headX, headY + 7); ctx.stroke();
   }
-  // faixa de cabeça com nó
+  // faixa de cabeça com nó (o Mago usa o chapéu)
+  if (!look) {
   ctx.fillStyle = tone(PAL.band);
   ctx.beginPath();
   ctx.moveTo(headX - 8.7, headY - 4.8); ctx.quadraticCurveTo(headX, headY - 8.8, headX + 8.7, headY - 4.8);
@@ -398,6 +412,7 @@ export function renderHero(
     ctx.moveTo(headX + 4.6, headY - 3.4);
     ctx.quadraticCurveTo(headX + 8 + tailSway * 0.3, headY, headX + 8 + tailSway * 0.7, headY + 3.2);
     ctx.stroke();
+  }
   }
   if (hasHelm) {
     // Elmo preserva o rosto e as piscadas; a viseira fica acima dos olhos.
@@ -418,10 +433,11 @@ export function renderHero(
     ctx.fillStyle = tone("#e4e6c8");
     ctx.fillRect(headX - 1, headY - 9.6, 2, 6.1);
   }
-  if (back) { swordArm(); }
-  if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); }
+  look?.hat(ctx, hc);
+  if (back && !look) { swordArm(); }
+  if (back && !look) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); }
   // Rastro e brilho por cima de tudo para ler bem em qualquer direção.
-  renderTrail(ctx, player, frame);
+  if (!look) renderTrail(ctx, player, frame);
   ctx.restore();
 }
 

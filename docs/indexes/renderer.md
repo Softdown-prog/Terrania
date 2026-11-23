@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (261)
+## Todos os arquivos deste módulo (269)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -131,6 +131,14 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/creatures/west/griffins/summitGriffin.ts`](../../src/render/creatures/west/griffins/summitGriffin.ts)
 - [`src/render/creatures/west/salamanders/magmaSalamander.ts`](../../src/render/creatures/west/salamanders/magmaSalamander.ts)
 - [`src/render/draw.ts`](../../src/render/draw.ts)
+- [`src/render/hero/context.ts`](../../src/render/hero/context.ts)
+- [`src/render/hero/look.ts`](../../src/render/hero/look.ts)
+- [`src/render/hero/mage/cloak.ts`](../../src/render/hero/mage/cloak.ts)
+- [`src/render/hero/mage/hat.ts`](../../src/render/hero/mage/hat.ts)
+- [`src/render/hero/mage/index.ts`](../../src/render/hero/mage/index.ts)
+- [`src/render/hero/mage/palette.ts`](../../src/render/hero/mage/palette.ts)
+- [`src/render/hero/mage/robe.ts`](../../src/render/hero/mage/robe.ts)
+- [`src/render/hero/mage/torso.ts`](../../src/render/hero/mage/torso.ts)
 - [`src/render/heroPose.ts`](../../src/render/heroPose.ts)
 - [`src/render/interior.ts`](../../src/render/interior.ts)
 - [`src/render/monsterMotion.ts`](../../src/render/monsterMotion.ts)

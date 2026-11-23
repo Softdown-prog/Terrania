@@ -22,7 +22,7 @@ O [ROADMAP](../ROADMAP.md) dizia para concluir o Cavaleiro antes das outras voca
 | Fatia | O quê | Estado |
 | --- | --- | --- |
 | A | Fundação: vocação e mana no motor e no save | **feita (esta)** |
-| B | Corpo do herói mago: túnica e capuz, desenhados por vocação, no contrato de arte | a fazer |
+| B | Corpo do herói mago: mistura de túnica azul-violeta, manto escuro e chapéu pontudo, desenhado por vocação, no contrato de arte | **feita** ([ADR 0067](0067-corpo-do-heroi-mago.md)) |
 | C | Cajados: ficha, desenho e o primeiro cajado (Aprendiz) | a fazer |
 | D | Combate à distância: projétil com mana, na superfície **e na caverna** (mesma fórmula de defesa e alvos), mana sincronizada na caverna, descanso devolve mana | a fazer |
 | E | Animação de conjurar, projétil e impacto, e a barra de mana na tela | a fazer |

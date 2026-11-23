@@ -54,6 +54,11 @@ import { renderMount, renderMountTracks, renderStableFence } from "../../src/ren
 import { MOUNTS, MOUNT_IDS } from "../../src/actors/MountCatalog.ts";
 import { REGIONAL_CREATURE_KINDS, SECOND_WAVE_KINDS, SOUTH_COMMON_KINDS, CREATURE_CATALOG } from "../../src/actors/CreatureCatalog.ts";
 import { renderHero, renderSlime } from "../../src/render/actors.ts";
+import type { HeroDrawContext } from "../../src/render/hero/context.ts";
+import { drawWizardHat } from "../../src/render/hero/mage/hat.ts";
+import { drawMageCloak } from "../../src/render/hero/mage/cloak.ts";
+import { drawMageRobe } from "../../src/render/hero/mage/robe.ts";
+import { drawMageTorso } from "../../src/render/hero/mage/torso.ts";
 import { renderNpc } from "../../src/render/npcs.ts";
 import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
@@ -112,6 +117,9 @@ export const DARKEST_MAX = 0.2;
 export const LIGHTEST_MIN = 0.85;
 
 const hero = { faceX: 0, faceY: 1, walkTime: 0.3, attackTime: 0 };
+/** O quadro de um herói parado, de frente, para desenhar uma peça do Mago sozinha. */
+const mageCtx = (extra: Partial<HeroDrawContext> = {}): HeroDrawContext => ({ tone: c => c, wf: 1, side: 0, back: false, faceX: 0, faceY: 1, mvx: 0, mvy: 1,
+  trailX: 0, trailY: 0, walkTime: 0.3, moving: 0, liftA: 0, liftB: 0, headX: 0, headY: -31.5, tailSway: 0, time: 1, ...extra });
 const kit = { head: "trail-helm", shield: "willow-shield", chest: "quilted-vest", feet: "trail-boots",
   legs: "travel-trousers", backpack: "canvas-pack", neck: "river-pendant" } as const;
 
@@ -121,6 +129,16 @@ const withGlints = (paint: (glints: Array<() => void>) => void): void => { const
 export const ASSETS: ArtAsset[] = [
   { id: "hero", tier: "character", fn: "renderHero", draw: c => renderHero(c, hero, 0, 0, 1) },
   { id: "hero com conjunto", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, gear: kit }, 0, 0, 1) },
+  // O herói Mago (ADR 0067): a mistura de túnica azul-violeta, manto escuro e chapéu pontudo, nas quatro leituras que importam.
+  { id: "hero mago de frente", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, heroClass: "mage" }, 0, 0, 1) },
+  { id: "hero mago de costas", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, faceY: -1, heroClass: "mage" }, 0, 0, 1) },
+  { id: "hero mago de lado", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, faceX: 1, faceY: 0, heroClass: "mage" }, 0, 0, 1) },
+  // As quatro peças que só o Mago veste, sozinhas, cada uma cumprindo o piso das peças pequenas (ADR 0067).
+  { id: "mago: chapéu pontudo", tier: "prop", fn: "drawWizardHat", draw: c => drawWizardHat(c, mageCtx()) },
+  { id: "mago: manto escuro com capuz", tier: "prop", fn: "drawMageCloak", draw: c => drawMageCloak(c, mageCtx({ back: true })) },
+  { id: "mago: barra da túnica", tier: "prop", fn: "drawMageRobe", draw: c => drawMageRobe(c, mageCtx()) },
+  { id: "mago: detalhes do tronco", tier: "prop", fn: "drawMageTorso", draw: c => drawMageTorso(c, mageCtx()) },
+  { id: "hero mago andando", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, walkTime: 0.9, vx: 70, vy: 0, faceX: 1, faceY: 0, heroClass: "mage" }, 0, 0, 1) },
   ...WEAPON_IDS.map<ArtAsset>(kind => ({
     id:"Espada procedural "+kind,tier:"prop",fn:"drawKnightSword",
     draw:c=>drawKnightSword(c,kind,1)

@@ -61,6 +61,7 @@ export class GamePageComponent implements AfterViewInit {
   private readonly defeatDialog = viewChild<ElementRef<HTMLDialogElement>>('defeatDialog');
   private readonly classDialog = viewChild<ElementRef<HTMLDialogElement>>('classDialog');
   private readonly classKnight = viewChild<ElementRef<HTMLCanvasElement>>('classKnight');
+  private readonly classMage = viewChild<ElementRef<HTMLCanvasElement>>('classMage');
   private classPreviewFrame = 0;
   private readonly playersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('playersDialog');
   private readonly inventoryDialog = viewChild.required<ElementRef<HTMLDialogElement>>('inventoryDialog');
@@ -120,16 +121,17 @@ export class GamePageComponent implements AfterViewInit {
     this.selectedSector.set(id);
     this.atlasScale.set('sector');
   }
-  /** O Cavaleiro da tela de escolha é o mesmo herói procedural do mundo, de frente e com a espada de treino. */
+  /** Os heróis da tela de escolha são os mesmos heróis procedurais do mundo, de frente: o Cavaleiro com a espada de treino e o Mago com o chapéu (a escala do Mago é menor para o chapéu caber). */
   private drawClassPreview(time: number): void {
     if (!this.hud.heroClassPrompt()) return;
-    const canvas = this.classKnight()?.nativeElement, ctx = canvas?.getContext('2d');
-    if (ctx && canvas) {
+    for (const [ref, heroClass, scale] of [[this.classKnight(), undefined, 2.6], [this.classMage(), 'mage', 2.3]] as const) {
+      const canvas = ref?.nativeElement, ctx = canvas?.getContext('2d');
+      if (!ctx || !canvas) continue;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
-      ctx.translate(canvas.width / 2, canvas.height * 0.82);
-      ctx.scale(2.6, 2.6);
-      renderHero(ctx, { faceX: 0, faceY: 1, walkTime: 0, attackTime: 0, attackWeapon: 'starter', equippedWeapon: 'starter', vx: 0, vy: 0, id: 'class-preview' }, 0, 0, time / 1000);
+      ctx.translate(canvas.width / 2, canvas.height * 0.84);
+      ctx.scale(scale, scale);
+      renderHero(ctx, { faceX: 0, faceY: 1, walkTime: 0, attackTime: 0, attackWeapon: 'starter', equippedWeapon: 'starter', vx: 0, vy: 0, id: 'class-preview', heroClass }, 0, 0, time / 1000);
       ctx.restore();
     }
     this.classPreviewFrame = requestAnimationFrame(now => this.drawClassPreview(now));

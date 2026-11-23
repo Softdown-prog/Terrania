@@ -60,7 +60,8 @@ test("a tela: janela que Esc não fecha, uma carta por vocação, o Mago bloquea
   assert.match(page, /<dialog id="classDialog" #classDialog \(cancel\)="\$event\.preventDefault\(\)"/, "Esc não dispensa a escolha");
   assert.match(page, /@for \(id of hud\.heroClassIds; track id\)/); assert.match(page, /\[class\.locked\]="!sheet\.playable"/);
   assert.match(page, /\[attr\.id\]="'choose-' \+ id"\s*\n\s*\[disabled\]="!sheet\.playable" \(click\)="hud\.chooseHeroClass\(id\)"/, "botão do bloqueado fica desabilitado");
-  assert.match(page, /<canvas #classKnight/); assert.match(page, /hero-card-badge/);
+  assert.match(page, /<canvas #classKnight/); assert.match(page, /<canvas #classMage/, "o Mago aparece desenhado, não como um selo"); assert.match(page, /hero-card-badge/);
+  assert.match(component, /\[this\.classMage\(\), 'mage', 2\.3\]/, "a prévia do Mago pede a aparência do Mago");
   assert.match(hud, /if \(!this\.heroClassPrompt\(\) \|\| !isHeroClassPlayable\(heroClass\)\) return;/, "mesmo pelo código, o bloqueado não passa");
   assert.match(hud, /promptHeroClass\(onChoose: \(heroClass: HeroClassId\) => void\): void \{ this\.heroClassCallback = onChoose; this\.heroClassPrompt\.set\(true\); \}/);
   assert.match(component, /const prompt = this\.hud\.heroClassPrompt\(\);/); assert.match(component, /if \(prompt\) \{\s*\n\s*this\.open\(dialog\);/, "abre pausando o jogo");

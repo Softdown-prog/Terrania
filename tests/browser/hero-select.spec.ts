@@ -24,6 +24,7 @@ test("jogador novo: a tela de escolha abre, o Mago está bloqueado, Esc não fec
   await expect(mage).toBeDisabled(); await expect(mage).toContainText("Em breve");
   await expect(dialog.locator("[data-hero=mage] .hero-card-badge")).toContainText("Em breve");
   await expect(dialog.locator("[data-hero=knight] canvas")).toBeVisible();
+  await expect(dialog.locator("[data-hero=mage] canvas")).toBeVisible();
   await dialog.screenshot({ path: test.info().outputPath("escolha-heroi.png") });
   if (info.project.name !== "android") { await page.keyboard.press("Escape"); await expect(dialog).toBeVisible(); }
   expect(await readSave(page), "ainda sem save antes de escolher").toBeNull();
