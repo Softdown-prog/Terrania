@@ -32,7 +32,8 @@ import { tickInterior } from "./modes/interiorMode.ts";
 import { mountQuestAction, npcOffer, questStepId } from "./interactions.ts";
 import { bankDeposit, bankOnTalk, bankWithdraw } from "./actions/center/bankActions.ts";
 import { chooseRespawnPoint } from "./actions/center/shrineActions.ts";
-import { isHeroClassPlayable, type HeroClassId } from "../engine/character/classes/index.ts";
+import { isHeroClassPlayable, manaMeter, type HeroClassId } from "../engine/character/classes/index.ts";
+import { STAVES } from "../engine/character/Staves.ts";
 import { BANKER_ID } from "../npcs/center/capital/index.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
 import { wellQuestSummary } from "../engine/quests/south/well/index.ts";
@@ -129,6 +130,7 @@ export class Game {
       tileY: Math.floor(player.y / TILE_SIZE),
       progression: experienceProgress(this.sim.experience),
       awaitingRespawn: player.hp <= 0,
+      mana: this.sim.usesMana ? manaMeter(this.sim.mana, this.sim.maxMana, STAVES[this.sim.equippedStaff].manaCost) : null,
     }, aelaQuestProgress(this.sim.trainingKills), wellQuestSummary(this.sim.well.view));
     this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins, inventory.elixirs);
     this.hud.updateBank(this.sim.bank.balance);

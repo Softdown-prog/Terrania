@@ -150,6 +150,31 @@ input:focus-visible {
   background: linear-gradient(90deg, #af6249, #dfab73);
   transition: width 0.15s;
 }
+/* A barra de mana do Mago (ADR 0071): mais fina que a de vida; vermelha quando não dá para conjurar. */
+.mana-heading {
+  margin-top: 6px;
+}
+.meter.mana-meter {
+  height: 6px;
+  margin-top: 4px;
+  background: #1d1a45;
+  border-color: #b9a6ff55;
+}
+#manaFill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #4a35b8, #9d86ff);
+  transition: width 0.15s;
+}
+.mana-heading.low b {
+  color: #ffb3c7;
+}
+.meter.mana-meter.low {
+  border-color: #ff7d9d99;
+}
+.mana-meter.low #manaFill {
+  background: linear-gradient(90deg, #8a2f55, #d1648a);
+}
 .xp-progress {
   display: flex;
   align-items: center;

@@ -5,7 +5,7 @@ import type { ElixirCounts, ElixirId } from '../engine/character/south/alchemy/i
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
 import type { MarketId } from '../engine/character/coins/index.ts';
 import type { RespawnPointId } from '../engine/character/center/shrine/index.ts';
-import type { HeroClassId } from '../engine/character/classes/index.ts';
+import type { HeroClassId, ManaMeter } from '../engine/character/classes/index.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/character/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/character/Equipment.ts';
@@ -26,6 +26,8 @@ export interface HeroHudState {
   readonly tileY: number;
   readonly progression: ExperienceProgress | null;
   readonly awaitingRespawn: boolean;
+  /** A barra de mana (ADR 0071); `null` para quem não usa mana. */
+  readonly mana: ManaMeter | null;
 }
 
 export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave' | 'ascend' | 'descend' | 'tracks' | 'tame';

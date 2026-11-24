@@ -14,6 +14,16 @@
           <div class="meter" role="img" aria-label="Barra de vida">
             <div id="hpFill" [style.width.%]="hud.hp() / hud.maxHp() * 100"></div>
           </div>
+          @if (hud.mana(); as mana) {
+            <div class="stat-heading mana-heading" [class.low]="mana.low">
+              <span>MANA</span>
+              <b id="manaText">{{ mana.current + " / " + mana.max }}</b>
+            </div>
+            <div class="meter mana-meter" role="img" [class.low]="mana.low"
+              [attr.aria-label]="'Barra de mana: ' + mana.current + ' de ' + mana.max + (mana.low ? ', sem mana para uma magia' : '')">
+              <div id="manaFill" [style.width.%]="mana.percent"></div>
+            </div>
+          }
           @if (hud.progression(); as xp) {
             <div class="xp-progress">
               <div class="xp-track" aria-hidden="true">

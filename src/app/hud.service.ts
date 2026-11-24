@@ -12,7 +12,7 @@ import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { SOUTH_MOUNT_SALES } from '../engine/mounts/southMountSales.ts';
 import { BANK_STEPS } from '../engine/character/center/bank/index.ts';
 import { DEFAULT_RESPAWN_POINT, RESPAWN_POINTS, type RespawnPointId } from '../engine/character/center/shrine/index.ts';
-import { HERO_CLASSES, HERO_CLASS_IDS, isHeroClassPlayable, type HeroClassId } from '../engine/character/classes/index.ts';
+import { HERO_CLASSES, HERO_CLASS_IDS, isHeroClassPlayable, sameManaMeter, type HeroClassId, type ManaMeter } from '../engine/character/classes/index.ts';
 import { HERO_CLASS_HINT, HERO_CLASS_INTRO, HERO_CLASS_LOCKED, HERO_CLASS_TITLE } from '../game/messages/classIntro.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
@@ -82,6 +82,8 @@ export class HudService implements GameUi {
   readonly hp = signal(100);
   readonly awaitingRespawn = signal(false);
   readonly maxHp = signal(100);
+  /** A barra de mana do Mago (ADR 0071); `null` esconde a barra. Só muda quando o número inteiro, a porcentagem ou o aviso mudam. */
+  readonly mana = signal<ManaMeter | null>(null, { equal: sameManaMeter });
   readonly progression = signal<ExperienceProgress | null>(null, {
     equal: (previous, next) => previous === next || (previous !== null && next !== null &&
       previous.level === next.level && previous.earned === next.earned && previous.needed === next.needed),
@@ -465,6 +467,7 @@ export class HudService implements GameUi {
   }
   updateHero(hero: HeroHudState, quest: AelaQuestProgress, well?: WellQuestSummary): void {
     this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);
+    this.mana.set(hero.mana);
     this.nutrition.set(hero.nutrition);
     this.awaitingRespawn.set(hero.awaitingRespawn);
     this.progression.set(hero.progression);

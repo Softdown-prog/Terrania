@@ -71,6 +71,13 @@
     height: 6px;
     margin-top: 7px;
   }
+  .meter.mana-meter {
+    height: 5px;
+    margin-top: 3px;
+  }
+  .mana-heading {
+    margin-top: 4px;
+  }
   .quest {
     position: absolute;
     top: 98px;

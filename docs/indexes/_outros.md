@@ -122,6 +122,7 @@
 - [`docs/adr/0068-cajados-do-mago.md`](../../docs/adr/0068-cajados-do-mago.md)
 - [`docs/adr/0069-combate-a-distancia-do-mago.md`](../../docs/adr/0069-combate-a-distancia-do-mago.md)
 - [`docs/adr/0070-conjuracao-do-mago.md`](../../docs/adr/0070-conjuracao-do-mago.md)
+- [`docs/adr/0071-barra-de-mana.md`](../../docs/adr/0071-barra-de-mana.md)
 - [`docs/screenshots/heroi-mago-contra-cavaleiro.png`](../../docs/screenshots/heroi-mago-contra-cavaleiro.png)
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/mago-conjurando.png`](../../docs/screenshots/mago-conjurando.png)
