@@ -13,11 +13,12 @@ const SEED = 842136;
 const game = readFileSync("src/game/Game.ts", "utf8"), page = readFileSync("src/app/game-page.html", "utf8"), component = readFileSync("src/app/game-page.component.ts", "utf8"),
   hud = readFileSync("src/app/hud.service.ts", "utf8");
 
-test("quem pode ser escolhido: o Cavaleiro sim, o Mago ainda não (só quando corpo, cajados, combate e animação estiverem prontos)", () => {
-  assert.equal(KNIGHT.playable, true); assert.equal(MAGE.playable, false);
-  assert.deepEqual(HERO_CLASS_IDS.map(isHeroClassPlayable), [true, false]);
-  assert.deepEqual(HERO_CLASS_IDS.filter(id => heroClassSheet(id).playable), ["knight"], "uma só vocação jogável por enquanto");
-  assert.equal(HERO_CLASSES.mage.playable, false);
+test("quem pode ser escolhido: o Cavaleiro e o Mago (o Mago foi liberado ao ficar completo, ADR 0072)", () => {
+  assert.equal(KNIGHT.playable, true); assert.equal(MAGE.playable, true);
+  assert.deepEqual(HERO_CLASS_IDS.map(isHeroClassPlayable), [true, true]);
+  assert.deepEqual(HERO_CLASS_IDS.filter(id => heroClassSheet(id).playable), ["knight", "mage"]);
+  assert.equal(HERO_CLASSES.mage.playable, true);
+  assert.equal(isHeroClassPlayable("lua" as never), false, "o que não é vocação não é jogável");
 });
 
 test("os textos da tela: cada vocação tem uma frase e três traços; o Mago diz que vem em breve", () => {
@@ -35,6 +36,7 @@ test("a vocação escolhida vale para o mundo criado; um save do mesmo mundo man
   assert.equal(new OfflineSimulation(SEED).heroClass, "knight", "sem escolha, Cavaleiro como sempre");
   const mage = new OfflineSimulation(SEED, undefined, "mage");
   assert.deepEqual([mage.heroClass, mage.mana, mage.maxMana], ["mage", 50, 50], "o Mago escolhido já nasce de mana cheia");
+  assert.equal(mage.equippedStaff, "apprentice", "e já nasce com o cajado de Aprendiz na mão");
   assert.equal(new OfflineSimulation(SEED, undefined, "knight").heroClass, "knight");
   assert.equal(new OfflineSimulation(SEED, undefined, "lua" as never).heroClass, "knight", "vocação inválida vira Cavaleiro");
   const knightSave = new OfflineSimulation(SEED).snapshot();

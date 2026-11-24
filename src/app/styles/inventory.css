@@ -40,6 +40,9 @@
 .equipment-slot:nth-child(8) { grid-area: 4 / 3; }
 .equipment-slot:nth-child(9) { grid-area: 5 / 1; }
 .equipment-slot:nth-child(10) { grid-area: 5 / 3; }
+.equipment-grid.single-slot { grid-template-rows: minmax(210px, 1fr); }
+.equipment-grid.single-slot .equipment-slot { grid-area: 1 / 1; align-self: center; }
+.equipment-grid.single-slot .hero-preview { grid-area: 1 / 2 / span 1 / span 2; }
 .hero-preview { grid-area: 1 / 2 / span 5 / span 1; display: flex; flex-direction: column;
   align-items: center; justify-content: space-around; border: 1px solid #99875d66;
   border-radius: 8px; min-width: 0; overflow: hidden;

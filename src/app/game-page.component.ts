@@ -150,12 +150,15 @@ export class GamePageComponent implements AfterViewInit {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.translate(canvas.width / 2, canvas.height * 0.81);
-        ctx.scale(2.4, 2.4);
+        // O chapéu do Mago é alto: a prévia dele é um pouco menor para caber no quadro.
+        const zoom = this.hud.heroClass() === 'mage' ? 2.15 : 2.4;
+        ctx.scale(zoom, zoom);
         renderHero(ctx, {
           faceX: face.x, faceY: face.y, walkTime: 0, attackTime: 0,
           attackWeapon: this.hud.loadout()?.equipped ?? 'starter',
           equippedWeapon: this.hud.loadout()?.equipped ?? 'starter',
-          gear: this.hud.gear() ?? undefined,
+          gear: this.hud.wearsArmor() ? this.hud.gear() ?? undefined : undefined,
+          heroClass: this.hud.heroClass(), equippedStaff: this.hud.staff(),
           vx: 0, vy: 0, id: 'inventory-preview',
         }, 0, 0, time / 1000);
         ctx.restore();

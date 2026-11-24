@@ -16,6 +16,6 @@ export function tickInterior(host: ModeHost, room: InteriorRoom, frame: Frame): 
   if (timers.saveClock > 12) { timers.saveClock = 0; host.save(); }
   host.updateHud();
   host.hud.setInterior(room.building.name, interiorPlace(room.building.id));
-  host.scene.renderInterior(room, host.travel.navigator.target, timers.clock);
+  host.scene.renderInterior(room, host.travel.navigator.target, timers.clock, { heroClass: host.sim.heroClass, equippedStaff: host.sim.equippedStaff });
   return true;
 }

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import type { EquipmentSlot, GearSlot } from '../engine/character/Equipment.ts';
 import type { FoodId } from '../engine/character/Food.ts';
 import type { WeaponId } from '../engine/character/Weapons.ts';
+import type { StaffId } from '../engine/character/Staves.ts';
 import type { SouthRareLootId } from '../monsters/rareLoot.ts';
 import type { CoinId } from '../engine/character/coins/index.ts';
 
@@ -11,6 +12,7 @@ export type ItemIconId =
   | 'sword-starter' | 'sword-forge' | 'sword-common' | 'sword-bronze' | 'sword-copper'
   | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
   | 'sword-tempest' | 'sword-astral'
+  | 'staff-apprentice'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
   | 'greater-potion' | 'antidote'
   | CoinId
@@ -24,6 +26,10 @@ const FOOD_ICONS: Record<FoodId, ItemIconId> = { apple: 'apple', bread: 'bread',
 
 export function slotItemIcon(slot: EquipmentSlot, weapon: WeaponId): ItemIconId {
   return slot === 'weapon' ? weaponItemIcon(weapon) : SLOT_ICONS[slot];
+}
+/** O ícone do cajado em mãos (ADR 0072); cada cajado novo ganha o seu `staff-<id>`. */
+export function staffItemIcon(staff: StaffId): ItemIconId {
+  return `staff-${staff}`;
 }
 export function weaponItemIcon(weapon: WeaponId): ItemIconId {
   return `sword-${weapon}`;
@@ -269,6 +275,19 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
             
             <path d="M15 7L18 10L15 13L17 15" fill="none" stroke="#ffda52" stroke-width="1.4"/>
             
+          </g>
+        }
+        @case ('staff-apprentice') {
+          <g transform="rotate(38 16 16)">
+            <path d="M14.6 9.5Q14 18 14.6 29L17.4 29Q18 18 17.4 9.5Z" fill="#8a6238"/>
+            <path d="M15.2 10Q14.8 18 15.3 28" fill="none" stroke="#c79a5e" stroke-width="1" stroke-linecap="round"/>
+            <rect x="14.2" y="17" width="3.6" height="4" fill="#5a3b24" stroke-width="1"/>
+            <rect x="13.4" y="9.2" width="5.2" height="2.2" rx=".6" fill="#e3b647"/>
+            <path d="M12.6 8.6Q10.4 5 13.2 2.6M19.4 8.6Q21.6 5 18.8 2.6" fill="none" stroke="#8a6238" stroke-width="1.8"/>
+            <path d="M16 1.4L19 4.8L18 8.2L16 9.4L14 8.2L13 4.8Z" fill="#8a6bff"/>
+            <path d="M16 1.4L16.4 9.2M13 4.8L19 4.8" fill="none" stroke="#cbbcff" stroke-width="1" stroke-linecap="round"/>
+            <ellipse cx="14.7" cy="4.6" rx=".9" ry="1.4" fill="#f4f8ff" stroke="none"/>
+            <path d="M14.6 11.4Q11.8 13 12.4 16" fill="none" stroke="#4a35b8" stroke-width="1.6" stroke-linecap="round"/>
           </g>
         }
         @case ('ring') {

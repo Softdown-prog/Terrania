@@ -6,6 +6,7 @@ import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
 import type { MarketId } from '../engine/character/coins/index.ts';
 import type { RespawnPointId } from '../engine/character/center/shrine/index.ts';
 import type { HeroClassId, ManaMeter } from '../engine/character/classes/index.ts';
+import type { StaffId } from '../engine/character/Staves.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/character/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/character/Equipment.ts';
@@ -28,6 +29,9 @@ export interface HeroHudState {
   readonly awaitingRespawn: boolean;
   /** A barra de mana (ADR 0071); `null` para quem não usa mana. */
   readonly mana: ManaMeter | null;
+  /** A vocação e o cajado do herói (ADR 0072): o inventário e a prévia mostram o que é dele. */
+  readonly heroClass: HeroClassId;
+  readonly equippedStaff: StaffId;
 }
 
 export type NearbyAction = 'talk' | 'read' | 'enter' | 'leave' | 'ascend' | 'descend' | 'tracks' | 'tame';

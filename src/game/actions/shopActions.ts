@@ -9,6 +9,8 @@ import { INNKEEPER_ID } from "../../npcs/center/capital/index.ts";
 import { MARKET_NPC, describeCoins, type MarketId } from "../../engine/character/coins/index.ts";
 import { INVENTORY_FEEDBACK } from "../messages/inventoryFeedback.ts";
 import { CAPITAL_INN_RESTED } from "../messages/capitalInn.ts";
+import { heroClassSheet } from "../../engine/character/classes/index.ts";
+import { NO_ARMOR_MESSAGE, NO_SWORDS_MESSAGE } from "../messages/classRules.ts";
 import { say } from "./say.ts";
 import type { ShopContext, ShopResult } from "./shopContext.ts";
 export type { ShopContext, ShopResult } from "./shopContext.ts";
@@ -79,18 +81,21 @@ export function buyFood({ sim, inInterior, menuOpen }: ShopContext, id: FoodId):
 }
 
 export function buySword({ sim, inInterior, menuOpen }: ShopContext): ShopResult {
+  if (!heroClassSheet(sim.heroClass).usesSwords) return { message: NO_SWORDS_MESSAGE, changed: false };
   if (inInterior || !menuOpen) return say("too-far-from-forge");
   const result = sim.inventory.buyForgeSword(sim.player);
   return say(result, result === "purchased");
 }
 
 export function equipWeapon({ sim }: ShopContext, weapon: WeaponId): ShopResult {
+  if (!heroClassSheet(sim.heroClass).usesSwords) return { message: NO_SWORDS_MESSAGE, changed: false };
   if (sim.awaitingRespawn) return say("unavailable");
   const result = sim.inventory.equipWeapon(weapon, experienceProgress(sim.experience).level);
   return say(result, result === "equipped");
 }
 
 export function equipGear({ sim }: ShopContext, slot: GearSlot, item: GearId | null): ShopResult {
+  if (!heroClassSheet(sim.heroClass).wearsArmor && item !== null) return { message: NO_ARMOR_MESSAGE, changed: false };
   if (sim.awaitingRespawn) return say("unavailable");
   const result = sim.inventory.equipGear(slot, item);
   return say(result, result === "gear-equipped" || result === "gear-removed");

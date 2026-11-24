@@ -304,7 +304,7 @@ export class CanvasScene {
   interiorPoint(local: Point): Point | null {
     return screenToInterior(local, this.width, this.height);
   }
-  renderInterior(room: InteriorRoom, destination: Point | null = null, time = 0): void {
+  renderInterior(room: InteriorRoom, destination: Point | null = null, time = 0, playerClass?: HeroClassLook): void {
     const scale = Math.min(1.7, this.width / (ROOM_WIDTH + 70), this.height / (ROOM_HEIGHT + 130));
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this.ctx.fillStyle = '#102822';
@@ -312,7 +312,7 @@ export class CanvasScene {
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale,
       this.dpr * (this.width - ROOM_WIDTH * scale) / 2,
       this.dpr * (this.height - ROOM_HEIGHT * scale) / 2);
-    drawInterior(this.ctx, room, time);
+    drawInterior(this.ctx, room, time, playerClass);
     if (destination) drawTarget(this.ctx, destination, time);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
   }

@@ -7,7 +7,8 @@ import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, ty
 import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
-import { foodItemIcon, slotItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
+import { foodItemIcon, slotItemIcon, staffItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
+import { DEFAULT_STAFF, STAVES, type StaffId } from '../engine/character/Staves.ts';
 import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { SOUTH_MOUNT_SALES } from '../engine/mounts/southMountSales.ts';
 import { BANK_STEPS } from '../engine/character/center/bank/index.ts';
@@ -134,6 +135,20 @@ export class HudService implements GameUi {
   readonly swordIds = WEAPON_IDS;
   weaponIcon(id: WeaponId): ItemIconId { return weaponItemIcon(id); }
   readonly equipmentSlots = EQUIPMENT_SLOTS;
+  /** A vocação do herói e o cajado em mãos (ADR 0072): o inventário mostra o que é de cada um. */
+  readonly heroClass = signal<HeroClassId>('knight');
+  readonly staff = signal<StaffId>(DEFAULT_STAFF);
+  readonly usesSwords = computed(() => HERO_CLASSES[this.heroClass()].usesSwords);
+  readonly wearsArmor = computed(() => HERO_CLASSES[this.heroClass()].wearsArmor);
+  /** O Mago só tem o espaço do cajado; o Cavaleiro, os dez. */
+  readonly visibleEquipmentSlots = computed(() => this.wearsArmor() ? EQUIPMENT_SLOTS : EQUIPMENT_SLOTS.filter(slot => slot.id === 'weapon'));
+  readonly heroName = computed(() => HERO_CLASSES[this.heroClass()].name.toLowerCase());
+  readonly equippedStaff = computed(() => STAVES[this.staff()]);
+  readonly staffIcon = computed(() => staffItemIcon(this.staff()));
+  slotLabel(slot: EquipmentSlot): string {
+    if (slot === 'weapon' && !this.usesSwords()) return 'Cajado';
+    return EQUIPMENT_SLOTS.find(item => item.id === slot)?.label ?? slot;
+  }
   readonly gearCatalog = GEAR;
   readonly gear = signal<GearState | null>(null, { equal: (a, b) => a === b ||
     (a !== null && b !== null && EQUIPMENT_SLOTS.every(({ id }) => id === 'weapon' || a[id] === b[id])) });
@@ -175,7 +190,7 @@ export class HudService implements GameUi {
         quantity: food[id], foodId: id, description: 'Recupera até ' + item.healBudget + ' HP aos poucos.' });
     }
     const gear = this.gear();
-    if (gear !== null) {
+    if (gear !== null && this.wearsArmor()) {
       for (const id of KIT_IDS) {
         const item = GEAR[id];
         if (gear[item.slot] === id) continue;
@@ -187,7 +202,7 @@ export class HudService implements GameUi {
       }
     }
     const loadout = this.loadout();
-    if (loadout) {
+    if (loadout && this.usesSwords()) {
       for (const id of this.availableWeapons()) {
         if (id === loadout.equipped) continue;
         const item = WEAPONS[id];
@@ -386,9 +401,11 @@ export class HudService implements GameUi {
   }
   /** Ícone do espaço: a arma mostra a espada realmente equipada. */
   slotIcon(slot: EquipmentSlot): ItemIconId {
+    if (slot === 'weapon' && !this.usesSwords()) return this.staffIcon();
     return slotItemIcon(slot, this.loadout()?.equipped ?? 'starter');
   }
   equippedName(slot: EquipmentSlot): string {
+    if (slot === 'weapon' && !this.usesSwords()) return STAVES[this.staff()].name;
     if (slot === 'weapon') {
       const loadout = this.loadout();
       return loadout ? WEAPONS[loadout.equipped].name : '';
@@ -468,6 +485,7 @@ export class HudService implements GameUi {
   updateHero(hero: HeroHudState, quest: AelaQuestProgress, well?: WellQuestSummary): void {
     this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);
     this.mana.set(hero.mana);
+    this.heroClass.set(hero.heroClass); this.staff.set(hero.equippedStaff);
     this.nutrition.set(hero.nutrition);
     this.awaitingRespawn.set(hero.awaitingRespawn);
     this.progression.set(hero.progression);

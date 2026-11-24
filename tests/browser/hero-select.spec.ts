@@ -12,7 +12,7 @@ const save = (extra: Record<string, unknown> = {}) => JSON.stringify({ mapVersio
 type Saved = { seed: number; heroClass?: string };
 const readSave = (page: import("@playwright/test").Page) => page.evaluate((key) => { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) as Saved : null; }, KEY);
 
-test("jogador novo: a tela de escolha abre, o Mago está bloqueado, Esc não fecha e escolher o Cavaleiro começa e salva (desktop/Android)", async ({ page }, info) => {
+test("jogador novo: a tela de escolha abre com os dois heróis liberados, Esc não fecha e escolher o Cavaleiro começa e salva (desktop/Android)", async ({ page }, info) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.addInitScript(() => localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false })));
@@ -21,8 +21,8 @@ test("jogador novo: a tela de escolha abre, o Mago está bloqueado, Esc não fec
   await expect(dialog).toBeVisible();
   const knight = dialog.locator("#choose-knight"), mage = dialog.locator("#choose-mage");
   await expect(knight).toBeEnabled(); await expect(knight).toContainText("Jogar como Cavaleiro");
-  await expect(mage).toBeDisabled(); await expect(mage).toContainText("Em breve");
-  await expect(dialog.locator("[data-hero=mage] .hero-card-badge")).toContainText("Em breve");
+  await expect(mage).toBeEnabled(); await expect(mage).toContainText("Jogar como Mago");
+  await expect(dialog.locator("[data-hero=mage] .hero-card-badge")).toHaveCount(0);
   await expect(dialog.locator("[data-hero=knight] canvas")).toBeVisible();
   await expect(dialog.locator("[data-hero=mage] canvas")).toBeVisible();
   await dialog.screenshot({ path: test.info().outputPath("escolha-heroi.png") });
@@ -64,4 +64,52 @@ test("Novo mundo: depois de confirmar abre a escolha do herói, e escolher o Cav
   await expect.poll(async () => (await readSave(page))?.seed).not.toBe(842136);
   expect(before).not.toBe("842136");
   expect(errors).toEqual([]);
+});
+
+test("jogador novo escolhe o Mago: o mundo começa de Mago, com barra de mana, cajado no inventário e sem armadura (desktop/Android)", async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.addInitScript(() => localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false })));
+  await page.goto("/jogar/?modo=solo");
+  const dialog = page.getByRole("dialog", { name: "Escolha o seu herói" });
+  await expect(dialog).toBeVisible();
+  const press = async (locator: ReturnType<typeof page.locator>): Promise<void> => { if (info.project.name === "android") await locator.tap(); else await locator.click(); };
+  await press(dialog.locator("#choose-mage"));
+  await expect(dialog).toBeHidden();
+  await expect.poll(async () => (await readSave(page))?.heroClass).toBe("mage");
+  await expect(page.locator("#manaText")).toHaveText(/^\d+ \/ 50$/);
+  await expect(page.locator("#hpText")).toHaveText("80 / 80");
+  await press(page.locator("#gameMenuButton")); await press(page.locator("#inventoryButton"));
+  const inventory = page.locator("#inventoryDialog");
+  await expect(inventory).toBeVisible();
+  await expect(page.locator("#inventoryTitle")).toHaveText("Inventário do mago");
+  if (info.project.name === "android") await press(page.locator("#inventoryTabEquipment"));
+  await expect(page.locator("[data-equipment-slot]")).toHaveCount(1);
+  await expect(page.locator("[data-equipment-slot=weapon]")).toContainText("Cajado");
+  await expect(page.locator("#equippedWeapon")).toHaveText("Cajado de Aprendiz");
+  await expect(page.locator("#equippedStaffStats")).toContainText("5 de mana");
+  await expect(page.locator(".preview-eyebrow")).toHaveText("SEU MAGO");
+  await expect(page.locator("#equipmentDefense")).toHaveCount(0);
+  await expect(page.locator(".sword-choice")).toHaveCount(1);
+  await expect(page.locator("#inventoryHero")).toBeVisible();
+  await page.locator(".armory-panel").screenshot({ path: test.info().outputPath("inventario-do-mago.png") });
+  await page.locator("#inventoryDialog .dialog-x").click();
+  await page.reload();
+  await expect(page.locator("canvas#game")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Escolha o seu herói" })).toBeHidden();
+  await expect(page.locator("#manaText")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("o Cavaleiro continua com os dez espaços, as onze espadas e a defesa no inventário (desktop/Android)", async ({ page }, info) => {
+  await page.addInitScript(([key, value]) => { localStorage.setItem(key!, value!); localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false })); }, [KEY, save()]);
+  await page.goto("/jogar/?modo=solo");
+  const press = async (locator: ReturnType<typeof page.locator>): Promise<void> => { if (info.project.name === "android") await locator.tap(); else await locator.click(); };
+  await press(page.locator("#gameMenuButton")); await press(page.locator("#inventoryButton"));
+  await expect(page.locator("#inventoryTitle")).toHaveText("Inventário do cavaleiro");
+  if (info.project.name === "android") await press(page.locator("#inventoryTabEquipment"));
+  await expect(page.locator("[data-equipment-slot]")).toHaveCount(10);
+  await expect(page.locator(".preview-eyebrow")).toHaveText("SEU CAVALEIRO");
+  await expect(page.locator(".sword-choice")).toHaveCount(11);
+  await expect(page.locator("#equipmentDefense")).toBeVisible();
 });

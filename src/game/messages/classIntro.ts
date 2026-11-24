@@ -12,7 +12,7 @@ export const HERO_CLASS_INTRO: Readonly<Record<HeroClassId, HeroClassIntro>> = {
   },
   mage: {
     tagline: "Estudioso das artes arcanas, ataca de longe com magia.",
-    traits: ["Magias lançadas à distância pelo cajado", "Usa mana, que se recupera com o tempo", "Cajados de 11 níveis, cada um com um elemento"],
+    traits: ["Magias lançadas à distância pelo cajado", "Usa mana, que se recupera com o tempo", "Começa com o cajado de Aprendiz; outros virão"],
   },
 };
 export const HERO_CLASS_LOCKED = "Em breve";

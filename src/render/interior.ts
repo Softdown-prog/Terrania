@@ -1,4 +1,4 @@
-import { renderHero } from "./actors.ts";
+import { renderHero, type HeroClassLook } from "./actors.ts";
 import { ROOM_HEIGHT, ROOM_WIDTH, type Furniture, type InteriorRoom } from "../engine/rooms/InteriorRoom.ts";
 import { ellipse, mix, rgba, softShadow } from "./draw.ts";
 import { hash2 } from "../world/random.ts";
@@ -95,7 +95,7 @@ function drawFurniture(ctx: CanvasRenderingContext2D, f: Furniture, wood: string
 }
 
 /** Cada sala tem decoração própria e usa a mobília da mesma simulação que calcula colisões. */
-export function drawInterior(ctx: CanvasRenderingContext2D, room: InteriorRoom, time = 0): void {
+export function drawInterior(ctx: CanvasRenderingContext2D, room: InteriorRoom, time = 0, playerClass?: HeroClassLook): void {
   const palette = room.building.id.startsWith("south-")
     ? {wall:"#a8683e",floor:"#5a4a63",wood:"#b97a2a"}
     : room.building.id.startsWith("capital-")
@@ -183,7 +183,7 @@ export function drawInterior(ctx: CanvasRenderingContext2D, room: InteriorRoom, 
   const behind = room.furniture.filter(f => f.y + f.height <= room.player.y);
   const front = room.furniture.filter(f => f.y + f.height > room.player.y);
   for (const f of behind) drawFurniture(ctx, f, palette.wood, time);
-  renderHero(ctx, room.player, room.player.x, room.player.y, time);
+  renderHero(ctx, { ...room.player, ...playerClass }, room.player.x, room.player.y, time);
   for (const f of front) drawFurniture(ctx, f, palette.wood, time);
   // iluminação ambiente: penumbra nos cantos
   const vg = ctx.createRadialGradient(ROOM_WIDTH / 2, ROOM_HEIGHT / 2, ROOM_HEIGHT * 0.3, ROOM_WIDTH / 2, ROOM_HEIGHT / 2, ROOM_WIDTH * 0.62);

@@ -199,14 +199,14 @@
         <p class="dialog-note">O jogo é solo e roda no seu navegador: ninguém joga junto nem vê você. O número mostra quantas pessoas estão jogando agora, informado pelo servidor, e só é atualizado enquanto esta janela estiver aberta.</p>
         <button class="primary-button" (click)="close($event)" type="button">Voltar à aventura</button>
       </dialog>
-      <dialog id="inventoryDialog" #inventoryDialog (close)="closed()" aria-labelledby="inventoryTitle" [class.has-equipment]="hud.gear() !== null">
+      <dialog id="inventoryDialog" #inventoryDialog (close)="closed()" aria-labelledby="inventoryTitle" [class.has-equipment]="hud.wearsArmor() && hud.gear() !== null">
         <button class="dialog-x" (click)="close($event)" type="button" aria-label="Fechar inventário">×</button>
         <span class="dialog-kicker">INVENTÁRIO · AVENTURA SOLO</span>
-        <h1 id="inventoryTitle">Inventário do cavaleiro</h1>
+        <h1 id="inventoryTitle">Inventário do {{ hud.heroName() }}</h1>
         <div class="inventory-overview">
           <span>Nível {{ hud.progression()?.level ?? 1 }}</span>
           <span>Vida {{ hud.hp() }} / {{ hud.maxHp() }}</span>
-          @if (hud.gear() !== null) { <span>Defesa {{ hud.defense() }}</span> }
+          @if (hud.wearsArmor() && hud.gear() !== null) { <span>Defesa {{ hud.defense() }}</span> }
         </div>
         <div class="inventory-mobile-tabs" role="group" aria-label="Seções do inventário">
           <button id="inventoryTabBag" type="button" [attr.aria-pressed]="hud.inventoryTab() === 'bag'"
@@ -219,36 +219,51 @@
         <div class="inventory-columns" [class.map-hidden]="hud.inventoryTab() === 'map'">
           <section class="inventory-panel armory-panel" [class.mobile-hidden]="hud.inventoryTab() !== 'equipment'" aria-labelledby="equipmentTitle">
             <div class="equipment-heading"><h2 id="equipmentTitle">Equipamento</h2>
-              @if (hud.gear() !== null) { <span id="equipmentDefense">Defesa {{ hud.defense() }}</span> }
+              @if (hud.wearsArmor() && hud.gear() !== null) { <span id="equipmentDefense">Defesa {{ hud.defense() }}</span> }
             </div>
             @if (hud.loadout(); as loadout) {
-              <div class="equipment-grid" role="group" aria-label="Dez espaços de equipamento do cavaleiro">
-                @for (slot of hud.equipmentSlots; track slot.id) {
+              <div class="equipment-grid" [class.single-slot]="!hud.wearsArmor()" role="group"
+                [attr.aria-label]="hud.wearsArmor() ? 'Dez espaços de equipamento do cavaleiro' : 'Espaço do cajado do ' + hud.heroName()">
+                @for (slot of hud.visibleEquipmentSlots(); track slot.id) {
                   @let equipped = hud.equippedName(slot.id);
                   <button type="button" class="equipment-slot" [attr.data-equipment-slot]="slot.id"
                     [class.equipped]="!!equipped" [attr.aria-pressed]="hud.selectedSlot() === slot.id"
-                    [attr.aria-label]="slot.label + ': ' + (equipped || 'vazio')"
-                    [attr.title]="slot.label + ': ' + (equipped || 'vazio')"
+                    [attr.aria-label]="hud.slotLabel(slot.id) + ': ' + (equipped || 'vazio')"
+                    [attr.title]="hud.slotLabel(slot.id) + ': ' + (equipped || 'vazio')"
                     (click)="hud.selectEquipmentSlot(slot.id)">
                     <app-item-icon class="equipment-symbol" [name]="hud.slotIcon(slot.id)" />
-                    <strong>{{ slot.label }}</strong><small>{{ equipped || 'Vazio' }}</small>
+                    <strong>{{ hud.slotLabel(slot.id) }}</strong><small>{{ equipped || 'Vazio' }}</small>
                   </button>
                 }
                 <div class="hero-preview">
-                  <span class="preview-eyebrow">SEU CAVALEIRO</span>
+                  <span class="preview-eyebrow">SEU {{ hud.heroName().toUpperCase() }}</span>
                   <canvas #inventoryHero id="inventoryHero" width="160" height="208"
                     role="img" aria-label="Personagem real renderizado pelo motor gráfico do Terrania"></canvas>
                   <button id="rotateInventoryHero" type="button" class="preview-rotate"
-                    (click)="rotateInventoryHero()" aria-label="Girar o cavaleiro para observar outra direção">↻ Girar</button>
+                    (click)="rotateInventoryHero()" [attr.aria-label]="'Girar o ' + hud.heroName() + ' para observar outra direção'">↻ Girar</button>
                 </div>
               </div>
               <div class="equipment-detail">
                 <h3 id="selectedSlotTitle">
                   @for (slot of hud.equipmentSlots; track slot.id) {
-                    @if (slot.id === hud.selectedSlot()) { {{ slot.label }} }
+                    @if (slot.id === hud.selectedSlot()) { {{ hud.slotLabel(slot.id) }} }
                   }
                 </h3>
-                @if (hud.selectedSlot() === 'weapon') {
+                @if (hud.selectedSlot() === 'weapon' && !hud.usesSwords()) {
+                  @let staff = hud.equippedStaff();
+                  <strong id="equippedWeapon">{{ staff.name }}</strong>
+                  <p id="equippedStaffStats">{{ staff.damage }} de dano · {{ staff.interval }} s entre magias · {{ staff.manaCost }} de mana · alcance de {{ staff.range }} tiles</p>
+                  <p class="weapon-roster-caption">Cajados do mago · 1 de 11 · os outros virão com a Academia Arcana</p>
+                  <div class="weapon-picker" role="group" aria-label="Cajado em mãos">
+                    <button type="button" class="sword-choice is-equipped" id="equip-slot-staff-apprentice" aria-pressed="true" disabled
+                      [attr.title]="staff.name + ' · ' + (staff.level > 0 ? 'nível ' + staff.level : 'inicial') + ' · dano ' + staff.damage">
+                      <app-item-icon class="sword-choice-icon" [name]="hud.staffIcon()" />
+                      <strong class="sword-choice-name">{{ staff.name }}</strong>
+                      <small class="sword-choice-stats">{{ staff.level > 0 ? "Nível " + staff.level : "Inicial" }} · {{ staff.damage }} dano</small>
+                      <span class="sword-choice-status">Equipado</span>
+                    </button>
+                  </div>
+                } @else if (hud.selectedSlot() === 'weapon') {
                   @let current = hud.weapons[loadout.equipped];
                   <strong id="equippedWeapon">{{ current.name }}</strong>
                   <p>{{ current.damage }} de dano · {{ current.interval }} s entre golpes · {{ current.windup * 1000 }} ms de preparo</p>

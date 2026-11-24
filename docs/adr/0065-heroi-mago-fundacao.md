@@ -28,7 +28,7 @@ O [ROADMAP](../ROADMAP.md) dizia para concluir o Cavaleiro antes das outras voca
 | E1 | Animação de conjurar, projétil e impacto, na superfície **e na caverna** | **feita** ([ADR 0070](0070-conjuracao-do-mago.md)) |
 | E2 | A barra de mana na tela | **feita** ([ADR 0071](0071-barra-de-mana.md)) |
 | F1 | Tela de escolha do herói ao criar o mundo, com o Mago bloqueado ("Em breve") | **feita** ([ADR 0066](0066-tela-de-escolha-do-heroi.md)) |
-| F2 | Inventário e loja com cajados; **liberar o Mago** (`playable` em `mage.ts`) | a fazer |
+| F2 | Mago jogável: **liberado** (`playable`), inventário do Mago (cajado, sem armadura), ferreiro sem espada para ele, Mago desenhado nas casas. A loja de cajados e a Academia Arcana com função esperam o 2º cajado (G) | **feita** ([ADR 0072](0072-mago-jogavel.md)) |
 | G | Cajados 2 a 11, em lotes | a fazer |
 
 Perguntas que ficam para as fatias seguintes: a vida do Mago (hoje a mesma do Cavaleiro; talvez menor), o custo de mana e o alcance de cada cajado, e como o Mago consegue cajados (loja da Academia Arcana? loot?).

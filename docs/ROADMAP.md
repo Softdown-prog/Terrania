@@ -68,7 +68,7 @@ Checklist de aceite do Cavaleiro 1.0:
 
 A implementação dos itens marcados não certifica o lançamento, apenas indica mecanismos presentes. Montarias e mecânicas especulativas continuam fora até a avaliação do cavaleiro.
 
-**Atualização (2026-11-23, decisão do dono):** o **Mago** começou a ser construído antes de fechar a avaliação do Cavaleiro. Escolhe-se a vocação ao criar um mundo novo; o Mago ataca à distância com mana e terá 11 cajados espelhando as espadas. O plano em fatias e o estado de cada uma estão no [ADR 0065](adr/0065-heroi-mago-fundacao.md). O Cavaleiro segue como vocação de referência e de partida; Paladino/Arqueiro e Druida continuam futuros.
+**Atualização (2026-11-23, decisão do dono):** o **Mago** começou a ser construído antes de fechar a avaliação do Cavaleiro. Escolhe-se a vocação ao criar um mundo novo; o Mago (jogável desde o [ADR 0072](adr/0072-mago-jogavel.md)) ataca à distância com mana e terá 11 cajados espelhando as espadas (hoje só o de Aprendiz). O plano em fatias e o estado de cada uma estão no [ADR 0065](adr/0065-heroi-mago-fundacao.md). O Cavaleiro segue como vocação de referência e de partida; Paladino/Arqueiro e Druida continuam futuros.
 
 
 ### Inventário mobile do Cavaleiro 1.0

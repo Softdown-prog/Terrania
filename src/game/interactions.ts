@@ -2,6 +2,7 @@ import { BANKER_ID, INNKEEPER_ID, PRIESTESS_ID } from "../npcs/center/capital/in
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { currentMountQuestStep, type MountQuestProgress } from "../engine/mounts/MountQuestState.ts";
 import { FORGE_SWORD_PRICE } from "../engine/character/Weapons.ts";
+import { DEFAULT_HERO_CLASS, heroClassSheet, type HeroClassId } from "../engine/character/classes/index.ts";
 import { INN_REST_PRICE, POTION_GEL_PRICE } from "../engine/character/Inventory.ts";
 import type { Npc } from "../world/npcs.ts";
 import { MOUNT_INTERACT_DISTANCE, STABLE_MASTER, WILD_HOOFPRINTS, WILD_WARHORSE } from "../world/mountLocations.ts";
@@ -50,9 +51,10 @@ export function surfaceNearbyAction(near: SurfaceNearby): NearbyAction | null {
 }
 
 /** Oferta de comércio mostrada no diálogo de cada NPC. */
-export function npcOffer(npcId: string): NpcOffer | undefined {
+/** O ferreiro só vende espada a quem luta com espada (o Mago não, ADR 0072). */
+export function npcOffer(npcId: string, heroClass: HeroClassId = DEFAULT_HERO_CLASS): NpcOffer | undefined {
   if (npcId === "lina") return { item: "potion", price: POTION_GEL_PRICE };
-  if (npcId === "toren") return { item: "sword", price: FORGE_SWORD_PRICE };
+  if (npcId === "toren") return heroClassSheet(heroClass).usesSwords ? { item: "sword", price: FORGE_SWORD_PRICE } : undefined;
   if (npcId === "south-rukh") return { item: "desert-stable", price: 0 };
   if (npcId === "south-zinha") return { item: "bazaar", price: 0 };
   if (npcId === "south-marn") return { item: "ossuary", price: 0 };

@@ -130,6 +130,8 @@ export class Game {
       tileY: Math.floor(player.y / TILE_SIZE),
       progression: experienceProgress(this.sim.experience),
       awaitingRespawn: player.hp <= 0,
+      heroClass: this.sim.heroClass,
+      equippedStaff: this.sim.equippedStaff,
       mana: this.sim.usesMana ? manaMeter(this.sim.mana, this.sim.maxMana, STAVES[this.sim.equippedStaff].manaCost) : null,
     }, aelaQuestProgress(this.sim.trainingKills), wellQuestSummary(this.sim.well.view));
     this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins, inventory.elixirs);
@@ -236,7 +238,7 @@ export class Game {
     } else {
       const rewarded = npc.id === "aela" && this.sim.inventory.claimAelaReward(this.sim.trainingKills);
       if (rewarded) this.save();
-      const offer = npcOffer(npc.id);
+      const offer = npcOffer(npc.id, this.sim.heroClass);
       const lines = npcDialogue(npc, this.sim.trainingKills, offer?.item === "sword");
       const well = this.sim.well.talk(npc.id, this.sim.inventory);
       if (well.changed) { this.save(); this.updateHud(); }
