@@ -27,6 +27,8 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
       host.sim.usesMana ? { staff: host.sim.equippedStaff, spend: cost => host.sim.spendMana(cost) } : undefined);
     host.input.acknowledgeMovement();
     host.sim.advanceClock(dt); // o tempo de volta dos monstros também anda dentro da masmorra (ADR 0029)
+    // A magia do Mago também se vê na caverna: o projétil voa e o estouro mostra o dano (ADR 0070).
+    host.effects.spells.update(paused ? 0 : dt, cave.player, cave.monsters.values());
     const changed = applyCaveVictories(host.sim, cave);
     if(changed)host.save();
   }
@@ -55,7 +57,8 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
       host.hud.setCombatTarget(host.travel.combat.label(cave.monsters));
     }
     host.scene.renderCave(cave,host.camera.zoom,timers.clock,host.travel.navigator.target,
-      host.sim.inventory.gear,host.sim.inventory.loadout.equipped);
+      host.sim.inventory.gear,host.sim.inventory.loadout.equipped,
+      {heroClass:host.sim.heroClass,equippedStaff:host.sim.equippedStaff},host.effects.spells);
     return true;
   }
   return false;

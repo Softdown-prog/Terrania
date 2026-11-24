@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (272)
+## Todos os arquivos deste módulo (276)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -271,6 +271,10 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/south/towers/sol-negro.ts`](../../src/render/south/towers/sol-negro.ts)
 - [`src/render/south/towers/vigia-caida.ts`](../../src/render/south/towers/vigia-caida.ts)
 - [`src/render/southCityArt.ts`](../../src/render/southCityArt.ts)
+- [`src/render/spells/SpellBolts.ts`](../../src/render/spells/SpellBolts.ts)
+- [`src/render/spells/bolt.ts`](../../src/render/spells/bolt.ts)
+- [`src/render/spells/burst.ts`](../../src/render/spells/burst.ts)
+- [`src/render/spells/castPose.ts`](../../src/render/spells/castPose.ts)
 - [`src/render/staves.ts`](../../src/render/staves.ts)
 - [`src/render/staves/head.ts`](../../src/render/staves/head.ts)
 - [`src/render/staves/shaft.ts`](../../src/render/staves/shaft.ts)

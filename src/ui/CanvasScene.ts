@@ -5,7 +5,7 @@ import type { BattleViewport } from '../engine/combat/ClassicBattleList.ts';
 import type { Slime } from '../actors/Slime.ts';
 import type { GearState } from '../engine/character/Equipment.ts';
 import type { WeaponId } from '../engine/character/Weapons.ts';
-import { renderHero, renderSlime, type HeroVisual } from '../render/actors.ts';
+import { renderHero, renderSlime, type HeroClassLook, type HeroVisual } from '../render/actors.ts';
 import { renderScenery } from '../render/scenery.ts';
 import { releaseRegionSprites, warmRegionSprites } from '../render/props/registry.ts';
 import { NPCS, NPC_TALK_RANGE, npcPositionAt } from '../world/npcs.ts';
@@ -21,6 +21,7 @@ import { TILE_SIZE } from '../world/terrain.ts';
 import type { CaveRoom } from '../engine/rooms/CaveRoom.ts';
 import { ROOM_WIDTH, ROOM_HEIGHT, type InteriorRoom } from '../engine/rooms/InteriorRoom.ts';
 import type { Effects } from '../render/Effects.ts';
+import type { SpellBolts } from '../render/spells/SpellBolts.ts';
 import type { Camera } from '../render/Camera.ts';
 import type { Point } from '../engine/movement/TapNavigator.ts';
 import { screenToWorld, screenToInterior } from '../input/tap.ts';
@@ -76,7 +77,7 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   drops: ReadonlyArray<LootDrop> = [], effects?: Effects,
   playerGear?: GearState, playerWeapon?: WeaponId,
   mount: MountId | null = null, wildHorse=true, stableBuilt=false,
-  tracksVisible=false, leadingHorse=false): void {
+  tracksVisible=false, leadingHorse=false, playerClass?: HeroClassLook): void {
   ctx.fillStyle = '#506f50'; ctx.fillRect(0, 0, width, height);
   world.render(ctx, cameraX, cameraY, width, height, time, animated);
   world.warmAhead(cameraX, cameraY, width, height, time);
@@ -142,7 +143,7 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   actors.push({ y: player.y, draw: () => {
     if(mount)renderMount(ctx,mount,player.x-left,player.y-top,time);
     renderHero(ctx,
-      { ...player, gear: playerGear, equippedWeapon: playerWeapon },
+      { ...player, gear: playerGear, equippedWeapon: playerWeapon, ...playerClass },
       player.x-left,player.y-top-(mount?19:0),time);
   } });
   actors.sort((a, b) => a.y - b.y);
@@ -222,6 +223,8 @@ export interface SurfaceFrame {
   readonly tracksVisible: boolean;
   /** O cavalo acalmado acompanha o herói de volta ao estábulo. */
   readonly leadingHorse: boolean;
+  /** A vocação e o cajado do herói (ADR 0070); sem isso é o Cavaleiro. */
+  readonly playerClass?: HeroClassLook;
 }
 
 /** Partículas flutuantes (pólen/vaga-lumes) em espaço de tela; sem estado nem alocação. */
@@ -289,11 +292,12 @@ export class CanvasScene {
       {x:room.player.x,y:room.player.y},zoom);
   }
   renderCave(room:CaveRoom,zoom:number,time:number,destination:Point|null=null,
-    gear?:GearState,weapon?:WeaponId):void {
+    gear?:GearState,weapon?:WeaponId,playerClass?:HeroClassLook,spells?:SpellBolts):void {
     const scale=Math.max(1,zoom),width=this.width/scale,height=this.height/scale;
     const left=room.player.x-width/2,top=room.player.y-height/2;
     this.ctx.setTransform(this.dpr*scale,0,0,this.dpr*scale,0,0);
-    drawCaveView(this.ctx,room,left,top,width,height,time,gear,weapon);
+    drawCaveView(this.ctx,room,left,top,width,height,time,gear,weapon,playerClass);
+    spells?.render(this.ctx,left,top);
     if(destination)drawTarget(this.ctx,{x:destination.x-left,y:destination.y-top},time);
     this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
   }
@@ -314,11 +318,11 @@ export class CanvasScene {
   }
   render(frame: SurfaceFrame): void {
     const { world, camera, player, mobs, time, effects, destination, drops, combatTargetId,
-      playerGear, playerWeapon, mount, wildHorse, stableBuilt, tracksVisible, leadingHorse } = frame;
+      playerGear, playerWeapon, mount, wildHorse, stableBuilt, tracksVisible, leadingHorse, playerClass } = frame;
     const scale = camera.zoom, width = this.width / scale, height = this.height / scale;
     this.ctx.setTransform(this.dpr * scale, 0, 0, this.dpr * scale, 0, 0);
     drawWorldView(this.ctx, world, camera.renderX, camera.renderY, width, height, player, mobs, time, effects.enabled, drops, effects, playerGear, playerWeapon,
-      mount,wildHorse,stableBuilt,tracksVisible,leadingHorse);
+      mount,wildHorse,stableBuilt,tracksVisible,leadingHorse,playerClass);
     // Original Terrania visual: um anel dourado procedural, nunca arte copiada.
     if (combatTargetId) {
       const target = mobs.find(mob => mob.id === combatTargetId);

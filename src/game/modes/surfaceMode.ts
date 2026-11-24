@@ -99,5 +99,6 @@ export function tickSurface(host: ModeHost, frame: Frame): void {
     stableBuilt: host.sim.mounts.stableTier>0,
     tracksVisible: !!quest && currentMountQuestStep(quest)?.id==="tracks",
     leadingHorse: !!quest && currentMountQuestStep(quest)?.id==="return",
+    playerClass: { heroClass: host.sim.heroClass, equippedStaff: host.sim.equippedStaff },
   });
 }

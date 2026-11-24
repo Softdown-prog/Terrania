@@ -2,7 +2,8 @@ import { drawKnightSword, drawKnightTrail } from "./swords.ts";
 import type { Player } from "../actors/Player.ts";
 import type { GearState } from "../engine/character/Equipment.ts";
 import type { WeaponId } from "../engine/character/Weapons.ts";
-import { DEFAULT_STAFF, type StaffId } from "../engine/character/Staves.ts";
+import { DEFAULT_STAFF, STAVES, type StaffId } from "../engine/character/Staves.ts";
+import { NO_CAST, castBody, castPhase } from "./spells/castPose.ts";
 import { drawMageStaff } from "./staves.ts";
 import { attackBody, staffMount, swordMount, swingTrail, type StaffMountFrame, type SwordMountFrame } from "./heroPose.ts";
 import { blink, gait, smoothTo } from "./animation.ts";
@@ -15,10 +16,13 @@ export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
-  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon">> &
+  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon" | "attackStaff" | "attackWindup">> &
   { id?: string; gear?: GearState | undefined; equippedWeapon?: WeaponId | undefined;
     /** Vocação do herói (ADR 0067): sem ela, é o Cavaleiro. */ heroClass?: HeroClassId | undefined;
     /** O cajado que o Mago segura (ADR 0068); sem ele, o de Aprendiz. */ equippedStaff?: StaffId | undefined };
+
+/** O que a tela precisa saber da vocação do herói para desenhá-lo (ADR 0067/0068): sem isso, é o Cavaleiro. */
+export type HeroClassLook = Pick<HeroVisual, "heroClass" | "equippedStaff">;
 
 const PAL = {
   skin: "#e2bb91", skinD: "#b98a64", skinL: "#f3d6b2",
@@ -58,9 +62,9 @@ function renderWeapon(ctx: CanvasRenderingContext2D, frame: SwordMountFrame, pla
 
 /** O cajado do Mago na mão: na origem da empunhadura, pendendo para fora (ADR 0068). */
 function renderStaff(ctx: CanvasRenderingContext2D, mount: StaffMountFrame, staff: StaffId,
-  tone: (c: string) => string, time: number): void {
+  tone: (c: string) => string, time: number, charge: number): void {
   ctx.save(); ctx.translate(mount.ox, mount.oy); ctx.rotate(mount.rot);
-  drawMageStaff(ctx, staff, time, tone);
+  drawMageStaff(ctx, staff, time, tone, charge);
   ctx.restore();
 }
 
@@ -146,7 +150,9 @@ export function renderHero(
   const mvx = speed > 1 ? vxRaw / speed : player.faceX;
   const mvy = speed > 1 ? vyRaw / speed : player.faceY;
   const g = gait(player.walkTime, moving);
-  const atk = attackBody(player.attackTime, player.attackWeapon);
+  // Conjurando (ADR 0070), o Mago tem o corpo e o cajado da magia, não os do golpe de espada.
+  const cast = player.heroClass === "mage" && player.attackStaff ? castPhase(player.attackTime, player.attackWindup ?? STAVES[player.attackStaff].windup) : NO_CAST;
+  const atk = cast.active ? castBody(player.attackTime, player.attackWindup ?? STAVES[player.attackStaff ?? DEFAULT_STAFF].windup) : attackBody(player.attackTime, player.attackWeapon);
   const hurt = clamp01((player.hurtTime ?? 0) / 0.3);
   const flash = clamp01(((player.hurtTime ?? 0) - 0.14) / 0.06);
   const tone = (c: string): string => (flash > 0.02 ? mix(c, "#fff3dc", flash * 0.78) :
@@ -164,9 +170,9 @@ export function renderHero(
   const gear = look ? undefined : player.gear;
   // O que o herói segura: a espada do Cavaleiro ou o cajado do Mago (ADR 0068); o braço, a mão e a ordem de camadas são os mesmos.
   const staffSway = Math.sin(player.walkTime * 2) * g.moving * 0.05;
-  const held: { readonly hand: number; readonly gripX: number; readonly gripY: number } = look ? staffMount(player, staffSway) : frame;
+  const held: { readonly hand: number; readonly gripX: number; readonly gripY: number } = look ? staffMount(player, staffSway, cast) : frame;
   const drawHeld = (): void => {
-    if (look) renderStaff(ctx, staffMount(player, staffSway), player.equippedStaff ?? DEFAULT_STAFF, tone, t);
+    if (look) renderStaff(ctx, staffMount(player, staffSway, cast), player.equippedStaff ?? DEFAULT_STAFF, tone, t, cast.charge);
     else renderWeapon(ctx, frame, player, tone, atk.impact, t);
   };
   const hasHelm = gear?.head === "trail-helm";

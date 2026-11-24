@@ -1,6 +1,7 @@
 import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
 import type { Player } from "../actors/Player.ts";
 import { clamp01 } from "./draw.ts";
+import { SpellBolts } from "./spells/SpellBolts.ts";
 
 type Shape = "square" | "circle" | "spark" | "ring" | "puff";
 interface Particle {
@@ -38,7 +39,11 @@ const BITE_TIME = 0.42;
 const GOO = ["#8ed6a0", "#c9f5c6", "#5fae8a", "#a9e8b0"];
 /** Disposable, capped visual feedback. This class never applies damage. */
 export class Effects {
-  enabled = true;
+  /** O projétil e o estouro da magia do Mago (ADR 0070); cuida da superfície e, chamado pela caverna, também dela. */
+  readonly spells = new SpellBolts();
+  private _enabled = true;
+  get enabled(): boolean { return this._enabled; }
+  set enabled(on: boolean) { this._enabled = on; this.spells.enabled = on; }
   private particles: Particle[] = [];
   private labels: Label[] = [];
   private decals: Decal[] = [];
@@ -55,6 +60,7 @@ export class Effects {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
   reset(): void {
+    this.spells.reset();
     this.particles = [];
     this.labels = [];
     this.decals = [];
@@ -130,6 +136,9 @@ export class Effects {
   ): { hit: boolean; hurt: boolean } {
     let hit = false;
     const hurt = player.hp < this.hp;
+    // A magia do cajado tem o projétil e o estouro dela: o impacto de espada não se mistura.
+    const spell = player.attackStaff !== null && player.attackTime > 0;
+    this.spells.update(dt, player, mobs);
     const weapon=player.attackWeapon;
     const flashColor=WEAPONS[weapon].trail.second;
     if (hurt && this.enabled) {
@@ -164,7 +173,7 @@ export class Effects {
       const old = this.previous.get(mob.id);
       if (old && old.hp > mob.hp) {
         hit = true;
-        if (this.enabled) {
+        if (this.enabled && !spell) {
           const dx = mob.x - player.x, dy = mob.y - player.y;
           const len = Math.hypot(dx, dy) || 1;
           this.impact(mob.x - (dx / len) * 6, mob.y - 12, dx / len, dy / len, weapon);
@@ -191,7 +200,7 @@ export class Effects {
         Math.hypot(old.x - player.x, old.y - player.y) < 75
       ) {
         hit = true;
-        if (this.enabled) {
+        if (this.enabled && !spell) {
           this.splat(old.x, old.y - 8, 22, 1.6);
           this.add(old.x, old.y - 10, "ring", "#bff0c4", 24, 0, 0, 0.32, 0, 0);
           this.add(old.x, old.y - 8, "puff", "#d8f7d4", 15, 0, 0, 0.3, 0, 0);
@@ -298,5 +307,6 @@ export class Effects {
       ctx.restore();
     }
     ctx.globalAlpha = 1;
+    this.spells.render(ctx, left, top);
   }
 }

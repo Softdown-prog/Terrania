@@ -1,5 +1,7 @@
 import { ATTACK_DURATION } from "../engine/combat/combat.ts";
 import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
+import { NO_CAST, type CastPhase } from "./spells/castPose.ts";
+import { STAFF_GEM_REACH } from "./staves/shaft.ts";
 
 const smooth = (t: number): number => t * t * (3 - 2 * t);
 
@@ -29,10 +31,20 @@ export interface StaffMountFrame {
 }
 /** O Mago segura o cajado em pé, ao lado do corpo, pendendo um pouco para fora e oscilando com o passo; a mão é a mesma da espada. */
 export const STAFF_LEAN = 0.22;
-export function staffMount(player: { readonly faceX: number }, sway = 0): StaffMountFrame {
+/** Na conjuração (ADR 0070) a mão recua e sobe no preparo e o cajado avança para o alvo na saída; fora dela, é a pose parada. */
+export function staffMount(player: { readonly faceX: number; readonly faceY?: number }, sway = 0, cast: CastPhase = NO_CAST): StaffMountFrame {
   const hand = player.faceX < -.3 ? -1 : 1;
-  const gripX = hand * 10.2, gripY = -14.6;
-  return { ox: gripX, oy: gripY, rot: hand * STAFF_LEAN + sway, hand, gripX, gripY };
+  const aim = player.faceX > .3 ? 1 : player.faceX < -.3 ? -1 : 0;
+  const faceY = player.faceY ?? 0;
+  const gripX = hand * 10.2 + (player.faceX * 2.4 - aim * 1.2 * cast.charge) * cast.thrust - aim * 1.6 * cast.charge;
+  const gripY = -14.6 - 2.4 * cast.charge + faceY * 1.8 * cast.thrust;
+  const rot = hand * STAFF_LEAN + sway - aim * 0.38 * cast.charge + aim * 1.05 * cast.thrust;
+  return { ox: gripX, oy: gripY, rot, hand, gripX, gripY };
+}
+/** O ponto da gema do cajado no referencial dos pés do herói: de onde a magia sai. */
+export function staffTip(mount: StaffMountFrame): { x: number; y: number } {
+  const reach = STAFF_GEM_REACH;
+  return { x: mount.ox + Math.sin(mount.rot) * reach, y: mount.oy - Math.cos(mount.rot) * reach };
 }
 
 /** A mesma mão sustenta cabo, braço e rastro nas quatro orientações.

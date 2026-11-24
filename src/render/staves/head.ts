@@ -1,13 +1,16 @@
 import type { StaffVisualProfile } from "../../engine/character/Staves.ts";
 import { ellipse, rgba } from "../draw.ts";
-import { STAFF_TOP_Y, type StaffTone } from "./shaft.ts";
+import { STAFF_GEM_Y, STAFF_TOP_Y, type StaffTone } from "./shaft.ts";
 
 /**
  * O engaste do cajado (ADR 0068), no mesmo referencial da haste: garras de madeira em volta de uma gema facetada que pulsa com uma
  * auréola de luz, e a fita atada abaixo dela que balança. O pulso e o balanço vêm do relógio (`time`); com 0, a pose fica parada.
+ * `charge` (0..1, ADR 0070) é a magia sendo carregada: a auréola cresce, a gema acende por dentro e faíscas giram em volta dela; com 0
+ * o desenho é exatamente o de antes.
  */
-export function paintStaffHead(ctx: CanvasRenderingContext2D, v: StaffVisualProfile, tone: StaffTone, time: number): void {
-  const gemY = STAFF_TOP_Y - 7.4;
+export function paintStaffHead(ctx: CanvasRenderingContext2D, v: StaffVisualProfile, tone: StaffTone, time: number, charge = 0): void {
+  const gemY = STAFF_GEM_Y;
+  const power = Math.max(0, Math.min(1, Number.isFinite(charge) ? charge : 0));
   const pulse = 0.78 + 0.22 * Math.sin(time * 3);
   // fita atada abaixo do engaste
   const flutter = Math.sin(time * 2.2) * 1.3;
@@ -58,4 +61,17 @@ export function paintStaffHead(ctx: CanvasRenderingContext2D, v: StaffVisualProf
   ctx.strokeStyle = rgba(v.gem.light, 0.8); ctx.lineWidth = 0.5;
   ctx.beginPath(); ctx.moveTo(0, gemY - 4.6); ctx.lineTo(0.4, gemY + 4.2); ctx.moveTo(-3, gemY - 1.2); ctx.lineTo(3, gemY - 1.2); ctx.stroke();
   ellipse(ctx, -1.2, gemY - 2, 0.7, 1.1, "#f4f8ff", -0.4);
+  if (power > 0.02) paintStaffCharge(ctx, v, gemY, power, time);
+}
+
+/** A carga por cima da gema: núcleo claro, auréola maior e quatro faíscas em órbita. */
+function paintStaffCharge(ctx: CanvasRenderingContext2D, v: StaffVisualProfile, gemY: number, power: number, time: number): void {
+  const bloom = ctx.createRadialGradient(0, gemY, 0.4, 0, gemY, 8 + 9 * power);
+  bloom.addColorStop(0, rgba(v.gem.light, 0.9 * power)); bloom.addColorStop(0.45, rgba(v.gem.glow, 0.5 * power)); bloom.addColorStop(1, rgba(v.gem.glow, 0));
+  ctx.fillStyle = bloom; ctx.beginPath(); ctx.arc(0, gemY, 8 + 9 * power, 0, Math.PI * 2); ctx.fill();
+  ellipse(ctx, 0, gemY, 2 + 1.4 * power, 2.6 + 1.6 * power, rgba("#ffffff", 0.7 * power));
+  for (let i = 0; i < 4; i++) {
+    const a = time * 5 + i * Math.PI / 2, r = 5.6 + 2.6 * power;
+    ellipse(ctx, Math.cos(a) * r, gemY + Math.sin(a) * r * 0.8, 0.9, 0.9, rgba(i % 2 ? v.gem.light : "#ffffff", 0.85 * power));
+  }
 }

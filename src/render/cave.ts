@@ -3,7 +3,7 @@ import { renderSlime } from "./actors.ts";
 import { RegionalMonster } from "../actors/RegionalMonster.ts";
 import type { GearState } from "../engine/character/Equipment.ts";
 import type { WeaponId } from "../engine/character/Weapons.ts";
-import { renderHero } from "./actors.ts";
+import { renderHero, type HeroClassLook } from "./actors.ts";
 import { ellipse, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
 import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "./caveDetails.ts";
 import { hash2, valueNoise } from "../world/random.ts";
@@ -224,7 +224,7 @@ export function drawCaveEntrance(ctx:CanvasRenderingContext2D, entry:CaveEntranc
 }
 export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   left:number,top:number,width:number,height:number,time:number,
-  gear?:GearState,weapon?:WeaponId):void {
+  gear?:GearState,weapon?:WeaponId,playerClass?:HeroClassLook):void {
   ctx.fillStyle="#070e13";ctx.fillRect(0,0,width,height);
   let texture=wallCache.get(room.floor);
   if(!texture){texture=paintFloor(room.floor);wallCache.set(room.floor,texture);}
@@ -238,7 +238,7 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
       : renderSlime(ctx,mob,mob.x-left,mob.y-top,{time,lookX:player.x-mob.x,lookY:player.y-mob.y})});
   }
   occupants.push({y:player.y,render:()=>renderHero(ctx,
-    {...player,gear,equippedWeapon:weapon},player.x-left,player.y-top,time)});
+    {...player,gear,equippedWeapon:weapon,...playerClass},player.x-left,player.y-top,time)});
   occupants.sort((a,b)=>a.y-b.y);
   for(const actor of occupants)actor.render();
   // Static darkness with a local light pool following the real cave player.

@@ -6,6 +6,9 @@ export type StaffTone = (color: string) => string;
 /** A haste afunila da base (y = +14.6, no chão) até o topo (y = -26), com a curva natural da madeira. */
 export const STAFF_BASE_Y = 14.6;
 export const STAFF_TOP_Y = -26;
+/** Onde fica o centro da gema (acima do topo) e a distância dele até a empunhadura: de onde a magia sai. */
+export const STAFF_GEM_Y = STAFF_TOP_Y - 7.4;
+export const STAFF_GEM_REACH = -STAFF_GEM_Y;
 
 /**
  * A haste do cajado (ADR 0068), no referencial da mão (a empunhadura é a origem e o topo fica em -y): madeira afunilada com veios e nós,

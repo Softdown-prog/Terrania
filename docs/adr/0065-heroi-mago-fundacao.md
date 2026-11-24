@@ -25,7 +25,8 @@ O [ROADMAP](../ROADMAP.md) dizia para concluir o Cavaleiro antes das outras voca
 | B | Corpo do herói mago: mistura de túnica azul-violeta, manto escuro e chapéu pontudo, desenhado por vocação, no contrato de arte | **feita** ([ADR 0067](0067-corpo-do-heroi-mago.md)) |
 | C | Cajados: ficha, desenho e o primeiro cajado (Aprendiz) | **feita** ([ADR 0068](0068-cajados-do-mago.md)) |
 | D | Combate à distância: projétil com mana, na superfície **e na caverna** (mesma fórmula de defesa e alvos), mana sincronizada na caverna, descanso devolve mana | **feita** ([ADR 0069](0069-combate-a-distancia-do-mago.md)) |
-| E | Animação de conjurar, projétil e impacto, e a barra de mana na tela | a fazer |
+| E1 | Animação de conjurar, projétil e impacto, na superfície **e na caverna** | **feita** ([ADR 0070](0070-conjuracao-do-mago.md)) |
+| E2 | A barra de mana na tela | a fazer |
 | F1 | Tela de escolha do herói ao criar o mundo, com o Mago bloqueado ("Em breve") | **feita** ([ADR 0066](0066-tela-de-escolha-do-heroi.md)) |
 | F2 | Inventário e loja com cajados; **liberar o Mago** (`playable` em `mage.ts`) | a fazer |
 | G | Cajados 2 a 11, em lotes | a fazer |
