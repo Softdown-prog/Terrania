@@ -4,6 +4,7 @@ import type { CollisionMap } from "../../world/collision.ts";
 import type { Player } from "../../actors/Player.ts";
 import type { Slime } from "../../actors/Slime.ts";
 import { canStrike } from "./combat.ts";
+import { moveBody } from "../../world/collision.ts";
 
 /**
  * A magia do cajado do Mago (ADR 0069): fonte única para a superfície e para a caverna, como `SwordCombat` é para a espada. O dano usa
@@ -30,12 +31,37 @@ export function spellStrikeTargets<T extends Slime>(staff: StaffId,
   return [];
 }
 
-/** Resolve uma magia já decidida: o dano e as criaturas abatidas (quem chama cuida de XP, saque e remoção). */
+/**
+ * O efeito extra do cajado depois de um acerto (ADR 0073): empurrar o alvo, deixá-lo mais lento ou curar o herói com parte do dano. Um
+ * alvo que já caiu não é empurrado nem desacelerado; a cura é uma parte do dano **realmente causado** (o que sobrou de vida do alvo, não
+ * o excesso do golpe que derrota), vale também nesse golpe, e nunca levanta um herói caído nem passa da vida máxima.
+ */
+export function applySpellEffect(staff: StaffId, hero: Player, target: Slime, damage: number, world: CollisionMap): void {
+  const effect = STAVES[staff].effect;
+  if (!effect) return;
+  switch (effect.kind) {
+    case "push": {
+      const dx = target.x - hero.x, dy = target.y - hero.y, length = Math.hypot(dx, dy);
+      if (target.hp > 0 && length > 0.001) moveBody(target, dx / length * effect.distance, dy / length * effect.distance, world);
+      return;
+    }
+    case "slow":
+      target.applySpellSlow(effect.factor, effect.seconds); // o monstro já ignora a lentidão se caiu
+      return;
+    case "heal":
+      if (hero.hp > 0 && damage > 0) hero.hp = Math.min(hero.maxHp, hero.hp + Math.max(1, Math.round(damage * effect.percent / 100)));
+      return;
+  }
+}
+
+/** Resolve uma magia já decidida: o dano, o efeito do cajado e as criaturas abatidas (quem chama cuida de XP, saque e remoção). */
 export function resolveSpellStrike<T extends Slime>(staff: StaffId, hero: Player,
-  targets: readonly T[], onDefeated: (mob: T) => void): void {
+  targets: readonly T[], world: CollisionMap, onDefeated: (mob: T) => void): void {
   for (const mob of targets) {
     if (mob.hp <= 0) continue;
-    mob.takeHit(hero.x, hero.y, spellHitDamage(staff, mob));
+    const damage = spellHitDamage(staff, mob), dealt = Math.min(damage, mob.hp);
+    mob.takeHit(hero.x, hero.y, damage);
+    applySpellEffect(staff, hero, mob, dealt, world);
     if (mob.hp <= 0) onDefeated(mob);
   }
 }

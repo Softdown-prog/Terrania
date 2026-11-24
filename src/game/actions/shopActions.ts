@@ -10,7 +10,8 @@ import { MARKET_NPC, describeCoins, type MarketId } from "../../engine/character
 import { INVENTORY_FEEDBACK } from "../messages/inventoryFeedback.ts";
 import { CAPITAL_INN_RESTED } from "../messages/capitalInn.ts";
 import { heroClassSheet } from "../../engine/character/classes/index.ts";
-import { NO_ARMOR_MESSAGE, NO_SWORDS_MESSAGE } from "../messages/classRules.ts";
+import { NO_ARMOR_MESSAGE, NO_STAVES_MESSAGE, NO_SWORDS_MESSAGE } from "../messages/classRules.ts";
+import type { StaffId } from "../../engine/character/Staves.ts";
 import { say } from "./say.ts";
 import type { ShopContext, ShopResult } from "./shopContext.ts";
 export type { ShopContext, ShopResult } from "./shopContext.ts";
@@ -92,6 +93,14 @@ export function equipWeapon({ sim }: ShopContext, weapon: WeaponId): ShopResult 
   if (sim.awaitingRespawn) return say("unavailable");
   const result = sim.inventory.equipWeapon(weapon, experienceProgress(sim.experience).level);
   return say(result, result === "equipped");
+}
+
+/** Troca o cajado em mãos (ADR 0073): só o Mago usa cajado; precisa do nível dele e, se é vendido, de tê-lo comprado. */
+export function equipStaff({ sim }: ShopContext, staff: StaffId): ShopResult {
+  if (heroClassSheet(sim.heroClass).usesSwords) return { message: NO_STAVES_MESSAGE, changed: false };
+  if (sim.awaitingRespawn) return say("unavailable");
+  const result = sim.inventory.equipStaff(staff, experienceProgress(sim.experience).level);
+  return say(result, result === "staff-equipped");
 }
 
 export function equipGear({ sim }: ShopContext, slot: GearSlot, item: GearId | null): ShopResult {

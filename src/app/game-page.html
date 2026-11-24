@@ -253,15 +253,32 @@
                   @let staff = hud.equippedStaff();
                   <strong id="equippedWeapon">{{ staff.name }}</strong>
                   <p id="equippedStaffStats">{{ staff.damage }} de dano · {{ staff.interval }} s entre magias · {{ staff.manaCost }} de mana · alcance de {{ staff.range }} tiles</p>
-                  <p class="weapon-roster-caption">Cajados do mago · 1 de 11 · os outros virão com a Academia Arcana</p>
-                  <div class="weapon-picker" role="group" aria-label="Cajado em mãos">
-                    <button type="button" class="sword-choice is-equipped" id="equip-slot-staff-apprentice" aria-pressed="true" disabled
-                      [attr.title]="staff.name + ' · ' + (staff.level > 0 ? 'nível ' + staff.level : 'inicial') + ' · dano ' + staff.damage">
-                      <app-item-icon class="sword-choice-icon" [name]="hud.staffIcon()" />
-                      <strong class="sword-choice-name">{{ staff.name }}</strong>
-                      <small class="sword-choice-stats">{{ staff.level > 0 ? "Nível " + staff.level : "Inicial" }} · {{ staff.damage }} dano</small>
-                      <span class="sword-choice-status">Equipado</span>
-                    </button>
+                  <p id="equippedStaffEffect">Efeito: {{ hud.staffEffectText() }}</p>
+                  <p class="weapon-roster-caption">Cajados do mago · {{ hud.staffIds.length }} de 11 · os outros chegam nos próximos lotes</p>
+                  <div class="weapon-picker staff-picker" role="group" aria-label="Cajados do mago">
+                    @for (row of hud.staffRows(); track row.id) {
+                      <button type="button" class="sword-choice"
+                        [attr.id]="'equip-slot-staff-' + row.id"
+                        [attr.data-staff-id]="row.id"
+                        [attr.aria-pressed]="row.status === 'equipped'"
+                        [attr.title]="row.def.name + ' · ' + (row.def.level > 0 ? 'nível ' + row.def.level : 'inicial') + ' · dano ' + row.def.damage"
+                        [class.is-equipped]="row.status === 'equipped'"
+                        [class.is-locked]="row.status === 'locked' || row.status === 'for-sale'"
+                        [disabled]="row.status !== 'available'"
+                        (click)="hud.equipStaff(row.id)">
+                        <app-item-icon class="sword-choice-icon" [name]="hud.staffIcon(row.id)" />
+                        <strong class="sword-choice-name">{{ row.def.name }}</strong>
+                        <small class="sword-choice-stats">{{ row.def.level > 0 ? "Nível " + row.def.level : "Inicial" }} · {{ row.def.damage }} dano</small>
+                        <span class="sword-choice-status">
+                          @switch (row.status) {
+                            @case ('equipped') { Equipado }
+                            @case ('available') { Equipar }
+                            @case ('for-sale') { Comprar na Academia }
+                            @default { Bloqueado }
+                          }
+                        </span>
+                      </button>
+                    }
                   </div>
                 } @else if (hud.selectedSlot() === 'weapon') {
                   @let current = hud.weapons[loadout.equipped];

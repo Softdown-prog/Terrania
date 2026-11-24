@@ -22,7 +22,7 @@ import { grantExperience, levelForExperience, maxHpForExperience, normalizeExper
 import { hasNutrition, type NutritionState } from "./character/Food.ts";
 import { WellInvestigation, wellQuestStarted, type WellQuestState } from "./quests/south/well/index.ts";
 import { Bank, type BankState } from "./character/center/bank/index.ts";
-import { DEFAULT_STAFF, STAVES, type StaffId } from "./character/Staves.ts";
+import { STAVES, type StaffId } from "./character/Staves.ts";
 import { resolveSpellStrike, spellReach, spellStrikeTargets } from "./combat/SpellCombat.ts";
 import type { CombatProfile } from "./combat/CombatProfile.ts";
 import { CLASSIC_FOLLOW_STOP } from "./combat/ClassicPursuit.ts";
@@ -171,7 +171,7 @@ export class OfflineSimulation {
     return true;
   }
   /** O cajado que o Mago segura; com um só cajado, o de Aprendiz (a escolha entre vários vem com o inventário, fatia F). */
-  get equippedStaff(): StaffId { return DEFAULT_STAFF; }
+  get equippedStaff(): StaffId { return this.inventory.staves.equipped; }
   /** Como o herói ataca agora: o Cavaleiro de perto com a espada; o Mago de longe com o cajado, se houver mana (ADR 0069). */
   get combatProfile(): CombatProfile {
     const weapon = this.inventory.loadout.equipped;
@@ -326,7 +326,7 @@ export class OfflineSimulation {
       const staff=this.player.attackStaff;
       if (staff) {
         const hit=spellStrikeTargets(staff,this.player,this.slimes.values(),this.collision,strikeTargetId);
-        resolveSpellStrike(staff,this.player,hit,mob=>{
+        resolveSpellStrike(staff,this.player,hit,this.collision,mob=>{
           this.registerDefeat(mob.id,mob,defense);
           changed=true;
         });

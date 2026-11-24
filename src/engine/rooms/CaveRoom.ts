@@ -135,7 +135,7 @@ export class CaveRoom {
       if(staff){
         const hit=spellStrikeTargets(staff,this.player,this.monsters.values(),this.collision,targetId);
         if(hit[0])faceTarget(this.player,hit[0]);
-        resolveSpellStrike(staff,this.player,hit,monster=>this.defeat(monster.id,monster,defense));
+        resolveSpellStrike(staff,this.player,hit,this.collision,monster=>this.defeat(monster.id,monster,defense));
         return;
       }
       const equipped=this.player.attackWeapon;

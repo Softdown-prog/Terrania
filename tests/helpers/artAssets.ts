@@ -58,6 +58,10 @@ import type { HeroDrawContext } from "../../src/render/hero/context.ts";
 import { STAFF_IDS, STAVES } from "../../src/engine/character/Staves.ts";
 import { drawMageStaff } from "../../src/render/staves.ts";
 import { paintStaffShaft } from "../../src/render/staves/shaft.ts";
+import { paintStaffMotif } from "../../src/render/staves/motif.ts";
+import { paintFeatherMotif } from "../../src/render/staves/motifs/feather.ts";
+import { paintStoneMotif } from "../../src/render/staves/motifs/stone.ts";
+import { paintCoralMotif } from "../../src/render/staves/motifs/coral.ts";
 import { drawSpellBolt } from "../../src/render/spells/bolt.ts";
 import { drawSpellBurst } from "../../src/render/spells/burst.ts";
 import { paintStaffHead } from "../../src/render/staves/head.ts";
@@ -148,6 +152,10 @@ export const ASSETS: ArtAsset[] = [
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "Cajado procedural " + kind, tier: "prop", fn: "drawMageStaff", draw: c => drawMageStaff(c, kind, 1) })),
   { id: "cajado: haste de carvalho", tier: "prop", fn: "paintStaffShaft", draw: c => paintStaffShaft(c, STAVES.apprentice.visual, t => t) },
   { id: "cajado: engaste com gema", tier: "prop", fn: "paintStaffHead", draw: c => paintStaffHead(c, STAVES.apprentice.visual, t => t, 1) },
+  ...STAFF_IDS.filter(kind => STAVES[kind].visual.motif !== "oak").map<ArtAsset>(kind => ({ id: "cajado: matéria própria de " + kind, tier: "prop", fn: "paintStaffMotif", draw: c => { paintStaffMotif(c, STAVES[kind].visual, t => t, 1, "back"); paintStaffMotif(c, STAVES[kind].visual, t => t, 1, "front"); } })),
+  { id: "cajado da Brisa: penas do vento", tier: "prop", fn: "paintFeatherMotif", draw: c => { paintFeatherMotif(c, STAVES.breeze.visual, t => t, 1, "back"); paintFeatherMotif(c, STAVES.breeze.visual, t => t, 1, "front"); } },
+  { id: "cajado de Rocha Viva: lascas e cacos de pedra", tier: "prop", fn: "paintStoneMotif", draw: c => { paintStoneMotif(c, STAVES.stone.visual, t => t, 1, "back"); paintStoneMotif(c, STAVES.stone.visual, t => t, 1, "front"); } },
+  { id: "cajado das Marés: ramos de coral e bolhas", tier: "prop", fn: "paintCoralMotif", draw: c => { paintCoralMotif(c, STAVES.tide.visual, t => t, 1, "back"); paintCoralMotif(c, STAVES.tide.visual, t => t, 1, "front"); } },
   { id: "cajado: engaste carregando a magia", tier: "prop", fn: "paintStaffHead", draw: c => paintStaffHead(c, STAVES.apprentice.visual, t => t, 1, 1) },
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "magia: projétil " + kind, tier: "prop", fn: "drawSpellBolt", draw: c => drawSpellBolt(c, kind, 0.5, 1) })),
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "magia: estouro " + kind, tier: "prop", fn: "drawSpellBurst", draw: c => drawSpellBurst(c, kind, 0.2) })),

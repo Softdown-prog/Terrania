@@ -12,7 +12,7 @@ export function drawSpellBolt(ctx: CanvasRenderingContext2D, staff: StaffId, pro
   const tail = 10 + 20 * Math.min(1, p * 3);
   const shimmer = 0.88 + 0.12 * Math.sin(time * 40);
   // a rampa da cabeça: sete tons, do contorno quase preto ao branco quente, todos puxados da gema do cajado
-  const deep = mix(gem.dark, "#000000", 0.55), shade = mix(gem.dark, gem.mid, 0.5), lit = mix(gem.mid, gem.light, 0.5), bright = mix(gem.light, "#ffffff", 0.6);
+  const deep = mix(gem.dark, "#000000", 0.78), shade = mix(gem.dark, gem.mid, 0.5), lit = mix(gem.mid, gem.light, 0.5), bright = mix(gem.light, "#ffffff", 0.6);
   const ember = mix(gem.glow, gem.dark, 0.4), haze = mix(gem.glow, "#ffffff", 0.35);
   // cauda de cometa: uma gota afinada atrás da cabeça, de cor viva na ponta e sumindo no fim
   const streak = ctx.createLinearGradient(0, 0, -tail, 0);

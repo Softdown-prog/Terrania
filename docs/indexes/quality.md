@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (182)
+## Todos os arquivos deste módulo (185)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -47,6 +47,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/coins.spec.ts`](../../tests/browser/coins.spec.ts)
 - [`tests/browser/hero-select.spec.ts`](../../tests/browser/hero-select.spec.ts)
 - [`tests/browser/mage-cast.spec.ts`](../../tests/browser/mage-cast.spec.ts)
+- [`tests/browser/mage-staves.spec.ts`](../../tests/browser/mage-staves.spec.ts)
 - [`tests/browser/mana-bar.spec.ts`](../../tests/browser/mana-bar.spec.ts)
 - [`tests/browser/map-size.spec.ts`](../../tests/browser/map-size.spec.ts)
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
@@ -192,6 +193,8 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/south-well-quest.test.ts`](../../tests/south-well-quest.test.ts)
 - [`tests/specialized-creature-art.test.ts`](../../tests/specialized-creature-art.test.ts)
 - [`tests/species-behavior.test.ts`](../../tests/species-behavior.test.ts)
+- [`tests/staff-lote-1.test.ts`](../../tests/staff-lote-1.test.ts)
+- [`tests/staff-motifs.test.ts`](../../tests/staff-motifs.test.ts)
 - [`tests/staves.test.ts`](../../tests/staves.test.ts)
 - [`tests/sword-definitions.test.ts`](../../tests/sword-definitions.test.ts)
 - [`tests/sword-strike.test.ts`](../../tests/sword-strike.test.ts)

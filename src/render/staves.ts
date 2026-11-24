@@ -1,5 +1,6 @@
 import { STAVES, type StaffId } from "../engine/character/Staves.ts";
 import { paintStaffHead } from "./staves/head.ts";
+import { paintStaffMotif } from "./staves/motif.ts";
 import { paintStaffShaft, type StaffTone } from "./staves/shaft.ts";
 
 /**
@@ -10,5 +11,7 @@ import { paintStaffShaft, type StaffTone } from "./staves/shaft.ts";
 export function drawMageStaff(ctx: CanvasRenderingContext2D, staff: StaffId, time = 0, tone: StaffTone = c => c, charge = 0): void {
   const v = STAVES[staff].visual;
   paintStaffShaft(ctx, v, tone);
+  paintStaffMotif(ctx, v, tone, time, "back");
   paintStaffHead(ctx, v, tone, time, charge);
+  paintStaffMotif(ctx, v, tone, time, "front");
 }

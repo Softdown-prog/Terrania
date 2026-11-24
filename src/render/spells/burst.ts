@@ -12,7 +12,7 @@ export function drawSpellBurst(ctx: CanvasRenderingContext2D, staff: StaffId, pr
   const gem = STAVES[staff].visual.gem;
   const p = Math.max(0, Math.min(1, Number.isFinite(progress) ? progress : 0)), fade = 1 - p, open = 1 - fade * fade;
   const size = kill ? 1.6 : 1;
-  const deep = mix(gem.dark, "#000000", 0.5), lit = mix(gem.mid, gem.light, 0.5), bright = mix(gem.light, "#ffffff", 0.6), shade = mix(gem.dark, gem.mid, 0.5);
+  const deep = mix(gem.dark, "#000000", 0.78), lit = mix(gem.mid, gem.light, 0.5), bright = mix(gem.light, "#ffffff", 0.6), shade = mix(gem.dark, gem.mid, 0.5);
   const ember = mix(gem.glow, gem.dark, 0.4), haze = mix(gem.glow, "#ffffff", 0.35), pale = mix(gem.mid, "#ffffff", 0.35);
   // clarão
   const flash = ctx.createRadialGradient(0, 0, 0.5, 0, 0, (7 + 15 * open) * size);

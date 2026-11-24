@@ -8,12 +8,14 @@ import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, slotItemIcon, staffItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
-import { DEFAULT_STAFF, STAVES, type StaffId } from '../engine/character/Staves.ts';
+import { DEFAULT_STAFF, STAFF_IDS, STAVES, isStaffId, staffUnlocked, type StaffId } from '../engine/character/Staves.ts';
+import type { StaffLoadout } from '../engine/character/StaffLoadout.ts';
 import { southRareLootByName } from '../monsters/rareLoot.ts';
 import { SOUTH_MOUNT_SALES } from '../engine/mounts/southMountSales.ts';
 import { BANK_STEPS } from '../engine/character/center/bank/index.ts';
 import { DEFAULT_RESPAWN_POINT, RESPAWN_POINTS, type RespawnPointId } from '../engine/character/center/shrine/index.ts';
 import { HERO_CLASSES, HERO_CLASS_IDS, isHeroClassPlayable, sameManaMeter, type HeroClassId, type ManaMeter } from '../engine/character/classes/index.ts';
+import { describeStaffEffect } from '../game/messages/staffEffects.ts';
 import { HERO_CLASS_HINT, HERO_CLASS_INTRO, HERO_CLASS_LOCKED, HERO_CLASS_TITLE } from '../game/messages/classIntro.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
@@ -144,7 +146,22 @@ export class HudService implements GameUi {
   readonly visibleEquipmentSlots = computed(() => this.wearsArmor() ? EQUIPMENT_SLOTS : EQUIPMENT_SLOTS.filter(slot => slot.id === 'weapon'));
   readonly heroName = computed(() => HERO_CLASSES[this.heroClass()].name.toLowerCase());
   readonly equippedStaff = computed(() => STAVES[this.staff()]);
-  readonly staffIcon = computed(() => staffItemIcon(this.staff()));
+  /** Os cajados comprados (ids separados por vírgula: o texto só muda quando a lista muda, e o HUD não se redesenha à toa). */
+  readonly staffBought = signal('');
+  readonly staffIds = STAFF_IDS;
+  staffName(id: StaffId): string { return STAVES[id].name; }
+  readonly staffEffectText = computed(() => describeStaffEffect(STAVES[this.staff()].effect));
+  staffIcon(id: StaffId): ItemIconId { return staffItemIcon(id); }
+  /** Os cajados do Mago para a tela, na ordem do catálogo: em mãos, disponível, à venda (nível alcançado, falta comprar) ou bloqueado pelo nível. */
+  readonly staffRows = computed(() => {
+    const level = this.progression()?.level ?? 1, bought = this.staffBought().split(',').filter((id): id is StaffId => isStaffId(id));
+    return STAFF_IDS.map(id => {
+      const def = STAVES[id];
+      const status = id === this.staff() ? 'equipped' as const : staffUnlocked(id, level, bought) ? 'available' as const
+        : level >= def.level ? 'for-sale' as const : 'locked' as const;
+      return { id, def, status };
+    });
+  });
   slotLabel(slot: EquipmentSlot): string {
     if (slot === 'weapon' && !this.usesSwords()) return 'Cajado';
     return EQUIPMENT_SLOTS.find(item => item.id === slot)?.label ?? slot;
@@ -270,6 +287,7 @@ export class HudService implements GameUi {
   private foodTradeCallback: (id: FoodId) => string = () => '';
   private swordPurchaseCallback: () => string = () => '';
   private weaponEquipCallback: (weapon: WeaponId) => string = () => '';
+  private staffEquipCallback: (staff: StaffId) => string = () => '';
   private gearEquipCallback: (slot: GearSlot, item: GearId | null) => string = () => '';
   private respawnCallback: () => void = () => {};
   private mountActionCallback: (action: MountAction) => string = () => '';
@@ -312,6 +330,7 @@ export class HudService implements GameUi {
   onBankWithdraw(callback: (amount: number | 'all') => string): void { this.bankWithdrawCallback = callback; }
   onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void { this.materialSaleCallback = callback; }
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
+  onStaffEquip(callback: (staff: StaffId) => string): void { this.staffEquipCallback = callback; }
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void { this.gearEquipCallback = callback; }
   onRespawn(callback: () => void): void { this.respawnCallback = callback; }
   onMountAction(callback:(action:MountAction)=>string):void {this.mountActionCallback=callback;}
@@ -395,13 +414,14 @@ export class HudService implements GameUi {
   }
   buySword(): void { this.npcTradeFeedback.set(this.swordPurchaseCallback()); }
   equipWeapon(weapon: WeaponId): void { this.inventoryFeedback.set(this.weaponEquipCallback(weapon)); }
+  equipStaff(staff: StaffId): void { this.inventoryFeedback.set(this.staffEquipCallback(staff)); }
   equipGear(id: GearId): void {
     const { slot } = GEAR[id];
     this.inventoryFeedback.set(this.gearEquipCallback(slot, this.gear()?.[slot] === id ? null : id));
   }
   /** Ícone do espaço: a arma mostra a espada realmente equipada. */
   slotIcon(slot: EquipmentSlot): ItemIconId {
-    if (slot === 'weapon' && !this.usesSwords()) return this.staffIcon();
+    if (slot === 'weapon' && !this.usesSwords()) return staffItemIcon(this.staff());
     return slotItemIcon(slot, this.loadout()?.equipped ?? 'starter');
   }
   equippedName(slot: EquipmentSlot): string {
@@ -422,6 +442,7 @@ export class HudService implements GameUi {
     this.creatureMaterials.set(materials);
   }
   updateLoadout(loadout: WeaponLoadout | null): void { this.loadout.set(loadout); }
+  updateStaves(loadout: StaffLoadout): void { this.staffBought.set(loadout.bought.join(',')); }
   updateGear(gear: GearState | null): void { this.gear.set(gear); }
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void {
     (section === 'bag' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);

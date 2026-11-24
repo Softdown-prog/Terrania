@@ -126,9 +126,9 @@ test("resolver a magia: fere o alvo, avisa quem foi abatido uma vez, e ignora mo
   const p = new Player(); p.x = 0; p.y = 0;
   const wolf = new RegionalMonster("w", "glacial-wolf", 100, 0), weak = new Slime("s", 100, 0), dead = new Slime("d", 100, 0); dead.hp = 0;
   const fallen: string[] = [];
-  resolveSpellStrike("apprentice", p, [wolf, weak, dead], m => fallen.push(m.id));
+  resolveSpellStrike("apprentice", p, [wolf, weak, dead], OPEN, m => fallen.push(m.id));
   assert.equal(wolf.hp, 140 - 8); assert.equal(weak.hp, 0, "o slime de 3 de vida cai"); assert.deepEqual(fallen, ["s"], "só o abatido, uma vez; o morto não conta");
-  resolveSpellStrike("apprentice", p, [], () => assert.fail("sem alvos nada acontece"));
+  resolveSpellStrike("apprentice", p, [], OPEN, () => assert.fail("sem alvos nada acontece"));
 });
 
 test("a mira por alvo do Mago: dispara a até 6 tiles, a espada não; sem mana não sai, não gasta recarga e avisa uma vez por bloqueio", () => {

@@ -90,7 +90,9 @@ test("jogador novo escolhe o Mago: o mundo começa de Mago, com barra de mana, c
   await expect(page.locator("#equippedStaffStats")).toContainText("5 de mana");
   await expect(page.locator(".preview-eyebrow")).toHaveText("SEU MAGO");
   await expect(page.locator("#equipmentDefense")).toHaveCount(0);
-  await expect(page.locator(".sword-choice")).toHaveCount(1);
+  await expect(page.locator(".sword-choice")).toHaveCount(4);
+  await expect(page.locator("#equip-slot-staff-apprentice")).toContainText("Equipado");
+  await expect(page.locator("#equip-slot-staff-breeze")).toContainText("Bloqueado");
   await expect(page.locator("#inventoryHero")).toBeVisible();
   await page.locator(".armory-panel").screenshot({ path: test.info().outputPath("inventario-do-mago.png") });
   await page.locator("#inventoryDialog .dialog-x").click();

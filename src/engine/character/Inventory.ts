@@ -10,6 +10,8 @@ import { nearestNpc } from "../../world/npcs.ts";
 import { MAX_COINS, marketFor, materialSalePrice, normalizeCoins, type MarketId } from "./coins/index.ts";
 import { ELIXIR_IDS, elixirRecipe, emptyElixirCounts, normalizeElixirs, type ElixirCounts, type ElixirCraftResult,
   type ElixirId, type ElixirUseResult } from "./south/alchemy/index.ts";
+import { DEFAULT_STAFF_LOADOUT, isDefaultStaffLoadout, normalizeStaffLoadout, sanitizeStaffLoadout, type StaffBuyResult, type StaffEquipResult, type StaffLoadout } from "./StaffLoadout.ts";
+import { STAVES, isStaffId, staffUnlocked, type StaffId } from "./Staves.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 
@@ -26,7 +28,7 @@ export type InnRestResult = "rested" | "insufficient-rest-coins" | "too-far-from
 export type MaterialSaleResult = "sold" | "not-sellable-here" | "no-material" | "wallet-full";
 export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned" | "level-too-low";
 /** Tudo que uma ação da bolsa pode responder; a interface traduz cada valor em uma mensagem. */
-export type InventoryOutcome = PotionTradeResult | InnRestResult | MaterialSaleResult | SwordPurchaseResult | SwordEquipResult | GearResult |
+export type InventoryOutcome = PotionTradeResult | InnRestResult | MaterialSaleResult | SwordPurchaseResult | SwordEquipResult | StaffBuyResult | StaffEquipResult | GearResult |
   FoodTradeResult | FoodUseResult | ElixirCraftResult | ElixirUseResult | "healed" | "full-health" | "no-potion" | "too-far";
 
 export interface InventoryState {
@@ -35,6 +37,8 @@ export interface InventoryState {
   questRewardClaimed: boolean;
   food?: FoodCounts;
   loadout?: WeaponLoadout;
+  /** O cajado em mãos e os comprados do Mago (ADR 0073); ausente no padrão e no Cavaleiro. */
+  staves?: StaffLoadout;
   gear?: GearState;
   materials?: Record<string, number>;
   /** Dinheiro em Terrania Gold (ADR 0023); as moedas maiores saem da conta. Ausente quando é zero. */
@@ -68,6 +72,7 @@ export function normalizeInventory(value: unknown): InventoryState {
     ? { forged: state.loadout?.forged === true,
         equipped: isWeaponId(state.loadout?.equipped) ? state.loadout.equipped : "starter" }
     : undefined;
+  const staves = sanitizeStaffLoadout(state.staves);
   const gear = normalizeGear(state.gear);
   const food = normalizeFoodCounts(state.food);
   const elixirs = normalizeElixirs(state.elixirs);
@@ -79,6 +84,7 @@ export function normalizeInventory(value: unknown): InventoryState {
     ...(Object.values(food).some(v => v > 0) ? { food } : {}),
     ...(Object.values(elixirs).some(v => v > 0) ? { elixirs } : {}),
     ...(loadout ? { loadout } : {}),
+    ...(isDefaultStaffLoadout(staves) ? {} : { staves }),
     ...(Object.keys(gear).length ? { gear } : {}),
     ...(Object.keys(normalizeMaterials(state.materials)).length ? { materials: normalizeMaterials(state.materials) } : {}),
   };
@@ -93,6 +99,7 @@ export class Inventory {
   private elixirCounts: Record<ElixirId, number> = emptyElixirCounts();
   private claimed = false;
   private weapons: WeaponLoadout;
+  private staffLoadout: StaffLoadout = DEFAULT_STAFF_LOADOUT;
   private equippedGear: GearState;
 
   constructor(value?: unknown, level = 1) {
@@ -108,6 +115,7 @@ export class Inventory {
     this.weapons = weaponUnlocked(restored.equipped, level, restored.forged)
       ? restored : { ...restored, equipped: "starter" };
     this.equippedGear = state.gear ?? {};
+    this.staffLoadout = normalizeStaffLoadout(state.staves, level);
   }
 
   get gel(): number { return this.gelCount; }
@@ -167,6 +175,8 @@ export class Inventory {
   get questRewardClaimed(): boolean { return this.claimed; }
   get hasRoomForGel(): boolean { return this.gelCount < MAX_STACK; }
   get loadout(): WeaponLoadout { return this.weapons; }
+  /** O cajado em mãos e os comprados (ADR 0073). */
+  get staves(): StaffLoadout { return this.staffLoadout; }
   get weapon() { return WEAPONS[this.weapons.equipped]; }
   get gear(): GearState { return this.equippedGear; }
   get defense(): number { return gearDefense(this.equippedGear); }
@@ -280,6 +290,27 @@ export class Inventory {
     return "equipped";
   }
 
+  /** Compra um cajado vendido na Academia Arcana (o preço é o da ficha); quem confere a distância da Academia é a ação de loja. */
+  buyStaff(staff: StaffId, hero: { hp: number }): StaffBuyResult {
+    if (hero.hp <= 0) return "staff-unavailable";
+    const price = isStaffId(staff) ? STAVES[staff].price : undefined;
+    if (price === undefined) return "staff-not-for-sale";
+    if (this.staffLoadout.bought.includes(staff)) return "staff-already-owned";
+    if (!this.spendCoins(price)) return "staff-insufficient-coins";
+    this.staffLoadout = { ...this.staffLoadout, bought: [...this.staffLoadout.bought, staff] };
+    return "staff-purchased";
+  }
+
+  /** Troca o cajado em mãos: precisa do nível dele e, se é vendido, de tê-lo comprado. */
+  equipStaff(staff: StaffId, level: number): StaffEquipResult {
+    if (!isStaffId(staff)) return "staff-not-owned";
+    if (staff === this.staffLoadout.equipped) return "staff-already-equipped";
+    if (!Number.isInteger(level) || level < STAVES[staff].level) return "staff-level-too-low";
+    if (!staffUnlocked(staff, level, this.staffLoadout.bought)) return "staff-not-owned";
+    this.staffLoadout = { ...this.staffLoadout, equipped: staff };
+    return "staff-equipped";
+  }
+
   usePotion(hero: { hp: number; maxHp: number }): boolean {
     if (this.potionCount < 1 || !Number.isFinite(hero.hp) ||
         !Number.isFinite(hero.maxHp) || hero.hp <= 0 || hero.hp >= hero.maxHp) return false;
@@ -297,6 +328,7 @@ export class Inventory {
       ...(Object.values(this.foods).some(v => v > 0) ? { food: { ...this.foods } } : {}),
       ...(Object.values(this.elixirCounts).some(v => v > 0) ? { elixirs: { ...this.elixirCounts } } : {}),
       ...(this.weapons.forged || this.weapons.equipped !== "starter" ? { loadout: this.weapons } : {}),
+      ...(isDefaultStaffLoadout(this.staffLoadout) ? {} : { staves: this.staffLoadout }),
       ...(Object.keys(this.equippedGear).length ? { gear: this.equippedGear } : {}),
       ...(Object.keys(this.materialCounts).length ? { materials: { ...this.materialCounts } } : {}),
     };

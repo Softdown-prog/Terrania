@@ -15,6 +15,7 @@ export const APPRENTICE_STAFF = {
   manaCost: 5,
   range: 6,
   element: null,
+  effect: null,
   visual: {
     motif: "oak",
     shaft: { light: "#b98b57", mid: "#8a6238", dark: "#53381f" },

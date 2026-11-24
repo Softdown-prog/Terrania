@@ -1,6 +1,7 @@
 import { INN_REST_PRICE, POTION_GEL_PRICE, POTION_HEAL, type InventoryOutcome } from "../../engine/character/Inventory.ts";
 import { describeCoins } from "../../engine/character/coins/index.ts";
 import { FORGE_SWORD_PRICE, WEAPONS } from "../../engine/character/Weapons.ts";
+import { BREEZE_STAFF } from "../../engine/character/weapons/staves/breeze.ts";
 
 /**
  * Texto mostrado ao jogador para cada resultado da bolsa, da loja e do equipamento.
@@ -29,6 +30,16 @@ export const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "already-equipped": "Essa espada já está equipada.",
   "level-too-low": "Seu nível ainda não permite equipar essa espada.",
   "not-owned": "Você ainda não possui essa espada.",
+  "staff-purchased": "Cajado comprado na Academia Arcana e guardado na sua bolsa.",
+  "staff-already-owned": "Você já possui esse cajado.",
+  "staff-not-for-sale": "Esse cajado não é vendido: ele libera sozinho quando você chega ao nível dele.",
+  "staff-insufficient-coins": `Você precisa de ${describeCoins(BREEZE_STAFF.price)} para comprar o cajado.`,
+  "staff-too-far": "Aproxime-se da Academia Arcana, na capital, para comprar um cajado.",
+  "staff-unavailable": "Retorne à vila para continuar.",
+  "staff-equipped": "Cajado equipado.",
+  "staff-already-equipped": "Esse cajado já está em suas mãos.",
+  "staff-not-owned": "Você ainda não possui esse cajado.",
+  "staff-level-too-low": "Seu nível ainda não permite usar esse cajado.",
   "rested": "Madame Víbora serviu o descanso: vida completa e sem veneno nem queimadura.",
   "insufficient-rest-coins": `Você precisa de ${describeCoins(INN_REST_PRICE)} para pagar o descanso.`,
   "insufficient-food-coins": "Você não tem moedas suficientes para comprar esse alimento.",

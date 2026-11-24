@@ -73,7 +73,7 @@ test("a ligação: o jogo diz a vocação ao HUD, que esconde espadas e armadura
   assert.match(service, /readonly visibleEquipmentSlots = computed\(\(\) => this\.wearsArmor\(\) \? EQUIPMENT_SLOTS : EQUIPMENT_SLOTS\.filter\(slot => slot\.id === 'weapon'\)\);/, "o Mago só tem o espaço do cajado");
   assert.match(service, /if \(gear !== null && this\.wearsArmor\(\)\) \{/, "a mochila do Mago não lista armadura");
   assert.match(service, /if \(loadout && this\.usesSwords\(\)\) \{/, "nem espadas");
-  assert.match(service, /if \(slot === 'weapon' && !this\.usesSwords\(\)\) return this\.staffIcon\(\);/);
+  assert.match(service, /if \(slot === 'weapon' && !this\.usesSwords\(\)\) return staffItemIcon\(this\.staff\(\)\);/);
   assert.match(service, /if \(slot === 'weapon' && !this\.usesSwords\(\)\) return STAVES\[this\.staff\(\)\]\.name;/);
   assert.match(service, /if \(slot === 'weapon' && !this\.usesSwords\(\)\) return 'Cajado';/);
   assert.match(page, /<h1 id="inventoryTitle">Inventário do \{\{ hud\.heroName\(\) \}\}<\/h1>/);
@@ -82,7 +82,7 @@ test("a ligação: o jogo diz a vocação ao HUD, que esconde espadas e armadura
   assert.match(page, /SEU \{\{ hud\.heroName\(\)\.toUpperCase\(\) \}\}/);
   assert.match(page, /@if \(hud\.selectedSlot\(\) === 'weapon' && !hud\.usesSwords\(\)\) \{/, "o Mago vê o cajado onde o Cavaleiro vê as espadas");
   assert.match(page, /@if \(hud\.wearsArmor\(\) && hud\.gear\(\) !== null\) \{ <span>Defesa/, "o Mago não mostra defesa");
-  assert.match(page, /\{\{ staff\.level > 0 \? "Nível " \+ staff\.level : "Inicial" \}\} · \{\{ staff\.damage \}\} dano/, "o cajado inicial é \"Inicial\", não \"Nível 0\"");
+  assert.match(page, /\{\{ row\.def\.level > 0 \? "Nível " \+ row\.def\.level : "Inicial" \}\} · \{\{ row\.def\.damage \}\} dano/, "o cajado inicial é \"Inicial\", não \"Nível 0\"");
   assert.match(component, /gear: this\.hud\.wearsArmor\(\) \? this\.hud\.gear\(\) \?\? undefined : undefined,\s*\n\s*heroClass: this\.hud\.heroClass\(\), equippedStaff: this\.hud\.staff\(\),/, "a prévia desenha o herói de verdade");
   assert.match(interior, /\{ heroClass: host\.sim\.heroClass, equippedStaff: host\.sim\.equippedStaff \}\);/, "dentro das casas o Mago aparece como Mago");
   assert.match(css, /\.equipment-grid\.single-slot \.hero-preview \{ grid-area: 1 \/ 2 \/ span 1 \/ span 2; \}/);

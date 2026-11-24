@@ -7,6 +7,7 @@ import type { MarketId } from '../engine/character/coins/index.ts';
 import type { RespawnPointId } from '../engine/character/center/shrine/index.ts';
 import type { HeroClassId, ManaMeter } from '../engine/character/classes/index.ts';
 import type { StaffId } from '../engine/character/Staves.ts';
+import type { StaffLoadout } from '../engine/character/StaffLoadout.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
 import type { WeaponId, WeaponLoadout } from '../engine/character/Weapons.ts';
 import type { GearId, GearSlot, GearState } from '../engine/character/Equipment.ts';
@@ -73,6 +74,7 @@ export interface GameUi {
   onElixirUse(callback: (id: ElixirId) => string): void;
   onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void;
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
+  onStaffEquip(callback: (staff: StaffId) => string): void;
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void;
   onRespawn(callback: () => void): void;
   onMountAction(callback: (action: MountAction) => string): void;
@@ -80,6 +82,8 @@ export interface GameUi {
   updateInventory(gel: number, potions: number, food: FoodCounts,
     materials?: Readonly<Record<string,number>>, coins?: number, elixirs?: ElixirCounts): void;
   updateLoadout(loadout: WeaponLoadout | null): void;
+  /** Os cajados comprados do Mago (ADR 0073). */
+  updateStaves(loadout: StaffLoadout): void;
   updateGear(gear: GearState | null): void;
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void;
   setQuickPotionFeedback(message: string): void;

@@ -20,9 +20,17 @@ export class Slime implements CreatureView {
   private readonly swordEffects = new Map<"bleed" | "fire" | "poison" | "ice",{
     seconds:number; damage:number; elapsed:number
   }>();
+  /** A lentidão das magias de cajado (ADR 0073): a velocidade que sobra e por quanto tempo; vale a mais forte entre a da espada e a da magia. */
+  private spellSlow: { factor: number; seconds: number } | null = null;
   get swordSpeedMultiplier():number {
-    return this.swordEffects.has("ice") ? .8 : 1;
+    return Math.min(this.swordEffects.has("ice") ? .8 : 1, this.spellSlow?.factor ?? 1);
   }
+  applySpellSlow(factor: number, seconds: number): void {
+    if (this.hp <= 0 || !Number.isFinite(factor) || factor <= 0 || factor >= 1 || !Number.isFinite(seconds) || seconds <= 0 || seconds > 10) return;
+    this.spellSlow = { factor: Math.min(factor, this.spellSlow?.factor ?? 1), seconds: Math.max(seconds, this.spellSlow?.seconds ?? 0) };
+  }
+  /** Quanto falta da lentidão da magia, em segundos (0 se não há). */
+  get spellSlowSeconds(): number { return this.spellSlow?.seconds ?? 0; }
   applySwordStatus(kind:"bleed" | "fire" | "poison" | "ice",
     seconds:number, damage=0):void {
     if(this.hp<=0 || !Number.isFinite(seconds) || seconds<=0 || seconds>10 ||
@@ -33,6 +41,10 @@ export class Slime implements CreatureView {
   /** Tick once per simulation step; deterministic, capped damage, never wall-clock based. */
   protected tickSwordStatuses(dt:number):void {
     if(!Number.isFinite(dt) || dt<=0)return;
+    if(this.spellSlow){
+      this.spellSlow.seconds-=dt;
+      if(this.spellSlow.seconds<=0)this.spellSlow=null;
+    }
     for(const [kind,fx] of this.swordEffects){
       const active=Math.min(dt,fx.seconds);
       fx.seconds=Math.max(0,fx.seconds-dt);
