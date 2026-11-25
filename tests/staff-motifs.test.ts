@@ -6,6 +6,9 @@ import { drawMageStaff } from "../src/render/staves.ts";
 import { paintStaffMotif } from "../src/render/staves/motif.ts";
 import { paintCoralMotif } from "../src/render/staves/motifs/coral.ts";
 import { paintFeatherMotif } from "../src/render/staves/motifs/feather.ts";
+import { paintEmberMotif } from "../src/render/staves/motifs/ember.ts";
+import { paintThornMotif } from "../src/render/staves/motifs/thorn.ts";
+import { paintCrystalMotif } from "../src/render/staves/motifs/crystal.ts";
 import { paintStoneMotif } from "../src/render/staves/motifs/stone.ts";
 import { drawSpellBolt } from "../src/render/spells/bolt.ts";
 import { drawSpellBurst } from "../src/render/spells/burst.ts";
@@ -19,7 +22,7 @@ import { signature, spy } from "./helpers/spyContext.ts";
  * dele e o projétil da cor dele; o Aprendiz não mudou.
  */
 const id = (c: string): string => c;
-const MOTIFS = [["breeze", paintFeatherMotif], ["stone", paintStoneMotif], ["tide", paintCoralMotif]] as const;
+const MOTIFS = [["breeze", paintFeatherMotif], ["stone", paintStoneMotif], ["tide", paintCoralMotif], ["ember", paintEmberMotif], ["thorn", paintThornMotif], ["frost", paintCrystalMotif]] as const;
 /** Se o desenho usou a cor (#rrggbb ou rgba() dela). */
 const usesColor = (s: ReturnType<typeof spy>, hex: string): boolean => {
   const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
@@ -50,6 +53,9 @@ test("o que se mexe com o relógio: penas e vento, cacos de pedra e bolhas; o qu
   assert.notEqual(sig("stone", "front", 0.5), sig("stone", "front", 1.4), "os cacos giram");
   assert.equal(sig("tide", "back", 0.5), sig("tide", "back", 1.4), "o coral fica parado");
   assert.notEqual(sig("tide", "front", 0.5), sig("tide", "front", 1.4), "as bolhas sobem");
+  assert.notEqual(sig("ember", "back", 0.5), sig("ember", "back", 1.4), "as chamas balançam"); assert.notEqual(sig("ember", "front", 0.5), sig("ember", "front", 1.4), "as fagulhas sobem");
+  assert.notEqual(sig("thorn", "back", 0.5), sig("thorn", "back", 1.4), "as folhas balançam"); assert.notEqual(sig("thorn", "front", 0.5), sig("thorn", "front", 1.4), "as pétalas descem");
+  assert.equal(sig("frost", "back", 0.5), sig("frost", "back", 1.4), "os estilhaços de gelo ficam parados"); assert.notEqual(sig("frost", "front", 0.5), sig("frost", "front", 1.4), "as faíscas piscam");
 });
 
 test("a cor de cada cajado: a haste e a gema vêm da ficha, e o brilho de dano (tone) chega à matéria", () => {
@@ -66,7 +72,7 @@ test("a cor de cada cajado: a haste e a gema vêm da ficha, e o brilho de dano (
 test("o cajado inteiro é a soma das peças na ordem: haste, matéria de trás, engaste, matéria da frente", () => {
   const ops = (draw: (c: CanvasRenderingContext2D) => void): Record<string, number> => spy(draw).calls;
   const sum = (...parts: Array<Record<string, number>>): Record<string, number> => { const out: Record<string, number> = {}; for (const p of parts) for (const [k, n] of Object.entries(p)) out[k] = (out[k] ?? 0) + n; return out; };
-  for (const staff of ["breeze", "stone", "tide"] as const) {
+  for (const staff of ["breeze", "stone", "tide", "ember", "thorn", "frost"] as const) {
     const v = STAVES[staff].visual;
     assert.deepEqual(ops(c => drawMageStaff(c, staff, 1)), sum(ops(c => paintStaffShaft(c, v, id)), ops(c => paintStaffMotif(c, v, id, 1, "back")), ops(c => paintStaffHead(c, v, id, 1)), ops(c => paintStaffMotif(c, v, id, 1, "front"))), staff);
     const order: string[] = [];
@@ -89,6 +95,16 @@ test("o tom do coral intermediário também recebe o brilho de dano", () => {
   assert.ok(!tinted.raw.some(c => c.toLowerCase() === mid.toLowerCase()), "e some quando o brilho de dano pinta tudo");
 });
 
+test("o que sobe, desce e pisca de verdade: a altura das fagulhas e das pétalas muda com o tempo, as faíscas de gelo mudam de tamanho e as chamas são degradês", () => {
+  const ys = (staff: StaffId, layer: "back" | "front", time: number, take: number): number[] => (spy(c => paintStaffMotif(c, STAVES[staff].visual, id, time, layer)).args.ellipse ?? []).slice(-take).map(a => a[1] ?? 0);
+  const embers = [ys("ember", "front", 0.2, 8), ys("ember", "front", 0.6, 8)]; assert.notDeepEqual(embers[0], embers[1], "as fagulhas mudam de altura");
+  assert.ok(embers[0]!.some((y, i) => y !== embers[1]![i]), "a altura (não só o balanço)");
+  const petals = [ys("thorn", "front", 0.2, 3), ys("thorn", "front", 1.0, 3)]; assert.ok(petals[0]!.every((y, i) => y !== petals[1]![i]), "cada pétala desce com o tempo");
+  const sparkles = (time: number): number[][] => spy(c => paintStaffMotif(c, STAVES.frost.visual, id, time, "front")).args.moveTo ?? [];
+  assert.notDeepEqual(sparkles(0.2), sparkles(0.9), "as faíscas de gelo mudam de tamanho ao piscar");
+  assert.equal(spy(c => paintStaffMotif(c, STAVES.ember.visual, id, 1, "back")).calls.createLinearGradient, 3, "cada uma das três chamas tem o seu degradê");
+});
+
 test("os quatro cajados inteiros são diferentes entre si, cada um da cor da sua gema, e o Aprendiz continua o mesmo", () => {
   const sigs = STAFF_IDS.map(staff => signature(c => drawMageStaff(c, staff, 1)));
   assert.equal(new Set(sigs).size, STAFF_IDS.length, "nenhum cajado repete o desenho de outro");
@@ -99,7 +115,7 @@ test("os quatro cajados inteiros são diferentes entre si, cada um da cor da sua
   }
   const bare = spy(c => drawMageStaff(c, "apprentice", 1));
   assert.ok(!usesColor(bare, STAVES.breeze.visual.gem.mid) && !usesColor(bare, STAVES.stone.visual.gem.mid) && !usesColor(bare, STAVES.tide.visual.gem.mid), "o Aprendiz não pegou cor emprestada");
-  for (const staff of ["breeze", "stone", "tide"] as const) {
+  for (const staff of ["breeze", "stone", "tide", "ember", "thorn", "frost"] as const) {
     assert.notEqual(signature(c => drawMageStaff(c, staff, 1, id, 1)), signature(c => drawMageStaff(c, staff, 1)), staff + " acende a gema ao carregar a magia");
     assert.notEqual(signature(c => drawMageStaff(c, staff, 0.2)), signature(c => drawMageStaff(c, staff, 1.7)), staff + " se mexe com o relógio");
   }

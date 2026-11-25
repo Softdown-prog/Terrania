@@ -48,6 +48,12 @@ export function applySpellEffect(staff: StaffId, hero: Player, target: Slime, da
     case "slow":
       target.applySpellSlow(effect.factor, effect.seconds); // o monstro já ignora a lentidão se caiu
       return;
+    case "burn":
+      target.applySpellBurn(effect.damage, effect.seconds); // o monstro já ignora a queimadura se caiu
+      return;
+    case "poison":
+      target.applySpellPoison(effect.damage, effect.seconds, effect.maxStacks); // o monstro já ignora o veneno se caiu
+      return;
     case "heal":
       if (hero.hp > 0 && damage > 0) hero.hp = Math.min(hero.maxHp, hero.hp + Math.max(1, Math.round(damage * effect.percent / 100)));
       return;

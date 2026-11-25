@@ -12,7 +12,7 @@ export type ItemIconId =
   | 'sword-starter' | 'sword-forge' | 'sword-common' | 'sword-bronze' | 'sword-copper'
   | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
   | 'sword-tempest' | 'sword-astral'
-  | 'staff-apprentice' | 'staff-breeze' | 'staff-stone' | 'staff-tide'
+  | 'staff-apprentice' | 'staff-breeze' | 'staff-stone' | 'staff-tide' | 'staff-ember' | 'staff-thorn' | 'staff-frost'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
   | 'greater-potion' | 'antidote'
   | CoinId
@@ -326,6 +326,46 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
             <circle cx="16" cy="5.4" r="3.8" fill="#3fa0ec"/>
             <path d="M16 1.8Q18.4 3 18.6 5.4" fill="none" stroke="#c9ecff" stroke-width="1" stroke-linecap="round"/>
             <ellipse cx="14.7" cy="4.2" rx="1" ry="1.4" fill="#f4fbff" stroke="none"/>
+          </g>
+        }
+        @case ('staff-ember') {
+          <g transform="rotate(38 16 16)">
+            <path d="M14.5 10Q13.9 18 14.5 29L17.5 29Q18.1 18 17.5 10Z" fill="#43302a"/>
+            <path d="M15.2 11Q14.8 18 15.3 28" fill="none" stroke="#7a5442" stroke-width="1" stroke-linecap="round"/>
+            <path d="M16.4 13L15.4 17L16.6 20M15 23L16.2 26" fill="none" stroke="#ff7a1a" stroke-width="1.1" stroke-linecap="round"/>
+            <rect x="14.2" y="17.5" width="3.6" height="4" fill="#9a3a1e" stroke-width="1"/>
+            <rect x="13.3" y="9.4" width="5.4" height="2.2" rx=".6" fill="#d9742e"/>
+            <path d="M12.6 9Q9.8 5.4 12 1.8Q12.4 5 14.4 6.6ZM19.4 9Q22.2 5.4 20 1.8Q19.6 5 17.6 6.6Z" fill="#dc4a1c"/>
+            <path d="M16 1.2L19.2 4.6L18.4 8.2L16 9.4L13.6 8.2L12.8 4.6Z" fill="#ff7a1a"/>
+            <path d="M16 1.2L16.3 9.2M12.8 4.6L19.2 4.6" fill="none" stroke="#ffe3a8" stroke-width="1" stroke-linecap="round"/>
+            <ellipse cx="14.7" cy="4.4" rx=".9" ry="1.3" fill="#fff2d2" stroke="none"/>
+          </g>
+        }
+        @case ('staff-thorn') {
+          <g transform="rotate(38 16 16)">
+            <path d="M14.5 9.5Q13.8 18 14.6 29L17.4 29Q18.2 18 17.5 9.5Z" fill="#587f3c"/>
+            <path d="M15.2 10Q14.8 18 15.3 28" fill="none" stroke="#8fb164" stroke-width="1" stroke-linecap="round"/>
+            <path d="M14.5 13L12 12.2M17.5 16L20 15.2M14.5 21L12 20.4M17.5 25L19.8 24.4" fill="none" stroke="#2c4a24" stroke-width="1.4" stroke-linecap="round"/>
+            <rect x="14.2" y="17.5" width="3.6" height="3.6" fill="#7a5430" stroke-width="1"/>
+            <rect x="13.4" y="9.2" width="5.2" height="2" rx=".6" fill="#c8a548"/>
+            <path d="M13.2 9.6Q9 9 8.4 4.4Q12.4 5 14 8.6ZM18.8 9.6Q23 9 23.6 4.4Q19.6 5 18 8.6Z" fill="#4f7a3a"/>
+            <circle cx="16" cy="5.2" r="3.7" fill="#72c23a"/>
+            <path d="M16 1.8Q18.2 3 18.4 5.2" fill="none" stroke="#dcffb4" stroke-width="1" stroke-linecap="round"/>
+            <circle cx="21.2" cy="9.8" r="1.5" fill="#c8508f" stroke-width="1"/>
+            <ellipse cx="14.6" cy="4.2" rx=".9" ry="1.3" fill="#f5ffe6" stroke="none"/>
+          </g>
+        }
+        @case ('staff-frost') {
+          <g transform="rotate(38 16 16)">
+            <path d="M14.6 10Q14 18 14.6 29L17.4 29Q18 18 17.4 10Z" fill="#abd9ee"/>
+            <path d="M15.2 10.5Q14.8 18 15.3 28" fill="none" stroke="#eafaff" stroke-width="1" stroke-linecap="round"/>
+            <path d="M16 14L17.6 16L16 18L14.4 16ZM16 22L17.4 23.8L16 25.6L14.6 23.8Z" fill="#e8fcff" stroke-width=".9"/>
+            <rect x="14.2" y="17.5" width="3.6" height="3.4" fill="#3d5b7c" stroke-width="1"/>
+            <rect x="13.4" y="9.2" width="5.2" height="2" rx=".6" fill="#e2f5ff"/>
+            <path d="M13 9L9.6 3.6L14 6.4ZM19 9L22.4 3.6L18 6.4ZM16 1.4L17.6 6L16 4.6L14.4 6Z" fill="#7be4ff"/>
+            <path d="M16 2L19 5L18 8.4L16 9.4L14 8.4L13 5Z" fill="#4fd0f0"/>
+            <path d="M16 2L16.3 9.2M13 5L19 5" fill="none" stroke="#e8fcff" stroke-width="1" stroke-linecap="round"/>
+            <ellipse cx="14.7" cy="4.6" rx=".9" ry="1.3" fill="#ffffff" stroke="none"/>
           </g>
         }
         @case ('ring') {

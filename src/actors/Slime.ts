@@ -6,6 +6,8 @@ import { getRegionDifficulty } from "../world/regionDifficulty.ts";
 import type { Player } from "./Player.ts";
 import { CREATURE_CATALOG, type CreatureKind, type CreatureView } from "./CreatureCatalog.ts";
 
+/** O dano ao longo do tempo de uma magia de cajado: `damage` por segundo e por acúmulo, `seconds` que faltam e a fração de segundo já contada. */
+interface SpellDot { stacks: number; damage: number; seconds: number; elapsed: number }
 export class Slime implements CreatureView {
   readonly kind: CreatureKind;
   hp: number;
@@ -31,12 +33,41 @@ export class Slime implements CreatureView {
   }
   /** Quanto falta da lentidão da magia, em segundos (0 se não há). */
   get spellSlowSeconds(): number { return this.spellSlow?.seconds ?? 0; }
+  /** A queimadura das magias de cajado (ADR 0075): `damage` por segundo durante `seconds`; um novo acerto renova o tempo, sem somar o dano. */
+  private spellBurn: SpellDot | null = null;
+  applySpellBurn(damage: number, seconds: number): void {
+    if (this.hp <= 0 || !Number.isFinite(damage) || damage <= 0 || damage > 20 || !Number.isFinite(seconds) || seconds <= 0 || seconds > 10) return;
+    this.spellBurn = { stacks: 1, damage, seconds, elapsed: this.spellBurn?.elapsed ?? 0 };
+  }
+  /** Quanto falta da queimadura da magia, em segundos (0 se não há). */
+  get spellBurnSeconds(): number { return this.spellBurn?.seconds ?? 0; }
+  /** O veneno das magias de cajado (ADR 0075): acumula até `maxStacks`; cada acúmulo causa `damage` por segundo; um novo acerto renova o tempo. */
+  private spellPoison: SpellDot | null = null;
+  applySpellPoison(damage: number, seconds: number, maxStacks: number): void {
+    if (this.hp <= 0 || !Number.isFinite(damage) || damage <= 0 || damage > 20 || !Number.isFinite(seconds) || seconds <= 0 || seconds > 10 ||
+      !Number.isInteger(maxStacks) || maxStacks < 1 || maxStacks > 5) return;
+    const old = this.spellPoison;
+    this.spellPoison = { stacks: Math.min(maxStacks, (old?.stacks ?? 0) + 1), damage, seconds, elapsed: old?.elapsed ?? 0 };
+  }
+  /** Quantos acúmulos de veneno de magia o alvo tem agora (0 se não há). */
+  get spellPoisonStacks(): number { return this.spellPoison?.stacks ?? 0; }
   applySwordStatus(kind:"bleed" | "fire" | "poison" | "ice",
     seconds:number, damage=0):void {
     if(this.hp<=0 || !Number.isFinite(seconds) || seconds<=0 || seconds>10 ||
       !Number.isFinite(damage) || damage<0 || damage>20)return;
     const existing=this.swordEffects.get(kind);
     this.swordEffects.set(kind,{seconds,damage,elapsed:existing?.elapsed??0});
+  }
+  /** Um passo do dano ao longo do tempo das magias: um tique por segundo (o último não se perde por erro de arredondamento); `false` quando acabou. */
+  private tickSpellDot(dot:SpellDot,dt:number):boolean {
+    dot.elapsed+=Math.min(dt,dot.seconds);
+    dot.seconds=Math.max(0,dot.seconds-dt);
+    while(dot.elapsed>=1-1e-9 && this.hp>0){
+      dot.elapsed-=1;
+      this.hp=Math.max(0,this.hp-dot.damage*dot.stacks);
+      this.hurtTime=Math.max(this.hurtTime,.16);
+    }
+    return dot.seconds>0;
   }
   /** Tick once per simulation step; deterministic, capped damage, never wall-clock based. */
   protected tickSwordStatuses(dt:number):void {
@@ -45,6 +76,8 @@ export class Slime implements CreatureView {
       this.spellSlow.seconds-=dt;
       if(this.spellSlow.seconds<=0)this.spellSlow=null;
     }
+    if(this.spellBurn && !this.tickSpellDot(this.spellBurn,dt))this.spellBurn=null;
+    if(this.spellPoison && !this.tickSpellDot(this.spellPoison,dt))this.spellPoison=null;
     for(const [kind,fx] of this.swordEffects){
       const active=Math.min(dt,fx.seconds);
       fx.seconds=Math.max(0,fx.seconds-dt);

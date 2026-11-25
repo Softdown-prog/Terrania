@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (280)
+## Todos os arquivos deste módulo (283)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -279,8 +279,11 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/staves/head.ts`](../../src/render/staves/head.ts)
 - [`src/render/staves/motif.ts`](../../src/render/staves/motif.ts)
 - [`src/render/staves/motifs/coral.ts`](../../src/render/staves/motifs/coral.ts)
+- [`src/render/staves/motifs/crystal.ts`](../../src/render/staves/motifs/crystal.ts)
+- [`src/render/staves/motifs/ember.ts`](../../src/render/staves/motifs/ember.ts)
 - [`src/render/staves/motifs/feather.ts`](../../src/render/staves/motifs/feather.ts)
 - [`src/render/staves/motifs/stone.ts`](../../src/render/staves/motifs/stone.ts)
+- [`src/render/staves/motifs/thorn.ts`](../../src/render/staves/motifs/thorn.ts)
 - [`src/render/staves/shaft.ts`](../../src/render/staves/shaft.ts)
 - [`src/render/swords.ts`](../../src/render/swords.ts)
 - [`src/render/swords/astral.ts`](../../src/render/swords/astral.ts)
