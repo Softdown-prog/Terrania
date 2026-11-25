@@ -11,7 +11,6 @@ import { NEW_PLAYER_STATE } from "./support/returning-player.ts";
  */
 test.use({ storageState: NEW_PLAYER_STATE });
 const KEY = "terrania-origins-v1", SEED = 842136;
-const KEYS: Record<string, string> = { "1,0": "d", "-1,0": "a", "0,1": "s", "0,-1": "w" };
 
 /** O caminho em tiles (de um em um, só em linha reta) da chegada na caverna até um tile a 100 px do slime 5, calculado sobre o mapa real. */
 function pathToSlime(entrance: NonNullable<ReturnType<typeof caveEntranceInCell>>): Array<[number, number]> {
@@ -54,12 +53,30 @@ test("o Mago entra na caverna de treino, chega perto de um slime, aperta ATACAR 
   if (info.project.name === "android") await enter.tap(); else await enter.click();
   await expect(page.locator("#coords")).toContainText("Subsolo");
   await page.locator("canvas#game").focus();
-  // segue o caminho tile a tile, conferindo as coordenadas da tela
-  for (const [index, [tx, ty]] of path.slice(1).entries()) {
-    const [fx, fy] = path[index]!, key = KEYS[`${tx - fx},${ty - fy}`]!;
-    await page.keyboard.down(key);
-    try { await expect.poll(() => where(page), { timeout: 4000, intervals: [30] }).toEqual([tx, ty]); } finally { await page.keyboard.up(key); }
-  }
+  // segue o caminho como um piloto: a cada instante lê o tile da tela, acha o ponto do caminho mais perto e anda para o seguinte (se o herói passar
+  // direto de um tile, só corrige a rota; o computador lento do CI não faz o teste depender de pisar num tile exato)
+  const goal = path[path.length - 1]!;
+  let held: string | null = null;
+  const press = async (key: string | null): Promise<void> => {
+    if (held === key) return;
+    if (held) await page.keyboard.up(held);
+    if (key) await page.keyboard.down(key);
+    held = key;
+  };
+  try {
+    let arrived = false;
+    for (let step = 0; step < 1500 && !arrived; step++) {
+      const [x, y] = await where(page);
+      if (Math.abs(x - goal[0]) + Math.abs(y - goal[1]) <= 1) { arrived = true; break; }
+      let nearest = 0;
+      path.forEach(([px, py], i) => { if (Math.abs(px - x) + Math.abs(py - y) < Math.abs(path[nearest]![0] - x) + Math.abs(path[nearest]![1] - y)) nearest = i; });
+      const [tx, ty] = path[Math.min(path.length - 1, nearest + 1)]!;
+      const dx = tx - x, dy = ty - y;
+      await press(dx === 0 && dy === 0 ? null : Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? "d" : "a") : (dy > 0 ? "s" : "w"));
+      await page.waitForTimeout(25);
+    }
+    expect(arrived, "o Mago chegou perto do slime seguindo o caminho").toBe(true);
+  } finally { await press(null); }
   const kills = (): Promise<number> => page.evaluate(key => (JSON.parse(localStorage.getItem(key) ?? "{}") as { kills?: number; trainingKills?: number }).kills ?? 0, KEY);
   // perto do slime: ATACAR escolhe o alvo a até 145 px; o Mago segue, lança a magia e derruba o slime
   await expect.poll(async () => { await page.keyboard.press("Space"); return kills(); }, { timeout: 45_000, intervals: [400], message: "o Mago derrotou um slime da caverna com a magia" }).toBeGreaterThan(0);
