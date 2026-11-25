@@ -24,6 +24,7 @@ import { WellInvestigation, wellQuestStarted, type WellQuestState } from "./ques
 import { Bank, type BankState } from "./character/center/bank/index.ts";
 import { STAVES, type StaffId } from "./character/Staves.ts";
 import { resolveSpellStrike, spellReach, spellStrikeTargets } from "./combat/SpellCombat.ts";
+import { NO_GEAR_BONUS, gearBonus, scaledMaxMana, type GearBonus } from "./character/gearBonus.ts";
 import type { CombatProfile } from "./combat/CombatProfile.ts";
 import { CLASSIC_FOLLOW_STOP } from "./combat/ClassicPursuit.ts";
 import { DEFAULT_HERO_CLASS, heroClassSheet, normalizeHeroClass, normalizeMana, regenerateMana, type HeroClassId } from "./character/classes/index.ts";
@@ -163,7 +164,9 @@ export class OfflineSimulation {
   get usesMana(): boolean { return heroClassSheet(this.heroClass).usesMana; }
   /** Mana atual (0 para quem não usa mana) e o máximo do nível. */
   get mana(): number { return this.manaPoints; }
-  get maxMana(): number { return heroClassSheet(this.heroClass).maxMana(this.level); }
+  /** Os bônus das roupas vestidas (ADR 0079); só quem usa mana os tem. */
+  get gearBonus(): GearBonus { return this.usesMana ? gearBonus(this.inventory.gear) : NO_GEAR_BONUS; }
+  get maxMana(): number { return scaledMaxMana(heroClassSheet(this.heroClass).maxMana(this.level), this.gearBonus); }
   /** Gasta mana, tudo ou nada: sem mana suficiente (ou sem mana nenhuma) nada muda. */
   spendMana(cost: number): boolean {
     if (!this.usesMana || !Number.isFinite(cost) || cost <= 0 || this.manaPoints < cost) return false;
@@ -184,7 +187,7 @@ export class OfflineSimulation {
     const staff = STAVES[this.equippedStaff], reach = spellReach(this.equippedStaff);
     return { interval: staff.interval, weapon, ranged: { reach, ready: this.manaPoints >= staff.manaCost }, followStop: reach - 4 };
   }
-  private regenerateMana(dt: number): void { this.manaPoints = regenerateMana(this.manaPoints, this.heroClass, this.level, dt); }
+  private regenerateMana(dt: number): void { this.manaPoints = regenerateMana(this.manaPoints, this.heroClass, this.level, dt, this.gearBonus); }
   /** Faz o relógio andar fora da superfície (na caverna, por exemplo); só valores positivos e finitos. */
   advanceClock(dt: number): void {
     if (Number.isFinite(dt) && dt > 0) { this.clock += Math.min(dt, 0.1); this.regenerateMana(Math.min(dt, 0.1)); }
@@ -334,7 +337,7 @@ export class OfflineSimulation {
         resolveSpellStrike(staff,this.player,hit,this.collision,mob=>{
           this.registerDefeat(mob.id,mob,defense);
           changed=true;
-        },amount=>this.gainMana(amount));
+        },amount=>this.gainMana(amount),this.gearBonus.damage);
       } else {
       const weapon=this.player.attackWeapon;
       // The astral arc can contact three; every other blade hits one primary.

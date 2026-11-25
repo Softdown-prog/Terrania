@@ -132,7 +132,7 @@ test("empate no salto: dois vizinhos à mesma distância do alvo, vale o de id m
 test("a mana devolvida chega à simulação também pela caverna do jogo (ligação do modo caverna)", () => {
   const cave = read("src/game/modes/caveMode.ts");
   assert.match(cave, /spend: cost => host\.sim\.spendMana\(cost\), gain: amount => host\.sim\.gainMana\(amount\)/, "o modo caverna entrega a recarga à simulação");
-  assert.match(read("src/engine/rooms/CaveRoom.ts"), /resolveSpellStrike\(staff,this\.player,hit,this\.collision,monster=>this\.defeat\(monster\.id,monster,defense\),caster\?\.gain\)/, "a caverna passa a recarga à resolução");
+  assert.match(read("src/engine/rooms/CaveRoom.ts"), /resolveSpellStrike\(staff,this\.player,hit,this\.collision,monster=>this\.defeat\(monster\.id,monster,defense\),caster\?\.gain,caster\?\.damagePercent\)/, "a caverna passa a recarga à resolução");
   assert.match(read("src/engine/OfflineSimulation.ts"), /amount=>this\.gainMana\(amount\)/, "a superfície também");
 });
 

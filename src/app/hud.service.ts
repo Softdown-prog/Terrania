@@ -3,7 +3,7 @@ import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Prefer
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE, type MountId } from '../actors/MountCatalog.ts';
 import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/character/Weapons.ts';
-import { EQUIPMENT_SLOTS, GEAR, gearDefense, gearIdsFor, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
+import { EQUIPMENT_SLOTS, GEAR, gearDefense, gearIdsFor, type GearDefinition, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
 import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
@@ -16,6 +16,8 @@ import { BANK_STEPS } from '../engine/character/center/bank/index.ts';
 import { DEFAULT_RESPAWN_POINT, RESPAWN_POINTS, type RespawnPointId } from '../engine/character/center/shrine/index.ts';
 import { HERO_CLASSES, HERO_CLASS_IDS, isHeroClassPlayable, sameManaMeter, type HeroClassId, type ManaMeter } from '../engine/character/classes/index.ts';
 import { describeStaffEffect } from '../game/messages/staffEffects.ts';
+import { describeGearBonus, describeGearTotals } from '../game/messages/gearBonus.ts';
+import { NO_GEAR_BONUS, gearBonus } from '../engine/character/gearBonus.ts';
 import { HERO_CLASS_HINT, HERO_CLASS_INTRO, HERO_CLASS_LOCKED, HERO_CLASS_TITLE } from '../game/messages/classIntro.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
@@ -173,6 +175,10 @@ export class HudService implements GameUi {
     return HERO_CLASSES[this.heroClass()].slotLabels[slot] ?? EQUIPMENT_SLOTS.find(item => item.id === slot)?.label ?? slot;
   }
   readonly gearCatalog = GEAR;
+  /** Os bônus das roupas do Mago vestidas e o texto deles (ADR 0079); zeros para quem não usa mana. */
+  readonly gearBonusTotal = computed(() => this.heroClass() === 'mage' ? gearBonus(this.gear() ?? {}) : NO_GEAR_BONUS);
+  readonly gearBonusText = computed(() => describeGearTotals(this.gearBonusTotal()));
+  gearBonusLabel(id: GearId): string { return describeGearBonus((GEAR[id] as GearDefinition).bonus); }
   readonly gear = signal<GearState | null>(null, { equal: (a, b) => a === b ||
     (a !== null && b !== null && EQUIPMENT_SLOTS.every(({ id }) => id === 'weapon' || a[id] === b[id])) });
   readonly selectedSlot = signal<EquipmentSlot>('weapon');
@@ -222,7 +228,7 @@ export class HudService implements GameUi {
         result.push({ id: 'gear-' + id, kind: 'gear', gearId: id, name: item.name,
           icon: gearItemIcon(item.slot, this.heroClass()),
           quantity: 1, defense: item.defense, comparedDefense: current ? GEAR[current].defense : 0,
-          description: (mage ? 'Conjunto do Aprendiz · ' : 'Conjunto inicial · ') + (item.defense > 0 ? 'Defesa +' + item.defense : 'Acessório') });
+          description: (mage ? 'Conjunto do Aprendiz · ' : 'Conjunto inicial · ') + (item.defense > 0 ? 'Defesa +' + item.defense : 'Acessório') + (this.gearBonusLabel(id) ? ' · ' + this.gearBonusLabel(id) : '') });
       }
     }
     const loadout = this.loadout();

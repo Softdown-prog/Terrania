@@ -17,10 +17,11 @@ export const BEAM_HALF_WIDTH = 16;
 
 /**
  * Dano da magia depois da defesa do alvo (mínimo 1), igual à regra da espada. `link` é o lugar do alvo na magia: 0 é o alvo escolhido; os
- * saltos do raio (1 em diante) levam só a parte do dano do cajado (`percent`%) antes da defesa; o feixe atravessa com o dano inteiro.
+ * saltos do raio (1 em diante) levam só a parte do dano do cajado (`percent`%) antes da defesa; o feixe atravessa com o dano inteiro. `bonusPercent` é o bônus
+ * das roupas do Mago (ADR 0079): aumenta o dano do cajado antes de tudo (e dos saltos, que são uma parte dele).
  */
-export function spellHitDamage(staff: StaffId, target: Slime, link = 0): number {
-  const effect = STAVES[staff].effect, base = STAVES[staff].damage;
+export function spellHitDamage(staff: StaffId, target: Slime, link = 0, bonusPercent = 0): number {
+  const effect = STAVES[staff].effect, base = Math.round(STAVES[staff].damage * (1 + bonusPercent / 100));
   const raw = effect?.kind === "chain" && link > 0 ? Math.round(base * effect.percent / 100) : base;
   return Math.max(1, raw - target.defense);
 }
@@ -129,10 +130,10 @@ export function applySpellEffect(staff: StaffId, hero: Player, target: Slime, da
 
 /** Resolve uma magia já decidida: o dano, o efeito do cajado e as criaturas abatidas (quem chama cuida de XP, saque e remoção). */
 export function resolveSpellStrike<T extends Slime>(staff: StaffId, hero: Player,
-  targets: readonly T[], world: CollisionMap, onDefeated: (mob: T) => void, gainMana?: (amount: number) => void): void {
+  targets: readonly T[], world: CollisionMap, onDefeated: (mob: T) => void, gainMana?: (amount: number) => void, damagePercent = 0): void {
   targets.forEach((mob, link) => {
     if (mob.hp <= 0) return;
-    const damage = spellHitDamage(staff, mob, link), dealt = Math.min(damage, mob.hp);
+    const damage = spellHitDamage(staff, mob, link, damagePercent), dealt = Math.min(damage, mob.hp);
     mob.takeHit(hero.x, hero.y, damage);
     applySpellEffect(staff, hero, mob, dealt, world, gainMana);
     if (mob.hp <= 0) onDefeated(mob);

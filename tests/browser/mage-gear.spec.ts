@@ -44,6 +44,7 @@ test("Mago: oito espaços com as roupas de Aprendiz vestidas; tirar e vestir uma
   await expect(page.locator("[data-equipment-slot=weapon]")).toContainText("Cajado");
   await expect(page.locator("[data-equipment-slot=backpack]")).toHaveCount(0); await expect(page.locator("[data-equipment-slot=ammo]")).toHaveCount(0);
   await expect(page.locator("#equipmentDefense")).toHaveText("Defesa 1");
+  await expect(page.locator("#equipmentBonus")).toHaveText("Mana +0% · Recarga +0% · Dano +0%");
   // cores que só a peça desenha na prévia: o brilho claro do chapéu e a fita marcadora vermelha do livro (as outras cores se repetem em olhos, cajado e manto)
   const HAT: [number, number, number] = [110, 102, 200], RIBBON: [number, number, number] = [180, 67, 90];
   await expect.poll(() => pixelsOf(page, HAT), { message: "o chapéu de Aprendiz aparece no desenho" }).toBeGreaterThan(3);

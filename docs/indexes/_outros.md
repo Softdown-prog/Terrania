@@ -132,6 +132,7 @@
 - [`docs/adr/0076-cajados-elementais-lote-3.md`](../../docs/adr/0076-cajados-elementais-lote-3.md)
 - [`docs/adr/0077-cajados-elementais-lote-4.md`](../../docs/adr/0077-cajados-elementais-lote-4.md)
 - [`docs/adr/0078-roupas-do-mago.md`](../../docs/adr/0078-roupas-do-mago.md)
+- [`docs/adr/0079-atributos-das-roupas-do-mago.md`](../../docs/adr/0079-atributos-das-roupas-do-mago.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/cajados-lote-1.png`](../../docs/screenshots/cajados-lote-1.png)

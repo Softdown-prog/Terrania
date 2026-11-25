@@ -220,6 +220,7 @@
           <section class="inventory-panel armory-panel" [class.mobile-hidden]="hud.inventoryTab() !== 'equipment'" aria-labelledby="equipmentTitle">
             <div class="equipment-heading"><h2 id="equipmentTitle">Equipamento</h2>
               @if (hud.wearsArmor() && hud.gear() !== null) { <span id="equipmentDefense">Defesa {{ hud.defense() }}</span> }
+              @if (hud.heroClass() === 'mage' && hud.gear() !== null) { <span id="equipmentBonus">{{ hud.gearBonusText() }}</span> }
             </div>
             @if (hud.loadout(); as loadout) {
               <div class="equipment-grid" [class.single-slot]="!hud.wearsArmor()" [class.mage-grid]="hud.heroClass() === 'mage'" role="group"
@@ -318,7 +319,7 @@
                     @let gear = hud.gearCatalog[id];
                     @let equipped = hud.gear()?.[gear.slot] === id;
                     <strong>{{ gear.name }}</strong>
-                    <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto " + (hud.heroClass() === 'mage' ? "do Aprendiz" : "inicial") }}</p>
+                    <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto " + (hud.heroClass() === 'mage' ? "do Aprendiz" : "inicial") }}{{ hud.gearBonusLabel(id) ? " · " + hud.gearBonusLabel(id) : "" }}</p>
                     @if (hud.gear() !== null) {
                       <button type="button" class="secondary-button"
                         (click)="hud.equipGear(id)">{{ equipped ? 'Retirar' : 'Equipar' }} {{ gear.name }}</button>

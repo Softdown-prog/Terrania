@@ -17,8 +17,11 @@ export const EQUIPMENT_SLOTS = [
 export type EquipmentSlot = typeof EQUIPMENT_SLOTS[number]["id"];
 export type GearSlot = Exclude<EquipmentSlot, "weapon">;
 
+/** Os bônus de uma peça (ADR 0079), em porcentagem inteira: mana máxima, recarga de mana e dano das magias. Sem o campo, a peça não dá bônus. */
+export interface GearBonusValues { mana?: number; regen?: number; damage?: number }
+
 /** Uma peça de equipamento. Sem `heroClass`, é do Cavaleiro (o kit inicial); as roupas do Mago levam `heroClass: "mage"` (ADR 0078). */
-interface GearDefinition { slot: GearSlot; name: string; defense: number; heroClass?: HeroClassId }
+export interface GearDefinition { slot: GearSlot; name: string; defense: number; heroClass?: HeroClassId; bonus?: GearBonusValues }
 
 /** The initial kit is owned by every adventurer. The two swords keep their own acquisition rules. */
 export const GEAR = {

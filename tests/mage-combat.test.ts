@@ -294,5 +294,5 @@ test("a fiação do combate à distância: os dois modos usam o perfil, avisam '
     assert.match(source, /profile\.followStop/, `${name}: a perseguição para no alcance`);
   }
   assert.equal((surface.match(/profile\.followStop/g) ?? []).length, 2, "as duas perseguições da superfície (quadro e passo por tile)");
-  assert.match(cave, /host\.sim\.usesMana \? \{ staff: host\.sim\.equippedStaff, spend: cost => host\.sim\.spendMana\(cost\), gain: amount => host\.sim\.gainMana\(amount\) \} : undefined/, "a caverna só dá lançador a quem usa mana");
+  assert.match(cave, /host\.sim\.usesMana \? \{ staff: host\.sim\.equippedStaff, spend: cost => host\.sim\.spendMana\(cost\), gain: amount => host\.sim\.gainMana\(amount\), damagePercent: host\.sim\.gearBonus\.damage \} : undefined/, "a caverna só dá lançador a quem usa mana");
 });

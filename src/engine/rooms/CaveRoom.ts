@@ -118,7 +118,7 @@ export class CaveRoom {
   }
   /** `caster`: o Mago lança a magia do cajado e paga a mana de fora (a mana é da simulação); sem ele, o herói bate com a espada (ADR 0069). */
   update(dt:number,movement:{x:number;y:number},attack=false,weapon:WeaponId="starter",defense=0,
-    targetId?: string | null,caster?: { readonly staff: StaffId; readonly spend: (cost: number) => boolean; readonly gain?: (amount: number) => void }):void {
+    targetId?: string | null,caster?: { readonly staff: StaffId; readonly spend: (cost: number) => boolean; readonly gain?: (amount: number) => void; readonly damagePercent?: number }):void {
     if(!Number.isFinite(dt)||dt<=0||this.player.hp<=0)return;
     dt=Math.min(dt,.1);
     this.player.update(dt,movement,this.collision);
@@ -135,7 +135,7 @@ export class CaveRoom {
       if(staff){
         const hit=spellStrikeTargets(staff,this.player,this.monsters.values(),this.collision,targetId);
         if(hit[0])faceTarget(this.player,hit[0]);
-        resolveSpellStrike(staff,this.player,hit,this.collision,monster=>this.defeat(monster.id,monster,defense),caster?.gain);
+        resolveSpellStrike(staff,this.player,hit,this.collision,monster=>this.defeat(monster.id,monster,defense),caster?.gain,caster?.damagePercent);
         return;
       }
       const equipped=this.player.attackWeapon;
