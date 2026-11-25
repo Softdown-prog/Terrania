@@ -147,6 +147,7 @@
 - [`docs/screenshots/jogo-alfa03.jpg`](../../docs/screenshots/jogo-alfa03.jpg)
 - [`docs/screenshots/mago-conjurando.png`](../../docs/screenshots/mago-conjurando.png)
 - [`docs/screenshots/mago-roupas-aprendiz.png`](../../docs/screenshots/mago-roupas-aprendiz.png)
+- [`docs/screenshots/mago-roupas-inventario.png`](../../docs/screenshots/mago-roupas-inventario.png)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)
 - [`package-lock.json`](../../package-lock.json)
