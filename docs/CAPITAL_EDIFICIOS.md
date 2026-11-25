@@ -14,7 +14,7 @@ Quando um terreno ganha função, ele entra em `CAPITAL_ENTERABLE` (`src/world/c
 | Salão do Conselho dos Povos | sim | missões e decretos da capital | salão com mesa do conselho | a decidir (história) |
 | Quartel da Guarda | sim | missões de caça e defesa | sala de armas | a decidir (história) |
 | Salão da Ordem dos Cavaleiros | sim | guilda do cavaleiro | salão de guilda | a decidir |
-| Academia Arcana | sim | guilda do mago | salão de guilda | a decidir |
+| Academia Arcana | sim | **guilda do mago**: a Mestra Ilvana vende o Cajado da Brisa (30 Terrania Gold); os outros cajados liberam por nível | salão de guilda: duas estantes e a mesa de estudo | **pronto** (ADR 0074) |
 | Irmandade dos Arqueiros | sim | guilda do arqueiro | salão de guilda | a decidir |
 | Forjas da Travessia | sim | comprar e melhorar armas | forja com bigorna | proposta (edifício ainda não desenhado) |
 | Mercado Coberto | sim | comprar e vender itens | balcões de feira | proposta (não desenhado) |
@@ -50,7 +50,7 @@ Decisão do dono (2026-11-22): o Templo da Concórdia é **onde o herói renasce
 
 ## Moradores
 
-Cada interior com serviço tem um morador na frente da porta (como a Madame Víbora no Poço Negro). Hoje: **Dona Brígida**, hospedeira da Hospedaria (`innkeeper.ts`), **Mestre Aurélio**, banqueiro da Casa da Moeda (`banker.ts`), e **Irmã Maelis**, sacerdotisa do Templo (`priestess.ts`), todos em `src/npcs/center/capital/`.
+Cada interior com serviço tem um morador na frente da porta (como a Madame Víbora no Poço Negro). Hoje: **Dona Brígida**, hospedeira da Hospedaria (`innkeeper.ts`), **Mestre Aurélio**, banqueiro da Casa da Moeda (`banker.ts`), e **Irmã Maelis**, sacerdotisa do Templo (`priestess.ts`), e **Mestra Ilvana**, da Academia Arcana (`mageMaster.ts`), todos em `src/npcs/center/capital/`.
 
 ## Ordem de trabalho
 

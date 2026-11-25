@@ -672,6 +672,22 @@
               </div>
               <p class="dialog-note">Juros: 0,5% a cada 10 minutos de jogo, sobre os primeiros 10.000 Terrania Gold do saldo. Entram quando você fala com o banqueiro.</p>
             </section>
+          } @else if (offer.item === 'academy') {
+            <section class="mount-stable-panel" aria-label="Academia Arcana">
+              <h3>Cajados da Academia</h3>
+              @for (row of hud.staffForSale(); track row.id) {
+                <div class="staff-sale-row">
+                  <app-item-icon class="sword-choice-icon" [name]="hud.staffIcon(row.id)" />
+                  <div>
+                    <strong>{{ row.def.name }}</strong>
+                    <p>Nível {{ row.def.level }} · {{ row.def.damage }} de dano · {{ row.def.manaCost }} de mana · {{ hud.staffEffectOf(row.id) }}</p>
+                  </div>
+                  <button type="button" class="secondary-button" [attr.id]="'buy-staff-' + row.id"
+                    [disabled]="row.owned || hud.coins() < row.price" (click)="hud.buyStaff(row.id)">{{ row.owned ? "Já possui" : "Comprar por " + hud.coinText(row.price) }}</button>
+                </div>
+              }
+              <p class="dialog-note">Os outros cajados elementais liberam sozinhos quando o seu nível chega ao deles. Um cajado comprado só pode ser usado a partir do nível dele.</p>
+            </section>
           } @else if (offer.item === 'shrine') {
             <section class="mount-stable-panel" aria-label="Templo da Concórdia">
               <p id="shrinePlace" class="dialog-note">Você renasce em: {{ hud.respawnPoints[hud.respawnPoint()].name }}</p>

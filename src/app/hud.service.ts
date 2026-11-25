@@ -149,7 +149,13 @@ export class HudService implements GameUi {
   /** Os cajados comprados (ids separados por vírgula: o texto só muda quando a lista muda, e o HUD não se redesenha à toa). */
   readonly staffBought = signal('');
   readonly staffIds = STAFF_IDS;
+  /** Os cajados que a Academia Arcana vende (os com preço) e se o Mago já comprou cada um (ADR 0074). */
+  readonly staffForSale = computed(() => {
+    const bought = this.staffBought().split(',');
+    return STAFF_IDS.flatMap(id => { const price = STAVES[id].price; return price === undefined ? [] : [{ id, def: STAVES[id], price, owned: bought.includes(id) }]; });
+  });
   staffName(id: StaffId): string { return STAVES[id].name; }
+  staffEffectOf(id: StaffId): string { return describeStaffEffect(STAVES[id].effect); }
   readonly staffEffectText = computed(() => describeStaffEffect(STAVES[this.staff()].effect));
   staffIcon(id: StaffId): ItemIconId { return staffItemIcon(id); }
   /** Os cajados do Mago para a tela, na ordem do catálogo: em mãos, disponível, à venda (nível alcançado, falta comprar) ou bloqueado pelo nível. */
@@ -288,6 +294,7 @@ export class HudService implements GameUi {
   private swordPurchaseCallback: () => string = () => '';
   private weaponEquipCallback: (weapon: WeaponId) => string = () => '';
   private staffEquipCallback: (staff: StaffId) => string = () => '';
+  private staffBuyCallback: (staff: StaffId) => string = () => '';
   private gearEquipCallback: (slot: GearSlot, item: GearId | null) => string = () => '';
   private respawnCallback: () => void = () => {};
   private mountActionCallback: (action: MountAction) => string = () => '';
@@ -331,6 +338,7 @@ export class HudService implements GameUi {
   onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void { this.materialSaleCallback = callback; }
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
   onStaffEquip(callback: (staff: StaffId) => string): void { this.staffEquipCallback = callback; }
+  onStaffBuy(callback: (staff: StaffId) => string): void { this.staffBuyCallback = callback; }
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void { this.gearEquipCallback = callback; }
   onRespawn(callback: () => void): void { this.respawnCallback = callback; }
   onMountAction(callback:(action:MountAction)=>string):void {this.mountActionCallback=callback;}
@@ -415,6 +423,7 @@ export class HudService implements GameUi {
   buySword(): void { this.npcTradeFeedback.set(this.swordPurchaseCallback()); }
   equipWeapon(weapon: WeaponId): void { this.inventoryFeedback.set(this.weaponEquipCallback(weapon)); }
   equipStaff(staff: StaffId): void { this.inventoryFeedback.set(this.staffEquipCallback(staff)); }
+  buyStaff(staff: StaffId): void { this.npcTradeFeedback.set(this.staffBuyCallback(staff)); }
   equipGear(id: GearId): void {
     const { slot } = GEAR[id];
     this.inventoryFeedback.set(this.gearEquipCallback(slot, this.gear()?.[slot] === id ? null : id));

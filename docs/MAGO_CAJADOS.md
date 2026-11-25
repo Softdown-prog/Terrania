@@ -32,7 +32,7 @@ Vento: haste clara de osso com penas e gema verde-água. Terra: pedra bruta com 
 
 ## Os lotes
 
-1. **Lote 1:** Brisa, Rocha Viva e Marés (G1a) e a **Academia Arcana** com porta, interior, mestre e a compra da Brisa (G1b), mais a troca de cajado no inventário.
+1. **Lote 1 (feito):** Brisa, Rocha Viva e Marés (G1a, [ADR 0073](adr/0073-cajados-elementais-lote-1.md)) e a **Academia Arcana** com porta, interior, mestra e a compra da Brisa (G1b, [ADR 0074](adr/0074-academia-arcana.md)), mais a troca de cajado no inventário.
 2. **Lote 2:** Brasa Rubra, Espinheiro e Geada Boreal.
 3. **Lote 3:** Sol Nascente, Lua Negra e Tempestade.
 4. **Lote 4:** o Astral.

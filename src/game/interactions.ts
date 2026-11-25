@@ -1,4 +1,5 @@
-import { BANKER_ID, INNKEEPER_ID, PRIESTESS_ID } from "../npcs/center/capital/index.ts";
+import { BANKER_ID, INNKEEPER_ID, MAGE_MASTER_ID, PRIESTESS_ID } from "../npcs/center/capital/index.ts";
+import { BREEZE_STAFF } from "../engine/character/weapons/staves/breeze.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { currentMountQuestStep, type MountQuestProgress } from "../engine/mounts/MountQuestState.ts";
 import { FORGE_SWORD_PRICE } from "../engine/character/Weapons.ts";
@@ -62,6 +63,8 @@ export function npcOffer(npcId: string, heroClass: HeroClassId = DEFAULT_HERO_CL
   if (npcId === "south-madame" || npcId === INNKEEPER_ID) return { item: "rest", price: INN_REST_PRICE };
   if (npcId === BANKER_ID) return { item: "bank", price: 0 };
   if (npcId === PRIESTESS_ID) return { item: "shrine", price: 0 };
+  // A Academia Arcana só vende ao Mago (o preço é o do primeiro cajado elemental, ADR 0074).
+  if (npcId === MAGE_MASTER_ID) return heroClassSheet(heroClass).usesSwords ? undefined : { item: "academy", price: BREEZE_STAFF.price };
   if (npcId === "stablemaster") return { item: "stable", price: 0 };
   return undefined;
 }

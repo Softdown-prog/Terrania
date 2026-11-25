@@ -5,7 +5,7 @@ import type { WeaponId } from "../../engine/character/Weapons.ts";
 import { FOODS } from "../../engine/character/Food.ts";
 import { experienceProgress } from "../../engine/character/Experience.ts";
 import { nearestNpc } from "../../world/npcs.ts";
-import { INNKEEPER_ID } from "../../npcs/center/capital/index.ts";
+import { INNKEEPER_ID, MAGE_MASTER_ID } from "../../npcs/center/capital/index.ts";
 import { MARKET_NPC, describeCoins, type MarketId } from "../../engine/character/coins/index.ts";
 import { INVENTORY_FEEDBACK } from "../messages/inventoryFeedback.ts";
 import { CAPITAL_INN_RESTED } from "../messages/capitalInn.ts";
@@ -18,6 +18,7 @@ export type { ShopContext, ShopResult } from "./shopContext.ts";
 
 const nearMadame = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === "south-madame";
 const nearBrigida = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === INNKEEPER_ID;
+const nearMageMaster = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === MAGE_MASTER_ID;
 const nearLina = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === "lina";
 
 export function usePotion({ sim, hero, caveHeroDown }: ShopContext): ShopResult {
@@ -93,6 +94,14 @@ export function equipWeapon({ sim }: ShopContext, weapon: WeaponId): ShopResult 
   if (sim.awaitingRespawn) return say("unavailable");
   const result = sim.inventory.equipWeapon(weapon, experienceProgress(sim.experience).level);
   return say(result, result === "equipped");
+}
+
+/** Compra um cajado da mestra da Academia Arcana (ADR 0074): só o Mago, fora das casas, com o menu aberto e perto dela; o preço e a posse são da bolsa. */
+export function buyStaff({ sim, inInterior, menuOpen }: ShopContext, staff: StaffId): ShopResult {
+  if (heroClassSheet(sim.heroClass).usesSwords) return { message: NO_STAVES_MESSAGE, changed: false };
+  if (inInterior || !menuOpen || !nearMageMaster(sim)) return say("staff-too-far");
+  const result = sim.inventory.buyStaff(staff, sim.player);
+  return say(result, result === "staff-purchased");
 }
 
 /** Troca o cajado em mãos (ADR 0073): só o Mago usa cajado; precisa do nível dele e, se é vendido, de tê-lo comprado. */

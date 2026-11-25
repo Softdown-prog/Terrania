@@ -78,6 +78,12 @@ export const ROOM_FURNITURE: Readonly<Record<string, readonly Furniture[]>> = {
     {x:255,y:85,width:75,height:44,kind:"shelf"},
     {x:115,y:100,width:130,height:42,kind:"table"},
   ],
+  // Academia Arcana (ADR 0074): duas estantes altas de grimórios e a mesa de estudo da mestra no meio.
+  "capital-academia-arcana":[
+    {x:26,y:78,width:65,height:90,kind:"shelf"},
+    {x:269,y:78,width:65,height:90,kind:"shelf"},
+    {x:131,y:100,width:98,height:42,kind:"table"},
+  ],
   // Templo da Concórdia (ADR 0064): o altar no meio e um banco de cada lado, na nave.
   "capital-templo":[
     {x:30,y:100,width:82,height:40,kind:"bench"},

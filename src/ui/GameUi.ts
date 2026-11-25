@@ -46,7 +46,7 @@ export interface CaveMapState {
   readonly tileX: number;
   readonly tileY: number;
 }
-export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary' | 'desert-stable' | 'alchemy' | 'bank' | 'shrine'; price: number };
+export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary' | 'desert-stable' | 'alchemy' | 'bank' | 'shrine' | 'academy'; price: number };
 
 /** Data and commands exchanged between the game coordinator and the HUD. */
 export interface GameUi {
@@ -75,6 +75,7 @@ export interface GameUi {
   onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void;
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
   onStaffEquip(callback: (staff: StaffId) => string): void;
+  onStaffBuy(callback: (staff: StaffId) => string): void;
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void;
   onRespawn(callback: () => void): void;
   onMountAction(callback: (action: MountAction) => string): void;
