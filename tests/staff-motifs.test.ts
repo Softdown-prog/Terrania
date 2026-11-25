@@ -12,6 +12,7 @@ import { paintCrystalMotif } from "../src/render/staves/motifs/crystal.ts";
 import { paintSunMotif } from "../src/render/staves/motifs/sun.ts";
 import { paintMoonMotif } from "../src/render/staves/motifs/moon.ts";
 import { paintCoilMotif } from "../src/render/staves/motifs/coil.ts";
+import { paintAstralMotif } from "../src/render/staves/motifs/astral.ts";
 import { paintStoneMotif } from "../src/render/staves/motifs/stone.ts";
 import { drawSpellBolt } from "../src/render/spells/bolt.ts";
 import { drawSpellBurst } from "../src/render/spells/burst.ts";
@@ -26,7 +27,7 @@ import { signature, spy } from "./helpers/spyContext.ts";
  * dele e o projétil da cor dele; o Aprendiz não mudou.
  */
 const id = (c: string): string => c;
-const MOTIFS = [["breeze", paintFeatherMotif], ["stone", paintStoneMotif], ["tide", paintCoralMotif], ["ember", paintEmberMotif], ["thorn", paintThornMotif], ["frost", paintCrystalMotif], ["sun", paintSunMotif], ["moon", paintMoonMotif], ["storm", paintCoilMotif]] as const;
+const MOTIFS = [["breeze", paintFeatherMotif], ["stone", paintStoneMotif], ["tide", paintCoralMotif], ["ember", paintEmberMotif], ["thorn", paintThornMotif], ["frost", paintCrystalMotif], ["sun", paintSunMotif], ["moon", paintMoonMotif], ["storm", paintCoilMotif], ["astral", paintAstralMotif]] as const;
 /** Se o desenho usou a cor (#rrggbb ou rgba() dela). */
 const usesColor = (s: ReturnType<typeof spy>, hex: string): boolean => {
   const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
@@ -62,6 +63,7 @@ test("o que se mexe com o relógio: penas e vento, cacos de pedra e bolhas; o qu
   assert.equal(sig("frost", "back", 0.5), sig("frost", "back", 1.4), "os estilhaços de gelo ficam parados"); assert.notEqual(sig("frost", "front", 0.5), sig("frost", "front", 1.4), "as faíscas piscam");
   assert.notEqual(sig("sun", "back", 0.5), sig("sun", "back", 1.4), "os raios do sol respiram"); assert.notEqual(sig("sun", "front", 0.5), sig("sun", "front", 1.4), "os grãos de luz sobem");
   assert.equal(sig("moon", "back", 0.5), sig("moon", "back", 1.4), "a lua e as runas ficam paradas"); assert.notEqual(sig("moon", "front", 0.5), sig("moon", "front", 1.4), "as fitas de sombra ondulam e as estrelas piscam");
+  assert.equal(sig("astral", "back", 0.5), sig("astral", "back", 1.4), "a estrela grande e a constelação ficam paradas"); assert.notDeepEqual(sig("astral", "front", 0.5), sig("astral", "front", 1.4), "as estrelinhas giram e a poeira sobe");
   assert.equal(sig("storm", "back", 0.5), sig("storm", "back", 1.4), "a bobina e os pólos ficam parados"); assert.notEqual(sig("storm", "front", 0.5), sig("storm", "front", 1.4), "os arcos elétricos tremem");
 });
 
@@ -79,7 +81,7 @@ test("a cor de cada cajado: a haste e a gema vêm da ficha, e o brilho de dano (
 test("o cajado inteiro é a soma das peças na ordem: haste, matéria de trás, engaste, matéria da frente", () => {
   const ops = (draw: (c: CanvasRenderingContext2D) => void): Record<string, number> => spy(draw).calls;
   const sum = (...parts: Array<Record<string, number>>): Record<string, number> => { const out: Record<string, number> = {}; for (const p of parts) for (const [k, n] of Object.entries(p)) out[k] = (out[k] ?? 0) + n; return out; };
-  for (const staff of ["breeze", "stone", "tide", "ember", "thorn", "frost", "sun", "moon", "storm"] as const) {
+  for (const staff of ["breeze", "stone", "tide", "ember", "thorn", "frost", "sun", "moon", "storm", "astral"] as const) {
     const v = STAVES[staff].visual;
     assert.deepEqual(ops(c => drawMageStaff(c, staff, 1)), sum(ops(c => paintStaffShaft(c, v, id)), ops(c => paintStaffMotif(c, v, id, 1, "back")), ops(c => paintStaffHead(c, v, id, 1)), ops(c => paintStaffMotif(c, v, id, 1, "front"))), staff);
     const order: string[] = [];
@@ -112,6 +114,23 @@ test("o que sobe, desce e pisca de verdade: a altura das fagulhas e das pétalas
   assert.equal(spy(c => paintStaffMotif(c, STAVES.ember.visual, id, 1, "back")).calls.createLinearGradient, 3, "cada uma das três chamas tem o seu degradê");
 });
 
+test("as matérias do lote 4 (astral): a estrela, a órbita e a constelação, e o que se mexe de verdade com o relógio", () => {
+  const calls = (layer: "back" | "front"): Record<string, number> => spy(c => paintStaffMotif(c, STAVES.astral.visual, id, 1, layer)).calls;
+  const args = (layer: "back" | "front", time: number, fn: string): number[][] => spy(c => paintStaffMotif(c, STAVES.astral.visual, id, time, layer)).args[fn] ?? [];
+  assert.equal(calls("back").createRadialGradient, 1, "a estrela grande tem o seu degradê"); assert.equal(calls("back").lineTo, 23, "a estrela de oito pontas (16 vértices), os fios da constelação e as pontas"); assert.equal(calls("back").ellipse, 17, "cinco estrelas da constelação (com o brilho), dois anéis de marfim (três peças cada) e a ponta da haste");
+  assert.equal(calls("front").quadraticCurveTo, 20, "duas estrelinhas em órbita e três estrelas que piscam, cada uma de quatro pontas curvas");
+  const orbit = (time: number): number[] => args("front", time, "ellipse").slice(0, 4).map(a => a[0] ?? 0); assert.ok(orbit(0.2).every((x, i) => x !== orbit(0.6)[i]), "as estrelinhas giram na órbita");
+  const dust = (time: number): number[] => args("front", time, "ellipse").slice(-3).map(a => a[1] ?? 0); assert.equal(dust(0.2).length, 3, "três grãos de poeira"); assert.ok(dust(0.2).every((y, i) => y !== dust(0.6)[i]), "a poeira sobe com o tempo");
+  assert.notDeepEqual(args("front", 0.2, "moveTo"), args("front", 0.6, "moveTo"), "as estrelas piscam (mudam de tamanho)");
+  const blink = (time: number): number[][] => args("front", time, "moveTo").slice(-3); assert.equal(blink(0.2).length, 3, "três estrelas que piscam");
+  assert.ok(blink(0.2).every((p, i) => p[0] === blink(0.6)[i]![0] && p[1] !== blink(0.6)[i]![1]), "ficam no mesmo lugar e mudam de tamanho ao piscar");
+  assert.deepEqual(args("back", 1, "arc")[0]?.slice(3), [Math.PI, Math.PI * 2], "a órbita de trás é a metade de cima"); assert.deepEqual(args("front", 1, "arc")[1]?.slice(3), [0, Math.PI], "a da frente é a metade de baixo");
+  const gemY = -26 - 7.4, outline = [args("back", 1, "moveTo")[0]!, ...args("back", 1, "lineTo").slice(0, 15)].map(p => Math.round(Math.hypot(p[0] ?? 0, (p[1] ?? 0) - gemY) * 10) / 10);
+  assert.equal(outline.length, 16, "dezesseis vértices"); for (const [radius, count] of [[13.5, 4], [8.6, 4], [4.4, 8]] as const) assert.equal(outline.filter(r => r === radius).length, count, `${count} vértices a ${radius} de raio (quatro pontas longas, quatro médias e as reentrâncias)`);
+  const tinted = spy(c => { paintAstralMotif(c, STAVES.astral.visual, () => "#ff0000", 1, "back"); paintAstralMotif(c, STAVES.astral.visual, () => "#ff0000", 1, "front"); }); const v = STAVES.astral.visual;
+  for (const color of [v.collar, v.collarDark, v.ferrule, v.ferruleLight]) assert.ok(!tinted.raw.some(c => c.toLowerCase() === color.toLowerCase()), "o brilho de dano pinta " + color);
+});
+
 test("as matérias do lote 3: as peças certas (raios, voltas de bobina, fitas) e o que se mexe de verdade com o relógio", () => {
   const calls = (staff: StaffId, layer: "back" | "front"): Record<string, number> => spy(c => paintStaffMotif(c, STAVES[staff].visual, id, 1, layer)).calls;
   const args = (staff: StaffId, layer: "back" | "front", time: number, fn: string): number[][] => spy(c => paintStaffMotif(c, STAVES[staff].visual, id, time, layer)).args[fn] ?? [];
@@ -137,7 +156,7 @@ test("as matérias do lote 3: as peças certas (raios, voltas de bobina, fitas) 
   for (const color of copper) { assert.ok(plain.raw.some(c => c.toLowerCase() === color), "a bobina usa o cobre " + color); assert.ok(!tinted.raw.some(c => c.toLowerCase() === color), "e o brilho de dano pinta o cobre " + color); }
 });
 
-test("os dez cajados inteiros são diferentes entre si, cada um da cor da sua gema, e o Aprendiz continua o mesmo", () => {
+test("os onze cajados inteiros são diferentes entre si, cada um da cor da sua gema, e o Aprendiz continua o mesmo", () => {
   const sigs = STAFF_IDS.map(staff => signature(c => drawMageStaff(c, staff, 1)));
   assert.equal(new Set(sigs).size, STAFF_IDS.length, "nenhum cajado repete o desenho de outro");
   for (const staff of STAFF_IDS) {
@@ -147,7 +166,7 @@ test("os dez cajados inteiros são diferentes entre si, cada um da cor da sua ge
   }
   const bare = spy(c => drawMageStaff(c, "apprentice", 1));
   assert.ok(!usesColor(bare, STAVES.breeze.visual.gem.mid) && !usesColor(bare, STAVES.stone.visual.gem.mid) && !usesColor(bare, STAVES.tide.visual.gem.mid), "o Aprendiz não pegou cor emprestada");
-  for (const staff of ["breeze", "stone", "tide", "ember", "thorn", "frost", "sun", "moon", "storm"] as const) {
+  for (const staff of ["breeze", "stone", "tide", "ember", "thorn", "frost", "sun", "moon", "storm", "astral"] as const) {
     assert.notEqual(signature(c => drawMageStaff(c, staff, 1, id, 1)), signature(c => drawMageStaff(c, staff, 1)), staff + " acende a gema ao carregar a magia");
     assert.notEqual(signature(c => drawMageStaff(c, staff, 0.2)), signature(c => drawMageStaff(c, staff, 1.7)), staff + " se mexe com o relógio");
   }

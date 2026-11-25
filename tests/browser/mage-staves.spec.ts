@@ -30,7 +30,7 @@ test("Mago nível 20: três cajados disponíveis, a Brisa à venda; trocar para 
   await page.setViewportSize(android ? { width: 390, height: 844 } : { width: 1200, height: 800 });
   await page.goto("/jogar/?modo=solo");
   await openStaves(page, android);
-  await expect(page.locator(".staff-picker .sword-choice")).toHaveCount(10);
+  await expect(page.locator(".staff-picker .sword-choice")).toHaveCount(11);
   for (const staff of ["ember", "thorn", "frost"]) { await expect(page.locator(`#equip-slot-staff-${staff}`)).toContainText("Bloqueado"); await expect(page.locator(`#equip-slot-staff-${staff}`)).toBeDisabled(); }
   await expect(page.locator("#equip-slot-staff-apprentice")).toContainText("Equipado");
   await expect(page.locator("#equip-slot-staff-breeze")).toContainText("Comprar na Academia"); await expect(page.locator("#equip-slot-staff-breeze")).toBeDisabled();
@@ -92,7 +92,7 @@ test("Mago nível 60: Brasa Rubra, Espinheiro e Geada Boreal liberados, cada um 
   await page.setViewportSize(android ? { width: 390, height: 844 } : { width: 1200, height: 800 });
   await page.goto("/jogar/?modo=solo");
   await openStaves(page, android);
-  await expect(page.locator(".staff-picker .sword-choice")).toHaveCount(10);
+  await expect(page.locator(".staff-picker .sword-choice")).toHaveCount(11);
   for (const staff of ["stone", "tide", "ember", "thorn", "frost"]) { await expect(page.locator(`#equip-slot-staff-${staff}`)).toContainText("Equipar"); await expect(page.locator(`#equip-slot-staff-${staff}`)).toBeEnabled(); }
   await expect(page.locator("#equip-slot-staff-breeze")).toContainText("Comprar na Academia");
   for (const staff of ["sun", "moon", "storm"]) { await expect(page.locator(`#equip-slot-staff-${staff}`)).toContainText("Bloqueado"); await expect(page.locator(`#equip-slot-staff-${staff}`)).toBeDisabled(); }
@@ -116,7 +116,8 @@ test("Mago nível 90: Sol Nascente, Lua Negra e Tempestade liberados, cada um co
   await page.setViewportSize(android ? { width: 390, height: 844 } : { width: 1200, height: 800 });
   await page.goto("/jogar/?modo=solo");
   await openStaves(page, android);
-  await expect(page.locator(".staff-picker .sword-choice")).toHaveCount(10);
+  await expect(page.locator(".staff-picker .sword-choice")).toHaveCount(11);
+  await expect(page.locator("#equip-slot-staff-astral")).toContainText("Bloqueado"); await expect(page.locator("#equip-slot-staff-astral")).toBeDisabled();
   for (const staff of ["stone", "tide", "ember", "thorn", "frost", "sun", "moon", "storm"]) { await expect(page.locator(`#equip-slot-staff-${staff}`)).toContainText("Equipar"); await expect(page.locator(`#equip-slot-staff-${staff}`)).toBeEnabled(); }
   await expect(page.locator("#equip-slot-staff-breeze")).toContainText("Comprar na Academia");
   const press = async (locator: ReturnType<typeof page.locator>): Promise<void> => { if (android) await locator.tap(); else await locator.click(); };
@@ -128,5 +129,24 @@ test("Mago nível 90: Sol Nascente, Lua Negra e Tempestade liberados, cada um co
   }
   await page.locator(".armory-panel").screenshot({ path: test.info().outputPath("cajados-lote-3.png") });
   await expect.poll(() => page.evaluate(key => (JSON.parse(localStorage.getItem(key) ?? "null") as { inventory?: { staves?: { equipped?: string } } } | null)?.inventory?.staves?.equipped, KEY)).toBe("storm");
+  expect(errors).toEqual([]);
+});
+
+test("Mago nível 100: o Cajado Astral de Terrania liberado, com o seu efeito, e a troca vai para o save (desktop/Android)", async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.addInitScript(([key, value, preferences]) => { localStorage.setItem(key!, value!); localStorage.setItem("terrania-preferences-v1", preferences!); }, [KEY, world(100, { hp: 500, mana: 1000 }), prefs]);
+  const android = info.project.name === "android";
+  await page.setViewportSize(android ? { width: 390, height: 844 } : { width: 1200, height: 800 });
+  await page.goto("/jogar/?modo=solo");
+  await openStaves(page, android);
+  await expect(page.locator(".staff-picker .sword-choice")).toHaveCount(11);
+  for (const staff of ["stone", "tide", "ember", "thorn", "frost", "sun", "moon", "storm", "astral"]) { await expect(page.locator(`#equip-slot-staff-${staff}`)).toContainText("Equipar"); await expect(page.locator(`#equip-slot-staff-${staff}`)).toBeEnabled(); }
+  await expect(page.locator("#equip-slot-staff-breeze")).toContainText("Comprar na Academia");
+  if (android) await page.locator("#equip-slot-staff-astral").tap(); else await page.locator("#equip-slot-staff-astral").click();
+  await expect(page.locator("#equippedWeapon")).toHaveText("Cajado Astral de Terrania"); await expect(page.locator("#equippedStaffEffect")).toContainText("acerta o alvo e até 2 monstros vizinhos dele, todos com o dano inteiro"); await expect(page.locator("#equippedStaffStats")).toContainText("166 de mana");
+  await expect(page.locator("#equip-slot-staff-astral")).toContainText("Equipado");
+  await page.locator(".armory-panel").screenshot({ path: test.info().outputPath("cajados-lote-4.png") });
+  await expect.poll(() => page.evaluate(key => (JSON.parse(localStorage.getItem(key) ?? "null") as { inventory?: { staves?: { equipped?: string } } } | null)?.inventory?.staves?.equipped, KEY)).toBe("astral");
   expect(errors).toEqual([]);
 });

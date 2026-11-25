@@ -12,7 +12,7 @@ export type ItemIconId =
   | 'sword-starter' | 'sword-forge' | 'sword-common' | 'sword-bronze' | 'sword-copper'
   | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
   | 'sword-tempest' | 'sword-astral'
-  | 'staff-apprentice' | 'staff-breeze' | 'staff-stone' | 'staff-tide' | 'staff-ember' | 'staff-thorn' | 'staff-frost' | 'staff-sun' | 'staff-moon' | 'staff-storm'
+  | 'staff-apprentice' | 'staff-breeze' | 'staff-stone' | 'staff-tide' | 'staff-ember' | 'staff-thorn' | 'staff-frost' | 'staff-sun' | 'staff-moon' | 'staff-storm' | 'staff-astral'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
   | 'greater-potion' | 'antidote'
   | CoinId
@@ -406,6 +406,19 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
             <path d="M16 1.4L19 4.6L18.2 8L16 9.2L13.8 8L13 4.6Z" fill="#2f84ff"/>
             <path d="M11.8 4.2L13.6 5.4L12.4 6.4L14.4 7.2M20.2 4.2L18.4 5.4L19.6 6.4L17.6 7.2" fill="none" stroke="#fff3a8" stroke-width=".8" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M16.8 2.4L15.4 5.2L16.6 5.4L15.2 8.2" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        }
+        @case ('staff-astral') {
+          <g transform="rotate(38 16 16)">
+            <path d="M14.5 10Q13.9 18 14.5 29L17.5 29Q18.1 18 17.5 10Z" fill="#e4d9c2"/>
+            <path d="M15.2 11Q14.8 18 15.3 28" fill="none" stroke="#fffaf0" stroke-width="1" stroke-linecap="round"/>
+            <circle cx="15.6" cy="13.6" r=".8" fill="#ffe9a0" stroke="none"/><circle cx="16.4" cy="17" r=".8" fill="#ffe9a0" stroke="none"/><circle cx="15.6" cy="21" r=".8" fill="#ffe9a0" stroke="none"/><circle cx="16.4" cy="25" r=".8" fill="#ffe9a0" stroke="none"/>
+            <rect x="14.2" y="17.5" width="3.6" height="3.4" fill="#2a2f6e" stroke-width="1" transform="translate(0 6)"/>
+            <rect x="13.3" y="9.6" width="5.4" height="2" rx=".6" fill="#ffe9a0"/>
+            <path d="M16.0 0.0L16.9 3.5L18.6 3.0L18.1 4.7L21.6 5.6L18.1 6.5L18.6 8.2L16.9 7.7L16.0 11.2L15.1 7.7L13.4 8.2L13.9 6.5L10.4 5.6L13.9 4.7L13.4 3.0L15.1 3.5Z" fill="#e0b84a" stroke-width=".7"/>
+            <circle cx="16" cy="5.6" r="2.7" fill="#f3e6b3"/>
+            <circle cx="16" cy="5.6" r="1.7" fill="#ffffff" stroke="none"/>
+            <path d="M16 3.4L16.2 7.8M13.8 5.6L18.2 5.6" fill="none" stroke="#fff4c8" stroke-width=".8" stroke-linecap="round"/>
           </g>
         }
         @case ('ring') {

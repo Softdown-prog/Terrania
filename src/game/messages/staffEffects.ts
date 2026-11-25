@@ -11,6 +11,7 @@ export function describeStaffEffect(effect: StaffEffect | null): string {
     case "pierce": return `o feixe atravessa o alvo e atinge também ${effect.extra === 1 ? "um monstro" : effect.extra + " monstros"} atrás dele`;
     case "leech": return `devolve ${effect.percent}% do dano causado em mana`;
     case "chain": return `o raio salta para até ${effect.jumps} monstros vizinhos, cada salto com ${effect.percent}% do dano`;
+    case "nova": return `acerta o alvo e até ${effect.neighbors} monstros vizinhos dele, todos com o dano inteiro`;
     case "poison": return `envenena: ${effect.damage} de dano por segundo durante ${effect.seconds} s, e acumula até ${effect.maxStacks} vezes`;
   }
 }

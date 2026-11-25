@@ -68,6 +68,7 @@ import { paintCrystalMotif } from "../../src/render/staves/motifs/crystal.ts";
 import { paintSunMotif } from "../../src/render/staves/motifs/sun.ts";
 import { paintMoonMotif } from "../../src/render/staves/motifs/moon.ts";
 import { paintCoilMotif } from "../../src/render/staves/motifs/coil.ts";
+import { paintAstralMotif } from "../../src/render/staves/motifs/astral.ts";
 import { drawSpellBolt } from "../../src/render/spells/bolt.ts";
 import { drawSpellBurst } from "../../src/render/spells/burst.ts";
 import { paintStaffHead } from "../../src/render/staves/head.ts";
@@ -167,6 +168,7 @@ export const ASSETS: ArtAsset[] = [
   { id: "cajado do Sol Nascente: disco solar, raios e grãos de luz", tier: "prop", fn: "paintSunMotif", draw: c => { paintSunMotif(c, STAVES.sun.visual, t => t, 1, "back"); paintSunMotif(c, STAVES.sun.visual, t => t, 1, "front"); } },
   { id: "cajado da Lua Negra: lua crescente, runas e fitas de sombra", tier: "prop", fn: "paintMoonMotif", draw: c => { paintMoonMotif(c, STAVES.moon.visual, t => t, 1, "back"); paintMoonMotif(c, STAVES.moon.visual, t => t, 1, "front"); } },
   { id: "cajado da Tempestade: bobina, pólos e arcos elétricos", tier: "prop", fn: "paintCoilMotif", draw: c => { paintCoilMotif(c, STAVES.storm.visual, t => t, 1, "back"); paintCoilMotif(c, STAVES.storm.visual, t => t, 1, "front"); } },
+  { id: "cajado Astral de Terrania: estrela grande, órbita e constelação", tier: "prop", fn: "paintAstralMotif", draw: c => { paintAstralMotif(c, STAVES.astral.visual, t => t, 1, "back"); paintAstralMotif(c, STAVES.astral.visual, t => t, 1, "front"); } },
   { id: "cajado da Geada Boreal: estilhaços e faíscas de gelo", tier: "prop", fn: "paintCrystalMotif", draw: c => { paintCrystalMotif(c, STAVES.frost.visual, t => t, 1, "back"); paintCrystalMotif(c, STAVES.frost.visual, t => t, 1, "front"); } },
   { id: "cajado: engaste carregando a magia", tier: "prop", fn: "paintStaffHead", draw: c => paintStaffHead(c, STAVES.apprentice.visual, t => t, 1, 1) },
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "magia: projétil " + kind, tier: "prop", fn: "drawSpellBolt", draw: c => drawSpellBolt(c, kind, 0.5, 1) })),

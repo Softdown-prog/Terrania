@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (94)
+## Todos os arquivos deste módulo (95)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -69,6 +69,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/south/alchemy/results.ts`](../../src/engine/character/south/alchemy/results.ts)
 - [`src/engine/character/weapons/staves/README.md`](../../src/engine/character/weapons/staves/README.md)
 - [`src/engine/character/weapons/staves/apprentice.ts`](../../src/engine/character/weapons/staves/apprentice.ts)
+- [`src/engine/character/weapons/staves/astral.ts`](../../src/engine/character/weapons/staves/astral.ts)
 - [`src/engine/character/weapons/staves/breeze.ts`](../../src/engine/character/weapons/staves/breeze.ts)
 - [`src/engine/character/weapons/staves/ember.ts`](../../src/engine/character/weapons/staves/ember.ts)
 - [`src/engine/character/weapons/staves/frost.ts`](../../src/engine/character/weapons/staves/frost.ts)

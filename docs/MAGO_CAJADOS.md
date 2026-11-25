@@ -24,7 +24,7 @@ Lista aprovada pelo dono em 2026-11-24 (ADR [0073](adr/0073-cajados-elementais-l
 | 70 | Cajado do Sol Nascente | luz | 84 | 1,45 | 107 | o feixe atravessa e atinge também um alvo atrás (reta de 16 px de cada lado, só um, dano inteiro) | 3 (feito) |
 | 80 | Cajado da Lua Negra | sombra | 98 | 1,5 | 126 | devolve ao mago 10% do dano em mana | 3 (feito) |
 | 90 | Cajado da Tempestade | raio | 115 | 1,35 | 127 | o raio salta para até 2 monstros vizinhos (até 3 tiles, cada salto com 60% do dano) | 3 (feito) |
-| 100 | Cajado Astral de Terrania | astral | 140 | 1,6 | 166 | acerta o alvo e até 2 vizinhos | 4 |
+| 100 | Cajado Astral de Terrania | astral | 140 | 1,6 | 166 | acerta o alvo e até 2 vizinhos dele (até 3 tiles do alvo, todos com o dano inteiro) | 4 (feito) |
 
 ## O desenho de cada um (cada um precisa de peça nova no contrato de arte)
 
@@ -35,6 +35,6 @@ Vento: haste clara de osso com penas e gema verde-água. Terra: pedra bruta com 
 1. **Lote 1 (feito):** Brisa, Rocha Viva e Marés (G1a, [ADR 0073](adr/0073-cajados-elementais-lote-1.md)) e a **Academia Arcana** com porta, interior, mestra e a compra da Brisa (G1b, [ADR 0074](adr/0074-academia-arcana.md)), mais a troca de cajado no inventário.
 2. **Lote 2 (feito):** Brasa Rubra, Espinheiro e Geada Boreal ([ADR 0075](adr/0075-cajados-elementais-lote-2.md)).
 3. **Lote 3 (feito):** Sol Nascente, Lua Negra e Tempestade ([ADR 0076](adr/0076-cajados-elementais-lote-3.md)).
-4. **Lote 4:** o Astral.
+4. **Lote 4 (feito):** o Astral ([ADR 0077](adr/0077-cajados-elementais-lote-4.md)). Com ele os onze cajados estão no jogo.
 
 As roupas mágicas do Mago (defesa e desenho próprios) são uma entrega separada, depois dos cajados.

@@ -40,7 +40,8 @@ function nearestNeighbor<T extends Slime>(from: { x: number; y: number }, pool: 
 /**
  * Quem mais a magia atinge depois do alvo escolhido (ADR 0076): o feixe atravessa e pega até `extra` monstros atrás dele, na mesma reta
  * (até `BEAM_HALF_WIDTH` de lado, dentro do alcance do herói e sem parede entre eles, do mais perto para o mais longe); o raio salta de vizinho em vizinho,
- * sempre para o mais perto do último atingido. As outras magias só atingem o alvo.
+ * sempre para o mais perto do último atingido; o astral pega os `neighbors` mais perto **do alvo** (todos medidos a partir dele, não um do outro).
+ * As outras magias só atingem o alvo.
  */
 function extraTargets<T extends Slime>(staff: StaffId, hero: { x: number; y: number }, primary: T, pool: readonly T[], world: CollisionMap): T[] {
   const effect = STAVES[staff].effect;
@@ -54,6 +55,15 @@ function extraTargets<T extends Slime>(staff: StaffId, hero: { x: number; y: num
       if (along > length && Math.hypot(rx, ry) < reach && side <= BEAM_HALF_WIDTH && clearPath(primary, mob, world)) behind.push({ mob, along });
     }
     return behind.sort((a, b) => a.along - b.along || (a.mob.id < b.mob.id ? -1 : 1)).slice(0, effect.extra).map(entry => entry.mob);
+  }
+  if (effect?.kind === "nova") {
+    const hit: T[] = [primary];
+    for (let count = 0; count < effect.neighbors; count++) {
+      const next = nearestNeighbor(primary, pool, hit, effect.radius, world);
+      if (!next) break;
+      hit.push(next);
+    }
+    return hit.slice(1);
   }
   if (effect?.kind === "chain") {
     const hit: T[] = [primary];
@@ -106,7 +116,7 @@ export function applySpellEffect(staff: StaffId, hero: Player, target: Slime, da
     case "poison":
       target.applySpellPoison(effect.damage, effect.seconds, effect.maxStacks); // o monstro já ignora o veneno se caiu
       return;
-    case "pierce": case "chain":
+    case "pierce": case "chain": case "nova":
       return;
     case "leech":
       if (hero.hp > 0 && damage > 0) gainMana?.(Math.max(1, Math.round(damage * effect.percent / 100)));

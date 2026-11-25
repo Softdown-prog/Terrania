@@ -1,0 +1,29 @@
+# ADR 0077 — O Cajado Astral de Terrania, lote 4 (os onze cajados completos)
+
+**Estado:** entregue em 2026-11-25, direto na `main`, por pedido do dono (lote 4 da lista aprovada em `docs/MAGO_CAJADOS.md`; o lote 3 é o [ADR 0076](0076-cajados-elementais-lote-3.md)). Com ele **os onze cajados do Mago estão no jogo**, espelhando as onze espadas.
+
+## Decisões
+
+1. **Um cajado**, numa ficha só (`weapons/staves/astral.ts`), pela regra do documento: **Cajado Astral de Terrania**, astral, **nível 100, 140 de dano, 1,6 s entre magias, 166 de mana, preparo de 0,21 s**, alcance de 6 tiles. Espelha a Espada Astral de Terrania (nível 100, 140 de dano, 1,4 s e preparo 0,16 s; aqui o intervalo é o dela + 0,2 s e o preparo o dela + 0,05 s; a mana é o intervalo × a mana máxima do nível 100 ÷ 10). Libera sozinho no nível 100, sem compra.
+2. **A magia** (`effect: nova`): **acerta o alvo escolhido e os 2 monstros vizinhos mais perto DELE**, todos com **o dano inteiro**. A diferença para a Tempestade (o raio salta de elo em elo, com 60% do dano em cada salto) é que aqui **as distâncias são todas medidas a partir do alvo**, não de um vizinho para o outro, e ninguém leva dano reduzido: um monstro a 90 pixels do alvo e a 98 do outro vizinho entra no Astral e fica de fora da Tempestade (há teste dos dois lado a lado).
+3. **Quem entra:** os monstros vivos a até **3 tiles (96 px)** do alvo, **sem parede entre eles e o alvo**, do mais perto para o mais longe, no máximo 2; empate de distância decidido pelo id (o resultado é sempre o mesmo). A escolha usa a mesma função dos outros vizinhos (`nearestNeighbor`), então a regra de parede, de quem já caiu e de não repetir é uma só para o raio e para o astral. A defesa de cada um é descontada do dano inteiro (140 − defesa, mínimo 1), como em toda magia. Quem cai conta como derrota (saque, remoção, e experiência até o nível máximo), na superfície e na caverna, pelo caminho de sempre. A magia não devolve mana nem cura.
+4. **O desenho** (`render/staves/motifs/astral.ts`, uma matéria nova): haste de marfim com dois anéis torneados e uma **constelação de cinco estrelas de ouro** ligadas por fios; atrás da gema perolada, uma **grande estrela de ouro de oito pontas** (quatro longas, quatro médias e as reentrâncias, com um fio claro em cada ponta longa) e um **anel de órbita** inclinado; na frente, o brilho pálido, **duas estrelinhas que giram na órbita**, **três estrelas que piscam** e **poeira de estrela que sobe**. Fita e empunhadura em azul-noite. A gema é perolada-dourada (`#f1dfa4`); o projétil e o estouro saem dessa cor. Capturas: `docs/screenshots/cajados-lote-4.png` (os onze cajados, com o Mago segurando cada um) e `docs/screenshots/cajados-lote-4-inventario.png`.
+5. **No inventário** o Astral aparece como o 11.º cajado e diz o efeito em palavras: "acerta o alvo e até 2 monstros vizinhos dele, todos com o dano inteiro". Ícone novo (`staff-astral`).
+
+## Contrato de arte
+
+A matéria está registrada em `tests/helpers/artAssets.ts`, **sem baixar piso e sem exceção**. A primeira gema do Astral (branca pura, `#ffffff` e um dourado muito claro) fez o projétil e o estouro automáticos do cajado caírem para 9 e 8 cores distintas (o piso do contrato é 10): as cores da rampa colapsavam no branco. Em vez de mexer no piso, a gema ficou creme e dourada (`#fff3d0`, `#f1dfa4`, `#8a6418`, `#ffdf8a`), o que dá a rampa de sete tons que o projétil espera. Os dez cajados anteriores e o Cavaleiro não mudaram.
+
+## Verificação
+
+- `tests/staff-lote-4.test.ts` (8): a lista contra o documento e a regra de espelhar a Espada Astral, os onze cajados com as onze gemas diferentes; a nova (os dois mais perto do alvo, medidos a partir dele, contra a Tempestade no mesmo cenário, dano inteiro em todos, defesa do vizinho); o que não atinge (97 px, parede, quem caiu, empate por id, sem alvo, outros cajados); sem mana nem cura; superfície e caverna de ponta a ponta (dano, abates, remoção, registro de derrotados); liberação por nível, troca e save; texto e ícone.
+- `tests/staff-motifs.test.ts` (12): as dez matérias atrás e na frente da gema, e a do astral em detalhe (peças, vértices da estrela, órbita de trás e da frente, estrelinhas, estrelas que piscam no mesmo lugar, poeira que sobe, brilho de dano nos tons de ouro).
+- `tests/browser/mage-staves.spec.ts` (desktop e Android): onze cartas no inventário; no nível 90 o Astral está bloqueado; no nível 100 todos disponíveis (menos a Brisa, à venda), trocar para o Astral mostra o nome, a mana (166) e o efeito, e fica no save.
+- Mutações: **27** estragos de propósito (cada número da ficha, a gema, o número e o raio dos vizinhos, de onde se mede, o salto de elo em elo, o dano de salto, o texto, o despachante e cada movimento do desenho). Três passaram na primeira rodada (as estrelas que piscam escondidas pelas estrelinhas em órbita, o lado da órbita e o formato da estrela) e foram fechados com testes novos. Um sobrevive e é equivalente: tirar o `case "nova"` do `applySpellEffect` não muda nada em tempo de execução (a magia já não tem efeito sobre o alvo; só o compilador exige o caso).
+
+## Limites
+
+- Como no raio e no feixe, a apresentação mostra um projétil da ponta do cajado até cada um dos três monstros (não desenha ligação entre eles); quem leva o dano é o descrito acima e está testado.
+- Continua valendo o limite do ADR 0076 sobre queimadura e veneno que já estejam rolando soltarem um projétil só de apresentação durante uma magia.
+- O alcance continua 6 tiles em todos os cajados; o documento deixou aberto dar mais ao raio e ao astral. Os números (140 de dano, 2 vizinhos, 96 px) são propostas do dono, sem medição em jogo real. Android físico não foi testado.
+- Faltam as **roupas mágicas do Mago** (defesa e desenho próprios), uma entrega separada, decidida depois dos cajados.
