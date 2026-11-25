@@ -23,7 +23,8 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
       : movement;
     cave.update(dt,caveMovement,attack || classicStrike,
       host.sim.inventory.loadout.equipped,host.sim.inventory.defense,
-      classicStrike ? host.travel.combat.strikeTargetId : undefined,
+      // O alvo do golpe vai em TODOS os quadros, como na superfície: a magia sai depois do preparo, em outro quadro que o do pedido.
+      host.travel.combat.strikeTargetId,
       host.sim.usesMana ? { staff: host.sim.equippedStaff, spend: cost => host.sim.spendMana(cost), gain: amount => host.sim.gainMana(amount) } : undefined);
     host.input.acknowledgeMovement();
     host.sim.advanceClock(dt); // o tempo de volta dos monstros também anda dentro da masmorra (ADR 0029)

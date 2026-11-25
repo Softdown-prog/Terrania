@@ -1,4 +1,5 @@
 import test from "node:test";
+import { approachSlime, caveHost, runCave } from "./helpers/caveModeHost.ts";
 import assert from "node:assert/strict";
 import { OfflineSimulation, MAX_KILLS, normalizeKills, type OfflineSave } from "../src/engine/OfflineSimulation.ts";
 import { grantExperience, experienceForLevel, MAX_EXPERIENCE } from "../src/engine/character/Experience.ts";
@@ -171,4 +172,13 @@ test("save: abates e vida inválidos são normalizados antes de virar estado do 
     if (original) Object.defineProperty(globalThis, "localStorage", original);
     else delete (globalThis as { localStorage?: unknown }).localStorage;
   }
+});
+
+test("caverna: o alvo escolhido chega ao golpe em todos os quadros, e o Mago fere o alvo depois do preparo da magia (como na superfície)", () => {
+  const mage = caveHost("mage"), id = approachSlime(mage, 170), slime = mage.cave.monsters.get(id)!, before = slime.hp;
+  runCave(mage, 1.5);
+  assert.ok(slime.hp < before || !mage.cave.monsters.has(id), "a magia do Mago fere o slime escolhido na caverna");
+  const knight = caveHost("knight"), near = approachSlime(knight, 20), blade = knight.cave.monsters.get(near)!, hp = blade.hp;
+  runCave(knight, 3);
+  assert.ok(blade.hp < hp || !knight.cave.monsters.has(near), "e a espada do Cavaleiro continua ferindo");
 });

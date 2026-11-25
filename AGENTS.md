@@ -36,6 +36,7 @@ Regras que já quebraram uma vez. Valem para a superfície (`OfflineSimulation`)
 - **Toda derrota é salva no mesmo passo:** `update` devolve `true` quando o herói cai, seja por contato, veneno, queimadura ou espinhos.
 - **Superfície e caverna aplicam a mesma fórmula** de dano, defesa e alvos. Alcance, cone e número de alvos vêm de `swordArc`; quem é atingido vem de `swordStrikeTargets` e o dano, o efeito da lâmina e os abates vêm de `resolveSwordStrike` (`src/engine/combat/SwordCombat.ts`). Não copiar esses números nem esse laço para outro arquivo (`tests/sword-strike.test.ts` exige o mesmo abate nos dois cenários).
 - **Golpe com alvo escolhido** exige o alvo ao alcance e à vista; só então a lâmina astral completa o arco com até dois vizinhos. Golpe sem alvo (`null`) não fere ninguém.
+- **O alvo escolhido chega ao golpe em todos os quadros, na caverna e na superfície:** a magia do Mago sai depois do preparo, em outro quadro que o do pedido; entregar o alvo só no quadro do pedido faz a magia gastar a mana e não ferir ninguém (regressão em `tests/engine-invariants.test.ts` e `tests/cave-mage-strike.test.ts`, que rodam o `tickCave` de verdade).
 - **Recarga só é gasta por golpe que sai:** herói atordoado não consome o intervalo da arma.
 - **Nada do save vira estado sem normalizar:** números finitos, inteiros e limitados (`normalizeKills`, `normalizeExperience`, `normalizeInventory`...), tanto em `loadLocalSave` quanto no construtor da simulação.
 
