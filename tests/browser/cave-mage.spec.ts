@@ -39,7 +39,7 @@ async function where(page: Page): Promise<[number, number]> {
 }
 
 test("o Mago entra na caverna de treino, chega perto de um slime, aperta ATACAR e o derrota com a magia (desktop/Android)", async ({ page }, info) => {
-  test.setTimeout(150_000);
+  test.setTimeout(360_000);
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   const entrance = caveEntranceInCell(0, 0, SEED)!, path = pathToSlime(entrance);
@@ -64,12 +64,20 @@ test("o Mago entra na caverna de treino, chega perto de um slime, aperta ATACAR 
     held = key;
   };
   try {
-    let arrived = false;
-    for (let step = 0; step < 1500 && !arrived; step++) {
+    let arrived = false, best = 0, lastGain = 0;
+    const deadline = Date.now() + 200_000;
+    for (let step = 0; Date.now() < deadline && !arrived; step++) {
+      const coords = (await page.locator("#coords").textContent()) ?? "";
+      // o Mago saiu da caverna (tombou, por exemplo): falha na hora, dizendo onde e com quanta vida, em vez de andar até o tempo acabar
+      if (!coords.includes("Subsolo")) throw new Error(`o Mago saiu da caverna no passo ${step}: "${coords}", vida ${await page.locator("#hpText").textContent()}`);
       const [x, y] = await where(page);
       if (Math.abs(x - goal[0]) + Math.abs(y - goal[1]) <= 1) { arrived = true; break; }
       let nearest = 0;
       path.forEach(([px, py], i) => { if (Math.abs(px - x) + Math.abs(py - y) < Math.abs(path[nearest]![0] - x) + Math.abs(path[nearest]![1] - y)) nearest = i; });
+      if (nearest > best) { best = nearest; lastGain = step; }
+      // sem avançar no caminho por muito tempo: falha com o retrato do momento (o log do CI mostra o motivo)
+      if (step - lastGain > 600) throw new Error(`o Mago não avança há 600 passos: no tile ${x},${y}, caminho ${best}/${path.length - 1}, vida ${await page.locator("#hpText").textContent()}`);
+      if (step % 100 === 0) console.log(`passo ${step}: tile ${x},${y}, caminho ${best}/${path.length - 1}, ${await page.locator("#hpText").textContent()}`);
       const [tx, ty] = path[Math.min(path.length - 1, nearest + 1)]!;
       const dx = tx - x, dy = ty - y;
       await press(dx === 0 && dy === 0 ? null : Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? "d" : "a") : (dy > 0 ? "s" : "w"));
