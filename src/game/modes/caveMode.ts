@@ -24,7 +24,7 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
     cave.update(dt,caveMovement,attack || classicStrike,
       host.sim.inventory.loadout.equipped,host.sim.inventory.defense,
       classicStrike ? host.travel.combat.strikeTargetId : undefined,
-      host.sim.usesMana ? { staff: host.sim.equippedStaff, spend: cost => host.sim.spendMana(cost) } : undefined);
+      host.sim.usesMana ? { staff: host.sim.equippedStaff, spend: cost => host.sim.spendMana(cost), gain: amount => host.sim.gainMana(amount) } : undefined);
     host.input.acknowledgeMovement();
     host.sim.advanceClock(dt); // o tempo de volta dos monstros também anda dentro da masmorra (ADR 0029)
     // A magia do Mago também se vê na caverna: o projétil voa e o estouro mostra o dano (ADR 0070).

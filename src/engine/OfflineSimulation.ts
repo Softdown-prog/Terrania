@@ -170,6 +170,11 @@ export class OfflineSimulation {
     this.manaPoints -= cost;
     return true;
   }
+  /** Devolve mana (a sombra da Lua Negra): só para quem usa mana, só valores positivos, e nunca passa do máximo do nível. */
+  gainMana(amount: number): void {
+    if (!this.usesMana || !Number.isFinite(amount) || amount <= 0) return;
+    this.manaPoints = Math.min(this.maxMana, this.manaPoints + amount);
+  }
   /** O cajado que o Mago segura; com um só cajado, o de Aprendiz (a escolha entre vários vem com o inventário, fatia F). */
   get equippedStaff(): StaffId { return this.inventory.staves.equipped; }
   /** Como o herói ataca agora: o Cavaleiro de perto com a espada; o Mago de longe com o cajado, se houver mana (ADR 0069). */
@@ -329,7 +334,7 @@ export class OfflineSimulation {
         resolveSpellStrike(staff,this.player,hit,this.collision,mob=>{
           this.registerDefeat(mob.id,mob,defense);
           changed=true;
-        });
+        },amount=>this.gainMana(amount));
       } else {
       const weapon=this.player.attackWeapon;
       // The astral arc can contact three; every other blade hits one primary.

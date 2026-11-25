@@ -12,7 +12,7 @@ export type ItemIconId =
   | 'sword-starter' | 'sword-forge' | 'sword-common' | 'sword-bronze' | 'sword-copper'
   | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
   | 'sword-tempest' | 'sword-astral'
-  | 'staff-apprentice' | 'staff-breeze' | 'staff-stone' | 'staff-tide' | 'staff-ember' | 'staff-thorn' | 'staff-frost'
+  | 'staff-apprentice' | 'staff-breeze' | 'staff-stone' | 'staff-tide' | 'staff-ember' | 'staff-thorn' | 'staff-frost' | 'staff-sun' | 'staff-moon' | 'staff-storm'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
   | 'greater-potion' | 'antidote'
   | CoinId
@@ -366,6 +366,46 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
             <path d="M16 2L19 5L18 8.4L16 9.4L14 8.4L13 5Z" fill="#4fd0f0"/>
             <path d="M16 2L16.3 9.2M13 5L19 5" fill="none" stroke="#e8fcff" stroke-width="1" stroke-linecap="round"/>
             <ellipse cx="14.7" cy="4.6" rx=".9" ry="1.3" fill="#ffffff" stroke="none"/>
+          </g>
+        }
+        @case ('staff-sun') {
+          <g transform="rotate(38 16 16)">
+            <path d="M14.5 10Q13.9 18 14.5 29L17.5 29Q18.1 18 17.5 10Z" fill="#dcab32"/>
+            <path d="M15.2 11Q14.8 18 15.3 28" fill="none" stroke="#fff1b3" stroke-width="1" stroke-linecap="round"/>
+            <path d="M16 13.4L17 14.8L16 16.2L15 14.8ZM16 21L17 22.4L16 23.8L15 22.4Z" fill="#fff6c2" stroke-width=".8"/>
+            <rect x="14.2" y="17.5" width="3.6" height="3.6" fill="#8a4f1e" stroke-width="1"/>
+            <rect x="13.3" y="9.6" width="5.4" height="2" rx=".6" fill="#ffe08a"/>
+            <path d="M18.9 5.0L21.6 5.6L18.9 6.2ZM18.5 7.3L20.0 9.6L17.7 8.1ZM16.6 8.5L16.0 11.2L15.4 8.5ZM14.3 8.1L12.0 9.6L13.5 7.3ZM13.1 6.2L10.4 5.6L13.1 5.0ZM13.5 3.9L12.0 1.6L14.3 3.1ZM15.4 2.7L16.0 0.0L16.6 2.7ZM17.7 3.1L20.0 1.6L18.5 3.9Z" fill="#f2b94a" stroke-width=".7"/>
+            <circle cx="16" cy="5.6" r="3.9" fill="#ffd23a"/>
+            <circle cx="16" cy="5.6" r="2.6" fill="#fff6c2" stroke="none"/>
+            <path d="M16 3.2L16.2 8M13.6 5.6L18.4 5.6" fill="none" stroke="#ffffff" stroke-width=".9" stroke-linecap="round"/>
+          </g>
+        }
+        @case ('staff-moon') {
+          <g transform="rotate(38 16 16)">
+            <path d="M14.5 10Q13.9 18 14.5 29L17.5 29Q18.1 18 17.5 10Z" fill="#3f3052"/>
+            <path d="M15.2 11Q14.8 18 15.3 28" fill="none" stroke="#7b6590" stroke-width="1" stroke-linecap="round"/>
+            <path d="M15.4 13.4L16.6 14.6L15.4 16M16.6 22L15.4 23.2L16.6 24.6" fill="none" stroke="#b377ff" stroke-width="1" stroke-linecap="round"/>
+            <rect x="14.2" y="17.5" width="3.6" height="3.6" fill="#2c1f3d" stroke-width="1"/>
+            <rect x="13.3" y="9.6" width="5.4" height="2" rx=".6" fill="#b79de0"/>
+            <path d="M10.4 2.6Q10 9.6 16 10Q22 9.6 21.6 2.6Q19.8 7.6 16 7.8Q12.2 7.6 10.4 2.6Z" fill="#3d1678"/>
+            <path d="M10.4 2.6Q12.2 7.6 16 7.8Q19.8 7.6 21.6 2.6" fill="none" stroke="#b377ff" stroke-width=".8" stroke-linecap="round"/>
+            <path d="M16 1.6L18.4 4.4L17.6 7.6L16 8.4L14.4 7.6L13.6 4.4Z" fill="#8a46d6"/>
+            <path d="M16 1.8L16.2 8.2M13.6 4.4L18.4 4.4" fill="none" stroke="#e6d2ff" stroke-width=".9" stroke-linecap="round"/>
+            <ellipse cx="14.9" cy="3.9" rx=".8" ry="1.2" fill="#ffffff" stroke="none"/>
+          </g>
+        }
+        @case ('staff-storm') {
+          <g transform="rotate(38 16 16)">
+            <path d="M14.5 10Q13.9 18 14.5 29L17.5 29Q18.1 18 17.5 10Z" fill="#8b9db8"/>
+            <path d="M15.2 11Q14.8 18 15.3 28" fill="none" stroke="#dfe8f5" stroke-width="1" stroke-linecap="round"/>
+            <path d="M13.9 12.6Q16 13.6 18.1 12.6M13.9 14.4Q16 15.4 18.1 14.4M13.9 16.2Q16 17.2 18.1 16.2" fill="none" stroke="#d98a3d" stroke-width="1" stroke-linecap="round"/>
+            <rect x="14.2" y="19" width="3.6" height="3.4" fill="#2f3b52" stroke-width="1"/>
+            <rect x="13.3" y="9.4" width="5.4" height="2.2" rx=".6" fill="#e3ecf9"/>
+            <path d="M12.8 9.2L11.6 4.4L13.8 7ZM19.2 9.2L20.4 4.4L18.2 7Z" fill="#6a7b96"/>
+            <path d="M16 1.4L19 4.6L18.2 8L16 9.2L13.8 8L13 4.6Z" fill="#2f84ff"/>
+            <path d="M11.8 4.2L13.6 5.4L12.4 6.4L14.4 7.2M20.2 4.2L18.4 5.4L19.6 6.4L17.6 7.2" fill="none" stroke="#fff3a8" stroke-width=".8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16.8 2.4L15.4 5.2L16.6 5.4L15.2 8.2" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
           </g>
         }
         @case ('ring') {

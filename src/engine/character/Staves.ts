@@ -5,36 +5,44 @@ import { TIDE_STAFF } from "./weapons/staves/tide.ts";
 import { EMBER_STAFF } from "./weapons/staves/ember.ts";
 import { THORN_STAFF } from "./weapons/staves/thorn.ts";
 import { FROST_STAFF } from "./weapons/staves/frost.ts";
+import { SUN_STAFF } from "./weapons/staves/sun.ts";
+import { MOON_STAFF } from "./weapons/staves/moon.ts";
+import { STORM_STAFF } from "./weapons/staves/storm.ts";
 
 /**
  * Catálogo dos cajados do Mago (ADR 0068, lista em `docs/MAGO_CAJADOS.md`). O Aprendiz é o primeiro; os outros dez espelham as espadas,
- * com um elemento cada, e entram em lotes (fatia G do ADR 0065): o lote 1 traz a Brisa, a Rocha Viva e as Marés (ADR 0073) e o lote 2 a Brasa Rubra, o Espinheiro e a Geada Boreal (ADR 0075).
+ * com um elemento cada, e entram em lotes (fatia G do ADR 0065): o lote 1 traz a Brisa, a Rocha Viva e as Marés (ADR 0073) e o lote 2 a Brasa Rubra, o Espinheiro e a Geada Boreal (ADR 0075) e o lote 3 o Sol Nascente, a Lua Negra e a Tempestade (ADR 0076).
  */
-export const STAFF_IDS = ["apprentice", "breeze", "stone", "tide", "ember", "thorn", "frost"] as const;
+export const STAFF_IDS = ["apprentice", "breeze", "stone", "tide", "ember", "thorn", "frost", "sun", "moon", "storm"] as const;
 export type StaffId = typeof STAFF_IDS[number];
 export const DEFAULT_STAFF: StaffId = "apprentice";
 /** O elemento da magia do cajado; `null` é a magia arcana comum, sem efeito extra. */
-export type StaffElement = "wind" | "earth" | "water" | "nature" | "ice" | "fire" | "poison" | "lightning" | "astral";
+export type StaffElement = "wind" | "earth" | "water" | "nature" | "ice" | "fire" | "poison" | "lightning" | "light" | "shadow" | "astral";
 
 /**
  * O efeito extra da magia, além do dano (ADR 0073): empurra o alvo `distance` pixels para longe do herói; deixa o alvo mais lento
  * (`factor` é a velocidade que sobra, de 0 a 1) por `seconds`; devolve ao herói `percent`% do dano causado em vida; queima o alvo
  * (`damage` por segundo durante `seconds`); ou envenena o alvo (`damage` por segundo e por acúmulo, durante `seconds`, com até `maxStacks`
- * acúmulos). Queimadura e veneno não passam pela defesa do alvo (dano ao longo do tempo).
+ * acúmulos). Queimadura e veneno não passam pela defesa do alvo (dano ao longo do tempo). O feixe (`pierce`) atravessa o alvo e atinge também até
+ * `extra` monstros atrás dele, com o mesmo dano; a sombra (`leech`) devolve ao herói `percent`% do dano causado em mana; o raio (`chain`) salta do alvo
+ * para até `jumps` vizinhos (cada um a até `radius` pixels do anterior, sem parede no meio), cada salto com `percent`% do dano.
  */
 export type StaffEffect =
   | { readonly kind: "push"; readonly distance: number }
   | { readonly kind: "slow"; readonly factor: number; readonly seconds: number }
   | { readonly kind: "heal"; readonly percent: number }
   | { readonly kind: "burn"; readonly seconds: number; readonly damage: number }
-  | { readonly kind: "poison"; readonly seconds: number; readonly damage: number; readonly maxStacks: number };
+  | { readonly kind: "poison"; readonly seconds: number; readonly damage: number; readonly maxStacks: number }
+  | { readonly kind: "pierce"; readonly extra: number }
+  | { readonly kind: "leech"; readonly percent: number }
+  | { readonly kind: "chain"; readonly jumps: number; readonly percent: number; readonly radius: number };
 
 /** Três tons de uma cor, do claro ao escuro. */
 export interface StaffRamp { readonly light: string; readonly mid: string; readonly dark: string }
 /** A aparência do cajado, declarativa e independente do Canvas: o renderizador lê esta ficha. */
 export interface StaffVisualProfile {
-  /** Matéria do cajado: o carvalho do Aprendiz, a pena do vento, a rocha da terra, o coral da água, a brasa do fogo, o espinho da natureza e o cristal do gelo. */
-  readonly motif: "oak" | "feather" | "stone" | "coral" | "ember" | "thorn" | "crystal";
+  /** Matéria do cajado: o carvalho do Aprendiz, a pena do vento, a rocha da terra, o coral da água, a brasa do fogo, o espinho da natureza, o cristal do gelo, o disco solar da luz, a lua crescente da sombra e a bobina do raio. */
+  readonly motif: "oak" | "feather" | "stone" | "coral" | "ember" | "thorn" | "crystal" | "sun" | "moon" | "coil";
   readonly shaft: StaffRamp;
   readonly wrap: string;
   readonly wrapDark: string;
@@ -71,7 +79,7 @@ export interface StaffDefinition {
   readonly visual: StaffVisualProfile;
 }
 
-export const STAVES: Readonly<Record<StaffId, StaffDefinition>> = { apprentice: APPRENTICE_STAFF, breeze: BREEZE_STAFF, stone: STONE_STAFF, tide: TIDE_STAFF, ember: EMBER_STAFF, thorn: THORN_STAFF, frost: FROST_STAFF };
+export const STAVES: Readonly<Record<StaffId, StaffDefinition>> = { apprentice: APPRENTICE_STAFF, breeze: BREEZE_STAFF, stone: STONE_STAFF, tide: TIDE_STAFF, ember: EMBER_STAFF, thorn: THORN_STAFF, frost: FROST_STAFF, sun: SUN_STAFF, moon: MOON_STAFF, storm: STORM_STAFF };
 
 export function isStaffId(value: unknown): value is StaffId {
   return typeof value === "string" && STAFF_IDS.some(id => id === value);

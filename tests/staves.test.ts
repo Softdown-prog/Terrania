@@ -23,8 +23,8 @@ const DIRS = { frente: { faceX: 0, faceY: 1 }, costas: { faceX: 0, faceY: -1 }, 
 const mage = (extra: Partial<HeroVisual> = {}): HeroVisual => ({ ...base, heroClass: "mage", ...extra });
 const draw = (hero: HeroVisual) => (c: CanvasRenderingContext2D) => renderHero(c, hero, 3, 4, 1.2);
 
-test("o catálogo: o Aprendiz (nível 0, que o mago de qualquer nível usa) e os seis dos lotes 1 e 2", () => {
-  assert.deepEqual([...STAFF_IDS], ["apprentice", "breeze", "stone", "tide", "ember", "thorn", "frost"]); assert.equal(DEFAULT_STAFF, "apprentice"); assert.strictEqual(STAVES.apprentice, APPRENTICE_STAFF);
+test("o catálogo: o Aprendiz (nível 0, que o mago de qualquer nível usa) e os nove dos lotes 1, 2 e 3", () => {
+  assert.deepEqual([...STAFF_IDS], ["apprentice", "breeze", "stone", "tide", "ember", "thorn", "frost", "sun", "moon", "storm"]); assert.equal(DEFAULT_STAFF, "apprentice"); assert.strictEqual(STAVES.apprentice, APPRENTICE_STAFF);
   assert.equal(isStaffId("apprentice"), true); for (const bad of [undefined, null, 3, "", "Apprentice", "forge", {}]) assert.equal(isStaffId(bad), false, String(bad));
   assert.equal(APPRENTICE_STAFF.name, "Cajado de Aprendiz"); assert.equal(APPRENTICE_STAFF.level, 0);
   for (const level of [0, 1, 5, 100]) assert.equal(staffUnlocked("apprentice", level), true, `nível ${level}`);

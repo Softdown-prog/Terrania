@@ -29,7 +29,7 @@ O [ROADMAP](../ROADMAP.md) dizia para concluir o Cavaleiro antes das outras voca
 | E2 | A barra de mana na tela | **feita** ([ADR 0071](0071-barra-de-mana.md)) |
 | F1 | Tela de escolha do herói ao criar o mundo, com o Mago bloqueado ("Em breve") | **feita** ([ADR 0066](0066-tela-de-escolha-do-heroi.md)) |
 | F2 | Mago jogável: **liberado** (`playable`), inventário do Mago (cajado, sem armadura), ferreiro sem espada para ele, Mago desenhado nas casas. A loja de cajados e a Academia Arcana com função esperam o 2º cajado (G) | **feita** ([ADR 0072](0072-mago-jogavel.md)) |
-| G | Cajados 2 a 11, em lotes ([lista](../MAGO_CAJADOS.md)). Lote 1: Brisa, Rocha Viva e Marés ([ADR 0073](0073-cajados-elementais-lote-1.md)) e a Academia Arcana | G1a **feita**; G1b **feita** ([ADR 0074](0074-academia-arcana.md)); lote 2 **feito** ([ADR 0075](0075-cajados-elementais-lote-2.md)); lotes 3 e 4 a fazer |
+| G | Cajados 2 a 11, em lotes ([lista](../MAGO_CAJADOS.md)). Lote 1: Brisa, Rocha Viva e Marés ([ADR 0073](0073-cajados-elementais-lote-1.md)) e a Academia Arcana | G1a **feita**; G1b **feita** ([ADR 0074](0074-academia-arcana.md)); lotes 2 e 3 **feitos** ([ADR 0075](0075-cajados-elementais-lote-2.md), [ADR 0076](0076-cajados-elementais-lote-3.md)); lote 4 a fazer |
 
 Perguntas que ficam para as fatias seguintes: a vida do Mago (hoje a mesma do Cavaleiro; talvez menor), o custo de mana e o alcance de cada cajado, e como o Mago consegue cajados (loja da Academia Arcana? loot?).
 

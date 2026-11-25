@@ -8,6 +8,9 @@ export function describeStaffEffect(effect: StaffEffect | null): string {
     case "slow": return `deixa o alvo ${Math.round((1 - effect.factor) * 100)}% mais lento por ${effect.seconds} s`;
     case "heal": return `cura você em ${effect.percent}% do dano causado`;
     case "burn": return `queima o alvo: ${effect.damage} de dano por segundo durante ${effect.seconds} s`;
+    case "pierce": return `o feixe atravessa o alvo e atinge também ${effect.extra === 1 ? "um monstro" : effect.extra + " monstros"} atrás dele`;
+    case "leech": return `devolve ${effect.percent}% do dano causado em mana`;
+    case "chain": return `o raio salta para até ${effect.jumps} monstros vizinhos, cada salto com ${effect.percent}% do dano`;
     case "poison": return `envenena: ${effect.damage} de dano por segundo durante ${effect.seconds} s, e acumula até ${effect.maxStacks} vezes`;
   }
 }
