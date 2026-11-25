@@ -10,7 +10,11 @@ import { blink, gait, smoothTo } from "./animation.ts";
 import { clamp01, ellipse, hashString, limb, mix, rgba, smoothstep, softShadow } from "./draw.ts";
 import type { HeroClassId } from "../engine/character/classes/index.ts";
 import type { HeroDrawContext } from "./hero/context.ts";
-import { MAGE_LOOK } from "./hero/mage/index.ts";
+import { mageWear } from "./hero/mage/index.ts";
+import { drawMageBook } from "./hero/mage/gear/book.ts";
+import { drawMagePendant } from "./hero/mage/gear/pendant.ts";
+import { drawMageRing } from "./hero/mage/gear/ring.ts";
+import type { LegWear } from "./hero/mage/gear/legwear.ts";
 
 export type HeroVisual = Pick<
   Player,
@@ -71,18 +75,19 @@ function renderStaff(ctx: CanvasRenderingContext2D, mount: StaffMountFrame, staf
 /** Perna: quadril → joelho → tornozelo, bota por cima. Desenhada em pares ordenados por profundidade. */
 function drawLeg(ctx: CanvasRenderingContext2D, hipX: number, footX: number, footY: number,
   lift: number, mvx: number, tone: (c: string) => string, front: number,
-  armoredBoots = false, armoredLegs = false): void {
+  armoredBoots = false, armoredLegs = false, legwear?: LegWear): void {
   const hipY = -11.5;
+  const pants = legwear?.pants ?? PAL.pants, boots = legwear?.boots ?? PAL.boots, bootsLight = legwear?.bootsLight ?? PAL.bootsL;
   const kneeX = (hipX + footX) / 2 + mvx * lift * 0.5;
   const kneeY = (hipY + footY) / 2 - lift * 0.35;
-  limb(ctx, hipX, hipY, kneeX, kneeY, 5, tone(PAL.pants));
-  limb(ctx, kneeX, kneeY, footX, footY - 2.4, 4.4, tone(mix(PAL.pants, "#000000", 0.12)));
+  limb(ctx, hipX, hipY, kneeX, kneeY, 5, tone(pants));
+  limb(ctx, kneeX, kneeY, footX, footY - 2.4, 4.4, tone(mix(pants, "#000000", 0.12)));
   // cano da bota e cadarço
-  ctx.fillStyle = tone(PAL.boots);
+  ctx.fillStyle = tone(boots);
   ctx.fillRect(footX - 2.6, footY - 5.2, 5.2, 4);
-  ctx.fillStyle = tone(PAL.bootsL);
+  ctx.fillStyle = tone(bootsLight);
   ctx.fillRect(footX - 2.6, footY - 5.4, 5.2, 1.3);
-  ellipse(ctx, footX + mvx * 1.6, footY - 0.8 + front * 0.5, 4.4, 2.5, tone(PAL.boots));
+  ellipse(ctx, footX + mvx * 1.6, footY - 0.8 + front * 0.5, 4.4, 2.5, tone(boots));
   ellipse(ctx, footX + mvx * 1.6 - 0.6, footY - 1.5, 2.4, 1, rgba("#ffffff", 0.16));
   if (armoredLegs) {
     ellipse(ctx, kneeX, kneeY + 1, 3.1, 2.4, tone("#6e8582"));
@@ -165,9 +170,10 @@ export function renderHero(
   const wf = 1 - 0.2 * prof;
   const dirX = Math.cos(Math.atan2(player.faceY, player.faceX));
   const frame = swordMount(player);
-  // A aparência da vocação (ADR 0067): sem ela, é o Cavaleiro; o Mago não usa o equipamento do Cavaleiro (o dele virá com os cajados).
-  const look = player.heroClass === "mage" ? MAGE_LOOK : null;
-  const gear = look ? undefined : player.gear;
+  // A aparência da vocação (ADR 0067): sem ela, é o Cavaleiro. O Mago veste as roupas dele (ADR 0078) e não o kit do Cavaleiro.
+  const wear = player.heroClass === "mage" ? mageWear(player.gear) : null;
+  const look = wear?.look ?? null;
+  const gear = wear ? undefined : player.gear;
   // O que o herói segura: a espada do Cavaleiro ou o cajado do Mago (ADR 0068); o braço, a mão e a ordem de camadas são os mesmos.
   const staffSway = Math.sin(player.walkTime * 2) * g.moving * 0.05;
   const held: { readonly hand: number; readonly gripX: number; readonly gripY: number } = look ? staffMount(player, staffSway, cast) : frame;
@@ -200,7 +206,7 @@ export function renderHero(
   const rightFoot = { hip: 3.6 * wf, x: 3.6 * wf + g.b.along * mvx, y: g.b.along * mvy * 0.55 - g.b.lift, lift: g.b.lift };
   const legs = leftFoot.y + g.a.lift <= rightFoot.y + g.b.lift ? [leftFoot, rightFoot] : [rightFoot, leftFoot];
   legs.forEach((leg, i) => drawLeg(ctx, leg.hip, leg.x, leg.y, leg.lift, mvx, tone, i,
-    hasBoots, hasLegs));
+    hasBoots, hasLegs, wear?.legwear));
 
   // --- capa (por baixo do tronco de frente; sobre ele de costas) ----------
   const headX = player.faceX * 1.3, headY = -31.5 + breath * 0.35 + Math.abs(Math.cos(player.walkTime)) * g.moving * -0.4 +
@@ -302,6 +308,7 @@ export function renderHero(
     ctx.beginPath(); ctx.moveTo(-3.5, -25); ctx.quadraticCurveTo(0, -19, 3.5, -25); ctx.stroke();
     ellipse(ctx, 0, -20.8, 1.8, 2.1, tone("#71b7b3"));
   }
+  if (wear?.pendant) drawMagePendant(ctx, side, back, tone);
   // cinto, fivela e bolsa
   ctx.fillStyle = tone(PAL.leather);
   ctx.fillRect(-9.2 * wf, -13.3, 18.4 * wf, 3.4);
@@ -336,6 +343,11 @@ export function renderHero(
     const hx = shieldSide * 9.6 * wf + mvx * swing * -shieldSide * 4.2;
     const hy = -12.5 + mvy * swing * -shieldSide * 2.8 - swing * -shieldSide * 1.2 + breath * 0.3;
     drawShield(ctx, hx, hy, shieldSide, swing, tone);
+  } else if (wear?.book) {
+    const bookSide = -swordSide;
+    const hx = bookSide * 9.6 * wf + mvx * swing * -bookSide * 4.2;
+    const hy = -12.5 + mvy * swing * -bookSide * 2.8 - swing * -bookSide * 1.2 + breath * 0.3;
+    drawMageBook(ctx, hx, hy, bookSide, swing, tone);
   }
   const gripX = held.gripX, gripY = held.gripY;
   const swordArm = (): void => {
@@ -352,7 +364,7 @@ export function renderHero(
     ctx.fill(); ctx.strokeStyle = tone("#d7b581"); ctx.lineWidth = 0.9; ctx.stroke();
     ctx.fillStyle = tone("#c0a577"); ctx.fillRect(-2.2 * wf, -21, 4.4 * wf, 2.2);
   }
-  if (!back) { swordArm(); drawHeld(); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); }
+  if (!back) { swordArm(); drawHeld(); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); if (wear?.ring) drawMageRing(ctx, gripX, gripY, tone); }
   // rabo-de-cavalo/mecha traseira
   ctx.strokeStyle = tone(PAL.hair); ctx.lineWidth = 4.2; ctx.lineCap = "round";
   ctx.beginPath();
@@ -459,7 +471,7 @@ export function renderHero(
   }
   look?.hat(ctx, hc);
   if (back) { swordArm(); }
-  if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); }
+  if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); if (wear?.ring) drawMageRing(ctx, gripX, gripY, tone); }
   // Rastro e brilho por cima de tudo para ler bem em qualquer direção.
   if (!look) renderTrail(ctx, player, frame);
   ctx.restore();

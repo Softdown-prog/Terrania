@@ -222,8 +222,8 @@
               @if (hud.wearsArmor() && hud.gear() !== null) { <span id="equipmentDefense">Defesa {{ hud.defense() }}</span> }
             </div>
             @if (hud.loadout(); as loadout) {
-              <div class="equipment-grid" [class.single-slot]="!hud.wearsArmor()" role="group"
-                [attr.aria-label]="hud.wearsArmor() ? 'Dez espaços de equipamento do cavaleiro' : 'Espaço do cajado do ' + hud.heroName()">
+              <div class="equipment-grid" [class.single-slot]="!hud.wearsArmor()" [class.mage-grid]="hud.heroClass() === 'mage'" role="group"
+                [attr.aria-label]="(hud.visibleEquipmentSlots().length === 10 ? 'Dez' : hud.visibleEquipmentSlots().length === 8 ? 'Oito' : 'Um') + ' espaços de equipamento do ' + hud.heroName()">
                 @for (slot of hud.visibleEquipmentSlots(); track slot.id) {
                   @let equipped = hud.equippedName(slot.id);
                   <button type="button" class="equipment-slot" [attr.data-equipment-slot]="slot.id"
@@ -318,7 +318,7 @@
                     @let gear = hud.gearCatalog[id];
                     @let equipped = hud.gear()?.[gear.slot] === id;
                     <strong>{{ gear.name }}</strong>
-                    <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto inicial" }}</p>
+                    <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto " + (hud.heroClass() === 'mage' ? "do Aprendiz" : "inicial") }}</p>
                     @if (hud.gear() !== null) {
                       <button type="button" class="secondary-button"
                         (click)="hud.equipGear(id)">{{ equipped ? 'Retirar' : 'Equipar' }} {{ gear.name }}</button>

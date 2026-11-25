@@ -30,6 +30,7 @@ O [ROADMAP](../ROADMAP.md) dizia para concluir o Cavaleiro antes das outras voca
 | F1 | Tela de escolha do herói ao criar o mundo, com o Mago bloqueado ("Em breve") | **feita** ([ADR 0066](0066-tela-de-escolha-do-heroi.md)) |
 | F2 | Mago jogável: **liberado** (`playable`), inventário do Mago (cajado, sem armadura), ferreiro sem espada para ele, Mago desenhado nas casas. A loja de cajados e a Academia Arcana com função esperam o 2º cajado (G) | **feita** ([ADR 0072](0072-mago-jogavel.md)) |
 | G | Cajados 2 a 11, em lotes ([lista](../MAGO_CAJADOS.md)). Lote 1: Brisa, Rocha Viva e Marés ([ADR 0073](0073-cajados-elementais-lote-1.md)) e a Academia Arcana | G1a **feita**; G1b **feita** ([ADR 0074](0074-academia-arcana.md)); lotes 2, 3 e 4 **feitos** ([ADR 0075](0075-cajados-elementais-lote-2.md), [ADR 0076](0076-cajados-elementais-lote-3.md), [ADR 0077](0077-cajados-elementais-lote-4.md)): os onze cajados completos |
+| H | As roupas do Mago ([lista](../MAGO_ROUPAS.md)): onze conjuntos, um por cajado. Lote A1: o Mago passa a vestir, com o conjunto do Aprendiz ([ADR 0078](0078-roupas-do-mago.md)) | A1 **feito**; A2 (mana e dano) e B a E (conjuntos dos níveis 10 a 100) a fazer |
 
 Perguntas que ficam para as fatias seguintes: a vida do Mago (hoje a mesma do Cavaleiro; talvez menor), o custo de mana e o alcance de cada cajado, e como o Mago consegue cajados (loja da Academia Arcana? loot?).
 

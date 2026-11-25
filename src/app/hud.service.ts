@@ -3,11 +3,11 @@ import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Prefer
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE, type MountId } from '../actors/MountCatalog.ts';
 import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/character/Weapons.ts';
-import { EQUIPMENT_SLOTS, GEAR, gearDefense, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
+import { EQUIPMENT_SLOTS, GEAR, gearDefense, gearIdsFor, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
 import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
-import { foodItemIcon, slotItemIcon, staffItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
+import { foodItemIcon, gearItemIcon, slotItemIcon, staffItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
 import { DEFAULT_STAFF, STAFF_IDS, STAVES, isStaffId, staffUnlocked, type StaffId } from '../engine/character/Staves.ts';
 import type { StaffLoadout } from '../engine/character/StaffLoadout.ts';
 import { southRareLootByName } from '../monsters/rareLoot.ts';
@@ -32,7 +32,6 @@ const ACTION_LABELS: Record<NearbyAction, string> = {
   tracks: 'Examinar pegadas',
   tame: 'Acalmar cavalo',
 };
-const KIT_IDS = Object.keys(GEAR) as GearId[];
 
 /** Somente a visualização da bolsa; quantidades e propriedade vêm do motor. */
 export interface BackpackItemView {
@@ -142,8 +141,10 @@ export class HudService implements GameUi {
   readonly staff = signal<StaffId>(DEFAULT_STAFF);
   readonly usesSwords = computed(() => HERO_CLASSES[this.heroClass()].usesSwords);
   readonly wearsArmor = computed(() => HERO_CLASSES[this.heroClass()].wearsArmor);
-  /** O Mago só tem o espaço do cajado; o Cavaleiro, os dez. */
-  readonly visibleEquipmentSlots = computed(() => this.wearsArmor() ? EQUIPMENT_SLOTS : EQUIPMENT_SLOTS.filter(slot => slot.id === 'weapon'));
+  /** Os espaços de equipamento da vocação (o Cavaleiro tem os dez; o Mago, o cajado e as sete roupas), na ordem da ficha dela (ADR 0078). */
+  readonly visibleEquipmentSlots = computed(() => HERO_CLASSES[this.heroClass()].equipmentSlots.flatMap(id => EQUIPMENT_SLOTS.filter(slot => slot.id === id)));
+  /** As peças que a vocação pode vestir (o kit do Cavaleiro ou o conjunto do Aprendiz do Mago). */
+  private readonly kitIds = computed(() => gearIdsFor(this.heroClass()));
   readonly heroName = computed(() => HERO_CLASSES[this.heroClass()].name.toLowerCase());
   readonly equippedStaff = computed(() => STAVES[this.staff()]);
   /** Os cajados comprados (ids separados por vírgula: o texto só muda quando a lista muda, e o HUD não se redesenha à toa). */
@@ -169,8 +170,7 @@ export class HudService implements GameUi {
     });
   });
   slotLabel(slot: EquipmentSlot): string {
-    if (slot === 'weapon' && !this.usesSwords()) return 'Cajado';
-    return EQUIPMENT_SLOTS.find(item => item.id === slot)?.label ?? slot;
+    return HERO_CLASSES[this.heroClass()].slotLabels[slot] ?? EQUIPMENT_SLOTS.find(item => item.id === slot)?.label ?? slot;
   }
   readonly gearCatalog = GEAR;
   readonly gear = signal<GearState | null>(null, { equal: (a, b) => a === b ||
@@ -214,14 +214,15 @@ export class HudService implements GameUi {
     }
     const gear = this.gear();
     if (gear !== null && this.wearsArmor()) {
-      for (const id of KIT_IDS) {
+      const mage = this.heroClass() === 'mage';
+      for (const id of this.kitIds()) {
         const item = GEAR[id];
         if (gear[item.slot] === id) continue;
         const current = gear[item.slot];
         result.push({ id: 'gear-' + id, kind: 'gear', gearId: id, name: item.name,
-          icon: slotItemIcon(item.slot, 'starter'),
+          icon: gearItemIcon(item.slot, this.heroClass()),
           quantity: 1, defense: item.defense, comparedDefense: current ? GEAR[current].defense : 0,
-          description: 'Conjunto inicial · ' + (item.defense > 0 ? 'Defesa +' + item.defense : 'Acessório') });
+          description: (mage ? 'Conjunto do Aprendiz · ' : 'Conjunto inicial · ') + (item.defense > 0 ? 'Defesa +' + item.defense : 'Acessório') });
       }
     }
     const loadout = this.loadout();
@@ -258,7 +259,7 @@ export class HudService implements GameUi {
     }
     return item.quantity > 0;
   });
-  readonly selectedGearOptions = computed(() => KIT_IDS.filter(id => GEAR[id].slot === this.selectedSlot()));
+  readonly selectedGearOptions = computed(() => this.kitIds().filter(id => GEAR[id].slot === this.selectedSlot()));
   readonly defense = computed(() => gearDefense(this.gear() ?? {}));
   readonly loadout = signal<WeaponLoadout | null>(null, { equal: (a, b) =>
     a?.forged === b?.forged && a?.equipped === b?.equipped });
@@ -431,7 +432,7 @@ export class HudService implements GameUi {
   /** Ícone do espaço: a arma mostra a espada realmente equipada. */
   slotIcon(slot: EquipmentSlot): ItemIconId {
     if (slot === 'weapon' && !this.usesSwords()) return staffItemIcon(this.staff());
-    return slotItemIcon(slot, this.loadout()?.equipped ?? 'starter');
+    return slotItemIcon(slot, this.loadout()?.equipped ?? 'starter', this.heroClass());
   }
   equippedName(slot: EquipmentSlot): string {
     if (slot === 'weapon' && !this.usesSwords()) return STAVES[this.staff()].name;

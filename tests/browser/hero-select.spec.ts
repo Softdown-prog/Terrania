@@ -66,7 +66,7 @@ test("Novo mundo: depois de confirmar abre a escolha do herói, e escolher o Cav
   expect(errors).toEqual([]);
 });
 
-test("jogador novo escolhe o Mago: o mundo começa de Mago, com barra de mana, cajado no inventário e sem armadura (desktop/Android)", async ({ page }, info) => {
+test("jogador novo escolhe o Mago: o mundo começa de Mago, com barra de mana, cajado e as roupas de Aprendiz no inventário (desktop/Android)", async ({ page }, info) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.addInitScript(() => localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false })));
@@ -84,12 +84,14 @@ test("jogador novo escolhe o Mago: o mundo começa de Mago, com barra de mana, c
   await expect(inventory).toBeVisible();
   await expect(page.locator("#inventoryTitle")).toHaveText("Inventário do mago");
   if (info.project.name === "android") await press(page.locator("#inventoryTabEquipment"));
-  await expect(page.locator("[data-equipment-slot]")).toHaveCount(1);
+  await expect(page.locator("[data-equipment-slot]")).toHaveCount(8);
   await expect(page.locator("[data-equipment-slot=weapon]")).toContainText("Cajado");
+  await expect(page.locator("[data-equipment-slot=head]")).toContainText("Chapéu de Aprendiz");
+  await expect(page.locator("[data-equipment-slot=shield]")).toContainText("Caderno de Feitiços");
   await expect(page.locator("#equippedWeapon")).toHaveText("Cajado de Aprendiz");
   await expect(page.locator("#equippedStaffStats")).toContainText("5 de mana");
   await expect(page.locator(".preview-eyebrow")).toHaveText("SEU MAGO");
-  await expect(page.locator("#equipmentDefense")).toHaveCount(0);
+  await expect(page.locator("#equipmentDefense")).toHaveText("Defesa 1");
   await expect(page.locator(".sword-choice")).toHaveCount(11);
   await expect(page.locator("#equip-slot-staff-apprentice")).toContainText("Equipado");
   await expect(page.locator("#equip-slot-staff-breeze")).toContainText("Bloqueado");

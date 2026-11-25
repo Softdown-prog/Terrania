@@ -3,6 +3,7 @@ import type { EquipmentSlot, GearSlot } from '../engine/character/Equipment.ts';
 import type { FoodId } from '../engine/character/Food.ts';
 import type { WeaponId } from '../engine/character/Weapons.ts';
 import type { StaffId } from '../engine/character/Staves.ts';
+import type { HeroClassId } from '../engine/character/classes/index.ts';
 import type { SouthRareLootId } from '../monsters/rareLoot.ts';
 import type { CoinId } from '../engine/character/coins/index.ts';
 
@@ -14,6 +15,7 @@ export type ItemIconId =
   | 'sword-tempest' | 'sword-astral'
   | 'staff-apprentice' | 'staff-breeze' | 'staff-stone' | 'staff-tide' | 'staff-ember' | 'staff-thorn' | 'staff-frost' | 'staff-sun' | 'staff-moon' | 'staff-storm' | 'staff-astral'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
+  | 'mage-hat' | 'mage-robe' | 'mage-trousers' | 'mage-boots' | 'mage-book'
   | 'greater-potion' | 'antidote'
   | CoinId
   | SouthRareLootId;
@@ -22,10 +24,18 @@ const SLOT_ICONS: Record<GearSlot, ItemIconId> = {
   ring: 'ring', head: 'helm', neck: 'pendant', shield: 'shield', chest: 'chest',
   backpack: 'pack', legs: 'legs', ammo: 'arrows', feet: 'boots',
 };
+/** Os ícones das roupas do Mago (ADR 0078): o anel e o colar usam os mesmos desenhos do Cavaleiro. */
+const MAGE_SLOT_ICONS: Record<GearSlot, ItemIconId> = {
+  ...SLOT_ICONS, head: 'mage-hat', chest: 'mage-robe', legs: 'mage-trousers', feet: 'mage-boots', shield: 'mage-book',
+};
 const FOOD_ICONS: Record<FoodId, ItemIconId> = { apple: 'apple', bread: 'bread', meat: 'meat' };
 
-export function slotItemIcon(slot: EquipmentSlot, weapon: WeaponId): ItemIconId {
-  return slot === 'weapon' ? weaponItemIcon(weapon) : SLOT_ICONS[slot];
+export function slotItemIcon(slot: EquipmentSlot, weapon: WeaponId, heroClass: HeroClassId = 'knight'): ItemIconId {
+  return slot === 'weapon' ? weaponItemIcon(weapon) : (heroClass === 'mage' ? MAGE_SLOT_ICONS : SLOT_ICONS)[slot];
+}
+/** O ícone de uma peça de equipamento da vocação. */
+export function gearItemIcon(slot: GearSlot, heroClass: HeroClassId): ItemIconId {
+  return (heroClass === 'mage' ? MAGE_SLOT_ICONS : SLOT_ICONS)[slot];
 }
 /** O ícone do cajado em mãos (ADR 0072); cada cajado novo ganha o seu `staff-<id>`. */
 export function staffItemIcon(staff: StaffId): ItemIconId {
@@ -425,6 +435,40 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
           <path fill-rule="evenodd" d="M7 19A9 8 0 1 0 25 19A9 8 0 1 0 7 19ZM10.4 19.4A5.6 4.8 0 1 0 21.6 19.4A5.6 4.8 0 1 0 10.4 19.4Z" fill="#e3b647"/>
           <path d="M16 3.5L20.6 8L16 13.5L11.4 8Z" fill="#5cc8f2"/>
           <path d="M11.4 8H20.6M16 3.5V13.5" fill="none" stroke="#d9f4ff" stroke-width="1"/>
+        }
+        @case ('mage-hat') {
+          <path d="M3.6 24.6Q16 29.4 28.4 24.6Q22.4 22.2 16 22.2Q9.6 22.2 3.6 24.6Z" fill="#3d3685"/>
+          <path d="M10 23C10.8 15 13.4 8.4 20.4 3.4C21.6 6.4 20.6 8.8 22.2 11.6C23 15.4 22.2 19 22 23Q16 24.8 10 23Z" fill="#4b4fa0"/>
+          <path d="M10.2 21.2Q16 23.4 21.9 21.2L22 23Q16 24.8 10 23Z" fill="#e0c277" stroke-width="1"/>
+          <path d="M15.8 12.2L16.8 14.4L19.2 14.7L17.4 16.3L18 18.6L15.8 17.4L13.6 18.6L14.2 16.3L12.4 14.7L14.8 14.4Z" fill="#e0c277" stroke-width=".8"/>
+          <path d="M12 21C12.6 15 14.4 10.4 17.2 6.8" fill="none" stroke="#7a7fd6" stroke-width="1.4"/>
+        }
+        @case ('mage-robe') {
+          <path d="M10 4.6Q16 8 22 4.6L26.6 12.6L23.8 15L23.2 28.4H8.8L8.2 15L5.4 12.6Z" fill="#4b4fa0"/>
+          <path d="M12.4 5.2Q16 11 19.6 5.2" fill="none" stroke="#e0c277" stroke-width="1.7"/>
+          <rect x="8.6" y="14.4" width="14.8" height="2.6" fill="#e0c277" stroke-width="1"/>
+          <path d="M8.8 27.2Q16 29.8 23.2 27.2" fill="none" stroke="#e0c277" stroke-width="1.5"/>
+          <path d="M16 19.2L16.9 21L18.8 21.2L17.4 22.4L17.8 24.2L16 23.2L14.2 24.2L14.6 22.4L13.2 21.2L15.1 21Z" fill="#9fe3ff" stroke-width=".6"/>
+          <path d="M11.4 17.6L10.8 26" fill="none" stroke="#7a7fd6" stroke-width="1.2"/>
+        }
+        @case ('mage-trousers') {
+          <path d="M8.4 4.6H23.6L25.2 27.6H18L16 13.6L14 27.6H6.8Z" fill="#3d3a7a"/>
+          <rect x="8.2" y="4.6" width="15.6" height="3.4" fill="#e0c277" stroke-width="1"/>
+          <path d="M10.6 9.6L8.8 25.4" fill="none" stroke="#7a7fd6" stroke-width="1.3"/>
+          <path d="M16 13.6L16 8.4" fill="none" stroke="#20150f" stroke-width="1"/>
+        }
+        @case ('mage-boots') {
+          <path d="M9 4.8H18.4V18.4C18.4 20.4 21.2 21.2 25.2 22.8C27 23.6 27.4 25.2 27.4 27.4H7.8V4.8Z" fill="#3a2d78"/>
+          <rect x="8.4" y="4.8" width="10.4" height="4" fill="#7a7fd6" stroke-width="1"/>
+          <path d="M7.8 26.2H27.4" fill="none" stroke="#20150f" stroke-width="2.4"/>
+          <path d="M20 22.8L24 24.2" fill="none" stroke="#9aa0e8" stroke-width="1.2"/>
+        }
+        @case ('mage-book') {
+          <path d="M6.4 5.6H24.6Q26.4 5.6 26.4 7.4V25.6H8.2Q6.4 25.6 6.4 23.8Z" fill="#4b4fa0"/>
+          <path d="M6.4 23.8Q6.4 25.6 8.2 25.6H26.4V27.6H8.4Q5 27.6 5 24.2V8" fill="#f1efe0" stroke-width="1"/>
+          <path d="M9.6 5.6V25.6" fill="none" stroke="#2c2d6b" stroke-width="1.6"/>
+          <rect x="12" y="9.2" width="11" height="8.6" rx="1" fill="#e0c277" stroke="#a8863e" stroke-width="1"/>
+          <path d="M17.5 10.8L18.3 12.8L20.4 13L18.8 14.3L19.3 16.3L17.5 15.2L15.7 16.3L16.2 14.3L14.6 13L16.7 12.8Z" fill="#3d3685" stroke-width=".6"/>
         }
         @case ('helm') {
           <path d="M6 24.5V17C6 10 10 5 16 5C22 5 26 10 26 17V24.5Z" fill="#aeb8c2"/>

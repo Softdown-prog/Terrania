@@ -109,7 +109,7 @@ export class OfflineSimulation {
     this.heroClass = normalizeHeroClass(saved?.seed === seed ? saved.heroClass : startingClass);
     this.collision = new SeedCollision(seed);
     this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined,
-      levelForExperience(saved?.seed === seed ? normalizeExperience(saved?.experience) : 0));
+      levelForExperience(saved?.seed === seed ? normalizeExperience(saved?.experience) : 0), this.heroClass);
     this.well = new WellInvestigation(saved?.seed === seed ? saved.wellQuest : undefined);
     this.mounts = new MountStable(saved?.seed === seed ? saved.mounts : undefined);
     if (saved && saved.seed === seed) {

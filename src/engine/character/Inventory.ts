@@ -13,7 +13,8 @@ import { ELIXIR_IDS, elixirRecipe, emptyElixirCounts, normalizeElixirs, type Eli
 import { DEFAULT_STAFF_LOADOUT, isDefaultStaffLoadout, normalizeStaffLoadout, sanitizeStaffLoadout, type StaffBuyResult, type StaffEquipResult, type StaffLoadout } from "./StaffLoadout.ts";
 import { STAVES, isStaffId, staffUnlocked, type StaffId } from "./Staves.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
-import { GEAR, gearDefense, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
+import { GEAR, MAGE_STARTING_GEAR, gearDefense, gearForClass, gearHeroClass, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
+import { DEFAULT_HERO_CLASS, type HeroClassId } from "./classes/index.ts";
 
 /** Regras da bolsa do jogo solo (antes compartilhadas com a sala Node, já retirada). */
 export const QUEST_REWARD_POTIONS = 2;
@@ -85,10 +86,13 @@ export function normalizeInventory(value: unknown): InventoryState {
     ...(Object.values(elixirs).some(v => v > 0) ? { elixirs } : {}),
     ...(loadout ? { loadout } : {}),
     ...(isDefaultStaffLoadout(staves) ? {} : { staves }),
-    ...(Object.keys(gear).length ? { gear } : {}),
+    ...(Object.keys(gear).length || hasGearRecord(state.gear) ? { gear } : {}),
     ...(Object.keys(normalizeMaterials(state.materials)).length ? { materials: normalizeMaterials(state.materials) } : {}),
   };
 }
+
+/** O save tem um registro de equipamento, mesmo vazio? O Mago que tirou tudo tem `gear: {}` e não volta a nascer vestido (ADR 0078). */
+const hasGearRecord = (value: unknown): boolean => value !== null && typeof value === "object" && !Array.isArray(value);
 
 export class Inventory {
   private gelCount = 0;
@@ -101,8 +105,10 @@ export class Inventory {
   private weapons: WeaponLoadout;
   private staffLoadout: StaffLoadout = DEFAULT_STAFF_LOADOUT;
   private equippedGear: GearState;
+  private readonly heroClass: HeroClassId;
 
-  constructor(value?: unknown, level = 1) {
+  constructor(value?: unknown, level = 1, heroClass: HeroClassId = DEFAULT_HERO_CLASS) {
+    this.heroClass = heroClass;
     const state = normalizeInventory(value);
     this.gelCount = state.gel;
     this.coinCount = normalizeCoins(state.coins);
@@ -114,7 +120,8 @@ export class Inventory {
     const restored=state.loadout ?? { forged: false, equipped: "starter" };
     this.weapons = weaponUnlocked(restored.equipped, level, restored.forged)
       ? restored : { ...restored, equipped: "starter" };
-    this.equippedGear = state.gear ?? {};
+    // Só vale o que é da vocação. O Mago sem registro de equipamento (mundo novo ou save antigo) nasce com o conjunto do Aprendiz.
+    this.equippedGear = heroClass === "mage" && state.gear === undefined ? MAGE_STARTING_GEAR : gearForClass(state.gear ?? {}, heroClass);
     this.staffLoadout = normalizeStaffLoadout(state.staves, level);
   }
 
@@ -183,6 +190,7 @@ export class Inventory {
 
   equipGear(slot: GearSlot, item: GearId | null): GearResult {
     if (!isGearSlot(slot) || (item !== null && (!isGearId(item) || GEAR[item].slot !== slot))) return "wrong-slot";
+    if (item !== null && gearHeroClass(item) !== this.heroClass) return "gear-wrong-class";
     if ((this.equippedGear[slot] ?? null) === item) return "gear-unchanged";
     const next = { ...this.equippedGear };
     if (item === null) delete next[slot];
@@ -329,7 +337,7 @@ export class Inventory {
       ...(Object.values(this.elixirCounts).some(v => v > 0) ? { elixirs: { ...this.elixirCounts } } : {}),
       ...(this.weapons.forged || this.weapons.equipped !== "starter" ? { loadout: this.weapons } : {}),
       ...(isDefaultStaffLoadout(this.staffLoadout) ? {} : { staves: this.staffLoadout }),
-      ...(Object.keys(this.equippedGear).length ? { gear: this.equippedGear } : {}),
+      ...(Object.keys(this.equippedGear).length || this.heroClass === "mage" ? { gear: this.equippedGear } : {}),
       ...(Object.keys(this.materialCounts).length ? { materials: { ...this.materialCounts } } : {}),
     };
   }

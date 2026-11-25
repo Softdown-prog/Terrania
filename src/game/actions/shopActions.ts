@@ -10,7 +10,7 @@ import { MARKET_NPC, describeCoins, type MarketId } from "../../engine/character
 import { INVENTORY_FEEDBACK } from "../messages/inventoryFeedback.ts";
 import { CAPITAL_INN_RESTED } from "../messages/capitalInn.ts";
 import { heroClassSheet } from "../../engine/character/classes/index.ts";
-import { NO_ARMOR_MESSAGE, NO_STAVES_MESSAGE, NO_SWORDS_MESSAGE } from "../messages/classRules.ts";
+import { NO_STAVES_MESSAGE, NO_SWORDS_MESSAGE } from "../messages/classRules.ts";
 import type { StaffId } from "../../engine/character/Staves.ts";
 import { say } from "./say.ts";
 import type { ShopContext, ShopResult } from "./shopContext.ts";
@@ -113,7 +113,6 @@ export function equipStaff({ sim }: ShopContext, staff: StaffId): ShopResult {
 }
 
 export function equipGear({ sim }: ShopContext, slot: GearSlot, item: GearId | null): ShopResult {
-  if (!heroClassSheet(sim.heroClass).wearsArmor && item !== null) return { message: NO_ARMOR_MESSAGE, changed: false };
   if (sim.awaitingRespawn) return say("unavailable");
   const result = sim.inventory.equipGear(slot, item);
   return say(result, result === "gear-equipped" || result === "gear-removed");

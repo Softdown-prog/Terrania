@@ -7,7 +7,7 @@ import { FOODS, normalizeFoodCounts } from "../src/engine/character/Food.ts";
 import { startMountQuest } from "../src/engine/mounts/MountQuestState.ts";
 import { MAX_KILLS as SHARED_MAX_KILLS, MAX_STACK as SHARED_MAX_STACK } from "../src/engine/Limits.ts";
 import { Slime } from "../src/actors/Slime.ts";
-import { EQUIPMENT_SLOTS, GEAR } from "../src/engine/character/Equipment.ts";
+import { EQUIPMENT_SLOTS, GEAR, gearIdsFor } from "../src/engine/character/Equipment.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, type WeaponId } from "../src/engine/character/Weapons.ts";
 import { experienceForLevel } from "../src/engine/character/Experience.ts";
 import { ClassicCombat } from "../src/engine/combat/ClassicCombat.ts";
@@ -20,7 +20,7 @@ test("os dez espaços aceitam somente itens compatíveis e restauram o equipamen
   const inventory = new Inventory();
   assert.equal(EQUIPMENT_SLOTS.length, 10);
   assert.equal(inventory.equipGear("head", "willow-shield"), "wrong-slot");
-  for (const id of Object.keys(GEAR) as (keyof typeof GEAR)[]) {
+  for (const id of gearIdsFor("knight")) {
     assert.equal(inventory.equipGear(GEAR[id].slot, id), "gear-equipped");
     assert.equal(inventory.equipGear(GEAR[id].slot, id), "gear-unchanged");
   }

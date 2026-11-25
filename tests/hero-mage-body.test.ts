@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { renderHero, type HeroVisual } from "../src/render/actors.ts";
 import { MAGE_LOOK, MAGE_PAL } from "../src/render/hero/mage/index.ts";
+import { MAGE_STARTING_GEAR } from "../src/engine/character/Equipment.ts";
 import { WEAPONS } from "../src/engine/character/Weapons.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
 import { signature, spy, usesTone } from "./helpers/spyContext.ts";
@@ -95,7 +96,8 @@ test("o Mago não usa a espada: sem lâmina, sem rastro de golpe e sem equipamen
     for (const attackTime of [0.05, 0.1, 0.15, 0.2]) assert.equal(paintOps(mage({ ...dir, attackTime, attackWeapon: "forge" })), paintOps(mage({ ...dir, attackWeapon: "forge" })),
       `${name}: o Mago não desenha rastro nem espada no golpe (${attackTime})`);
   }
-  assert.equal(signature(draw(mage({ gear: kit }))), signature(draw(mage())), "o equipamento do Cavaleiro não muda o Mago");
+  assert.equal(signature(draw(mage({ gear: kit }))), signature(draw(mage({ gear: {} }))), "o equipamento do Cavaleiro não veste o Mago: ele fica como quem não veste nada (as roupas dele são outras, ADR 0078)");
+  assert.equal(signature(draw(mage({ gear: MAGE_STARTING_GEAR }))), signature(draw(mage())), "sem registro de equipamento, o Mago aparece com o conjunto do Aprendiz inteiro");
   assert.equal(signature(draw(mage({ equippedWeapon: "astral" }))), signature(draw(mage())), "nem a arma equipada");
 });
 
