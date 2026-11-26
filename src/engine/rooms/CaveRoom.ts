@@ -1,6 +1,7 @@
 import { resolveSwordStrike, swordStrikeTargets } from "../combat/SwordCombat.ts";
 import { SOUTH_COMMON_KINDS, type CreatureKind } from "../../actors/CreatureCatalog.ts";
 import { Slime } from "../../actors/Slime.ts";
+import { centralCaveSlimes } from "./CaveSlimes.ts";
 import { AELA_SLIME_GOAL } from "../../world/aelaQuest.ts";
 import { RegionalMonster, caveMonsterKinds } from "../../actors/RegionalMonster.ts";
 import { faceTarget } from "../combat/combat.ts";
@@ -75,7 +76,11 @@ export class CaveRoom {
     }
     const plan=dungeonFloor(entrance,this.floorIndex);
     const kinds=plan ? plan.monsters : caveMonsterKinds(entrance.theme);
-    if (!kinds.length) return;
+    if (!kinds.length) {
+      // O Centro não tem criatura regional: as cavernas comuns dele (Gruta das Raízes) são dos slimes, em vez de nascerem vazias.
+      if (entrance.theme === "verdant") for (const slime of centralCaveSlimes(entrance, this.floor.id, this.collision, this.player, this.defeated)) this.monsters.set(slime.id, slime);
+      return;
+    }
     const salt=entrance.seed ^ Math.imul(entrance.tileX,1033) ^ Math.imul(entrance.tileY,2053) ^
       (this.floorIndex===1 ? 0 : Math.imul(this.floorIndex,6361));
     const wanted=plan?.encounters ?? 4;
