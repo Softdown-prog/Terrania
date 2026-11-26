@@ -12,11 +12,12 @@ export const CENTRAL_CAVE_MONSTERS = 6;
 const MIN_FROM_PLAYER = 170, MIN_BETWEEN = 92;
 
 /**
- * Quem mora em cada um dos seis pontos da Gruta das Raízes, na ordem dos pontos: dois slimes, dois morcegos, um rato gigante e uma aranha das raízes. A ordem gira
- * por entrada (o ponto de partida vem do sorteio da própria caverna), então cada gruta tem a sua distribuição, e uma caverna com os seis pontos sempre tem os quatro
- * tipos. Quando só cabem três pontos (caverna estreita), valem os três primeiros da fila girada.
+ * Quem mora em cada ponto da Gruta das Raízes: uma fila de doze (três slimes, dois ratos, dois morcegos, dois slimes de musgo, uma aranha, uma cobra-cipó e um
+ * besouro) de que cada caverna usa os seis primeiros a partir de um ponto de partida sorteado pela própria entrada. Assim cada gruta tem a sua mistura, e qualquer
+ * janela de seis tem ao menos um slime e quatro tipos diferentes (conferido nos testes); nenhum tipo some do Centro, porque as janelas juntas passam por todos.
+ * Quando só cabem três pontos (caverna estreita), valem os três primeiros da fila girada.
  */
-const CENTRAL_ROSTER: readonly CreatureKind[] = ["slime", "giant-rat", "cave-bat", "root-spider", "cave-bat", "slime"];
+export const CENTRAL_ROSTER: readonly CreatureKind[] = ["slime", "giant-rat", "cave-bat", "root-spider", "slime", "moss-slime", "cave-bat", "root-beetle", "slime", "vine-snake", "giant-rat", "moss-slime"];
 /** A criatura do ponto `index` (0, 1, 2...) da caverna de sal `salt`. Pura: mesma entrada, mesma criatura. */
 export function centralCaveKind(salt: number, index: number): CreatureKind {
   const turn = Math.floor(hash2(salt, 5, 97) * CENTRAL_ROSTER.length);
@@ -26,7 +27,7 @@ export function centralCaveKind(salt: number, index: number): CreatureKind {
 interface Spot { readonly x: number; readonly y: number; readonly name: string }
 
 /**
- * O povo do Centro: as cavernas comuns do Centro (tema "verdant") nasciam vazias; hoje nascem com slimes e com as criaturas do Centro (ADR 0083 e 0087), em pontos
+ * O povo do Centro: as cavernas comuns do Centro (tema "verdant") nasciam vazias; hoje nascem com slimes e com as criaturas do Centro (ADR 0083, 0087 e 0088), em pontos
  * sorteados pela entrada (sempre os mesmos para a mesma entrada), em solo que o herói alcança, longe dele e uns dos outros. `defeated` guarda quem já caiu (o save),
  * e o número de tentativas é fixo: nada de laço aberto. O id do slime leva `:slime:`; o das outras criaturas, `:mob:` (o mesmo padrão das cavernas das outras regiões).
  */

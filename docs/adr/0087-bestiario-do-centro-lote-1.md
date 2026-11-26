@@ -1,5 +1,7 @@
 # ADR 0087 — Bestiário do Centro, lote 1: rato gigante, morcego de caverna e aranha das raízes
 
+> **Atualização ([ADR 0088](0088-bestiario-do-centro-lote-2.md)):** a mistura de seis lugares com dois slimes, dois morcegos, um rato e uma aranha virou uma fila de doze (cada caverna usa seis seguidos); o lote 2 trouxe o slime de musgo, a cobra-cipó e o besouro de raiz. O texto abaixo é o registro do lote 1.
+
 **Estado:** entregue em 2026-11-26, direto na `main`, a pedido do dono (variedade de criaturas por região; cavernas do Centro ainda "só com slimes"). É o primeiro lote do plano de [docs/BESTIARIO_CENTRO.md](../BESTIARIO_CENTRO.md) (12 criaturas do Centro, em quatro lotes). Os outros três bestiários (Leste, Oeste e Norte) estão documentados em `docs/BESTIARIO_*.md` e entram em lotes próprios.
 
 ## O que muda

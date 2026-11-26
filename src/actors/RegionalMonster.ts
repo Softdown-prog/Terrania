@@ -1,6 +1,7 @@
 import type { WeaponId } from "../engine/character/Weapons.ts";
 import { Slime } from "./Slime.ts";
 import { pursuitStep, SPECIES_BEHAVIORS, speciesRetreats } from "../monsters/behavior.ts";
+import { ROOT_BEETLE_SHELL } from "../monsters/center/beetles/root-beetle.ts";
 import { duneRatInfectionOnBite } from "../monsters/south/rats/dune-rat.ts";
 import { sandGoblinCornered } from "../monsters/south/goblins/sand-goblin.ts";
 import { desertOrcClubKnockback, DESERT_ORC_CLUB_PUSH_DISTANCE } from "../monsters/south/orcs/desert-orc.ts";
@@ -42,7 +43,7 @@ export class RegionalMonster extends Slime {
   get casting(): number { return Math.min(1, this.windup / .42); }
   /** Armadura só contra golpes físicos; DOT elemental continua independente. */
   override get defense(): number {
-    return super.defense + (this.kind === "sand-beetle" && sandBeetleBuried(this.hp) ? 2 : 0);
+    return super.defense + (this.kind === "sand-beetle" && sandBeetleBuried(this.hp) ? 2 : 0) + (this.kind === "root-beetle" ? ROOT_BEETLE_SHELL : 0);
   }
   override takeHit(sourceX: number, sourceY: number, damage = 1): void {
     super.takeHit(sourceX,sourceY,damage);

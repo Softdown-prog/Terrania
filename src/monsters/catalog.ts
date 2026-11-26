@@ -21,7 +21,7 @@ export type SouthCommonKind = typeof SOUTH_COMMON_KINDS[number];
 /** Espécie exclusiva da superfície do Sul; não aparece em cavernas. */
 export const SOUTH_SURFACE_KINDS = ["sand-beetle"] as const;
 /** Povo do Centro (Gruta das Raízes): criaturas fracas do começo do jogo, em docs/BESTIARIO_CENTRO.md. O slime é anterior ao catálogo regional e fica de fora. */
-export const CENTER_KINDS = ["giant-rat", "cave-bat", "root-spider"] as const;
+export const CENTER_KINDS = ["giant-rat", "cave-bat", "root-spider", "moss-slime", "vine-snake", "root-beetle"] as const;
 export type CenterKind = typeof CENTER_KINDS[number];
 export const REGIONAL_CREATURE_KINDS = [
   "basalt-golem", "cliff-draconid", "mire-hydra", "dune-scorpion", "solar-scarab",

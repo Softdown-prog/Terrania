@@ -3,7 +3,7 @@ import { caveEntranceInCell } from "../../src/world/caves.ts";
 
 /**
  * Relato do dono: as cavernas do Centro estavam vazias. Aqui entra-se numa caverna comum do Centro (Gruta das Raízes) pela entrada de verdade e confere-se que
- * ela abre sem erro, com o nome certo, e que o povo do Centro (slimes, rato gigante, morcego de caverna e aranha das raízes) vem até o herói e aparece na lista
+ * ela abre sem erro, com o nome certo, e que o povo do Centro (slimes, rato gigante, morcego de caverna, aranha das raízes, slime de musgo, cobra-cipó e besouro de raiz) vem até o herói e aparece na lista
  * de batalha. A contagem e a mistura exatas são conferidas no teste unitário (`tests/cave-central-monsters.test.ts`).
  */
 const SEED = 842136;
@@ -35,7 +35,7 @@ test("entrar numa caverna comum do Centro: abre sem erro e tem o povo do Centro 
   // as criaturas perseguem a partir de 245 px: com o herói parado, as mais próximas chegam e entram na lista (só nomes do povo do Centro)
   await expect.poll(() => page.locator("#battleRows .battle-entry strong").allTextContents(), { timeout: 25_000 }).not.toEqual([]);
   const names = await page.locator("#battleRows .battle-entry strong").allTextContents();
-  for (const name of names) expect(["Slime", "Rato Gigante", "Morcego de Caverna", "Aranha das Raízes"]).toContain(name);
+  for (const name of names) expect(["Slime", "Rato Gigante", "Morcego de Caverna", "Aranha das Raízes", "Slime de Musgo", "Cobra-Cipó", "Besouro de Raiz"]).toContain(name);
   await page.locator("canvas#game").screenshot({ path: test.info().outputPath("caverna-do-centro.png") });
   expect(errors).toEqual([]);
 });

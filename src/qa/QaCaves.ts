@@ -2,6 +2,7 @@ import { OfflineSimulation } from "../engine/OfflineSimulation.ts";
 import { collectDrops } from "../engine/character/loot.ts";
 import { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { applyCaveVictories } from "../engine/rooms/CaveRewards.ts";
+import { CENTER_KINDS } from "../monsters/catalog.ts";
 import { caveFloorCount } from "../dungeons/index.ts";
 import { CAVE_EXIT, CAVE_HEIGHT, CAVE_STAIRS_DOWN, CAVE_WIDTH } from "../world/caveFloor.ts";
 import { caveEntranceInCell, type CaveEntrance, type CaveTheme } from "../world/caves.ts";
@@ -28,6 +29,15 @@ export interface CaveQaReport {
   readonly monsters: number;
   readonly findings: readonly CaveQaFinding[];
   readonly totals: { readonly passed: number; readonly failed: number };
+}
+
+/** O que falta à mistura de uma caverna comum do Centro (ao menos um slime, quatro tipos diferentes e só gente do Centro), ou `null` se está certa. */
+export function centralRosterProblem(kinds: ReadonlySet<string>): string | null {
+  const centro: readonly string[] = ["slime", ...CENTER_KINDS], foreign = [...kinds].filter(kind => !centro.includes(kind));
+  if (foreign.length) return `não é do Centro: ${foreign.sort().join(", ")}`;
+  if (!kinds.has("slime")) return "sem slime";
+  if (kinds.size < 4) return `só ${kinds.size} tipos`;
+  return null;
 }
 
 const tileCenter = (tile: { readonly x: number; readonly y: number }): { x: number; y: number } => ({ x: (tile.x + .5) * TILE_SIZE, y: (tile.y + .5) * TILE_SIZE });
@@ -85,10 +95,10 @@ export function runCaveQa(seed: number = 842136): CaveQaReport {
       const label = `${entrance.id} (${theme}) andar ${floorIndex}`;
       monsters += room.monsters.size;
       record("populated", "population", room.monsters.size > 0, `${room.monsters.size} criaturas`, label);
-      // O povo do Centro (ADR 0087): a Gruta das Raízes mistura slimes e as três criaturas do Centro; um tipo sumido da mistura é um defeito de povoamento.
+      // O povo do Centro (ADR 0087 e 0088): a Gruta das Raízes mistura slimes e as criaturas do Centro; caverna sem essa mistura é defeito de povoamento.
       if (theme === "verdant") {
-        const kinds = new Set([...room.monsters.values()].map(mob => mob.kind)), missing = ["slime", "giant-rat", "cave-bat", "root-spider"].filter(kind => !kinds.has(kind as never));
-        record("roster", "population", missing.length === 0, missing.length ? `faltam: ${missing.join(", ")}` : "slime, rato, morcego e aranha", label);
+        const kinds = new Set<string>([...room.monsters.values()].map(mob => mob.kind)), problem = centralRosterProblem(kinds);
+        record("roster", "population", problem === null, problem ?? `${kinds.size} tipos: ${[...kinds].sort().join(", ")}`, label);
       }
       const reach = reachableTiles(room), unreachable = [...room.monsters.values()].filter(mob => !reach.has(Math.floor(mob.y / TILE_SIZE) * CAVE_WIDTH + Math.floor(mob.x / TILE_SIZE)));
       record("monsters-reachable", "reachability", unreachable.length === 0, unreachable.length ? `inalcançáveis: ${unreachable.map(mob => mob.id).join(", ")}` : "todas alcançáveis", label);

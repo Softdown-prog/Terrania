@@ -1,6 +1,6 @@
 # Bestiário do Centro (campos, matas e a Gruta das Raízes)
 
-**Proposta** (2026-11-26), na sequência do conserto das cavernas do Centro vazias ([ADR 0083](adr/0083-cavernas-do-centro-com-slimes.md)): hoje o Centro só tem o slime (e, nas cavernas comuns, seis slimes de arranjo provisório). **Todos os números e nomes são propostas que o dono ajusta.** **Feito:** o lote L1 ([ADR 0087](adr/0087-bestiario-do-centro-lote-1.md)): rato gigante, morcego de caverna e aranha das raízes, na Gruta das Raízes. **A fazer:** L2, L3 e L4. Mesmo molde: **um arquivo por criatura** em `src/monsters/center/<espécie>/`, painter em `src/render/creatures/center/...`, arte no contrato. O Centro é a região dos humanos e do começo do jogo: criaturas **fracas e comuns** (nível 1 a 20), para o jogador novo.
+**Proposta** (2026-11-26), na sequência do conserto das cavernas do Centro vazias ([ADR 0083](adr/0083-cavernas-do-centro-com-slimes.md)): hoje o Centro só tem o slime (e, nas cavernas comuns, seis slimes de arranjo provisório). **Todos os números e nomes são propostas que o dono ajusta.** **Feito:** o lote L1 ([ADR 0087](adr/0087-bestiario-do-centro-lote-1.md)): rato gigante, morcego de caverna e aranha das raízes, na Gruta das Raízes. **Feito também:** o lote L2 ([ADR 0088](adr/0088-bestiario-do-centro-lote-2.md)): slime de musgo, cobra-cipó e besouro de raiz. **A fazer:** L3 e L4. Mesmo molde: **um arquivo por criatura** em `src/monsters/center/<espécie>/`, painter em `src/render/creatures/center/...`, arte no contrato. O Centro é a região dos humanos e do começo do jogo: criaturas **fracas e comuns** (nível 1 a 20), para o jogador novo.
 
 ## As 12 criaturas (1 que existe + 11 novas)
 | # | Criatura | Tier | Vida | Dano | XP | Ataque e efeito | Onde | Saque |
@@ -27,7 +27,9 @@
 1. **L1 (feito, [ADR 0087](adr/0087-bestiario-do-centro-lote-1.md)):** rato gigante, morcego e aranha (3 a 5): a caverna do Centro com variedade (dois slimes, dois morcegos, um rato e uma aranha por caverna, a fila gira por entrada), o saque e o bot de QA.
 
    ![A Gruta das Raízes com slimes e morcegos na lista de batalha](screenshots/caverna-do-centro.png)
-2. **L2:** cobra-cipó, besouro, slime de musgo (2, 6, 7).
+2. **L2 (feito, [ADR 0088](adr/0088-bestiario-do-centro-lote-2.md)):** cobra-cipó, besouro, slime de musgo (2, 6, 7). A fila da caverna passou a doze lugares (cada caverna usa seis seguidos); a poça do slime de musgo que reduz a velocidade do chão ficou para quando o terreno aceitar efeito de criatura.
+
+   ![Slime de Musgo, Cobra-Cipó e Besouro de Raiz](screenshots/centro-lote-2-criaturas.png)
 3. **L3:** javali, lobo, cogumelo (8 a 10) e as matas do Centro.
 4. **L4:** a Raiz-Viva e a masmorra do Centro (3 andares), com o Ent Ancião.
 Cada lote: ficha, painter, arte no contrato, saque, testes, e o bot de QA ganha as criaturas.

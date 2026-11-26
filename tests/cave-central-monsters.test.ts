@@ -7,14 +7,14 @@ import { Slime } from "../src/actors/Slime.ts";
 import { CREATURE_CATALOG } from "../src/actors/CreatureCatalog.ts";
 import { AELA_SLIME_GOAL } from "../src/world/aelaQuest.ts";
 import { CaveRoom } from "../src/engine/rooms/CaveRoom.ts";
-import { CENTRAL_CAVE_MONSTERS, centralCaveKind, centralCaveMonsters } from "../src/engine/rooms/CaveCentral.ts";
+import { CENTRAL_CAVE_MONSTERS, CENTRAL_ROSTER, centralCaveKind, centralCaveMonsters } from "../src/engine/rooms/CaveCentral.ts";
 import { applyCaveVictories } from "../src/engine/rooms/CaveRewards.ts";
 import { caveEntranceInCell, type CaveEntrance, type CaveTheme } from "../src/world/caves.ts";
 import { sampleCaves } from "../src/qa/QaCaves.ts";
 
 /**
  * Relato do dono: as cavernas do Centro estavam vazias (sem monstro, sem nada). Primeiro vieram seis slimes (ADR 0083); com o lote 1 do bestiário do Centro
- * (ADR 0087) a Gruta das Raízes passou a ter o povo de verdade: slimes, rato gigante, morcego de caverna e aranha das raízes, cada um no seu arquivo.
+ * (ADR 0087 e 0088) a Gruta das Raízes passou a ter o povo de verdade: slimes, rato gigante, morcego de caverna, aranha das raízes, slime de musgo, cobra-cipó e besouro de raiz, cada um no seu arquivo.
  */
 const SEED = 842136;
 const read = (path: string): string => readFileSync(path, "utf8");
@@ -26,7 +26,8 @@ for (let cx = -8; cx <= 8; cx++) for (let cy = -8; cy <= 8; cy++) {
   if (entrance && entrance.id !== STARTER && !entrance.tower && entrance.theme === "verdant" && !(byTheme.get("verdant") ?? []).some(item => item.id === entrance.id)) byTheme.set("verdant", [...(byTheme.get("verdant") ?? []), entrance]);
 }
 const central = byTheme.get("verdant") ?? [];
-const CENTER_KINDS = ["giant-rat", "cave-bat", "root-spider"];
+const CENTER_KINDS: readonly string[] = ["giant-rat", "cave-bat", "root-spider", "moss-slime", "vine-snake", "root-beetle"];
+const ALL_KINDS = ["slime", ...CENTER_KINDS];
 
 test("as cavernas comuns do Centro nascem com seis criaturas cada, em solo transitável, longe do herói e uns dos outros", () => {
   assert.ok(central.length >= 6, "há cavernas do Centro para conferir: " + central.length);
@@ -47,22 +48,32 @@ test("as cavernas comuns do Centro nascem com seis criaturas cada, em solo trans
   }
 });
 
-test("a mistura: cada caverna de seis pontos tem os quatro tipos (2 slimes, 2 morcegos, 1 rato, 1 aranha), em ordem diferente de uma caverna para outra", () => {
-  const counts = (entrance: CaveEntrance): string => {
-    const tally = new Map<string, number>();
-    for (const mob of new CaveRoom(entrance).monsters.values()) tally.set(mob.kind, (tally.get(mob.kind) ?? 0) + 1);
-    return JSON.stringify([...tally].sort());
-  };
-  for (const entrance of central) assert.equal(counts(entrance), JSON.stringify([["cave-bat", 2], ["giant-rat", 1], ["root-spider", 1], ["slime", 2]]), entrance.id);
+test("a mistura: a fila tem doze lugares; cada caverna usa seis seguidos (ao menos um slime e quatro tipos), numa ordem que muda de uma caverna para outra", () => {
+  assert.equal(CENTRAL_ROSTER.length, 12);
+  const tally = (list: readonly string[]) => JSON.stringify(ALL_KINDS.map(k => [k, list.filter(x => x === k).length]));
+  assert.equal(tally(CENTRAL_ROSTER), JSON.stringify([["slime", 3], ["giant-rat", 2], ["cave-bat", 2], ["root-spider", 1], ["moss-slime", 2], ["vine-snake", 1], ["root-beetle", 1]]));
+  // toda janela de seis seguidos, em qualquer ponto de partida, tem slime e variedade
+  for (let turn = 0; turn < 12; turn++) {
+    const window = Array.from({ length: 6 }, (_, i) => CENTRAL_ROSTER[(turn + i) % 12]!);
+    assert.ok(window.includes("slime"), "janela " + turn + " sem slime"); assert.ok(new Set(window).size >= 4, "janela " + turn + " com pouca variedade: " + window.join(","));
+  }
+  for (const entrance of central) {
+    const kinds = [...new CaveRoom(entrance).monsters.values()].map(m => m.kind);
+    assert.equal(kinds.length, CENTRAL_CAVE_MONSTERS, entrance.id);
+    assert.ok(kinds.includes("slime") && new Set(kinds).size >= 4 && kinds.every(k => ALL_KINDS.includes(k)), entrance.id + ": " + kinds.join(","));
+  }
   const order = (entrance: CaveEntrance): string => [...new CaveRoom(entrance).monsters.values()].map(m => m.kind).join(",");
   assert.ok(new Set(central.map(order)).size > 1, "a fila gira por entrada: nem toda gruta tem a mesma ordem");
-  // a função pura: determinística, e a fila inteira passa por todos os pontos
-  for (let salt = 0; salt < 40; salt++) {
+  // o povo todo aparece no Centro: nenhum dos sete tipos some da mistura
+  const seen = new Set(central.flatMap(entrance => [...new CaveRoom(entrance).monsters.values()].map(m => m.kind)));
+  assert.deepEqual([...seen].sort(), [...ALL_KINDS].sort(), "os sete tipos aparecem nas cavernas do Centro varridas");
+  // a função pura: determinística, e a fila inteira passa pelos pontos
+  for (let salt = 0; salt < 60; salt++) {
     const six = Array.from({ length: 6 }, (_, i) => centralCaveKind(salt, i));
     assert.deepEqual(six, Array.from({ length: 6 }, (_, i) => centralCaveKind(salt, i)));
-    assert.deepEqual([...six].sort(), ["cave-bat", "cave-bat", "giant-rat", "root-spider", "slime", "slime"]);
+    assert.ok(six.includes("slime"));
   }
-  assert.ok(new Set(Array.from({ length: 40 }, (_, salt) => centralCaveKind(salt, 0))).size >= 3, "o ponto de partida varia com a caverna");
+  assert.ok(new Set(Array.from({ length: 60 }, (_, salt) => centralCaveKind(salt, 0))).size >= 5, "o ponto de partida varia com a caverna");
 });
 
 test("as criaturas são sempre as mesmas para a mesma caverna e mudam de uma caverna para outra", () => {
@@ -115,10 +126,13 @@ test("derrubar um slime da caverna do Centro conta como abate e dá experiência
   assert.equal(sim.defeated.has(mob.id), true);
 });
 
+/** Uma criatura do tipo dado, numa das cavernas do Centro varridas (e a sala dela). */
+const findMob = (kind: string) => { for (const entrance of central) { const room = new CaveRoom(entrance), mob = [...room.monsters.values()].find(m => m.kind === kind); if (mob) return { room, mob }; } throw new Error("sem " + kind + " nas cavernas varridas"); };
+
 test("derrubar uma criatura do Centro dá a experiência da ficha, conta como abate e o saque da ficha cai na bolsa", () => {
-  for (const kind of ["giant-rat", "cave-bat", "root-spider"] as const) {
-    const sim = new OfflineSimulation(SEED), room = new CaveRoom(central[0]!);
-    const mob = [...room.monsters.values()].find(m => m.kind === kind)!, xp = sim.experience, id = mob.id;
+  for (const kind of CENTER_KINDS as readonly ("giant-rat" | "cave-bat" | "root-spider" | "moss-slime" | "vine-snake" | "root-beetle")[]) {
+    const sim = new OfflineSimulation(SEED), { room, mob } = findMob(kind);
+    const xp = sim.experience, id = mob.id;
     assert.equal(applyCaveVictories(sim, { drainVictories: () => [{ kind, id }], player: room.player }), true);
     assert.equal(sim.experience - xp, CREATURE_CATALOG[kind].experience, kind + ": a experiência é a da ficha");
     // `kills` é o contador de slimes (usado também pela missão de montaria): bicho do Centro que não é slime não mexe nele
@@ -134,14 +148,14 @@ test("derrubar uma criatura do Centro dá a experiência da ficha, conta como ab
   assert.ok(dropped > 10 && dropped < 50, "o rato gigante deixa material: " + dropped);
 });
 
-test("o herói de verdade derruba um slime, um rato, um morcego e uma aranha da caverna do Centro com a espada", () => {
-  for (const kind of ["slime", "giant-rat", "cave-bat", "root-spider"] as const) {
-    const room = new CaveRoom(central[0]!), mob = [...room.monsters.values()].find(m => m.kind === kind)!;
+test("o herói de verdade derruba cada um dos sete tipos da caverna do Centro com a espada", () => {
+  for (const kind of ALL_KINDS) {
+    const { room, mob } = findMob(kind);
     mob.x = room.player.x + 18; mob.y = room.player.y;
     for (const other of [...room.monsters.values()]) if (other !== mob) room.monsters.delete(other.id);
-    for (let i = 0; i < 400 && room.monsters.has(mob.id); i++) room.update(0.05, { x: 0, y: 0 }, true, "starter", 0, mob.id);
+    for (let i = 0; i < 800 && room.monsters.has(mob.id); i++) room.update(0.05, { x: 0, y: 0 }, true, "starter", 0, mob.id);
     assert.equal(room.monsters.has(mob.id), false, kind + " caiu");
-    assert.deepEqual(room.drainVictories(), [{ kind, id: mob.id }]);
+    assert.deepEqual(room.drainVictories(), [{ kind: kind as never, id: mob.id }]);
   }
 });
 

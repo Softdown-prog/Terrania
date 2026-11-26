@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { runCaveQa, sampleCaves } from "../src/qa/QaCaves.ts";
+import { centralRosterProblem, runCaveQa, sampleCaves } from "../src/qa/QaCaves.ts";
 import { CaveRoom } from "../src/engine/rooms/CaveRoom.ts";
 import { caveReach } from "../src/world/caveReach.ts";
 import { TILE_SIZE } from "../src/world/terrain.ts";
@@ -21,9 +21,9 @@ test("o bot de cavernas passa nos seis temas, em todos os andares", () => {
   for (const id of ["populated", "monsters-reachable", "exit-reachable", "loot-cycle"]) assert.ok(report.findings.some(item => item.id === id && item.status === "passed"), id);
   assert.ok(report.findings.some(item => item.id === "stairs-reachable"), "as masmorras de vários andares têm a escada conferida");
   assert.equal(report.findings.filter(item => item.id === "populated").length, report.floors, "cada andar é conferido");
-  // a mistura do Centro é conferida em cada caverna do tema (quatro), e só nelas
+  // a mistura do Centro é conferida em cada caverna do tema (quatro), e só nelas: ao menos um slime e quatro tipos, todos do povo do Centro
   const roster = report.findings.filter(item => item.id === "roster");
-  assert.equal(roster.length, 4); assert.ok(roster.every(item => item.status === "passed" && item.cave.includes("(verdant)") && item.detail === "slime, rato, morcego e aranha"), JSON.stringify(roster));
+  assert.equal(roster.length, 4); assert.ok(roster.every(item => item.status === "passed" && item.cave.includes("(verdant)") && /^[4-7] tipos: .*slime/.test(item.detail)), JSON.stringify(roster));
 });
 
 test("cada tema tem cavernas para conferir (antes só o Centro aparecia na varredura)", () => {
@@ -60,4 +60,14 @@ test("caveReach: o chão ligado ao herói é alcançável; ilha isolada, parede 
   // a busca respeita o tamanho do andar, mesmo se a colisão deixasse pisar além dele
   const open = caveReach({ canMove: () => true }, { x: 6.5 * TILE_SIZE, y: 6.5 * TILE_SIZE });
   assert.equal(open(41.5 * TILE_SIZE, 29.5 * TILE_SIZE), true, "o canto do andar"); assert.equal(open(42.5 * TILE_SIZE, 6.5 * TILE_SIZE), false, "além da largura"); assert.equal(open(6.5 * TILE_SIZE, 30.5 * TILE_SIZE), false, "além da altura");
+});
+
+test("a conferência da mistura do Centro reprova o que está errado e aprova o que está certo", () => {
+  const ok = ["slime", "giant-rat", "cave-bat", "root-spider"];
+  assert.equal(centralRosterProblem(new Set(ok)), null);
+  assert.equal(centralRosterProblem(new Set([...ok, "moss-slime", "vine-snake", "root-beetle"])), null);
+  assert.equal(centralRosterProblem(new Set(["giant-rat", "cave-bat", "root-spider", "moss-slime"])), "sem slime");
+  assert.equal(centralRosterProblem(new Set(["slime", "giant-rat", "cave-bat"])), "só 3 tipos");
+  assert.equal(centralRosterProblem(new Set()), "sem slime");
+  assert.equal(centralRosterProblem(new Set([...ok, "dune-rat", "basalt-golem"])), "não é do Centro: basalt-golem, dune-rat");
 });

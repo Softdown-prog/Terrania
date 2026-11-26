@@ -9,9 +9,9 @@ import { Player } from "../src/actors/Player.ts";
 
 const themes = ["basalt","marsh","desert","glacial","coastal"] as const satisfies readonly CaveTheme[];
 
-test("bestiário: 34 espécies com ficha completa e loot válido", () => {
-  assert.equal(REGIONAL_CREATURE_KINDS.length,34);
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,34);
+test("bestiário: 37 espécies com ficha completa e loot válido", () => {
+  assert.equal(REGIONAL_CREATURE_KINDS.length,37);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,37);
   for (const kind of REGIONAL_CREATURE_KINDS) {
     const def=CREATURE_CATALOG[kind];
     assert.ok(def.name.length>8);
@@ -42,8 +42,8 @@ test("geografia: cinco habitats subterrâneos recebem só suas espécies", () =>
     assert.equal(kinds.length,expected[theme],theme);
     for(const kind of kinds) assert.ok(CREATURE_CATALOG[kind].caveThemes.includes(theme));
   }
-  // o Centro tem o seu povo (ADR 0087): as três criaturas do lote 1; o slime nasce à parte, na própria caverna
-  assert.deepEqual(caveMonsterKinds("verdant"),["giant-rat","cave-bat","root-spider"]);
+  // o Centro tem o seu povo (ADR 0087): as seis do Centro (lotes 1 e 2); o slime nasce à parte, na própria caverna
+  assert.deepEqual(caveMonsterKinds("verdant"),["giant-rat","cave-bat","root-spider","moss-slime","vine-snake","root-beetle"]);
 });
 
 test("superfície: monstros estáveis por seed, ausentes da vila central", () => {
