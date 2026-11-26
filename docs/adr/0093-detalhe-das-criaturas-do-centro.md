@@ -1,6 +1,6 @@
 # ADR 0093 — Mais detalhe nas nove criaturas do Centro (etapa C, em três entregas)
 
-**Estado:** C1 entregue em 2026-11-26 (lobo, javali e rato). C2 (aranha, besouro e morcego) e C3 (cobra, slime de musgo e cogumelo) seguem nas próximas entregas, no mesmo ADR. É a terceira etapa de qualidade, depois da luz comum ([ADR 0090](0090-luz-comum-e-cache-de-quadros.md)) e das montarias ([ADR 0091](0091-kit-de-anatomia-das-montarias.md)).
+**Estado:** C1 (lobo, javali e rato) e C2 (aranha, besouro e morcego) entregues em 2026-11-26. C3 (cobra, slime de musgo e cogumelo) segue na próxima entrega, no mesmo ADR. É a terceira etapa de qualidade, depois da luz comum ([ADR 0090](0090-luz-comum-e-cache-de-quadros.md)) e das montarias ([ADR 0091](0091-kit-de-anatomia-das-montarias.md)).
 
 ## O problema
 As nove criaturas do Centro eram elipses com hastes: patas de palito que só balançavam, espetos soltos no dorso no lugar de pelo, rosto de poucos traços. Ao lado das montarias novas destoavam.
@@ -19,5 +19,16 @@ As nove criaturas do Centro eram elipses com hastes: patas de palito que só bal
 ## Contrato de arte e testes
 `furAlong` e `furFlow` entram no contrato como ativos compostos (lobo, javali e rato), sem baixar nenhum piso. `tests/center-anatomy.test.ts` (12): sorteio estável e em [0, 1), geometria exata das mechas (nasce na linha, lado, inclinação, comprimento, variação, determinismo), espelho, pernas do kit em diagonais e na ordem de desenho (distantes antes do tronco, próximas depois), joelho e apoio, parado versus andando, mandíbula, presas, dentes, arranhões por limiar, pelagem por indivíduo, caixa da luz comum e ausência de relógio. Os testes de medida exata do lobo e do javali em `tests/center-creatures.test.ts` foram reescritos para o desenho novo. **30 mutações** (lado das mechas, inclinação, espelho, dobradiça, presas, limiares de ferimento, ordem das pernas, quadril...) são todas pegas (2 sobreviveram na primeira rodada e ganharam teste próprio).
 
-## Falta (C2 e C3)
-Aranha das raízes, besouro de raiz e morcego de caverna (C2); cobra-cipó, slime de musgo e cogumelo andante (C3): mesmo kit onde couber (patas articuladas na aranha e no besouro), carapaça, asas, escamas e rosto com mais camadas.
+## C2 — aranha, besouro e morcego
+![Antes (em cima) e depois (embaixo): morcego, aranha e besouro](../screenshots/centro-c2-antes-depois.png)
+
+- **O kit ganhou o solucionador solto** (`solveLeg(spec, x, y)` em `limbs.ts`): o pé vai para o ponto pedido, e `legPose` (a passada) passou a usá-lo. É o que serve a quem tem patas abertas em leque.
+- **Aranha das Raízes:** oito patas de dois ossos (`SPIDER_LEGS`: duas para a frente e duas para trás de cada lado), de **joelho alto** (o quadril baixo e os ossos longos fazem o joelho subir acima do corpo), com cerdas, articulações e garras. As do lado distante, mais escuras e um pouco adiante, saem atrás do corpo; as diagonais alternam. Cefalotórax de carapaça com placas e pelos, **oito olhos**, dois palpos e **quelíceras com presas que abrem em tesoura** (3,4 por unidade de golpe, a gota de veneno só no golpe); abdômen de pelo curto, o desenho de raízes, o musgo e a fiandeira.
+- **Besouro de Raiz:** seis patas (`BEETLE_LEGS`) em **tripés alternados**, com espinhos; casco em cúpula com **estrias que seguem a curva**, costura, nervuras, pontuações, borda escura e musgo; o **pronoto** (a placa do pescoço); cabeça com **olho de facetas**, **antenas de clava lamelada** que balançam e mandíbulas dentadas que abrem (4,08 para cada lado).
+- **Morcego de Caverna:** as asas ganham **veias** que ramificam e as **juntas dos dedos** (a borda recortada e o rasgo da membrana não mudam), o corpo ganha **pelo** (mechas pelo peito e pela gola), as orelhas ganham **nervuras** e pelo fino, e o rosto ganha focinho com **folha nasal**, sobrancelha, pupila, presas grandes e pequenas e língua no guincho.
+- Aranha e besouro, como o lobo, são **montados olhando para a direita e espelhados**, e **parados não marcham**.
+
+**Testes** (`tests/center-arthropods.test.ts`, 8): oito patas em leque com ossos inteiros, joelho alto e pé no chão; passada alternada com valores exatos (e o pé nunca afunda); tripé do besouro; ordem das patas (distantes antes do corpo, próximas depois); quelíceras, mandíbulas, antenas e rachaduras por limiar; o morcego (juntas, nariz, língua, presas); caixa da luz comum e determinismo. **32 mutações** (patas, quadril, passo, quelíceras, mandíbulas, antenas, limiares, espelho, ordem das patas, `solveLeg`...) são todas pegas (6 sobreviveram na primeira rodada e ganharam teste próprio).
+
+## Falta (C3)
+Cobra-cipó, slime de musgo e cogumelo andante: escamas, gel com camadas, chapéu e lamelas com mais detalhe.

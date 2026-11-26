@@ -167,6 +167,7 @@
 - [`docs/screenshots/caverna-do-centro.png`](../../docs/screenshots/caverna-do-centro.png)
 - [`docs/screenshots/centro-bichos-na-superficie.png`](../../docs/screenshots/centro-bichos-na-superficie.png)
 - [`docs/screenshots/centro-c1-antes-depois.png`](../../docs/screenshots/centro-c1-antes-depois.png)
+- [`docs/screenshots/centro-c2-antes-depois.png`](../../docs/screenshots/centro-c2-antes-depois.png)
 - [`docs/screenshots/centro-lote-1-criaturas.png`](../../docs/screenshots/centro-lote-1-criaturas.png)
 - [`docs/screenshots/centro-lote-2-criaturas.png`](../../docs/screenshots/centro-lote-2-criaturas.png)
 - [`docs/screenshots/centro-lote-3-criaturas.png`](../../docs/screenshots/centro-lote-3-criaturas.png)

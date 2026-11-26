@@ -27,7 +27,11 @@ export interface LegPose { readonly knee: readonly [number, number]; readonly fo
 /** A pose da perna na fase dada (radianos): balanço pelo seno, altura pelo cosseno positivo; o pé nunca passa do alcance dos dois ossos. */
 export function legPose(spec: LegSpec, phase: number): LegPose {
   const swing = Math.sin(phase), up = Math.max(0, Math.cos(phase));
-  const tx = spec.hipX + swing * spec.stride, ty = -up * spec.lift;
+  return solveLeg(spec, spec.hipX + swing * spec.stride, -up * spec.lift);
+}
+
+/** A pose da perna com o pé no ponto dado (x, y do corpo): cinemática inversa de dois ossos, com o joelho para o lado de `front` e o pé grampeado ao alcance. */
+export function solveLeg(spec: LegSpec, tx: number, ty: number): LegPose {
   const dx = tx - spec.hipX, dy = ty - spec.hipY, want = Math.hypot(dx, dy) || 1;
   const reach = spec.upper + spec.lower - .4, floor = Math.abs(spec.upper - spec.lower) + .4;
   const d = Math.min(reach, Math.max(floor, want)), ux = dx / want, uy = dy / want;
