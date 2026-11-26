@@ -3,7 +3,7 @@ import type { Palette } from "./geometry.ts";
 import { EDGE } from "./geometry.ts";
 import { drawEquineHead } from "./equineHead.ts";
 import { drawMane, drawNeck, type NeckSpec } from "./neck.ts";
-import type { QuadrupedSpec } from "./quadruped.ts";
+import type { QuadrupedSpec } from "../shared/anatomy/quadruped.ts";
 import { shade } from "../../draw.ts";
 
 export const WARHORSE_BODY: QuadrupedSpec = {

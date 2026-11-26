@@ -14,7 +14,8 @@ export const PALETTES: Readonly<Record<MountId,Palette>> = {
   "cargo-beetle":{base:"#9d9777",dark:"#4c493d",light:"#d0c6a1",accent:"#c9a56e",tack:"#75543f"},
   "tidal-hippocampus":{base:"#3eaca2",dark:"#265a70",light:"#a4e3d4",accent:"#6bddce",tack:"#885d53"},
 };
-export const EDGE="#142a2a",GLINT="#fff6dc";
+import { EDGE, GLINT } from "../shared/anatomy/palette.ts";
+export { EDGE, GLINT };
 export const body = (ctx:CanvasRenderingContext2D,x:number,y:number,rx:number,ry:number,
   p:Palette,angle=0):void => {
   const g=ctx.createLinearGradient(x-rx,y-ry,x+rx,y+ry);

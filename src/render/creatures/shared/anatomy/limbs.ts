@@ -4,9 +4,9 @@
  * só balança. Os ossos são afilados (grossos no alto, finos no tornozelo), com sombreamento, junta com volume e pé próprio de cada espécie. Pernas do lado distante
  * saem mais escuras e são desenhadas antes do corpo.
  */
-import type { Palette } from "./geometry.ts";
-import { EDGE, GLINT } from "./geometry.ts";
-import { ellipse, rgba, shade } from "../../draw.ts";
+import type { KitPalette } from "./palette.ts";
+import { EDGE, GLINT } from "./palette.ts";
+import { ellipse, rgba, shade } from "../../../draw.ts";
 
 export type FootKind = "hoof" | "cloven" | "paw" | "claw";
 export interface LegSpec {
@@ -54,7 +54,7 @@ function bone(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number,
 }
 
 /** O pé: casco inteiro, casco fendido ou pata de felino/urso com garras. */
-function foot(ctx: CanvasRenderingContext2D, p: Palette, kind: FootKind, x: number, y: number, w: number, far: boolean): void {
+function foot(ctx: CanvasRenderingContext2D, p: KitPalette, kind: FootKind, x: number, y: number, w: number, far: boolean): void {
   const dark = far ? shade(p.dark, -.2) : p.dark;
   if (kind === "paw") {
     ellipse(ctx, x + 1, y - .6, w * .95, 2.9, dark);
@@ -83,7 +83,7 @@ function foot(ctx: CanvasRenderingContext2D, p: Palette, kind: FootKind, x: numb
 }
 
 /** Uma perna inteira na pose dada: osso de cima, junta, osso de baixo, boleto e pé. */
-export function drawLeg(ctx: CanvasRenderingContext2D, p: Palette, spec: LegSpec, pose: LegPose): void {
+export function drawLeg(ctx: CanvasRenderingContext2D, p: KitPalette, spec: LegSpec, pose: LegPose): void {
   const k = spec.far ? -.28 : 0;
   const light = shade(p.light, k), mid = shade(p.base, k), dark = shade(p.dark, k);
   const [kx, ky] = pose.knee, [fx, fy] = pose.foot;

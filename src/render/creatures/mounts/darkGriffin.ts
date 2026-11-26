@@ -1,7 +1,7 @@
 /** Grifo-Sombrio — corpo de leão, patas dianteiras de ave de rapina com garras, asas de penas articuladas, cabeça de águia e cauda felina (ADR 0091). */
 import type { Palette } from "./geometry.ts";
 import { EDGE, GLINT } from "./geometry.ts";
-import type { QuadrupedSpec } from "./quadruped.ts";
+import type { QuadrupedSpec } from "../shared/anatomy/quadruped.ts";
 import { ellipse, rgba, shade, TAU } from "../../draw.ts";
 
 export const DARK_GRIFFIN_BODY: QuadrupedSpec = {

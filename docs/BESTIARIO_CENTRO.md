@@ -35,3 +35,6 @@
    ![Javali, Lobo Cinzento e Cogumelo Andante](screenshots/centro-lote-3-criaturas.png)
 4. **L4:** a Raiz-Viva e a masmorra do Centro (3 andares), com o Ent Ancião.
 Cada lote: ficha, painter, arte no contrato, saque, testes, e o bot de QA ganha as criaturas.
+
+## Acabamento do desenho
+O lobo, o javali e o rato foram redesenhados com o kit de anatomia e pelagem em mechas ([ADR 0093](adr/0093-detalhe-das-criaturas-do-centro.md)); a aranha, o besouro, o morcego, a cobra, o slime de musgo e o cogumelo seguem nas próximas entregas da mesma etapa. Ficha, comportamento e saque não mudaram.

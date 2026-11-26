@@ -2,7 +2,7 @@
  * Corpo de quatro patas montado a partir do tronco e das pernas articuladas (ADR 0091): pernas do lado distante, tronco, pernas do lado próximo, e a passada em
  * diagonais (a anterior próxima anda junto com a posterior distante). A espécie dá só as medidas; a cabeça, o pescoço, o rabo e os enfeites ficam no arquivo dela.
  */
-import type { Palette } from "./geometry.ts";
+import type { KitPalette } from "./palette.ts";
 import { drawLeg, legPose, type FootKind, type LegSpec } from "./limbs.ts";
 import { drawTorso, type TorsoSpec } from "./torso.ts";
 import { mountBob, type MountGaitState } from "./gait.ts";
@@ -37,7 +37,7 @@ export function quadrupedLegs(s: QuadrupedSpec, phase: number, moving = 1): Read
  * O corpo inteiro: pernas distantes, o que fica atrás do tronco (pescoço e cabeça, que nascem dentro dele), tronco, pernas próximas. Com `gait` (montaria montada,
  * ADR 0092) a passada vem da fase dada, as patas balançam só o quanto ela anda e o tronco sobe e desce; sem ele, anda com o relógio como sempre.
  */
-export function drawQuadruped(ctx: CanvasRenderingContext2D, p: Palette, s: QuadrupedSpec, time: number, behind?: () => void, gait?: MountGaitState): void {
+export function drawQuadruped(ctx: CanvasRenderingContext2D, p: KitPalette, s: QuadrupedSpec, time: number, behind?: () => void, gait?: MountGaitState): void {
   const legs = quadrupedLegs(s, gait ? gait.phase : time * GAIT_RATE, gait ? gait.moving : 1);
   for (const leg of legs) if (leg.spec.far) drawLeg(ctx, p, leg.spec, legPose(leg.spec, leg.phase));
   ctx.save();

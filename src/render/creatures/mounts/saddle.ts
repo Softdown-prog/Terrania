@@ -1,7 +1,7 @@
 /** A sela das montarias de quatro patas (ADR 0091): manta, assento de couro com costura, fivela e a cilha que desce até a barriga, medidos pelo tronco da espécie. */
 import type { Palette } from "./geometry.ts";
 import { EDGE, GLINT } from "./geometry.ts";
-import type { TorsoSpec } from "./torso.ts";
+import type { TorsoSpec } from "../shared/anatomy/torso.ts";
 import { ellipse, rgba, shade } from "../../draw.ts";
 
 /** A altura a que o cavaleiro é desenhado acima dos pés da montaria: o assento da sela (o lombo menos dois) é onde fica o fundo do tronco dele, 6 unidades acima da origem do herói. */

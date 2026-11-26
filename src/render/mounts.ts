@@ -2,7 +2,7 @@
 import type { MountId } from "../actors/MountCatalog.ts";
 import { ellipse, mix, rgba, shade, softShadow } from "./draw.ts";
 import { PALETTES, EDGE, GLINT } from "./creatures/mounts/geometry.ts";
-import { drawQuadruped } from "./creatures/mounts/quadruped.ts";
+import { drawQuadruped } from "./creatures/shared/anatomy/quadruped.ts";
 import { drawSaddle } from "./creatures/mounts/saddle.ts";
 import { QUADRUPED_MOUNTS, isQuadrupedMount, mountRiderLift, mountRiderShiftX } from "./creatures/mounts/quadrupeds.ts";
 import { drawTidalHippocampus } from "./creatures/mounts/tidalHippocampus.ts";
@@ -11,7 +11,7 @@ import { renderCargoBeetleDetail } from "./creatures/mounts/cargoBeetle.ts";
 import { drawLit } from "./lighting/litSprite.ts";
 import { MOUNT_BOX } from "./lighting/lightRig.ts";
 import { FRAMES_PER_SECOND, stepTime } from "./lighting/visualKey.ts";
-import { RIDE_AMBIENT_FPS, RIDE_PHASE_STEPS, mountBob, stepRide, type MountRide } from "./creatures/mounts/gait.ts";
+import { RIDE_AMBIENT_FPS, RIDE_PHASE_STEPS, mountBob, stepRide, type MountRide } from "./creatures/shared/anatomy/gait.ts";
 
 /**
  * x/y = contato real com o solo; mantém contrato usado pela cena e miniatura. Com `ride` (a montaria sob o herói, ADR 0092) ela olha para onde o herói olha, a passada

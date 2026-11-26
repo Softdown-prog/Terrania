@@ -1,7 +1,7 @@
 /** As sete montarias de quatro patas reunidas (ADR 0091): para cada uma, o corpo (medidas), o que fica atrás do tronco (pescoço, cabeça, asas) e o que fica na frente (cauda, enfeites). */
 import type { MountId } from "../../../actors/MountCatalog.ts";
 import type { Palette } from "./geometry.ts";
-import type { QuadrupedSpec } from "./quadruped.ts";
+import type { QuadrupedSpec } from "../shared/anatomy/quadruped.ts";
 import { riderLiftFor, saddleCenterX } from "./saddle.ts";
 import { WARHORSE_BODY, drawWarhorse, drawWarhorseBehind } from "./warhorse.ts";
 import { MOUNTAIN_GOAT_BODY, drawMountainGoat, drawMountainGoatBehind } from "./mountainGoat.ts";

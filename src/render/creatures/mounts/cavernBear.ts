@@ -1,7 +1,7 @@
 /** Urso-das-Cavernas — ombros maciços, corcova, pelagem de gelo, patas largas com garras e placas de gelo no dorso (ADR 0091). */
 import type { Palette } from "./geometry.ts";
 import { EDGE, GLINT } from "./geometry.ts";
-import type { QuadrupedSpec } from "./quadruped.ts";
+import type { QuadrupedSpec } from "../shared/anatomy/quadruped.ts";
 import { ellipse, rgba, shade, TAU } from "../../draw.ts";
 
 export const CAVERN_BEAR_BODY: QuadrupedSpec = {

@@ -286,16 +286,18 @@ test("a cobra-cipó: a língua sai 7 a mais no golpe e a onda do corpo cresce an
 
 test("o lobo: a cauda balança com a passada e se abre correndo; o javali baixa a cabeça no golpe (medidas exatas)", () => {
   const wolf = (m: object) => pathCalls(c => drawGrayWolf(c, GRAY_WOLF_PALETTE, 1.3, { seed: .3, phase: 0, moving: 0, bite: 0, wound: 0, ...m }));
-  const tail = (m: object) => wolf(m).find(call => call.name === "quadraticCurveTo" && call.args.length === 4)!.args;
-  // a primeira curva do desenho é o contorno da cauda: ponto de controle sobe 5 por unidade de movimento; a ponta oscila 4 por seno da passada
-  assert.ok(Math.abs(tail({ moving: 1 })[1]! - tail({})[1]! + 5) < 1e-9, "a cauda se abre correndo");
-  for (const phase of [.5, 1, 2.4]) assert.ok(Math.abs((tail({ moving: 1, phase })[3]! - tail({ moving: 1 })[3]!) - 4 * Math.sin(phase * 1.2)) < 1e-9, "a ponta da cauda acompanha a passada, fase " + phase);
-  assert.equal(tail({ moving: 0, phase: 2 })[3], tail({ moving: 0, phase: 0 })[3], "parada, a cauda não depende da fase");
-  // o javali: a cabeça inteira desce 3 por unidade de golpe (o primeiro disco da cabeça é o corpo da cabeça)
-  const boarHead = (bite: number) => pathCalls(c => drawWildBoar(c, WILD_BOAR_PALETTE, 1.3, { seed: .3, phase: 0, moving: 0, bite, wound: 0 })).filter(call => call.name === "ellipse" && call.args[2] === 11 && call.args[3] === 9.5);
-  assert.equal(boarHead(0).length, 2, "cada disco da cabeça (contorno e preenchimento)");
-  assert.ok(Math.abs(boarHead(1)[0]!.args[1]! - boarHead(0)[0]!.args[1]! - 3) < 1e-9, "a cabeça desce 3 no golpe");
-  assert.ok(Math.abs(boarHead(.5)[0]!.args[1]! - boarHead(0)[0]!.args[1]! - 1.5) < 1e-9);
+  // a cauda é a primeira coisa desenhada: três trechos (contorno e miolo cada um), cada curva termina no ponto seguinte do caminho
+  const tail = (m: object) => wolf(m).filter(call => call.name === "quadraticCurveTo" && call.args.length === 4).slice(0, 6).map(call => call.args);
+  // o segundo ponto sobe 3,5 (5 × 0,7) por unidade de movimento; a ponta oscila 4 por seno da passada
+  assert.ok(Math.abs(tail({ moving: 1 })[0]![3]! - tail({})[0]![3]! + 3.5) < 1e-9, "a cauda se abre correndo");
+  for (const phase of [.5, 1, 2.4]) assert.ok(Math.abs((tail({ moving: 1, phase })[4]![3]! - tail({ moving: 1 })[4]![3]!) - 4 * Math.sin(phase * 1.2)) < 1e-9, "a ponta da cauda acompanha a passada, fase " + phase);
+  assert.equal(tail({ moving: 0, phase: 2 })[4]![3], tail({ moving: 0, phase: 0 })[4]![3], "parada, a cauda não depende da fase");
+  assert.equal(tail({})[0]!.join(), tail({})[1]!.join(), "o contorno e o miolo da cauda seguem o mesmo caminho");
+  // o javali: a cabeça inteira desce 3 por unidade de golpe (o último deslocamento do desenho é o da cabeça)
+  const headDip = (bite: number) => pathCalls(c => drawWildBoar(c, WILD_BOAR_PALETTE, 1.3, { seed: .3, phase: 0, moving: 0, bite, wound: 0 })).filter(call => call.name === "translate").at(-1)!.args;
+  assert.deepEqual(headDip(0), [0, 0]); assert.deepEqual(headDip(1), [0, 3]);
+  assert.ok(Math.abs(headDip(.5)[1]! - 1.5) < 1e-9);
+  assert.deepEqual(headDip(7), [0, 3], "o golpe passa do limite e a cabeça não desce além de 3");
 });
 
 test("o cogumelo: o corpo balança com a passada e os pés se alternam no pulinho (medidas exatas)", () => {

@@ -16,7 +16,7 @@ import { drawMagePendant } from "./hero/mage/gear/pendant.ts";
 import { drawMageRing } from "./hero/mage/gear/ring.ts";
 import type { LegWear } from "./hero/mage/gear/legwear.ts";
 import { riderPose } from "./hero/ride.ts";
-import { stepRide, type MountRide } from "./creatures/mounts/gait.ts";
+import { stepRide, type MountRide } from "./creatures/shared/anatomy/gait.ts";
 
 export type HeroVisual = Pick<
   Player,

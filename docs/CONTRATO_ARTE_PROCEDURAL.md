@@ -34,6 +34,8 @@ Em arte procedural, desenhos ricos costumam ter muitas linhas, mas **linhas não
 
 **Herói montado ([ADR 0092](adr/0092-heroi-montado.md)):** a montaria recebe o andar do herói (`MountRide`: fase da passada pela distância, movimento e lado) e o herói recebe o mesmo número para sentar, levar a rédea e acompanhar o lombo; os dois leem os mesmos degraus (`stepRide`). **Peça nova de montaria ou de pose do herói não volta a marchar pelo relógio**: usa `ride` quando alguém monta, e o desenho sem `ride` é o do cavalo solto.
 
+**Anatomia e pelagem das criaturas ([ADR 0093](adr/0093-detalhe-das-criaturas-do-centro.md)):** o kit de pernas de dois ossos e de tronco com silhueta é comum a montarias e criaturas (`render/creatures/shared/anatomy`), e a pelagem é feita de mechas que seguem o corpo (`fur.ts`), não de espetos soltos. **Criatura de quatro patas nova monta o corpo com o kit** (`quadrupedLegs`, `drawLeg`, `drawTorso`) e fica parada na pose de apoio quando não anda; o desenho olha para a esquerda (montado para a direita e espelhado).
+
 ## Forma da função
 
 - Assinatura: `(ctx, …dados, sx, sy, time?)`. **A origem é o ponto de contato com o chão.**

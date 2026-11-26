@@ -6,7 +6,7 @@ import type { Palette } from "./geometry.ts";
 import { EDGE, GLINT } from "./geometry.ts";
 import { drawMane, drawNeck, type NeckSpec } from "./neck.ts";
 import { drawSaddle } from "./saddle.ts";
-import type { TorsoSpec } from "./torso.ts";
+import type { TorsoSpec } from "../shared/anatomy/torso.ts";
 import { ellipse, rgba, shade, TAU } from "../../draw.ts";
 
 /** Só as medidas que a sela usa: o dorso a −34 (a mesma altura de sempre para o cavaleiro) e a barriga logo abaixo. */

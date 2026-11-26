@@ -3,10 +3,10 @@
  * montarias, com garras), carapaça de escamas com direção, crista de espinhos, golas, cabeça de lagarto de mandíbula móvel e a sela comum.
  */
 import type { Palette } from "./geometry.ts";
-import { drawLeg, legPose, type LegSpec } from "./limbs.ts";
-import type { MountGaitState } from "./gait.ts";
+import { drawLeg, legPose, type LegSpec } from "../shared/anatomy/limbs.ts";
+import type { MountGaitState } from "../shared/anatomy/gait.ts";
 import { drawSaddle } from "./saddle.ts";
-import { drawTorso, torsoPath, type TorsoSpec } from "./torso.ts";
+import { drawTorso, torsoPath, type TorsoSpec } from "../shared/anatomy/torso.ts";
 import { ellipse, rgba } from "../../draw.ts";
 
 export const SAND_BASILISK_TORSO: TorsoSpec = { front: 25, rear: -29, withers: -33, back: -31, croup: -28, bellyFront: -15, bellyRear: -16, shoulderX: 14, haunchX: -17, muscle: 8 };

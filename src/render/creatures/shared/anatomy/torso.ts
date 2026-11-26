@@ -2,9 +2,9 @@
  * O tronco das montarias de quatro patas (ADR 0091): uma silhueta de verdade (cernelha, lombo, garupa, barriga que sobe para a virilha, peito) em vez de uma elipse,
  * com gradiente de cima para baixo, sombra sob a barriga, músculo do ombro e da anca e as costelas. As medidas de cada espécie ficam num `TorsoSpec`.
  */
-import type { Palette } from "./geometry.ts";
-import { EDGE, GLINT } from "./geometry.ts";
-import { ellipse, rgba, shade } from "../../draw.ts";
+import type { KitPalette } from "./palette.ts";
+import { EDGE, GLINT } from "./palette.ts";
+import { ellipse, rgba, shade } from "../../../draw.ts";
 
 export interface TorsoSpec {
   /** x do peito e da garupa (o animal olha para +x). */
@@ -31,7 +31,7 @@ export function torsoPath(ctx: CanvasRenderingContext2D, s: TorsoSpec): void {
 }
 
 /** Desenha o tronco inteiro: corpo com volume, músculos e costelas. */
-export function drawTorso(ctx: CanvasRenderingContext2D, p: Palette, s: TorsoSpec): void {
+export function drawTorso(ctx: CanvasRenderingContext2D, p: KitPalette, s: TorsoSpec): void {
   const top = Math.min(s.withers, s.back, s.croup), bottom = Math.max(s.bellyFront, s.bellyRear);
   const g = ctx.createLinearGradient(0, top, 0, bottom);
   g.addColorStop(0, p.light); g.addColorStop(.38, p.base); g.addColorStop(1, shade(p.dark, .08));

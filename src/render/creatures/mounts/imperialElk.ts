@@ -2,7 +2,7 @@
 import type { Palette } from "./geometry.ts";
 import { EDGE, GLINT } from "./geometry.ts";
 import { drawNeck, neckTop, type NeckSpec } from "./neck.ts";
-import type { QuadrupedSpec } from "./quadruped.ts";
+import type { QuadrupedSpec } from "../shared/anatomy/quadruped.ts";
 import { ellipse, rgba, shade } from "../../draw.ts";
 
 export const IMPERIAL_ELK_BODY: QuadrupedSpec = {

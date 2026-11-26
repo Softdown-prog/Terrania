@@ -21,12 +21,16 @@ import { renderTideHunterTritonCreature } from "../../src/render/creatures/east/
 import { renderMossSlimeCreature, drawMossSlime, CREATURE_PALETTE as MOSS_SLIME_PALETTE } from "../../src/render/creatures/center/slimes/mossSlime.ts";
 import { renderVineSnakeCreature, drawVineSnake, CREATURE_PALETTE as VINE_SNAKE_PALETTE } from "../../src/render/creatures/center/snakes/vineSnake.ts";
 import { renderRootBeetleCreature, drawRootBeetle, CREATURE_PALETTE as ROOT_BEETLE_PALETTE } from "../../src/render/creatures/center/beetles/rootBeetle.ts";
-import { drawLeg, legPose, type LegSpec } from "../../src/render/creatures/mounts/limbs.ts";
-import { drawTorso, torsoPath } from "../../src/render/creatures/mounts/torso.ts";
+import { drawLeg, legPose, type LegSpec } from "../../src/render/creatures/shared/anatomy/limbs.ts";
+import { furAlong, furFlow } from "../../src/render/creatures/shared/anatomy/fur.ts";
+import { CREATURE_PALETTE as WOLF_FUR_PALETTE } from "../../src/render/creatures/center/wolves/grayWolf.ts";
+import { CREATURE_PALETTE as BOAR_FUR_PALETTE } from "../../src/render/creatures/center/boars/wildBoar.ts";
+import { CREATURE_PALETTE as RAT_FUR_PALETTE } from "../../src/render/creatures/center/rats/giantRat.ts";
+import { drawTorso, torsoPath } from "../../src/render/creatures/shared/anatomy/torso.ts";
 import { drawNeck, drawMane, type NeckSpec } from "../../src/render/creatures/mounts/neck.ts";
 import { drawEquineHead } from "../../src/render/creatures/mounts/equineHead.ts";
 import { drawSaddle } from "../../src/render/creatures/mounts/saddle.ts";
-import { drawQuadruped } from "../../src/render/creatures/mounts/quadruped.ts";
+import { drawQuadruped } from "../../src/render/creatures/shared/anatomy/quadruped.ts";
 import { WARHORSE_BODY } from "../../src/render/creatures/mounts/warhorse.ts";
 import { PALETTES as MOUNT_PALETTES } from "../../src/render/creatures/mounts/geometry.ts";
 import { renderWildBoarCreature, drawWildBoar, CREATURE_PALETTE as WILD_BOAR_PALETTE } from "../../src/render/creatures/center/boars/wildBoar.ts";
@@ -348,6 +352,29 @@ export const ASSETS: ArtAsset[] = [
     draw:c=>drawEquineHead(c,MOUNT_PALETTES.warhorse,{x:0,y:-30,time:1.3})},
   {id:"montaria: sela comum",tier:"prop",fn:"drawSaddle",
     draw:c=>{drawTorso(c,MOUNT_PALETTES.warhorse,WARHORSE_BODY.torso);drawSaddle(c,MOUNT_PALETTES.warhorse,WARHORSE_BODY.torso);}},
+  {id:"pelagem em mechas: linha do dorso e do peito (lobo, javali e rato)",tier:"prop",fn:"furAlong",
+    draw:c=>{
+      for(const [i,p] of [WOLF_FUR_PALETTE,BOAR_FUR_PALETTE,RAT_FUR_PALETTE].entries()){
+        c.save();c.translate(i*34-34,0);
+        const body=c.createLinearGradient(-14,-30,14,-6);body.addColorStop(0,p.light);body.addColorStop(.5,p.base);body.addColorStop(1,p.dark);
+        c.fillStyle=body;c.beginPath();c.moveTo(-14,-14);c.quadraticCurveTo(-12,-30,0,-30);c.quadraticCurveTo(12,-30,14,-14);c.quadraticCurveTo(0,-6,-14,-14);c.closePath();c.fill();
+        c.strokeStyle="#142a2a";c.lineWidth=1.2;c.stroke();
+        furAlong(c,[[-12,-24],[-4,-29.4],[4,-29.4],[12,-24]],-1,{seed:5+i,count:12,length:3.4,sweep:-.4,dark:p.extra,light:p.light});
+        furAlong(c,[[12,-24],[13.4,-17]],-1,{seed:9+i,count:4,length:2.6,sweep:-.3,dark:p.dark,light:p.accent});
+        c.restore();
+      }
+    }},
+  {id:"pelagem em mechas: flanco deitado dentro do contorno (lobo, javali e rato)",tier:"prop",fn:"furFlow",
+    draw:c=>{
+      for(const [i,p] of [WOLF_FUR_PALETTE,BOAR_FUR_PALETTE,RAT_FUR_PALETTE].entries()){
+        c.save();c.translate(i*34-34,0);
+        const body=c.createLinearGradient(-14,-30,14,-6);body.addColorStop(0,p.light);body.addColorStop(.5,p.base);body.addColorStop(1,p.dark);
+        c.fillStyle=body;c.beginPath();c.moveTo(-14,-14);c.quadraticCurveTo(-12,-30,0,-30);c.quadraticCurveTo(12,-30,14,-14);c.quadraticCurveTo(0,-6,-14,-14);c.closePath();c.fill();
+        c.strokeStyle="#142a2a";c.lineWidth=1.2;c.stroke();
+        c.save();c.clip();furFlow(c,{x0:-14,y0:-30,x1:14,y1:-8},{seed:3+i,count:18,length:4.4,dx:-1,dy:.3,dark:p.dark,light:p.light});furFlow(c,{x0:-14,y0:-26,x1:14,y1:-10},{seed:7+i,count:8,length:3,dx:-1,dy:.6,bend:.5,dark:p.extra,light:p.accent});c.restore();
+        c.restore();
+      }
+    }},
   {id:"montaria: corpo de quatro patas montado",tier:"creature",fn:"drawQuadruped",
     draw:c=>drawQuadruped(c,MOUNT_PALETTES.warhorse,WARHORSE_BODY,1.2)},
   {id:"frame de composição regional",tier:"creature",fn:"renderRegionalFrame",

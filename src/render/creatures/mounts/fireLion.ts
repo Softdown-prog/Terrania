@@ -1,7 +1,7 @@
 /** Leão do Fogo — felino baixo e musculoso, juba em chamas em camadas, focinho largo e cauda de fogo (ADR 0091). */
 import type { Palette } from "./geometry.ts";
 import { EDGE, GLINT } from "./geometry.ts";
-import type { QuadrupedSpec } from "./quadruped.ts";
+import type { QuadrupedSpec } from "../shared/anatomy/quadruped.ts";
 import { ellipse, rgba, shade, TAU } from "../../draw.ts";
 
 export const FIRE_LION_BODY: QuadrupedSpec = {

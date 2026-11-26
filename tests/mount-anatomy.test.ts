@@ -2,14 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { MOUNT_IDS, type MountId } from "../src/actors/MountCatalog.ts";
-import { legPose, type LegSpec } from "../src/render/creatures/mounts/limbs.ts";
-import { GAIT_RATE, quadrupedLegs } from "../src/render/creatures/mounts/quadruped.ts";
+import { legPose, type LegSpec } from "../src/render/creatures/shared/anatomy/limbs.ts";
+import { GAIT_RATE, quadrupedLegs } from "../src/render/creatures/shared/anatomy/quadruped.ts";
 import { QUADRUPED_MOUNTS, isQuadrupedMount, mountRiderLift, LEGACY_RIDER_LIFT } from "../src/render/creatures/mounts/quadrupeds.ts";
 import { riderLiftFor } from "../src/render/creatures/mounts/saddle.ts";
 import { neckTop } from "../src/render/creatures/mounts/neck.ts";
 import { renderMount } from "../src/render/mounts.ts";
 import { PALETTES } from "../src/render/creatures/mounts/geometry.ts";
-import { drawQuadruped } from "../src/render/creatures/mounts/quadruped.ts";
+import { drawQuadruped } from "../src/render/creatures/shared/anatomy/quadruped.ts";
 import { drawSaddle } from "../src/render/creatures/mounts/saddle.ts";
 import { drawTidalHippocampus } from "../src/render/creatures/mounts/tidalHippocampus.ts";
 import { renderSandBasiliskDetail } from "../src/render/creatures/mounts/sandBasilisk.ts";
@@ -157,7 +157,7 @@ test("as dez montarias desenham dentro da caixa da luz comum, com a mesma imagem
 });
 
 test("o kit de anatomia não usa sorteio nem relógio (a arte tem de ser a mesma a cada quadro)", () => {
-  for (const f of ["limbs", "torso", "quadruped", "quadrupeds", "neck", "equineHead", "saddle", "warhorse", "mountainGoat", "imperialElk", "silverUnicorn", "fireLion", "cavernBear", "darkGriffin", "tidalHippocampus", "sandBasilisk", "cargoBeetle"]) {
+  for (const f of ["../shared/anatomy/limbs", "../shared/anatomy/torso", "../shared/anatomy/quadruped", "../shared/anatomy/gait", "../shared/anatomy/palette", "quadrupeds", "neck", "equineHead", "saddle", "warhorse", "mountainGoat", "imperialElk", "silverUnicorn", "fireLion", "cavernBear", "darkGriffin", "tidalHippocampus", "sandBasilisk", "cargoBeetle"]) {
     const source = readFileSync(new URL(`../src/render/creatures/mounts/${f}.ts`, import.meta.url), "utf8");
     assert.doesNotMatch(source, /Math\.random|Date\.now|performance\.now/, f);
     assert.doesNotMatch(source, /\bany\b\s*[,;)>\]=]|@ts-ignore/, `${f}: sem any`);

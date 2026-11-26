@@ -3,8 +3,8 @@
  * A carga é desenho do arnês, não inventário real ou capacidade simulada.
  */
 import type { Palette } from "./geometry.ts";
-import { drawLeg, legPose, type LegSpec } from "./limbs.ts";
-import type { MountGaitState } from "./gait.ts";
+import { drawLeg, legPose, type LegSpec } from "../shared/anatomy/limbs.ts";
+import type { MountGaitState } from "../shared/anatomy/gait.ts";
 import { ellipse, rgba, TAU } from "../../draw.ts";
 const C={
   shell:"#8d8868", shellLight:"#d6d0a0",shellDark:"#403e36",gold:"#d4ad68",

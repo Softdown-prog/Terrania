@@ -7,7 +7,7 @@
  */
 import { smoothTo } from "../animation.ts";
 import { smoothstep } from "../draw.ts";
-import { mountBob, stepRide, type MountRide } from "../creatures/mounts/gait.ts";
+import { mountBob, stepRide, type MountRide } from "../creatures/shared/anatomy/gait.ts";
 
 /** Quantas voltas de passada da montaria por volta do ciclo de caminhada do herói a pé (o cavalo tem passada mais longa que a do herói). */
 export const RIDE_PHASE_PER_WALK = .9;

@@ -3,7 +3,7 @@ import type { Palette } from "./geometry.ts";
 import { EDGE, GLINT } from "./geometry.ts";
 import { drawEquineHead } from "./equineHead.ts";
 import { drawMane, drawNeck, type NeckSpec } from "./neck.ts";
-import type { QuadrupedSpec } from "./quadruped.ts";
+import type { QuadrupedSpec } from "../shared/anatomy/quadruped.ts";
 import { ellipse, rgba, shade } from "../../draw.ts";
 
 export const SILVER_UNICORN_BODY: QuadrupedSpec = {
