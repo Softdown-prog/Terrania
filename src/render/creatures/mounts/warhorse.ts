@@ -1,50 +1,34 @@
-/** Cavalo de Batalha — anatomia equina, couro e comportamento visual de galopada. */
+/** Cavalo de Batalha — anatomia equina: tronco com volume, pernas articuladas, pescoço arqueado, crina e cauda em mechas (ADR 0091). */
 import type { Palette } from "./geometry.ts";
-import { body, longNeck, eyeShine, EDGE, GLINT } from "./geometry.ts";
-import { ellipse, limb, rgba, TAU } from "../../draw.ts";
+import { EDGE } from "./geometry.ts";
+import { drawEquineHead } from "./equineHead.ts";
+import { drawMane, drawNeck, type NeckSpec } from "./neck.ts";
+import type { QuadrupedSpec } from "./quadruped.ts";
+import { shade } from "../../draw.ts";
 
-export const drawWarhorse = (ctx:CanvasRenderingContext2D,p:Palette,time:number):void => {
-  longNeck(ctx,p,time);
-  // Orelhas orientáveis, não chifres; ângulo sincronizado com a respiração.
-  for(const side of [-1,1]){
-    const flutter=Math.sin(time*1.8+side)*.035;
-    ctx.save();ctx.translate(20+side*5,-54);ctx.rotate(side*.16+flutter);
-    body(ctx,0,-5,3.6,8.5,p,side*.1);
-    ellipse(ctx,-.5,-6,1.5,4.6,rgba(p.accent,.85));
-    ctx.restore();
+export const WARHORSE_BODY: QuadrupedSpec = {
+  torso: { front: 22, rear: -25, withers: -45, back: -43, croup: -45, bellyFront: -24, bellyRear: -29, shoulderX: 12, haunchX: -14, muscle: 9 },
+  frontLeg: { upper: 15, lower: 15, widthTop: 7.5, widthKnee: 4.6, widthAnkle: 3, foot: "hoof" },
+  rearLeg: { upper: 15.5, lower: 15, widthTop: 10, widthKnee: 4.8, widthAnkle: 3, foot: "hoof" },
+  frontHipX: 13, rearHipX: -16, hipY: -30, stride: 6, lift: 5.5,
+};
+const NECK: NeckSpec = { baseX: 14, baseY: -34, baseWidth: 17, topX: 28, topY: -57, topWidth: 8.5, arch: 2.5 };
+
+/** O que fica atrás do tronco: pescoço, crina e cabeça. */
+export const drawWarhorseBehind = (ctx: CanvasRenderingContext2D, p: Palette, time: number): void => {
+  drawNeck(ctx, p, NECK);
+  drawEquineHead(ctx, p, { x: 27, y: -58, time });
+  drawMane(ctx, p, NECK, time, 17, 10);
+};
+
+/** O que fica na frente: a cauda, em mechas independentes que balançam. */
+export const drawWarhorse = (ctx: CanvasRenderingContext2D, p: Palette, time: number): void => {
+  for (let i = 0; i < 12; i++) {
+    const sway = Math.sin(time * 2 + i * .35) * 2.2, sx = -24 - (i % 3) * .5, sy = -42 + i * .5;
+    for (const [color, width] of [[EDGE, 3.4], [i % 3 ? p.dark : shade(p.dark, .35), 2]] as const) {
+      ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.bezierCurveTo(sx - 9, sy + 4, sx - 15 + sway, sy + 14, sx - 11 - (i % 4) + sway * 1.3, sy + 27 + (i % 3) * 2); ctx.stroke();
+    }
   }
-  // Focinho longo e queixo separados: leitura clara mesmo em escala pequena.
-  body(ctx,29,-41,9,5.5,p,.1);
-  ellipse(ctx,34,-40,5.6,3.2,p.light,.14);
-  ellipse(ctx,36,-42.7,1.7,1.1,EDGE);
-  ellipse(ctx,35.4,-43.1,.53,.39,GLINT);
-  ctx.strokeStyle=p.dark;ctx.lineWidth=1.4;
-  ctx.beginPath();ctx.moveTo(31,-37);ctx.quadraticCurveTo(37,-35,40,-39);ctx.stroke();
-  eyeShine(ctx,p,26,-49);
-  // Freio, embocadura e tirantes: peças de equipamento com espessura real.
-  ctx.strokeStyle=EDGE;ctx.lineWidth=4;
-  ctx.beginPath();ctx.moveTo(20,-52);ctx.lineTo(35,-45);ctx.lineTo(35,-38);ctx.stroke();
-  ctx.strokeStyle=p.tack;ctx.lineWidth=2.2;ctx.stroke();
-  for(const x of [25,34]){
-    ellipse(ctx,x,x===25?-49:-43,2,2,"#cfb27c");
-    ellipse(ctx,x-.5,x===25?-49.5:-43.5,.6,.6,GLINT);
-  }
-  ctx.strokeStyle=rgba(GLINT,.5);ctx.lineWidth=.8;
-  ctx.beginPath();ctx.moveTo(20,-52);ctx.lineTo(35,-45);ctx.stroke();
-  // Juba em mechas, direção do vento e movimento do pescoço.
-  for(let i=0;i<17;i++){
-    const y=-52+i*1.7,wind=Math.sin(time*2.2+i*.37)*1.1;
-    limb(ctx,11-i%4,y,4-i%5+wind,y+7+i%3,1.3,i%4?p.dark:p.light);
-  }
-  // Cauda com feixes independentes, não um traço imóvel.
-  ctx.strokeStyle=EDGE;ctx.lineWidth=5;
-  ctx.beginPath();ctx.moveTo(-22,-26);
-  ctx.bezierCurveTo(-37,-42,-43,-25,-40+Math.sin(time*2)*2,-10);ctx.stroke();
-  for(let i=0;i<11;i++){
-    ctx.strokeStyle=i%3?p.dark:p.light;ctx.lineWidth=1.2+i%3*.3;
-    ctx.beginPath();ctx.moveTo(-40,-24+i*.6);
-    ctx.quadraticCurveTo(-46+Math.sin(time*2+i*.3)*2,-18,-39-i%3,-7+i);ctx.stroke();
-  }
-  ctx.strokeStyle=p.accent;ctx.lineWidth=1;
-  ctx.beginPath();ctx.arc(28,-48,5,Math.PI*1.1,TAU*.88);ctx.stroke();
+  ctx.lineCap = "butt";
 };

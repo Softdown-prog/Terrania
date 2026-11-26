@@ -30,6 +30,8 @@ Em arte procedural, desenhos ricos costumam ter muitas linhas, mas **linhas não
 
 **Luz comum das criaturas e montarias ([ADR 0090](adr/0090-luz-comum-e-cache-de-quadros.md)):** toda criatura (as três molduras de `render/creatures/shared`) e toda montaria passa por `drawLit`, que acrescenta, só dentro da silhueta, contorno interno escurecido, degradê da luz (alto à esquerda), quinas iluminadas e na sombra, oclusão junto ao chão e brilho de material, e guarda o quadro num cache por degraus de tempo e de passada. **Peça nova de criatura não refaz isso**: desenha os volumes (gradientes e contornos) e deixa a luz para a camada comum. O contrato mede o desenho **sem** a luz (`withFakeDocument` a desliga), então a luz não é desculpa para um desenho fino.
 
+**Anatomia das montarias ([ADR 0091](adr/0091-kit-de-anatomia-das-montarias.md)):** as dez montarias usam o kit de `render/creatures/mounts` (pernas de dois ossos por cinemática inversa, tronco com silhueta, pescoço, crina, cabeça de cavalo, sela comum). Peça nova de montaria **não volta a hastes rígidas**: monta o corpo com `drawQuadruped` e as medidas da espécie, e ganha a altura do cavaleiro em `mountRiderLift`. As peças pequenas do kit entram no contrato como ativos compostos, sem baixar nenhum piso.
+
 ## Forma da função
 
 - Assinatura: `(ctx, …dados, sx, sy, time?)`. **A origem é o ponto de contato com o chão.**

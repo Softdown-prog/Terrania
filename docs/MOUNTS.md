@@ -12,7 +12,10 @@ Bode Montanhês Gigante, Alce Imperial, Leão do Fogo, Lagarto das Areias,
 Urso-das-Cavernas, Unicórnio de Prata, Grifo-Sombrio, Escaravelho de Carga e
 Hipocampo das Marés. **Não** é o lote 11–20 de monstros. Os dez possuem
 fichas completas e silhuetas Canvas específicas, registradas como criatura no
-contrato de arte; não se lê a sprite sheet como textura.
+contrato de arte; não se lê a sprite sheet como textura. O desenho foi refeito
+com pernas articuladas, tronco com silhueta e sela comum
+([ADR 0091](adr/0091-kit-de-anatomia-das-montarias.md)); o herói senta na sela
+a uma altura própria de cada montaria.
 
 | Montaria | Tier | Nível | HP | Energia | Velocidade | Ataque | Habilidade planejada |
 | --- | ---: | ---: | ---: | ---: | --- | ---: | --- |

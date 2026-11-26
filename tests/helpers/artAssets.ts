@@ -21,6 +21,14 @@ import { renderTideHunterTritonCreature } from "../../src/render/creatures/east/
 import { renderMossSlimeCreature, drawMossSlime, CREATURE_PALETTE as MOSS_SLIME_PALETTE } from "../../src/render/creatures/center/slimes/mossSlime.ts";
 import { renderVineSnakeCreature, drawVineSnake, CREATURE_PALETTE as VINE_SNAKE_PALETTE } from "../../src/render/creatures/center/snakes/vineSnake.ts";
 import { renderRootBeetleCreature, drawRootBeetle, CREATURE_PALETTE as ROOT_BEETLE_PALETTE } from "../../src/render/creatures/center/beetles/rootBeetle.ts";
+import { drawLeg, legPose, type LegSpec } from "../../src/render/creatures/mounts/limbs.ts";
+import { drawTorso, torsoPath } from "../../src/render/creatures/mounts/torso.ts";
+import { drawNeck, drawMane, type NeckSpec } from "../../src/render/creatures/mounts/neck.ts";
+import { drawEquineHead } from "../../src/render/creatures/mounts/equineHead.ts";
+import { drawSaddle } from "../../src/render/creatures/mounts/saddle.ts";
+import { drawQuadruped } from "../../src/render/creatures/mounts/quadruped.ts";
+import { WARHORSE_BODY } from "../../src/render/creatures/mounts/warhorse.ts";
+import { PALETTES as MOUNT_PALETTES } from "../../src/render/creatures/mounts/geometry.ts";
 import { renderWildBoarCreature, drawWildBoar, CREATURE_PALETTE as WILD_BOAR_PALETTE } from "../../src/render/creatures/center/boars/wildBoar.ts";
 import { renderGrayWolfCreature, drawGrayWolf, CREATURE_PALETTE as GRAY_WOLF_PALETTE } from "../../src/render/creatures/center/wolves/grayWolf.ts";
 import { renderWalkingMushroomCreature, drawWalkingMushroom, CREATURE_PALETTE as WALKING_MUSHROOM_PALETTE } from "../../src/render/creatures/center/mushrooms/walkingMushroom.ts";
@@ -316,6 +324,32 @@ export const ASSETS: ArtAsset[] = [
     draw:c=>drawGrayWolf(c,GRAY_WOLF_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},
   {id:"desenho do Cogumelo Andante (sem moldura)",tier:"creature",fn:"drawWalkingMushroom",
     draw:c=>drawWalkingMushroom(c,WALKING_MUSHROOM_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},
+  {id:"montaria: pernas articuladas (casco, casco fendido, pata)",tier:"prop",fn:"drawLeg",
+    draw:c=>{
+      const mk=(foot:LegSpec["foot"],x:number):LegSpec=>({hipX:x,hipY:-30,upper:15,lower:15,widthTop:7.5,widthKnee:4.6,widthAnkle:3,front:true,far:false,foot,stride:6,lift:5.5});
+      for(const [id,foot,x] of [["warhorse","hoof",-26],["mountain-goat","cloven",0],["fire-lion","paw",26]] as const){const spec=mk(foot,x);drawLeg(c,MOUNT_PALETTES[id],spec,legPose(spec,1.1));}
+    }},
+  {id:"montaria: troncos de cavalo e de leão (músculo, costelas, silhueta)",tier:"prop",fn:"drawTorso",
+    draw:c=>{drawTorso(c,MOUNT_PALETTES.warhorse,WARHORSE_BODY.torso);c.save();c.translate(0,-2);drawTorso(c,MOUNT_PALETTES["fire-lion"],{...WARHORSE_BODY.torso,withers:-36,back:-33,croup:-35,bellyFront:-19,bellyRear:-25});c.restore();}},
+  {id:"montaria: silhuetas do tronco (caminho) em três espécies",tier:"prop",fn:"torsoPath",
+    draw:c=>{
+      for(const [i,id] of (["warhorse","cavern-bear","silver-unicorn","imperial-elk"] as const).entries()){
+        const pal=MOUNT_PALETTES[id];c.save();c.translate(0,-i*3);torsoPath(c,WARHORSE_BODY.torso);
+        const g=c.createLinearGradient(0,-45,0,-24);g.addColorStop(0,pal.light);g.addColorStop(.5,pal.base);g.addColorStop(1,pal.dark);c.fillStyle=g;c.fill();
+        c.strokeStyle=pal.dark;c.lineWidth=1.4;c.stroke();c.strokeStyle=pal.accent;c.lineWidth=.8;c.stroke();c.restore();
+      }
+    }},
+  {id:"montaria: pescoços afilados de cavalo, alce e unicórnio",tier:"prop",fn:"drawNeck",
+    draw:c=>{for(const [i,id] of (["warhorse","imperial-elk","silver-unicorn"] as const).entries())drawNeck(c,MOUNT_PALETTES[id],{baseX:14,baseY:-34,baseWidth:17,topX:28,topY:-57,topWidth:8.5,arch:2.5-i});}},
+  {id:"montaria: crinas em fios",tier:"prop",fn:"drawMane",
+    draw:c=>{for(const [i,id] of (["warhorse","silver-unicorn","imperial-elk"] as const).entries()){const n:NeckSpec={baseX:14,baseY:-34,baseWidth:17,topX:28,topY:-57,topWidth:8.5,arch:2.5};
+      c.save();c.translate(0,-i*4);drawNeck(c,MOUNT_PALETTES[id],n);drawMane(c,MOUNT_PALETTES[id],n,1.3+i,17,10);c.restore();}}},
+  {id:"montaria: cabeça de cavalo",tier:"prop",fn:"drawEquineHead",
+    draw:c=>drawEquineHead(c,MOUNT_PALETTES.warhorse,{x:0,y:-30,time:1.3})},
+  {id:"montaria: sela comum",tier:"prop",fn:"drawSaddle",
+    draw:c=>{drawTorso(c,MOUNT_PALETTES.warhorse,WARHORSE_BODY.torso);drawSaddle(c,MOUNT_PALETTES.warhorse,WARHORSE_BODY.torso);}},
+  {id:"montaria: corpo de quatro patas montado",tier:"creature",fn:"drawQuadruped",
+    draw:c=>drawQuadruped(c,MOUNT_PALETTES.warhorse,WARHORSE_BODY,1.2)},
   {id:"frame de composição regional",tier:"creature",fn:"renderRegionalFrame",
     draw:c=>renderRegionalFrame(c,{kind:"glacial-wolf",hp:CREATURE_CATALOG["glacial-wolf"].maxHp},0,0,1,
       {base:"#368cc4",light:"#a0f0fd",dark:"#24436e",accent:"#5bccf9",eye:"#e9fcfc"},drawWolf)},

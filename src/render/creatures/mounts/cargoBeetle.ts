@@ -2,33 +2,24 @@
  * Escaravelho de Carga: corpo hexápode, élitros, ferragens e bagagem.
  * A carga é desenho do arnês, não inventário real ou capacidade simulada.
  */
+import type { Palette } from "./geometry.ts";
+import { drawLeg, legPose, type LegSpec } from "./limbs.ts";
 import { ellipse, rgba, TAU } from "../../draw.ts";
 const C={
   shell:"#8d8868", shellLight:"#d6d0a0",shellDark:"#403e36",gold:"#d4ad68",
   bronze:"#a87b48", bone:"#efe0b7", leather:"#77513c", wood:"#775c44",
   shadow:"#252c2c", glint:"#fff3d6", green:"#668473",
 } as const;
-function legs(ctx:CanvasRenderingContext2D,time:number):void{
-  for(const side of [-1,1]){
-    for(let i=0;i<3;i++){
-      const x=-17+i*16,phase=i*Math.PI*.7+(side<0?Math.PI:0);
-      const stride=Math.sin(time*4+phase)*2.8;
-      ctx.strokeStyle=C.shadow;ctx.lineWidth=7;ctx.lineCap="round";
-      ctx.beginPath();ctx.moveTo(x,-23);ctx.lineTo(x+side*(16+i),-12+stride);
-      ctx.lineTo(x+side*(22+i*2),-2+stride);ctx.stroke();
-      ctx.strokeStyle=C.shellDark;ctx.lineWidth=4.4;ctx.stroke();
-      ctx.strokeStyle=rgba(C.shellLight,.52);ctx.lineWidth=.9;
-      ctx.beginPath();ctx.moveTo(x,-22);ctx.lineTo(x+side*(16+i),-12+stride);ctx.stroke();
-      for(let spike=0;spike<3;spike++){
-        const sx=x+side*(16+i+spike*2.1),sy=-10+stride+spike*2.2;
-        ctx.fillStyle=C.bone;ctx.beginPath();ctx.moveTo(sx-1,sy);
-        ctx.lineTo(sx+side*3,sy-4);ctx.lineTo(sx+1,sy+2);
-        ctx.closePath();ctx.fill();
-      }
-      ellipse(ctx,x+side*(23+i*2),-2+stride,4,1.8,C.shellDark);
-    }
+/** Seis pernas de inseto (três de cada lado), articuladas: o joelho sobe, a pata desce em garra; passo alternado em tripés. */
+function legs(ctx:CanvasRenderingContext2D,time:number,far:boolean):void{
+  for(let i=0;i<3;i++){
+    const front=i<2,hipX=-16+i*15+(far?-2:0);
+    const spec:LegSpec={hipX,hipY:-20,upper:11+i%2,lower:13,widthTop:6.5,widthKnee:4.6,widthAnkle:3,front,far,foot:"claw",stride:5+i*.4,lift:4.4};
+    const tripod=(i%2===0)===far?0:Math.PI;
+    drawLeg(ctx,PALETTE,spec,legPose(spec,time*4+tripod));
   }
 }
+const PALETTE:Palette={base:C.shell,dark:C.shellDark,light:C.shellLight,accent:C.gold,tack:C.leather};
 function elytra(ctx:CanvasRenderingContext2D):void{
   const g=ctx.createLinearGradient(-29,-48,29,-11);
   g.addColorStop(0,C.shellLight);g.addColorStop(.4,C.shell);g.addColorStop(1,C.shellDark);
@@ -122,5 +113,5 @@ function dust(ctx:CanvasRenderingContext2D,time:number):void{
   }
 }
 export function renderCargoBeetleDetail(ctx:CanvasRenderingContext2D,time:number):void{
-  legs(ctx,time);elytra(ctx);head(ctx,time);harness(ctx);load(ctx,time);dust(ctx,time);
+  legs(ctx,time,true);elytra(ctx);legs(ctx,time,false);head(ctx,time);harness(ctx);load(ctx,time);dust(ctx,time);
 }

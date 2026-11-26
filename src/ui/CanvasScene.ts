@@ -14,7 +14,7 @@ import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
 import { drawInterior } from '../render/interior.ts';
 import { drawCaveEntrance, drawCaveView } from '../render/cave.ts';
-import { renderMount, renderMountTracks, renderStableFence } from '../render/mounts.ts';
+import { mountRiderLift, renderMount, renderMountTracks, renderStableFence } from '../render/mounts.ts';
 import { STABLE_MASTER, WILD_WARHORSE, WILD_HOOFPRINTS } from '../world/mountLocations.ts';
 import type { MountId } from '../actors/MountCatalog.ts';
 import { caveEntrancesInArea } from '../world/caves.ts';
@@ -146,7 +146,7 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
     if(mount)renderMount(ctx,mount,player.x-left,player.y-top,time);
     renderHero(ctx,
       { ...player, gear: playerGear, equippedWeapon: playerWeapon, ...playerClass },
-      player.x-left,player.y-top-(mount?19:0),time);
+      player.x-left,player.y-top-(mount?mountRiderLift(mount):0),time);
   } });
   actors.sort((a, b) => a.y - b.y);
   for (const actor of actors) actor.draw();

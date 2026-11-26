@@ -1,14 +1,10 @@
 /** Entrada canônica das dez montarias: cada espécie desenha a própria anatomia. */
 import type { MountId } from "../actors/MountCatalog.ts";
 import { ellipse, mix, rgba, shade, softShadow } from "./draw.ts";
-import { PALETTES, body, outlineLeg, pack, decorativeFur, flankMarks, EDGE, GLINT } from "./creatures/mounts/geometry.ts";
-import { drawWarhorse } from "./creatures/mounts/warhorse.ts";
-import { drawMountainGoat } from "./creatures/mounts/mountainGoat.ts";
-import { drawImperialElk } from "./creatures/mounts/imperialElk.ts";
-import { drawFireLion } from "./creatures/mounts/fireLion.ts";
-import { drawCavernBear } from "./creatures/mounts/cavernBear.ts";
-import { drawSilverUnicorn } from "./creatures/mounts/silverUnicorn.ts";
-import { drawDarkGriffin } from "./creatures/mounts/darkGriffin.ts";
+import { PALETTES, EDGE, GLINT } from "./creatures/mounts/geometry.ts";
+import { drawQuadruped } from "./creatures/mounts/quadruped.ts";
+import { drawSaddle } from "./creatures/mounts/saddle.ts";
+import { QUADRUPED_MOUNTS, isQuadrupedMount, mountRiderLift } from "./creatures/mounts/quadrupeds.ts";
 import { drawTidalHippocampus } from "./creatures/mounts/tidalHippocampus.ts";
 import { renderSandBasiliskDetail } from "./creatures/mounts/sandBasilisk.ts";
 import { renderCargoBeetleDetail } from "./creatures/mounts/cargoBeetle.ts";
@@ -24,36 +20,25 @@ export function renderMount(ctx:CanvasRenderingContext2D,id:MountId,x:number,y:n
   // O corpo entra em degraus de 1/10 s e recebe a luz comum (ADR 0090): o mesmo degrau volta do cache em vez de ser redesenhado.
   const t=stepTime(time);
   drawLit({key:`mount|${id}|${Math.round(t*FRAMES_PER_SECOND)}`,group:`mount|${id}`,box:MOUNT_BOX},ctx,lit=>{
-    // Répteis e besouros possuem membros próprios em seus módulos especializados.
-    if(id!=="sand-basilisk"&&id!=="cargo-beetle"){
-      const heavy=id==="cavern-bear";
-      const step=Math.sin(t*5)*1.7;
-      if(id!=="tidal-hippocampus"){
-        for(const xx of [-15,14])for(const side of [-1,1])
-          outlineLeg(lit,xx,-21,side*4,side*step,p,heavy);
-      }
-      body(lit,0,-26,heavy?29:25,heavy?18:14,p);
-      if(id!=="tidal-hippocampus")
-        decorativeFur(lit,p,id.length,heavy?25:21,heavy?17:13);
+    if(isQuadrupedMount(id)){
+      // As sete de quatro patas: pernas articuladas, tronco com volume, pescoço e cabeça atrás do tronco, enfeites na frente e a sela por cima (ADR 0091).
+      const mount=QUADRUPED_MOUNTS[id];
+      drawQuadruped(lit,p,mount.body,t,()=>mount.behind(lit,p,t));
+      mount.front(lit,p,t);
+      drawSaddle(lit,p,mount.body.torso);
+      return;
     }
+    // Répteis e besouros possuem membros próprios em seus módulos especializados; o hipocampo é corpo de peixe, sem pernas.
     switch(id){
-      case "warhorse":drawWarhorse(lit,p,t);break;
-      case "mountain-goat":drawMountainGoat(lit,p,t);break;
-      case "imperial-elk":drawImperialElk(lit,p,t);break;
-      case "fire-lion":drawFireLion(lit,p,t);break;
-      case "sand-basilisk":renderSandBasiliskDetail(lit,t);break;
-      case "cavern-bear":drawCavernBear(lit,p,t);break;
-      case "silver-unicorn":drawSilverUnicorn(lit,p,t);break;
-      case "dark-griffin":drawDarkGriffin(lit,p,t);break;
-      case "cargo-beetle":renderCargoBeetleDetail(lit,t);break;
-      case "tidal-hippocampus":drawTidalHippocampus(lit,p,t);break;
+      case "sand-basilisk":renderSandBasiliskDetail(lit,t);return;
+      case "cargo-beetle":renderCargoBeetleDetail(lit,t);return;
+      case "tidal-hippocampus":drawTidalHippocampus(lit,p,t);return;
       default:{const neverId:never=id;return neverId;}
     }
-    if(id!=="cargo-beetle"&&id!=="sand-basilisk")pack(lit,p);
-    flankMarks(lit,p,t,5);
   });
   ctx.restore();
 }
+export { mountRiderLift };
 
 /** Pequeno cercado real na vila: não acrescenta colisões ocultas. */
 export function renderStableFence(ctx:CanvasRenderingContext2D,x:number,y:number,built:boolean):void {
