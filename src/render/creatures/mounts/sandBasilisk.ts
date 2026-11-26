@@ -4,6 +4,7 @@
  */
 import type { Palette } from "./geometry.ts";
 import { drawLeg, legPose, type LegSpec } from "./limbs.ts";
+import type { MountGaitState } from "./gait.ts";
 import { drawSaddle } from "./saddle.ts";
 import { drawTorso, torsoPath, type TorsoSpec } from "./torso.ts";
 import { ellipse, rgba } from "../../draw.ts";
@@ -15,10 +16,10 @@ const C = {
 const PALETTE: Palette = { base: C.base, dark: C.deep, light: C.lit, accent: C.gold, tack: C.leather };
 
 /** Quatro pernas dobradas de réptil, em diagonais. */
-function legs(ctx: CanvasRenderingContext2D, time: number, far: boolean): void {
+function legs(ctx: CanvasRenderingContext2D, time: number, far: boolean, gait?: MountGaitState): void {
   for (const [hipX, front, offset] of [[15, true, far ? Math.PI : 0], [-18, false, far ? 0 : Math.PI]] as const) {
-    const spec: LegSpec = { hipX: hipX + (far ? -2 : 0), hipY: -19, upper: 9, lower: 10.5, widthTop: front ? 8 : 10, widthKnee: 5, widthAnkle: 3.8, front, far, foot: "paw", stride: 5, lift: 4.2 };
-    drawLeg(ctx, PALETTE, spec, legPose(spec, time * 3.3 + offset));
+    const spec: LegSpec = { hipX: hipX + (far ? -2 : 0), hipY: -19, upper: 9, lower: 10.5, widthTop: front ? 8 : 10, widthKnee: 5, widthAnkle: 3.8, front, far, foot: "paw", stride: 5 * (gait?.moving ?? 1), lift: 4.2 * (gait?.moving ?? 1) };
+    drawLeg(ctx, PALETTE, spec, legPose(spec, (gait ? gait.phase : time * 3.3) + offset));
   }
 }
 function scales(ctx: CanvasRenderingContext2D): void {
@@ -68,13 +69,13 @@ function head(ctx: CanvasRenderingContext2D, time: number): void {
 function sandTrail(ctx: CanvasRenderingContext2D, time: number): void {
   for (let i = 0; i < 16; i++) ellipse(ctx, -36 + i * 3.8, Math.sin(time * 1.2 + i) * 2 + 2, 1.7 + i % 3 * .4, .7, rgba(i % 2 ? C.mud : C.gold, (1 - i / 16) * .25));
 }
-export function renderSandBasiliskDetail(ctx: CanvasRenderingContext2D, time: number): void {
-  legs(ctx, time, true);
+export function renderSandBasiliskDetail(ctx: CanvasRenderingContext2D, time: number, gait?: MountGaitState): void {
+  legs(ctx, time, true, gait);
   tail(ctx, time);
   drawTorso(ctx, PALETTE, SAND_BASILISK_TORSO);
   scales(ctx);
   crest(ctx, time);
-  legs(ctx, time, false);
+  legs(ctx, time, false, gait);
   head(ctx, time);
   drawSaddle(ctx, PALETTE, SAND_BASILISK_TORSO);
   sandTrail(ctx, time);

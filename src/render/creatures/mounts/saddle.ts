@@ -4,11 +4,14 @@ import { EDGE, GLINT } from "./geometry.ts";
 import type { TorsoSpec } from "./torso.ts";
 import { ellipse, rgba, shade } from "../../draw.ts";
 
-/** A altura a que o cavaleiro é desenhado acima dos pés da montaria: o lombo menos a altura do quadril dele (a sela fica sob o herói). */
-export const riderLiftFor = (torso: TorsoSpec): number => Math.round(-torso.back - 15);
+/** A altura a que o cavaleiro é desenhado acima dos pés da montaria: o assento da sela (o lombo menos dois) é onde fica o fundo do tronco dele, 6 unidades acima da origem do herói. */
+export const riderLiftFor = (torso: TorsoSpec): number => Math.round(-torso.back - 2);
+
+/** O centro da sela no x do corpo (entre o ombro e a anca). */
+export const saddleCenterX = (t: TorsoSpec): number => (t.shoulderX + t.haunchX) / 2 - 1;
 
 export function drawSaddle(ctx: CanvasRenderingContext2D, p: Palette, t: TorsoSpec): void {
-  const x0 = (t.shoulderX + t.haunchX) / 2 - 1, top = t.back - .5, drop = Math.min(15, (t.bellyFront - t.back) - 5);
+  const x0 = saddleCenterX(t), top = t.back - .5, drop = Math.min(15, (t.bellyFront - t.back) - 5);
   // manta
   const cloth = ctx.createLinearGradient(x0 - 13, top, x0 + 12, top + drop);
   cloth.addColorStop(0, shade(p.accent, -.1)); cloth.addColorStop(1, shade(p.accent, -.5));

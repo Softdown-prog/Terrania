@@ -5,6 +5,7 @@
 import type { Palette } from "./geometry.ts";
 import { drawLeg, legPose, type FootKind, type LegSpec } from "./limbs.ts";
 import { drawTorso, type TorsoSpec } from "./torso.ts";
+import { mountBob, type MountGaitState } from "./gait.ts";
 
 export interface LimbShape {
   readonly upper: number; readonly lower: number;
@@ -24,19 +25,25 @@ export interface QuadrupedSpec {
 export const GAIT_RATE = 5;
 
 /** As quatro pernas de uma espécie na fase dada: anterior e posterior, próxima e distante, em diagonais. */
-export function quadrupedLegs(s: QuadrupedSpec, phase: number): ReadonlyArray<{ readonly spec: LegSpec; readonly phase: number }> {
+export function quadrupedLegs(s: QuadrupedSpec, phase: number, moving = 1): ReadonlyArray<{ readonly spec: LegSpec; readonly phase: number }> {
   const make = (front: boolean, far: boolean, offset: number): { spec: LegSpec; phase: number } => {
     const shape = front ? s.frontLeg : s.rearLeg;
-    return { spec: { hipX: (front ? s.frontHipX : s.rearHipX) + (far ? -1.5 : 0), hipY: s.hipY, ...shape, front, far, stride: s.stride, lift: s.lift }, phase: phase + offset };
+    return { spec: { hipX: (front ? s.frontHipX : s.rearHipX) + (far ? -1.5 : 0), hipY: s.hipY, ...shape, front, far, stride: s.stride * moving, lift: s.lift * moving }, phase: phase + offset };
   };
   return [make(true, true, Math.PI), make(false, false, Math.PI), make(true, false, 0), make(false, true, 0)].sort((a, b) => Number(b.spec.far) - Number(a.spec.far));
 }
 
-/** O corpo inteiro: pernas distantes, o que fica atrás do tronco (pescoço e cabeça, que nascem dentro dele), tronco, pernas próximas. */
-export function drawQuadruped(ctx: CanvasRenderingContext2D, p: Palette, s: QuadrupedSpec, time: number, behind?: () => void): void {
-  const legs = quadrupedLegs(s, time * GAIT_RATE);
+/**
+ * O corpo inteiro: pernas distantes, o que fica atrás do tronco (pescoço e cabeça, que nascem dentro dele), tronco, pernas próximas. Com `gait` (montaria montada,
+ * ADR 0092) a passada vem da fase dada, as patas balançam só o quanto ela anda e o tronco sobe e desce; sem ele, anda com o relógio como sempre.
+ */
+export function drawQuadruped(ctx: CanvasRenderingContext2D, p: Palette, s: QuadrupedSpec, time: number, behind?: () => void, gait?: MountGaitState): void {
+  const legs = quadrupedLegs(s, gait ? gait.phase : time * GAIT_RATE, gait ? gait.moving : 1);
   for (const leg of legs) if (leg.spec.far) drawLeg(ctx, p, leg.spec, legPose(leg.spec, leg.phase));
+  ctx.save();
+  if (gait) ctx.translate(0, mountBob(gait));
   behind?.();
   drawTorso(ctx, p, s.torso);
+  ctx.restore();
   for (const leg of legs) if (!leg.spec.far) drawLeg(ctx, p, leg.spec, legPose(leg.spec, leg.phase));
 }

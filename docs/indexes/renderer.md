@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (339)
+## Todos os arquivos deste módulo (341)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -100,6 +100,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/creatures/mounts/darkGriffin.ts`](../../src/render/creatures/mounts/darkGriffin.ts)
 - [`src/render/creatures/mounts/equineHead.ts`](../../src/render/creatures/mounts/equineHead.ts)
 - [`src/render/creatures/mounts/fireLion.ts`](../../src/render/creatures/mounts/fireLion.ts)
+- [`src/render/creatures/mounts/gait.ts`](../../src/render/creatures/mounts/gait.ts)
 - [`src/render/creatures/mounts/geometry.ts`](../../src/render/creatures/mounts/geometry.ts)
 - [`src/render/creatures/mounts/imperialElk.ts`](../../src/render/creatures/mounts/imperialElk.ts)
 - [`src/render/creatures/mounts/limbs.ts`](../../src/render/creatures/mounts/limbs.ts)
@@ -186,6 +187,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/hero/mage/sets/index.ts`](../../src/render/hero/mage/sets/index.ts)
 - [`src/render/hero/mage/sets/theme.ts`](../../src/render/hero/mage/sets/theme.ts)
 - [`src/render/hero/mage/torso.ts`](../../src/render/hero/mage/torso.ts)
+- [`src/render/hero/ride.ts`](../../src/render/hero/ride.ts)
 - [`src/render/heroPose.ts`](../../src/render/heroPose.ts)
 - [`src/render/interior.ts`](../../src/render/interior.ts)
 - [`src/render/lighting/lightRig.ts`](../../src/render/lighting/lightRig.ts)

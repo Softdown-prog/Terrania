@@ -4,6 +4,7 @@
  */
 import type { Palette } from "./geometry.ts";
 import { drawLeg, legPose, type LegSpec } from "./limbs.ts";
+import type { MountGaitState } from "./gait.ts";
 import { ellipse, rgba, TAU } from "../../draw.ts";
 const C={
   shell:"#8d8868", shellLight:"#d6d0a0",shellDark:"#403e36",gold:"#d4ad68",
@@ -11,12 +12,12 @@ const C={
   shadow:"#252c2c", glint:"#fff3d6", green:"#668473",
 } as const;
 /** Seis pernas de inseto (três de cada lado), articuladas: o joelho sobe, a pata desce em garra; passo alternado em tripés. */
-function legs(ctx:CanvasRenderingContext2D,time:number,far:boolean):void{
+function legs(ctx:CanvasRenderingContext2D,time:number,far:boolean,gait?:MountGaitState):void{
   for(let i=0;i<3;i++){
     const front=i<2,hipX=-16+i*15+(far?-2:0);
-    const spec:LegSpec={hipX,hipY:-20,upper:11+i%2,lower:13,widthTop:6.5,widthKnee:4.6,widthAnkle:3,front,far,foot:"claw",stride:5+i*.4,lift:4.4};
+    const spec:LegSpec={hipX,hipY:-20,upper:11+i%2,lower:13,widthTop:6.5,widthKnee:4.6,widthAnkle:3,front,far,foot:"claw",stride:(5+i*.4)*(gait?.moving??1),lift:4.4*(gait?.moving??1)};
     const tripod=(i%2===0)===far?0:Math.PI;
-    drawLeg(ctx,PALETTE,spec,legPose(spec,time*4+tripod));
+    drawLeg(ctx,PALETTE,spec,legPose(spec,(gait?gait.phase:time*4)+tripod));
   }
 }
 const PALETTE:Palette={base:C.shell,dark:C.shellDark,light:C.shellLight,accent:C.gold,tack:C.leather};
@@ -112,6 +113,6 @@ function dust(ctx:CanvasRenderingContext2D,time:number):void{
     ellipse(ctx,x,y,1+i%3*.6,.7,rgba(i%2?C.bronze:C.shellLight,(1-i/12)*.24));
   }
 }
-export function renderCargoBeetleDetail(ctx:CanvasRenderingContext2D,time:number):void{
-  legs(ctx,time,true);elytra(ctx);legs(ctx,time,false);head(ctx,time);harness(ctx);load(ctx,time);dust(ctx,time);
+export function renderCargoBeetleDetail(ctx:CanvasRenderingContext2D,time:number,gait?:MountGaitState):void{
+  legs(ctx,time,true,gait);elytra(ctx);legs(ctx,time,false,gait);head(ctx,time);harness(ctx);load(ctx,time);dust(ctx,time);
 }

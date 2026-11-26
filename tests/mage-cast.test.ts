@@ -304,7 +304,7 @@ const read = (p: string): string => readFileSync(p, "utf8");
 test("a ligação com as telas: a vocação chega ao desenho do herói na superfície e na caverna, e a caverna mostra a magia", () => {
   const scene = read("src/ui/CanvasScene.ts"), cave = read("src/render/cave.ts"), surface = read("src/game/modes/surfaceMode.ts"), caveMode = read("src/game/modes/caveMode.ts");
   assert.match(surface, /playerClass: \{ heroClass: host\.sim\.heroClass, equippedStaff: host\.sim\.equippedStaff \}/, "a superfície diz qual é o herói");
-  assert.match(scene, /\{ \.\.\.player, gear: playerGear, equippedWeapon: playerWeapon, \.\.\.playerClass \}/, "e a cena desenha com isso");
+  assert.match(scene, /\{ \.\.\.player, gear: playerGear, equippedWeapon: playerWeapon, \.\.\.playerClass, ride \}/, "e a cena desenha com isso");
   assert.match(scene, /drawCaveView\(this\.ctx,room,left,top,width,height,time,gear,weapon,playerClass,loot\);\s*\n\s*spells\?\.render\(this\.ctx,left,top\);/, "a caverna desenha o herói e a magia");
   assert.match(cave, /\{\.\.\.player,gear,equippedWeapon:weapon,\.\.\.playerClass\}/);
   assert.match(caveMode, /host\.effects\.spells\.update\(paused \? 0 : dt, cave\.player, cave\.monsters\.values\(\)\);/, "a caverna alimenta a magia a cada quadro");

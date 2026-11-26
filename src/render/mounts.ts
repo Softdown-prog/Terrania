@@ -4,41 +4,54 @@ import { ellipse, mix, rgba, shade, softShadow } from "./draw.ts";
 import { PALETTES, EDGE, GLINT } from "./creatures/mounts/geometry.ts";
 import { drawQuadruped } from "./creatures/mounts/quadruped.ts";
 import { drawSaddle } from "./creatures/mounts/saddle.ts";
-import { QUADRUPED_MOUNTS, isQuadrupedMount, mountRiderLift } from "./creatures/mounts/quadrupeds.ts";
+import { QUADRUPED_MOUNTS, isQuadrupedMount, mountRiderLift, mountRiderShiftX } from "./creatures/mounts/quadrupeds.ts";
 import { drawTidalHippocampus } from "./creatures/mounts/tidalHippocampus.ts";
 import { renderSandBasiliskDetail } from "./creatures/mounts/sandBasilisk.ts";
 import { renderCargoBeetleDetail } from "./creatures/mounts/cargoBeetle.ts";
 import { drawLit } from "./lighting/litSprite.ts";
 import { MOUNT_BOX } from "./lighting/lightRig.ts";
 import { FRAMES_PER_SECOND, stepTime } from "./lighting/visualKey.ts";
+import { RIDE_AMBIENT_FPS, RIDE_PHASE_STEPS, mountBob, stepRide, type MountRide } from "./creatures/mounts/gait.ts";
 
-/** x/y = contato real com o solo; mantém contrato usado pela cena e miniatura. */
-export function renderMount(ctx:CanvasRenderingContext2D,id:MountId,x:number,y:number,time=0):void {
+/**
+ * x/y = contato real com o solo; mantém contrato usado pela cena e miniatura. Com `ride` (a montaria sob o herói, ADR 0092) ela olha para onde o herói olha, a passada
+ * vem da distância andada e para quando ele para, e o lombo sobe e desce; sem `ride` anda com o relógio, como sempre (o cavalo selvagem e o que segue o herói).
+ */
+export function renderMount(ctx:CanvasRenderingContext2D,id:MountId,x:number,y:number,time=0,ride?:MountRide):void {
   const p=PALETTES[id];
   ctx.save();ctx.translate(x,y);
   softShadow(ctx,0,3,id==="cargo-beetle"?34:29,9,.42);
   // O corpo entra em degraus de 1/10 s e recebe a luz comum (ADR 0090): o mesmo degrau volta do cache em vez de ser redesenhado.
-  const t=stepTime(time);
-  drawLit({key:`mount|${id}|${Math.round(t*FRAMES_PER_SECOND)}`,group:`mount|${id}`,box:MOUNT_BOX},ctx,lit=>{
+  const stepped=ride?stepRide(ride):undefined;
+  const t=stepped?Math.floor(time*RIDE_AMBIENT_FPS)/RIDE_AMBIENT_FPS:stepTime(time);
+  const key=stepped?`mount|${id}|r|${Math.round(stepped.phase/(Math.PI*2)*RIDE_PHASE_STEPS)}|${stepped.moving}|${stepped.facing}|${Math.round(t*RIDE_AMBIENT_FPS)}`:`mount|${id}|${Math.round(t*FRAMES_PER_SECOND)}`;
+  drawLit({key,group:`mount|${id}`,box:MOUNT_BOX},ctx,lit=>{
+    // A luz é aplicada depois, do mesmo lado; só o desenho vira para o lado em que a montaria olha.
+    if(stepped&&stepped.facing<0)lit.scale(-1,1);
+    const bob=stepped?mountBob(stepped):0;
     if(isQuadrupedMount(id)){
       // As sete de quatro patas: pernas articuladas, tronco com volume, pescoço e cabeça atrás do tronco, enfeites na frente e a sela por cima (ADR 0091).
       const mount=QUADRUPED_MOUNTS[id];
-      drawQuadruped(lit,p,mount.body,t,()=>mount.behind(lit,p,t));
+      drawQuadruped(lit,p,mount.body,t,()=>mount.behind(lit,p,t),stepped);
+      lit.save();lit.translate(0,bob);
       mount.front(lit,p,t);
       drawSaddle(lit,p,mount.body.torso);
+      lit.restore();
       return;
     }
     // Répteis e besouros possuem membros próprios em seus módulos especializados; o hipocampo é corpo de peixe, sem pernas.
+    lit.save();lit.translate(0,bob);
     switch(id){
-      case "sand-basilisk":renderSandBasiliskDetail(lit,t);return;
-      case "cargo-beetle":renderCargoBeetleDetail(lit,t);return;
-      case "tidal-hippocampus":drawTidalHippocampus(lit,p,t);return;
+      case "sand-basilisk":renderSandBasiliskDetail(lit,t,stepped);break;
+      case "cargo-beetle":renderCargoBeetleDetail(lit,t,stepped);break;
+      case "tidal-hippocampus":drawTidalHippocampus(lit,p,t);break;
       default:{const neverId:never=id;return neverId;}
     }
+    lit.restore();
   });
   ctx.restore();
 }
-export { mountRiderLift };
+export { mountRiderLift, mountRiderShiftX };
 
 /** Pequeno cercado real na vila: não acrescenta colisões ocultas. */
 export function renderStableFence(ctx:CanvasRenderingContext2D,x:number,y:number,built:boolean):void {

@@ -14,7 +14,8 @@ import { renderNpc } from '../render/npcs.ts';
 import { WorldRenderer } from '../render/WorldRenderer.ts';
 import { drawInterior } from '../render/interior.ts';
 import { drawCaveEntrance, drawCaveView } from '../render/cave.ts';
-import { mountRiderLift, renderMount, renderMountTracks, renderStableFence } from '../render/mounts.ts';
+import { rideOf } from '../render/hero/ride.ts';
+import { mountRiderLift, mountRiderShiftX, renderMount, renderMountTracks, renderStableFence } from '../render/mounts.ts';
 import { STABLE_MASTER, WILD_WARHORSE, WILD_HOOFPRINTS } from '../world/mountLocations.ts';
 import type { MountId } from '../actors/MountCatalog.ts';
 import { caveEntrancesInArea } from '../world/caves.ts';
@@ -143,10 +144,12 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
       : renderGel(ctx, drop.x - left, drop.y - top, time) });
   }
   actors.push({ y: player.y, draw: () => {
-    if(mount)renderMount(ctx,mount,player.x-left,player.y-top,time);
+    // Montado (ADR 0092): a montaria olha para onde o herói olha e anda só quando ele anda; o herói senta no centro da sela e acompanha o lombo.
+    const ride = mount ? rideOf(player, "player", time) : undefined;
+    if(mount&&ride)renderMount(ctx,mount,player.x-left,player.y-top,time,ride);
     renderHero(ctx,
-      { ...player, gear: playerGear, equippedWeapon: playerWeapon, ...playerClass },
-      player.x-left,player.y-top-(mount?mountRiderLift(mount):0),time);
+      { ...player, gear: playerGear, equippedWeapon: playerWeapon, ...playerClass, ride },
+      player.x-left+(mount&&ride?mountRiderShiftX(mount)*ride.facing:0),player.y-top-(mount?mountRiderLift(mount):0),time);
   } });
   actors.sort((a, b) => a.y - b.y);
   for (const actor of actors) actor.draw();

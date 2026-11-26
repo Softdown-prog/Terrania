@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (214)
+## Todos os arquivos deste módulo (215)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -188,6 +188,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/regional-wave2.test.ts`](../../tests/regional-wave2.test.ts)
 - [`tests/regions.test.ts`](../../tests/regions.test.ts)
 - [`tests/respawn.test.ts`](../../tests/respawn.test.ts)
+- [`tests/rider-motion.test.ts`](../../tests/rider-motion.test.ts)
 - [`tests/roads.test.ts`](../../tests/roads.test.ts)
 - [`tests/rocks.test.ts`](../../tests/rocks.test.ts)
 - [`tests/sand-beetle.test.ts`](../../tests/sand-beetle.test.ts)

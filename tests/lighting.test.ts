@@ -244,9 +244,26 @@ test("a ligação: as três molduras de criatura e as montarias desenham o corpo
     assert.ok(code.includes(effect) && code.includes(bar) && code.indexOf("drawLit(") < code.indexOf(effect) && code.indexOf("drawLit(") < code.indexOf(bar), file + ": o efeito de golpe e a barra de vida vêm depois");
   }
   const mounts = readFileSync("src/render/mounts.ts", "utf8");
-  assert.match(mounts, /drawLit\(\{key:`mount\|\$\{id\}\|\$\{Math\.round\(t\*FRAMES_PER_SECOND\)\}`,group:`mount\|\$\{id\}`,box:MOUNT_BOX\},ctx,lit=>\{/);
+  assert.match(mounts, /:`mount\|\$\{id\}\|\$\{Math\.round\(t\*FRAMES_PER_SECOND\)\}`;/, "a montaria a pé entra em décimos de segundo");
+  assert.match(mounts, /const t=stepped\?Math\.floor\(time\*RIDE_AMBIENT_FPS\)\/RIDE_AMBIENT_FPS:stepTime\(time\);/, "a montada, nos quadros de enfeite");
+  assert.match(mounts, /drawLit\(\{key,group:`mount\|\$\{id\}`,box:MOUNT_BOX\},ctx,lit=>\{/);
   assert.ok(mounts.indexOf("softShadow(ctx,0,3") < mounts.indexOf("drawLit("), "a sombra no chão fica fora da luz");
   const registry = readFileSync("src/render/regionalCreatures.ts", "utf8");
   assert.match(registry, /CREATURE_RENDERERS\[creature\.kind\]\(ctx,stepVisual\(creature\),sx,sy,stepTime\(time\)\);/);
   for (const [file, call] of [["src/ui/CanvasScene.ts", "beginLightingFrame();"], ["src/render/cave.ts", "beginLightingFrame();"]] as const) assert.ok(readFileSync(file, "utf8").includes(call), file + " abre o orçamento do quadro");
+});
+
+test("a montaria montada (ADR 0092) volta do cache na mesma posição de passada, lado e movimento, e refaz quando qualquer um muda", () => {
+  fresh(); const h = harness(3);
+  try {
+    const scratch = (draw: () => void): number => { const before = h.log.length; draw(); return h.log.slice(before).filter(op => op.canvas !== h.main.id).length; };
+    const at = (ride: { phase: number; moving: number; facing: 1 | -1 }, t = 1) => (): void => renderMount(h.ctx, "warhorse", 0, 0, t, ride);
+    assert.ok(scratch(at({ phase: .01, moving: 1, facing: 1 })) > 0, "o primeiro quadro é desenhado");
+    assert.equal(scratch(at({ phase: .02, moving: 1, facing: 1 }, 1.05)), 0, "mesma posição, movimento e lado, no mesmo sexto de segundo: volta do cache");
+    assert.ok(scratch(at({ phase: Math.PI * 2 / 12, moving: 1, facing: 1 })) > 0, "outra posição da passada refaz");
+    assert.ok(scratch(at({ phase: .01, moving: 1, facing: -1 })) > 0, "o outro lado refaz");
+    assert.ok(scratch(at({ phase: .01, moving: .5, facing: 1 })) > 0, "outro movimento refaz");
+    assert.ok(scratch(at({ phase: .01, moving: 1, facing: 1 }, 1.2)) > 0, "outro quadro de enfeite refaz");
+    assert.equal(scratch(at({ phase: .01, moving: 1, facing: 1 }, 1.2)), 0, "e volta ao repetir");
+  } finally { h.done(); fresh(); }
 });

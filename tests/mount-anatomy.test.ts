@@ -129,15 +129,15 @@ test("a linha de cima do pescoço sai da cernelha e termina na nuca, meia largur
   assert.deepEqual(neckTop({ ...n, arch: 8 }, 1), neckTop(n, 1));
 });
 
-test("a altura do cavaleiro acompanha o lombo de cada montaria, e as sem ficha de lombo mantêm os 19 de sempre", () => {
+test("o cavaleiro senta no assento de cada montaria (dois abaixo do lombo), e o besouro e o hipocampo mantêm os 19 de sempre", () => {
   const expected: Record<MountId, number> = {
-    warhorse: 28, "mountain-goat": 19, "imperial-elk": 32, "silver-unicorn": 26, "fire-lion": 18, "cavern-bear": 23, "dark-griffin": 22,
-    "sand-basilisk": 16, "cargo-beetle": 19, "tidal-hippocampus": 19,
+    warhorse: 41, "mountain-goat": 32, "imperial-elk": 45, "silver-unicorn": 39, "fire-lion": 31, "cavern-bear": 36, "dark-griffin": 35,
+    "sand-basilisk": 29, "cargo-beetle": 19, "tidal-hippocampus": 19,
   };
   assert.deepEqual(MOUNT_IDS.map(id => mountRiderLift(id)), MOUNT_IDS.map(id => expected[id]));
   for (const id of QUADRUPEDS) assert.equal(mountRiderLift(id), riderLiftFor(QUADRUPED_MOUNTS[id].body.torso), id);
   assert.equal(LEGACY_RIDER_LIFT, 19);
-  assert.equal(riderLiftFor({ ...QUADRUPED_MOUNTS.warhorse.body.torso, back: -50 }), 35, "lombo mais alto levanta o cavaleiro");
+  assert.equal(riderLiftFor({ ...QUADRUPED_MOUNTS.warhorse.body.torso, back: -50 }), 48, "lombo mais alto levanta o cavaleiro: ele senta no assento, dois abaixo do lombo");
   assert.ok(isQuadrupedMount("warhorse") && !isQuadrupedMount("cargo-beetle") && !isQuadrupedMount("tidal-hippocampus") && !isQuadrupedMount("sand-basilisk"));
   const scene = readFileSync(new URL("../src/ui/CanvasScene.ts", import.meta.url), "utf8");
   assert.match(scene, /player\.y-top-\(mount\?mountRiderLift\(mount\):0\)/, "a cena usa a altura de cada montaria");

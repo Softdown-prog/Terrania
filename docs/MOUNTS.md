@@ -15,7 +15,9 @@ fichas completas e silhuetas Canvas específicas, registradas como criatura no
 contrato de arte; não se lê a sprite sheet como textura. O desenho foi refeito
 com pernas articuladas, tronco com silhueta e sela comum
 ([ADR 0091](adr/0091-kit-de-anatomia-das-montarias.md)); o herói senta na sela
-a uma altura própria de cada montaria.
+a uma altura própria de cada montaria. Montado, a montaria olha para onde o
+herói olha, anda só quando ele anda e o lombo sobe e desce; o herói senta, leva a
+rédea e acompanha ([ADR 0092](adr/0092-heroi-montado.md)).
 
 | Montaria | Tier | Nível | HP | Energia | Velocidade | Ataque | Habilidade planejada |
 | --- | ---: | ---: | ---: | ---: | --- | ---: | --- |

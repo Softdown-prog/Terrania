@@ -2,7 +2,7 @@
 import type { MountId } from "../../../actors/MountCatalog.ts";
 import type { Palette } from "./geometry.ts";
 import type { QuadrupedSpec } from "./quadruped.ts";
-import { riderLiftFor } from "./saddle.ts";
+import { riderLiftFor, saddleCenterX } from "./saddle.ts";
 import { WARHORSE_BODY, drawWarhorse, drawWarhorseBehind } from "./warhorse.ts";
 import { MOUNTAIN_GOAT_BODY, drawMountainGoat, drawMountainGoatBehind } from "./mountainGoat.ts";
 import { IMPERIAL_ELK_BODY, drawImperialElk, drawImperialElkBehind } from "./imperialElk.ts";
@@ -32,3 +32,7 @@ export const isQuadrupedMount = (id: MountId): id is QuadrupedMountId => id in Q
 /** A altura a que o cavaleiro é desenhado acima dos pés da montaria: acompanha o lombo de cada uma (as de quatro patas e o lagarto); o besouro e o hipocampo mantêm os 19 de sempre. */
 export const LEGACY_RIDER_LIFT = 19;
 export const mountRiderLift = (id: MountId): number => isQuadrupedMount(id) ? riderLiftFor(QUADRUPED_MOUNTS[id].body.torso) : id === "sand-basilisk" ? riderLiftFor(SAND_BASILISK_TORSO) : LEGACY_RIDER_LIFT;
+
+/** Quanto o cavaleiro desloca para o lado da montaria que olha para a direita: ele senta no centro da sela, que fica entre o ombro e a anca (espelha com a montaria). */
+export const mountRiderShiftX = (id: MountId): number =>
+  isQuadrupedMount(id) ? saddleCenterX(QUADRUPED_MOUNTS[id].body.torso) : id === "sand-basilisk" ? saddleCenterX(SAND_BASILISK_TORSO) : 0;

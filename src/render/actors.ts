@@ -15,6 +15,8 @@ import { drawMageBook } from "./hero/mage/gear/book.ts";
 import { drawMagePendant } from "./hero/mage/gear/pendant.ts";
 import { drawMageRing } from "./hero/mage/gear/ring.ts";
 import type { LegWear } from "./hero/mage/gear/legwear.ts";
+import { riderPose } from "./hero/ride.ts";
+import { stepRide, type MountRide } from "./creatures/mounts/gait.ts";
 
 export type HeroVisual = Pick<
   Player,
@@ -23,7 +25,8 @@ export type HeroVisual = Pick<
   Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon" | "attackStaff" | "attackWindup">> &
   { id?: string; gear?: GearState | undefined; equippedWeapon?: WeaponId | undefined;
     /** Vocação do herói (ADR 0067): sem ela, é o Cavaleiro. */ heroClass?: HeroClassId | undefined;
-    /** O cajado que o Mago segura (ADR 0068); sem ele, o de Aprendiz. */ equippedStaff?: StaffId | undefined };
+    /** O cajado que o Mago segura (ADR 0068); sem ele, o de Aprendiz. */ equippedStaff?: StaffId | undefined;
+    /** O andar da montaria sob o herói (ADR 0092): com ele, o herói senta, sobe e desce com o lombo e leva a rédea; sem ele, anda a pé. */ ride?: MountRide | undefined };
 
 /** O que a tela precisa saber da vocação do herói para desenhá-lo (ADR 0067/0068): sem isso, é o Cavaleiro. */
 export type HeroClassLook = Pick<HeroVisual, "heroClass" | "equippedStaff">;
@@ -75,11 +78,12 @@ function renderStaff(ctx: CanvasRenderingContext2D, mount: StaffMountFrame, staf
 /** Perna: quadril → joelho → tornozelo, bota por cima. Desenhada em pares ordenados por profundidade. */
 function drawLeg(ctx: CanvasRenderingContext2D, hipX: number, footX: number, footY: number,
   lift: number, mvx: number, tone: (c: string) => string, front: number,
-  armoredBoots = false, armoredLegs = false, legwear?: LegWear): void {
-  const hipY = -11.5;
+  armoredBoots = false, armoredLegs = false, legwear?: LegWear,
+  /** Sentado (ADR 0092): o quadril mais baixo e o joelho dado, em vez do que a passada calcula. */ seat?: { readonly hipY: number; readonly knee: readonly [number, number] }): void {
+  const hipY = seat?.hipY ?? -11.5;
   const pants = legwear?.pants ?? PAL.pants, boots = legwear?.boots ?? PAL.boots, bootsLight = legwear?.bootsLight ?? PAL.bootsL;
-  const kneeX = (hipX + footX) / 2 + mvx * lift * 0.5;
-  const kneeY = (hipY + footY) / 2 - lift * 0.35;
+  const kneeX = seat ? seat.knee[0] : (hipX + footX) / 2 + mvx * lift * 0.5;
+  const kneeY = seat ? seat.knee[1] : (hipY + footY) / 2 - lift * 0.35;
   limb(ctx, hipX, hipY, kneeX, kneeY, 5, tone(pants));
   limb(ctx, kneeX, kneeY, footX, footY - 2.4, 4.4, tone(mix(pants, "#000000", 0.12)));
   // cano da bota e cadarço
@@ -154,10 +158,16 @@ export function renderHero(
   const moving = smoothTo("hero-m:" + id, smoothstep(speed / 70), time, 16);
   const mvx = speed > 1 ? vxRaw / speed : player.faceX;
   const mvy = speed > 1 ? vyRaw / speed : player.faceY;
-  const g = gait(player.walkTime, moving);
+  // Montado (ADR 0092): sem passos (as pernas penduram no estribo), sobe e desce com o lombo e inclina para a frente.
+  const rd = player.ride ? stepRide(player.ride) : null;
+  const rp = rd ? riderPose(rd) : null;
+  const walk = gait(player.walkTime, moving);
+  const g = rd && rp ? { ...walk, a: { along: 0, lift: 0 }, b: { along: 0, lift: 0 }, bob: rp.bob, lean: rp.lean, armSwing: 0, moving: rd.moving } : walk;
   // Conjurando (ADR 0070), o Mago tem o corpo e o cajado da magia, não os do golpe de espada.
   const cast = player.heroClass === "mage" && player.attackStaff ? castPhase(player.attackTime, player.attackWindup ?? STAVES[player.attackStaff].windup) : NO_CAST;
-  const atk = cast.active ? castBody(player.attackTime, player.attackWindup ?? STAVES[player.attackStaff ?? DEFAULT_STAFF].windup) : attackBody(player.attackTime, player.attackWeapon);
+  const afoot = cast.active ? castBody(player.attackTime, player.attackWindup ?? STAVES[player.attackStaff ?? DEFAULT_STAFF].windup) : attackBody(player.attackTime, player.attackWeapon);
+  // Em cima da montaria o golpe quase não avança o corpo: ele não sai da sela.
+  const atk = player.ride ? { ...afoot, lunge: afoot.lunge * .3 } : afoot;
   const hurt = clamp01((player.hurtTime ?? 0) / 0.3);
   const flash = clamp01(((player.hurtTime ?? 0) - 0.14) / 0.06);
   const tone = (c: string): string => (flash > 0.02 ? mix(c, "#fff3dc", flash * 0.78) :
@@ -195,18 +205,24 @@ export function renderHero(
     sy + player.faceY * atk.lunge * 2.2 - player.faceY * hurt * 1.4,
   );
   const lift = Math.max(g.a.lift, g.b.lift);
-  softShadow(ctx, 1, 3.5, 12.5 - lift * 0.5 + Math.abs(atk.lunge) * 2, 4.6, 0.36);
+  if (!rd) softShadow(ctx, 1, 3.5, 12.5 - lift * 0.5 + Math.abs(atk.lunge) * 2, 4.6, 0.36); // montado, a sombra é a da montaria
   ctx.translate(0, g.bob + breath * 0.45);
   ctx.lineJoin = "round";
 
   if (back) drawHeld();
 
   // --- pernas, ordenadas por profundidade -------------------------------
-  const leftFoot = { hip: -3.6 * wf, x: -3.6 * wf + g.a.along * mvx, y: g.a.along * mvy * 0.55 - g.a.lift, lift: g.a.lift };
-  const rightFoot = { hip: 3.6 * wf, x: 3.6 * wf + g.b.along * mvx, y: g.b.along * mvy * 0.55 - g.b.lift, lift: g.b.lift };
-  const legs = leftFoot.y + g.a.lift <= rightFoot.y + g.b.lift ? [leftFoot, rightFoot] : [rightFoot, leftFoot];
-  legs.forEach((leg, i) => drawLeg(ctx, leg.hip, leg.x, leg.y, leg.lift, mvx, tone, i,
-    hasBoots, hasLegs, wear?.legwear));
+  // Montado, ele está sentado na sela: o quadril no assento, a coxa para a frente (para onde a montaria olha) e a canela pendurada até o estribo. Só a perna do lado da
+  // tela aparece; a outra fica atrás do corpo da montaria. A pé, as pernas vêm da passada.
+  if (rd && rp) {
+    const f = rd.facing;
+    drawLeg(ctx, 0, f * 6.2, 5.6 + rp.leg, 0, f, tone, 0, hasBoots, hasLegs, wear?.legwear, { hipY: -7.5, knee: [f * 7, -5 + rp.leg * 0.5] });
+  } else {
+    const leftFoot = { hip: -3.6 * wf, x: -3.6 * wf + g.a.along * mvx, y: g.a.along * mvy * 0.55 - g.a.lift, lift: g.a.lift };
+    const rightFoot = { hip: 3.6 * wf, x: 3.6 * wf + g.b.along * mvx, y: g.b.along * mvy * 0.55 - g.b.lift, lift: g.b.lift };
+    const legs = leftFoot.y + g.a.lift <= rightFoot.y + g.b.lift ? [leftFoot, rightFoot] : [rightFoot, leftFoot];
+    legs.forEach((leg, i) => drawLeg(ctx, leg.hip, leg.x, leg.y, leg.lift, mvx, tone, i, hasBoots, hasLegs, wear?.legwear));
+  }
 
   // --- capa (por baixo do tronco de frente; sobre ele de costas) ----------
   const headX = player.faceX * 1.3, headY = -31.5 + breath * 0.35 + Math.abs(Math.cos(player.walkTime)) * g.moving * -0.4 +
@@ -334,21 +350,22 @@ export function renderHero(
   // --- braços --------------------------------------------------------------
   const swing = g.armSwing;
   const swordSide = held.hand;
+  // A mão que não segura a arma: a pé, balança com a passada; montado, fica na rédea, à frente da cintura, subindo e descendo com a montaria.
+  const handOf = (s: number): readonly [number, number] => rp
+    ? [s * 4.4 * wf + (rd?.facing ?? 1) * 3.2, -15.2 + rp.hand + breath * 0.3]
+    : [s * 9.6 * wf + mvx * swing * -s * 4.2, -12.5 + mvy * swing * -s * 2.8 - swing * -s * 1.2 + breath * 0.3];
   for (const s of [-1, 1]) {
     if (s === swordSide) continue; // o braço que segura a arma (a espada ou o cajado) é desenhado junto dela
-    const hx = s * 9.6 * wf + mvx * swing * -s * 4.2;
-    const hy = -12.5 + mvy * swing * -s * 2.8 - swing * -s * 1.2 + breath * 0.3;
+    const [hx, hy] = handOf(s);
     drawArm(ctx, s * 8.6 * wf, -22.6, hx, hy, tone, look?.sleeve ?? PAL.tunic, look?.cuff);
   }
   if (hasShield) {
     const shieldSide = -swordSide;
-    const hx = shieldSide * 9.6 * wf + mvx * swing * -shieldSide * 4.2;
-    const hy = -12.5 + mvy * swing * -shieldSide * 2.8 - swing * -shieldSide * 1.2 + breath * 0.3;
+    const [hx, hy] = handOf(shieldSide);
     drawShield(ctx, hx, hy, shieldSide, swing, tone);
   } else if (wear?.book) {
     const bookSide = -swordSide;
-    const hx = bookSide * 9.6 * wf + mvx * swing * -bookSide * 4.2;
-    const hy = -12.5 + mvy * swing * -bookSide * 2.8 - swing * -bookSide * 1.2 + breath * 0.3;
+    const [hx, hy] = handOf(bookSide);
     drawMageBook(ctx, hx, hy, bookSide, swing, tone, wear.book);
   }
   const gripX = held.gripX, gripY = held.gripY;
