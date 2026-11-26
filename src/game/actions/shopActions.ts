@@ -7,7 +7,7 @@ import { experienceProgress } from "../../engine/character/Experience.ts";
 import { nearestNpc } from "../../world/npcs.ts";
 import { INNKEEPER_ID, MAGE_MASTER_ID } from "../../npcs/center/capital/index.ts";
 import { MARKET_NPC, describeCoins, type MarketId } from "../../engine/character/coins/index.ts";
-import { INVENTORY_FEEDBACK } from "../messages/inventoryFeedback.ts";
+import { INVENTORY_FEEDBACK, ateManaMessage } from "../messages/inventoryFeedback.ts";
 import { CAPITAL_INN_RESTED } from "../messages/capitalInn.ts";
 import { heroClassSheet } from "../../engine/character/classes/index.ts";
 import { NO_STAVES_MESSAGE, NO_SWORDS_MESSAGE } from "../messages/classRules.ts";
@@ -64,12 +64,12 @@ export function sellMaterial({ sim, inInterior, menuOpen }: ShopContext, market:
     : say(sale.result);
 }
 
-export function eatFood({ sim, hero }: ShopContext, id: FoodId): ShopResult {
+export function eatFood({ sim }: ShopContext, id: FoodId): ShopResult {
   if (sim.awaitingRespawn) return say("unavailable");
-  const outcome = sim.inventory.useFood(id, hero);
-  return outcome === "ate"
-    ? { message: `${FOODS[id].name}: ${INVENTORY_FEEDBACK.ate}`, changed: true }
-    : say(outcome);
+  const { outcome, mana } = sim.eatFood(id);
+  if (outcome !== "ate") return say(outcome);
+  // Quem usa mana também recupera mana na hora; o texto diz quanto (ADR 0085).
+  return { message: `${FOODS[id].name}: ${mana > 0 ? ateManaMessage(mana) : INVENTORY_FEEDBACK.ate}`, changed: true };
 }
 
 export function buyFood({ sim, inInterior, menuOpen }: ShopContext, id: FoodId): ShopResult {

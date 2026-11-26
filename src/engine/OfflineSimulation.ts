@@ -19,7 +19,7 @@ import { rollCoinDrop } from "./character/coins/index.ts";
 import { LEGACY_RESPAWN_SECONDS, respawnSecondsForId } from "./combat/respawn.ts";
 import type { CreatureKind } from "../actors/CreatureCatalog.ts";
 import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./character/Experience.ts";
-import { hasNutrition, type NutritionState } from "./character/Food.ts";
+import { foodMana, hasNutrition, type FoodId, type FoodUseResult, type NutritionState } from "./character/Food.ts";
 import { WellInvestigation, wellQuestStarted, type WellQuestState } from "./quests/south/well/index.ts";
 import { Bank, type BankState } from "./character/center/bank/index.ts";
 import { STAVES, type StaffId } from "./character/Staves.ts";
@@ -174,9 +174,16 @@ export class OfflineSimulation {
     return true;
   }
   /** Devolve mana (a sombra da Lua Negra): só para quem usa mana, só valores positivos, e nunca passa do máximo do nível. */
-  gainMana(amount: number): void {
-    if (!this.usesMana || !Number.isFinite(amount) || amount <= 0) return;
+  gainMana(amount: number): number {
+    if (!this.usesMana || !Number.isFinite(amount) || amount <= 0) return 0;
+    const before = this.manaPoints;
     this.manaPoints = Math.min(this.maxMana, this.manaPoints + amount);
+    return this.manaPoints - before;
+  }
+  /** Come um alimento: a vida volta aos poucos (como sempre) e, para quem usa mana, a mana volta na hora (a porcentagem da ficha do alimento). Só se a refeição foi feita. */
+  eatFood(id: FoodId): { readonly outcome: FoodUseResult; readonly mana: number } {
+    const outcome = this.inventory.useFood(id, this.player);
+    return { outcome, mana: outcome === "ate" ? this.gainMana(foodMana(id, this.maxMana)) : 0 };
   }
   /** O cajado que o Mago segura; com um só cajado, o de Aprendiz (a escolha entre vários vem com o inventário, fatia F). */
   get equippedStaff(): StaffId { return this.inventory.staves.equipped; }

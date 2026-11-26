@@ -64,3 +64,5 @@ export const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "gear-level-too-low": "Seu nível ainda não permite vestir essa peça.",
   "wrong-slot": "Este item pertence a outro espaço.",
 };
+/** A refeição de quem usa mana: a vida volta aos poucos e a mana, na hora (ADR 0085). */
+export const ateManaMessage = (mana: number): string => `Refeição feita. Sua vida volta aos poucos e você recupera ${Math.round(mana)} de mana na hora.`;

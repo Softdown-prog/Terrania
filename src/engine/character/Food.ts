@@ -6,6 +6,11 @@ import { MEAT } from "./foods/meat.ts";
 /** Os alimentos do jogo solo; cada um mora no seu arquivo em `foods/`. */
 export const FOODS = { apple: APPLE, bread: BREAD, meat: MEAT } as const;
 export type FoodId = keyof typeof FOODS;
+
+/** A mana que a comida devolve na hora a quem usa mana: a porcentagem da mana máxima da ficha do alimento, arredondada (0 para quem não usa mana). */
+export function foodMana(id: FoodId, maxMana: number): number {
+  return Number.isFinite(maxMana) && maxMana > 0 ? Math.round(maxMana * FOODS[id].manaPercent / 100) : 0;
+}
 export const FOOD_IDS: readonly FoodId[] = ["apple", "bread", "meat"];
 export type FoodCounts = Record<FoodId, number>;
 export const MAX_NUTRITION = 60;

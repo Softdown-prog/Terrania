@@ -227,7 +227,7 @@ export class HudService implements GameUi {
     for (const id of FOOD_IDS) {
       const item = FOODS[id];
       result.push({ id: 'food-' + id, kind: 'food', name: item.name, icon: foodItemIcon(id),
-        quantity: food[id], foodId: id, description: 'Recupera até ' + item.healBudget + ' HP aos poucos.' });
+        quantity: food[id], foodId: id, description: 'Recupera até ' + item.healBudget + ' HP aos poucos' + (HERO_CLASSES[this.heroClass()].usesMana ? ' e ' + item.manaPercent + '% da mana na hora.' : '.') });
     }
     const gear = this.gear();
     if (gear !== null && this.wearsArmor()) {
