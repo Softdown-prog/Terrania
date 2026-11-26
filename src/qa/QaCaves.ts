@@ -2,7 +2,7 @@ import { OfflineSimulation } from "../engine/OfflineSimulation.ts";
 import { collectDrops } from "../engine/character/loot.ts";
 import { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { applyCaveVictories } from "../engine/rooms/CaveRewards.ts";
-import { CENTER_KINDS } from "../monsters/catalog.ts";
+import { caveMonsterKinds } from "../actors/RegionalMonster.ts";
 import { caveFloorCount } from "../dungeons/index.ts";
 import { CAVE_EXIT, CAVE_HEIGHT, CAVE_STAIRS_DOWN, CAVE_WIDTH } from "../world/caveFloor.ts";
 import { caveEntranceInCell, type CaveEntrance, type CaveTheme } from "../world/caves.ts";
@@ -33,7 +33,7 @@ export interface CaveQaReport {
 
 /** O que falta à mistura de uma caverna comum do Centro (ao menos um slime, quatro tipos diferentes e só gente do Centro), ou `null` se está certa. */
 export function centralRosterProblem(kinds: ReadonlySet<string>): string | null {
-  const centro: readonly string[] = ["slime", ...CENTER_KINDS], foreign = [...kinds].filter(kind => !centro.includes(kind));
+  const centro: readonly string[] = ["slime", ...caveMonsterKinds("verdant")], foreign = [...kinds].filter(kind => !centro.includes(kind));
   if (foreign.length) return `não é do Centro: ${foreign.sort().join(", ")}`;
   if (!kinds.has("slime")) return "sem slime";
   if (kinds.size < 4) return `só ${kinds.size} tipos`;

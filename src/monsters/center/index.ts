@@ -6,6 +6,9 @@ import { rootSpider } from "./spiders/root-spider.ts";
 import { mossSlime } from "./slimes/moss-slime.ts";
 import { vineSnake } from "./snakes/vine-snake.ts";
 import { rootBeetle } from "./beetles/root-beetle.ts";
+import { wildBoar } from "./boars/wild-boar.ts";
+import { grayWolf } from "./wolves/gray-wolf.ts";
+import { walkingMushroom } from "./mushrooms/walking-mushroom.ts";
 
 /** Região Centro: apenas agrega fichas, sem duplicar IA e render. */
 export const CENTER_MONSTERS = {
@@ -16,4 +19,7 @@ export const CENTER_MONSTERS = {
   "moss-slime": mossSlime,
   "vine-snake": vineSnake,
   "root-beetle": rootBeetle,
+  "wild-boar": wildBoar,
+  "gray-wolf": grayWolf,
+  "walking-mushroom": walkingMushroom,
 } as const satisfies Readonly<Record<string, CreatureDefinition>>;

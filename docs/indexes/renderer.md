@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (324)
+## Todos os arquivos deste módulo (327)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -83,11 +83,14 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/coinDrop.ts`](../../src/render/coinDrop.ts)
 - [`src/render/creatures/center/bats/caveBat.ts`](../../src/render/creatures/center/bats/caveBat.ts)
 - [`src/render/creatures/center/beetles/rootBeetle.ts`](../../src/render/creatures/center/beetles/rootBeetle.ts)
+- [`src/render/creatures/center/boars/wildBoar.ts`](../../src/render/creatures/center/boars/wildBoar.ts)
+- [`src/render/creatures/center/mushrooms/walkingMushroom.ts`](../../src/render/creatures/center/mushrooms/walkingMushroom.ts)
 - [`src/render/creatures/center/rats/giantRat.ts`](../../src/render/creatures/center/rats/giantRat.ts)
 - [`src/render/creatures/center/slimes/mossSlime.ts`](../../src/render/creatures/center/slimes/mossSlime.ts)
 - [`src/render/creatures/center/slimes/slime.ts`](../../src/render/creatures/center/slimes/slime.ts)
 - [`src/render/creatures/center/snakes/vineSnake.ts`](../../src/render/creatures/center/snakes/vineSnake.ts)
 - [`src/render/creatures/center/spiders/rootSpider.ts`](../../src/render/creatures/center/spiders/rootSpider.ts)
+- [`src/render/creatures/center/wolves/grayWolf.ts`](../../src/render/creatures/center/wolves/grayWolf.ts)
 - [`src/render/creatures/east/crabs/coralCrab.ts`](../../src/render/creatures/east/crabs/coralCrab.ts)
 - [`src/render/creatures/east/octopuses/abyssalOctopus.ts`](../../src/render/creatures/east/octopuses/abyssalOctopus.ts)
 - [`src/render/creatures/east/serpents/stormSerpent.ts`](../../src/render/creatures/east/serpents/stormSerpent.ts)

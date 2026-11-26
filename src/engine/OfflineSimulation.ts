@@ -2,6 +2,7 @@ import { MAX_KILLS } from "./Limits.ts";
 export { MAX_KILLS } from "./Limits.ts";
 import { resolveSwordStrike, swordStrikeTargets } from "./combat/SwordCombat.ts";
 import { RegionalMonster, regionalSurfaceSpawns, southCommonSpawns, rollCreatureLoot } from "../actors/RegionalMonster.ts";
+import { centerSurfaceSpawns } from "../actors/centerSpawns.ts";
 import { southSiteSpawns } from "../actors/southSiteSpawns.ts";
 import { Player } from "../actors/Player.ts";
 import { MountStable, type MountSave } from "./mounts/MountStable.ts";
@@ -248,7 +249,7 @@ export class OfflineSimulation {
     for (let cy = y0 - 2; cy <= y0 + 2; cy++)
       for (let cx = x0 - 2; cx <= x0 + 2; cx++) {
         for (const slime of [...slimeSpawns(cx, cy, this.seed), ...regionalSurfaceSpawns(cx, cy, this.seed),
-          ...southCommonSpawns(cx,cy,this.seed),...southSiteSpawns(cx,cy,this.seed)]) {
+          ...southCommonSpawns(cx,cy,this.seed),...southSiteSpawns(cx,cy,this.seed),...centerSurfaceSpawns(cx,cy,this.seed)]) {
           // O derrotado volta quando o prazo passa e o herói está longe (não aparece na tela): ADR 0029.
           if (this.defeated.has(slime.id) && this.due(slime.id) &&
               Math.hypot(slime.x - this.player.x, slime.y - this.player.y) > RESPAWN_MIN_DISTANCE) this.release(slime.id);

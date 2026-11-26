@@ -23,7 +23,7 @@ test("o bot de cavernas passa nos seis temas, em todos os andares", () => {
   assert.equal(report.findings.filter(item => item.id === "populated").length, report.floors, "cada andar é conferido");
   // a mistura do Centro é conferida em cada caverna do tema (quatro), e só nelas: ao menos um slime e quatro tipos, todos do povo do Centro
   const roster = report.findings.filter(item => item.id === "roster");
-  assert.equal(roster.length, 4); assert.ok(roster.every(item => item.status === "passed" && item.cave.includes("(verdant)") && /^[4-7] tipos: .*slime/.test(item.detail)), JSON.stringify(roster));
+  assert.equal(roster.length, 4); assert.ok(roster.every(item => item.status === "passed" && item.cave.includes("(verdant)") && /^[4-8] tipos: .*slime/.test(item.detail)), JSON.stringify(roster));
 });
 
 test("cada tema tem cavernas para conferir (antes só o Centro aparecia na varredura)", () => {

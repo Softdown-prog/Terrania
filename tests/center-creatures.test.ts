@@ -15,6 +15,9 @@ import { drawMossSlime, CREATURE_PALETTE as MOSS_SLIME_PALETTE } from "../src/re
 import { drawVineSnake, CREATURE_PALETTE as VINE_SNAKE_PALETTE } from "../src/render/creatures/center/snakes/vineSnake.ts";
 import { drawRootBeetle, CREATURE_PALETTE as ROOT_BEETLE_PALETTE } from "../src/render/creatures/center/beetles/rootBeetle.ts";
 import { ROOT_BEETLE_SHELL } from "../src/monsters/center/beetles/root-beetle.ts";
+import { drawWildBoar, CREATURE_PALETTE as WILD_BOAR_PALETTE } from "../src/render/creatures/center/boars/wildBoar.ts";
+import { drawGrayWolf, CREATURE_PALETTE as GRAY_WOLF_PALETTE } from "../src/render/creatures/center/wolves/grayWolf.ts";
+import { drawWalkingMushroom, CREATURE_PALETTE as WALKING_MUSHROOM_PALETTE } from "../src/render/creatures/center/mushrooms/walkingMushroom.ts";
 import { creatureMotion } from "../src/render/creatures/shared/creatureMotion.ts";
 import { hashString } from "../src/render/draw.ts";
 import { Recorder, withFakeDocument } from "./helpers/recordingContext.ts";
@@ -22,16 +25,17 @@ import { rollCoinDrop } from "../src/engine/character/coins/index.ts";
 import { normalizeMaterials } from "../src/engine/character/Inventory.ts";
 
 /**
- * Lotes 1 e 2 do bestiário do Centro (ADR 0087 e 0088, docs/BESTIARIO_CENTRO.md): rato gigante, morcego de caverna, aranha das raízes, slime de musgo, cobra-cipó e besouro de raiz. Cada um tem ficha, comportamento e
+ * Lotes 1 a 3 do bestiário do Centro (ADR 0087, 0088 e 0089, docs/BESTIARIO_CENTRO.md): rato gigante, morcego de caverna, aranha das raízes, slime de musgo, cobra-cipó, besouro de raiz, javali, lobo cinzento e cogumelo andante. Cada um tem ficha, comportamento e
  * desenho no seu arquivo; a mistura na Gruta das Raízes é testada em cave-central-monsters.test.ts.
  */
 const open = { canMove: () => true, speedAt: () => 1 };
 const capture = (draw: (ctx: CanvasRenderingContext2D) => void) => { const r = new Recorder(); return withFakeDocument(r, () => { draw(r.ctx); return r.metrics(); }); };
 const FILES = { "giant-rat": ["rats", "giant-rat", "giantRat"], "cave-bat": ["bats", "cave-bat", "caveBat"], "root-spider": ["spiders", "root-spider", "rootSpider"],
-  "moss-slime": ["slimes", "moss-slime", "mossSlime"], "vine-snake": ["snakes", "vine-snake", "vineSnake"], "root-beetle": ["beetles", "root-beetle", "rootBeetle"] } as const;
+  "moss-slime": ["slimes", "moss-slime", "mossSlime"], "vine-snake": ["snakes", "vine-snake", "vineSnake"], "root-beetle": ["beetles", "root-beetle", "rootBeetle"],
+  "wild-boar": ["boars", "wild-boar", "wildBoar"], "gray-wolf": ["wolves", "gray-wolf", "grayWolf"], "walking-mushroom": ["mushrooms", "walking-mushroom", "walkingMushroom"] } as const;
 
-test("as seis criaturas têm a ficha do documento do bestiário (região Centro, caverna verde, saque próprio)", () => {
-  assert.deepEqual([...CENTER_KINDS], ["giant-rat", "cave-bat", "root-spider", "moss-slime", "vine-snake", "root-beetle"]);
+test("as nove criaturas têm a ficha do documento do bestiário (região Centro, caverna verde, saque próprio)", () => {
+  assert.deepEqual([...CENTER_KINDS], ["giant-rat", "cave-bat", "root-spider", "moss-slime", "vine-snake", "root-beetle", "wild-boar", "gray-wolf", "walking-mushroom"]);
   const sheet = (kind: typeof CENTER_KINDS[number]) => { const d = CREATURE_CATALOG[kind]; return [d.name, d.maxHp, d.contactDamage, d.experience, d.special, d.status, d.region, [...d.caveThemes]]; };
   assert.deepEqual(sheet("giant-rat"), ["Rato Gigante", 28, 5, 9, "none", null, "center", ["verdant"]]);
   assert.deepEqual(sheet("cave-bat"), ["Morcego de Caverna", 24, 6, 11, "none", null, "center", ["verdant"]]);
@@ -42,20 +46,32 @@ test("as seis criaturas têm a ficha do documento do bestiário (região Centro,
   assert.deepEqual(CREATURE_CATALOG["moss-slime"].loot, [{ item: "Gel Esverdeado", chance: .6 }, { item: "Musgo Úmido", chance: .3 }]);
   assert.deepEqual(CREATURE_CATALOG["vine-snake"].loot, [{ item: "Pele de Cipó", chance: .5 }, { item: "Presa de Cobra-Cipó", chance: .25 }]);
   assert.deepEqual(CREATURE_CATALOG["root-beetle"].loot, [{ item: "Carapaça de Raiz", chance: .5 }, { item: "Seiva Escura", chance: .2 }]);
+  assert.deepEqual(sheet("wild-boar"), ["Javali Selvagem", 110, 14, 45, "none", null, "center", []]);
+  assert.deepEqual(sheet("gray-wolf"), ["Lobo Cinzento", 90, 13, 42, "none", null, "center", []]);
+  assert.deepEqual(sheet("walking-mushroom"), ["Cogumelo Andante", 100, 11, 48, "spore-cloud", "slow", "center", ["verdant"]]);
+  assert.deepEqual(CREATURE_CATALOG["wild-boar"].loot, [{ item: "Presa de Javali", chance: .5 }, { item: "Couro Grosso", chance: .35 }, { item: "Carne de Javali", chance: .3 }]);
+  assert.deepEqual(CREATURE_CATALOG["gray-wolf"].loot, [{ item: "Pele de Lobo", chance: .5 }, { item: "Presa de Lobo", chance: .3 }]);
+  assert.deepEqual(CREATURE_CATALOG["walking-mushroom"].loot, [{ item: "Esporos de Cogumelo", chance: .6 }, { item: "Chapéu de Cogumelo", chance: .3 }]);
   // ritmo de cada um: velocidade, alcance, intervalo entre golpes e duração do efeito (o morcego é o mais veloz; a aranha, a mais lenta)
   const pace = (kind: typeof CENTER_KINDS[number]) => { const d = CREATURE_CATALOG[kind]; return [d.speed, d.range, d.interval, d.statusSeconds]; };
   assert.deepEqual(pace("moss-slime"), [46, 22, .9, 2]); assert.deepEqual(pace("vine-snake"), [80, 24, 1, 4]); assert.deepEqual(pace("root-beetle"), [52, 22, 1.1, 0]);
-  assert.equal(Math.min(...CENTER_KINDS.map(k => CREATURE_CATALOG[k].speed)), CREATURE_CATALOG["moss-slime"].speed, "o slime de musgo é o mais lento");
+  assert.deepEqual(pace("wild-boar"), [92, 26, 1.2, 0]); assert.deepEqual(pace("gray-wolf"), [98, 26, .9, 0]); assert.deepEqual(pace("walking-mushroom"), [30, 72, 3, 3]);
+  assert.equal(Math.min(...CENTER_KINDS.map(k => CREATURE_CATALOG[k].speed)), CREATURE_CATALOG["walking-mushroom"].speed, "o cogumelo é o mais lento");
+  assert.equal(Math.max(...CENTER_KINDS.map(k => CREATURE_CATALOG[k].speed)), CREATURE_CATALOG["cave-bat"].speed, "o morcego é o mais veloz");
+  assert.ok(CREATURE_CATALOG["gray-wolf"].speed > CREATURE_CATALOG["wild-boar"].speed, "o lobo é mais veloz que o javali");
+  assert.ok(CREATURE_CATALOG["moss-slime"].speed < CREATURE_CATALOG["giant-rat"].speed && CREATURE_CATALOG["moss-slime"].speed < CREATURE_CATALOG["vine-snake"].speed, "o slime de musgo é mais lento que o rato e a cobra");
   assert.deepEqual(pace("giant-rat"), [88, 24, .7, 0]); assert.deepEqual(pace("cave-bat"), [104, 22, .55, 0]); assert.deepEqual(pace("root-spider"), [70, 26, .95, 3]);
   assert.ok(pace("cave-bat")[0]! > pace("giant-rat")[0]! && pace("giant-rat")[0]! > pace("root-spider")[0]!);
-  assert.deepEqual(CENTER_KINDS.map(k => CREATURE_CATALOG[k].biomes), [["meadow", "woodland", "trail"], ["woodland", "trail"], ["woodland", "trail"], ["woodland", "trail"], ["woodland", "trail"], ["meadow", "woodland"]]);
+  assert.deepEqual(CENTER_KINDS.map(k => CREATURE_CATALOG[k].biomes), [["meadow", "woodland", "trail"], ["woodland", "trail"], ["woodland", "trail"], ["woodland", "trail"], ["woodland", "trail"], ["meadow", "woodland"], ["meadow", "woodland"], ["woodland"], ["woodland"]]);
   assert.deepEqual(CREATURE_CATALOG["giant-rat"].loot, [{ item: "Rabo de Rato Gigante", chance: .55 }, { item: "Dente de Roedor", chance: .3 }]);
   assert.deepEqual(CREATURE_CATALOG["cave-bat"].loot, [{ item: "Asa de Morcego", chance: .5 }, { item: "Guano Seco", chance: .25 }]);
   assert.deepEqual(CREATURE_CATALOG["root-spider"].loot, [{ item: "Fio de Teia", chance: .5 }, { item: "Presa de Aranha", chance: .25 }]);
-  assert.deepEqual(Object.keys(CENTER_MONSTERS).sort(), ["cave-bat", "giant-rat", "moss-slime", "root-beetle", "root-spider", "slime", "vine-snake"]);
-  // o Centro é o começo do jogo: vida até 55, dano até 8, experiência até 17 (as outras regiões chegam a 450 de vida e 40 de dano)
-  for (const kind of CENTER_KINDS) { const d = CREATURE_CATALOG[kind]; assert.ok(d.maxHp <= 55 && d.contactDamage <= 8 && d.experience <= 17, kind); }
-  assert.ok(Math.max(...REGIONAL_CREATURE_KINDS.map(k => CREATURE_CATALOG[k].maxHp)) >= 8 * CREATURE_CATALOG["root-beetle"].maxHp, "o resto do mundo continua muito mais duro");
+  assert.deepEqual(Object.keys(CENTER_MONSTERS).sort(), ["cave-bat", "giant-rat", "gray-wolf", "moss-slime", "root-beetle", "root-spider", "slime", "vine-snake", "walking-mushroom", "wild-boar"]);
+  // o Centro é o começo do jogo: os seis comuns (lotes 1 e 2) têm vida até 55, dano até 8 e experiência até 17; os três médios (lote 3), até 110, 14 e 48
+  // (as outras regiões chegam a 450 de vida e 40 de dano)
+  for (const kind of CENTER_KINDS.slice(0, 6)) { const d = CREATURE_CATALOG[kind]; assert.ok(d.maxHp <= 55 && d.contactDamage <= 8 && d.experience <= 17, kind); }
+  for (const kind of CENTER_KINDS.slice(6)) { const d = CREATURE_CATALOG[kind]; assert.ok(d.maxHp >= 90 && d.maxHp <= 110 && d.contactDamage >= 11 && d.contactDamage <= 14 && d.experience >= 42 && d.experience <= 48, kind); }
+  assert.ok(Math.max(...REGIONAL_CREATURE_KINDS.map(k => CREATURE_CATALOG[k].maxHp)) >= 4 * CREATURE_CATALOG["wild-boar"].maxHp, "o resto do mundo continua muito mais duro");
 });
 
 test("cada criatura mora no seu arquivo: ficha em monsters/center/<família>/, desenho em render/creatures/center/<família>/", () => {
@@ -71,18 +87,21 @@ test("cada criatura mora no seu arquivo: ficha em monsters/center/<família>/, d
   }
 });
 
-test("comportamento: cada um anda do seu jeito (o morcego zigue-zagueia e foge quase morto; o slime de musgo é o mais lento; a cobra avança de uma vez); nenhum repete o perfil de outro", () => {
+test("comportamento: cada um anda do seu jeito (o morcego zigue-zagueia e foge quase morto; o cogumelo é o mais lento; a cobra e o javali avançam de uma vez; o lobo cerca); nenhum repete o perfil de outro", () => {
   assert.deepEqual(SPECIES_BEHAVIORS["giant-rat"], { gait: "skitter", pursuit: "flank", cadence: 2.3, weave: .22 });
   assert.deepEqual(SPECIES_BEHAVIORS["cave-bat"], { gait: "flap", pursuit: "flank", cadence: 2.7, weave: .46, retreatAt: .25 });
   assert.deepEqual(SPECIES_BEHAVIORS["root-spider"], { gait: "scuttle", pursuit: "cautious", cadence: 1.5, weave: .3 });
   assert.deepEqual(SPECIES_BEHAVIORS["moss-slime"], { gait: "crawl", pursuit: "direct", cadence: 1.02, weave: .08 });
   assert.deepEqual(SPECIES_BEHAVIORS["vine-snake"], { gait: "slither", pursuit: "rush", cadence: 1.4, weave: .24 });
   assert.deepEqual(SPECIES_BEHAVIORS["root-beetle"], { gait: "lumber", pursuit: "direct", cadence: .9, weave: .05 });
+  assert.deepEqual(SPECIES_BEHAVIORS["wild-boar"], { gait: "gallop", pursuit: "rush", cadence: 1.1, weave: .02 });
+  assert.deepEqual(SPECIES_BEHAVIORS["gray-wolf"], { gait: "gallop", pursuit: "flank", cadence: 1.6, weave: .33 });
+  assert.deepEqual(SPECIES_BEHAVIORS["walking-mushroom"], { gait: "hop", pursuit: "cautious", cadence: .7, weave: .12 });
   assert.equal(Math.max(...REGIONAL_CREATURE_KINDS.map(k => SPECIES_BEHAVIORS[k].weave)), SPECIES_BEHAVIORS["cave-bat"].weave, "o morcego é quem mais zigue-zagueia");
   assert.equal(speciesRetreats("cave-bat", 6, 24), true); assert.equal(speciesRetreats("cave-bat", 7, 24), false);
-  for (const [kind, hp] of [["giant-rat", 28], ["root-spider", 38], ["moss-slime", 30], ["vine-snake", 34], ["root-beetle", 55]] as const) assert.equal(speciesRetreats(kind, 1, hp), false, kind);
+  for (const [kind, hp] of [["giant-rat", 28], ["root-spider", 38], ["moss-slime", 30], ["vine-snake", 34], ["root-beetle", 55], ["wild-boar", 110], ["gray-wolf", 90], ["walking-mushroom", 100]] as const) assert.equal(speciesRetreats(kind, 1, hp), false, kind);
   const steps = CENTER_KINDS.map(k => pursuitStep(k, .35, 150, 20, 151));
-  assert.equal(new Set(steps.map(s => [s.x.toFixed(3), s.y.toFixed(3), s.pace.toFixed(3)].join(":"))).size, 6);
+  assert.equal(new Set(steps.map(s => [s.x.toFixed(3), s.y.toFixed(3), s.pace.toFixed(3)].join(":"))).size, 9);
 });
 
 test("o efeito de cada mordida: a aranha deixa lento e envenena fraco; o slime de musgo só deixa lento; a cobra só envenena; os outros só machucam", () => {
@@ -93,12 +112,13 @@ test("o efeito de cada mordida: a aranha deixa lento e envenena fraco; o slime d
     for (let i = 0; i < 120 && hero.hp === hero.maxHp; i++) mob.update(1 / 60, hero, open, 0, false);
     return { hurt: hero.maxHp - hero.hp, slow: hero.debuffs.slow, venom: hero.debuffs["weak-venom"] };
   };
-  const spider = bite("root-spider"), moss = bite("moss-slime"), snake = bite("vine-snake");
+  const spider = bite("root-spider"), moss = bite("moss-slime"), snake = bite("vine-snake"), mushroom = bite("walking-mushroom");
   assert.ok(spider.hurt > 0 && spider.slow > 0 && spider.venom > 0, JSON.stringify(spider));
   assert.ok(spider.slow <= 2.5 && spider.venom <= 3, "a teia dura pouco: " + JSON.stringify(spider));
   assert.ok(moss.hurt > 0 && moss.slow > 0 && moss.slow <= 2 && moss.venom === 0, "slime de musgo: " + JSON.stringify(moss));
   assert.ok(snake.hurt > 0 && snake.venom > 0 && snake.venom <= 4 && snake.slow === 0, "cobra-cipó: " + JSON.stringify(snake));
-  for (const kind of ["giant-rat", "cave-bat", "root-beetle"] as const) { const r = bite(kind); assert.ok(r.hurt > 0, kind + " machuca"); assert.equal(r.slow, 0, kind + ": sem lentidão"); assert.equal(r.venom, 0, kind + ": sem veneno"); }
+  assert.ok(mushroom.hurt > 0 && mushroom.slow > 0 && mushroom.slow <= 3 && mushroom.venom === 0, "cogumelo: " + JSON.stringify(mushroom));
+  for (const kind of ["giant-rat", "cave-bat", "root-beetle", "wild-boar", "gray-wolf"] as const) { const r = bite(kind); assert.ok(r.hurt > 0, kind + " machuca"); assert.equal(r.slow, 0, kind + ": sem lentidão"); assert.equal(r.venom, 0, kind + ": sem veneno"); }
   // o dano de cada mordida é o da ficha (sem defesa do herói)
   for (const kind of CENTER_KINDS) assert.equal(bite(kind).hurt, CREATURE_CATALOG[kind].contactDamage, kind + ": dano da ficha");
 });
@@ -121,16 +141,18 @@ test("o morcego quase morto foge do herói em vez de morder; os outros seguem at
     return mob.x - start;
   };
   assert.ok(run("cave-bat") > 0, "o morcego se afasta");
-  for (const kind of ["giant-rat", "root-spider", "moss-slime", "vine-snake", "root-beetle"] as const) assert.ok(run(kind) < 0, kind + " continua vindo");
+  for (const kind of ["giant-rat", "root-spider", "moss-slime", "vine-snake", "root-beetle", "wild-boar", "gray-wolf"] as const) assert.ok(run(kind) < 0, kind + " continua vindo");
+  assert.equal(run("walking-mushroom"), 0, "o cogumelo não foge nem avança: já está no alcance do sopro");
 });
 
-test("as criaturas do Centro não nascem na superfície nem fora da Gruta das Raízes (por enquanto só caverna)", () => {
-  assert.deepEqual(caveMonsterKinds("verdant"), ["giant-rat", "cave-bat", "root-spider", "moss-slime", "vine-snake", "root-beetle"]);
+test("onde moram: só o cogumelo mora na caverna; o javali e o lobo só na superfície (e nenhum deles em outro tema nem em outra região)", () => {
+  assert.deepEqual(caveMonsterKinds("verdant"), ["giant-rat", "cave-bat", "root-spider", "moss-slime", "vine-snake", "root-beetle", "walking-mushroom"]);
   for (const theme of ["glacial", "desert", "coastal", "basalt", "marsh"] as const) for (const kind of CENTER_KINDS) assert.ok(!caveMonsterKinds(theme).includes(kind), `${kind} não mora em ${theme}`);
+  // as geradoras das outras regiões nunca criam bicho do Centro
   const seen = new Set<string>();
   for (let cx = -1000; cx <= 1000; cx += 7) for (let cy = -1000; cy <= 1000; cy += 7) for (const mob of [...regionalSurfaceSpawns(cx, cy, 842136), ...southCommonSpawns(cx, cy, 842136)]) seen.add(mob.kind);
   assert.ok(seen.size > 5, "a varredura achou criaturas de verdade: " + seen.size);
-  for (const kind of CENTER_KINDS) assert.ok(!seen.has(kind), `${kind} não nasce na superfície`);
+  for (const kind of CENTER_KINDS) assert.ok(!seen.has(kind), `${kind} não nasce pelas geradoras das outras regiões`);
 });
 
 test("saque e moeda: nomes novos viram material aceito pela bolsa, e a moeda cresce com a experiência", () => {
@@ -143,7 +165,7 @@ test("saque e moeda: nomes novos viram material aceito pela bolsa, e a moeda cre
 test("arte: cada uma tem silhueta própria, é determinística e aparece pelo registro com a anatomia de verdade", () => {
   const frame = (kind: typeof CENTER_KINDS[number], extra: object = {}) => capture(c => renderRegionalCreature(c, { kind, hp: CREATURE_CATALOG[kind].maxHp, id: "arte-" + kind, ...extra }, 0, 0, 1.3));
   const idle = CENTER_KINDS.map(k => frame(k));
-  assert.equal(new Set(idle.map(m => m.signature)).size, 6);
+  assert.equal(new Set(idle.map(m => m.signature)).size, 9);
   for (const [i, kind] of CENTER_KINDS.entries()) {
     const m = idle[i]!;
     assert.ok(m.paintOps > 50 && m.curves > 50 && m.gradients >= 3 && m.colors >= 9, `${kind}: anatomia de verdade ${JSON.stringify({ o: m.paintOps, c: m.curves, g: m.gradients, k: m.colors })}`);
@@ -152,12 +174,12 @@ test("arte: cada uma tem silhueta própria, é determinística e aparece pelo re
     assert.notEqual(frame(kind, { id: "outro-" + kind }).signature, m.signature, kind + ": indivíduos iguais");
   }
   // cada criatura é desenhada pelo seu pintor: as cores dominantes são as da paleta dela (cinza do rato, roxo do morcego, marrom e musgo da aranha)
-  const palettes = [GIANT_RAT_PALETTE, CAVE_BAT_PALETTE, ROOT_SPIDER_PALETTE, MOSS_SLIME_PALETTE, VINE_SNAKE_PALETTE, ROOT_BEETLE_PALETTE];
-  assert.equal(new Set(palettes.map(p => p.base)).size, 6);
-  const draws = [drawGiantRat, drawCaveBat, drawRootSpider, drawMossSlime, drawVineSnake, drawRootBeetle] as const;
+  const palettes = [GIANT_RAT_PALETTE, CAVE_BAT_PALETTE, ROOT_SPIDER_PALETTE, MOSS_SLIME_PALETTE, VINE_SNAKE_PALETTE, ROOT_BEETLE_PALETTE, WILD_BOAR_PALETTE, GRAY_WOLF_PALETTE, WALKING_MUSHROOM_PALETTE];
+  assert.equal(new Set(palettes.map(p => p.base)).size, 9);
+  const draws = [drawGiantRat, drawCaveBat, drawRootSpider, drawMossSlime, drawVineSnake, drawRootBeetle, drawWildBoar, drawGrayWolf, drawWalkingMushroom] as const;
   for (const [i, kind] of CENTER_KINDS.entries()) {
     const viaRegistry = capture(c => renderRegionalCreature(c, { kind, hp: CREATURE_CATALOG[kind].maxHp, id: "arte-" + kind }, 0, 0, 1.3));
-    const wrongPalette = capture(c => renderRegionalCreature(c, { kind: CENTER_KINDS[(i + 1) % 6]!, hp: CREATURE_CATALOG[CENTER_KINDS[(i + 1) % 6]!].maxHp, id: "arte-" + kind }, 0, 0, 1.3));
+    const wrongPalette = capture(c => renderRegionalCreature(c, { kind: CENTER_KINDS[(i + 1) % 9]!, hp: CREATURE_CATALOG[CENTER_KINDS[(i + 1) % 9]!].maxHp, id: "arte-" + kind }, 0, 0, 1.3));
     assert.notEqual(viaRegistry.signature, wrongPalette.signature, kind);
     assert.ok(draws[i] && viaRegistry.paintOps > 0);
   }
@@ -168,6 +190,7 @@ test("arte: o desenho de cada criatura lê a passada, o preparo do golpe e o fer
   const cases: ReadonlyArray<readonly [string, (c: CanvasRenderingContext2D, m: typeof base) => void]> = [
     ["rato", (c, m) => drawGiantRat(c, GIANT_RAT_PALETTE, 1.3, m)], ["morcego", (c, m) => drawCaveBat(c, CAVE_BAT_PALETTE, 1.3, m)], ["aranha", (c, m) => drawRootSpider(c, ROOT_SPIDER_PALETTE, 1.3, m)],
     ["slime de musgo", (c, m) => drawMossSlime(c, MOSS_SLIME_PALETTE, 1.3, m)], ["cobra-cipó", (c, m) => drawVineSnake(c, VINE_SNAKE_PALETTE, 1.3, m)], ["besouro de raiz", (c, m) => drawRootBeetle(c, ROOT_BEETLE_PALETTE, 1.3, m)],
+    ["javali", (c, m) => drawWildBoar(c, WILD_BOAR_PALETTE, 1.3, m)], ["lobo", (c, m) => drawGrayWolf(c, GRAY_WOLF_PALETTE, 1.3, m)], ["cogumelo", (c, m) => drawWalkingMushroom(c, WALKING_MUSHROOM_PALETTE, 1.3, m)],
   ];
   for (const [name, draw] of cases) {
     const shot = (m: object) => capture(c => draw(c, { ...base, ...m }));
@@ -259,4 +282,34 @@ test("a cobra-cipó: a língua sai 7 a mais no golpe e a onda do corpo cresce an
   const bodyY = (m: object) => calls(m).filter(call => call.name === "ellipse").map(call => call.args[1]!);
   assert.notDeepEqual(bodyY({ moving: 1, phase: 1 }), bodyY({ moving: 0, phase: 1 }));
   assert.notDeepEqual(bodyY({ moving: 1, phase: 0 }), bodyY({ moving: 1, phase: 1 }));
+});
+
+test("o lobo: a cauda balança com a passada e se abre correndo; o javali baixa a cabeça no golpe (medidas exatas)", () => {
+  const wolf = (m: object) => pathCalls(c => drawGrayWolf(c, GRAY_WOLF_PALETTE, 1.3, { seed: .3, phase: 0, moving: 0, bite: 0, wound: 0, ...m }));
+  const tail = (m: object) => wolf(m).find(call => call.name === "quadraticCurveTo" && call.args.length === 4)!.args;
+  // a primeira curva do desenho é o contorno da cauda: ponto de controle sobe 5 por unidade de movimento; a ponta oscila 4 por seno da passada
+  assert.ok(Math.abs(tail({ moving: 1 })[1]! - tail({})[1]! + 5) < 1e-9, "a cauda se abre correndo");
+  for (const phase of [.5, 1, 2.4]) assert.ok(Math.abs((tail({ moving: 1, phase })[3]! - tail({ moving: 1 })[3]!) - 4 * Math.sin(phase * 1.2)) < 1e-9, "a ponta da cauda acompanha a passada, fase " + phase);
+  assert.equal(tail({ moving: 0, phase: 2 })[3], tail({ moving: 0, phase: 0 })[3], "parada, a cauda não depende da fase");
+  // o javali: a cabeça inteira desce 3 por unidade de golpe (o primeiro disco da cabeça é o corpo da cabeça)
+  const boarHead = (bite: number) => pathCalls(c => drawWildBoar(c, WILD_BOAR_PALETTE, 1.3, { seed: .3, phase: 0, moving: 0, bite, wound: 0 })).filter(call => call.name === "ellipse" && call.args[2] === 11 && call.args[3] === 9.5);
+  assert.equal(boarHead(0).length, 2, "cada disco da cabeça (contorno e preenchimento)");
+  assert.ok(Math.abs(boarHead(1)[0]!.args[1]! - boarHead(0)[0]!.args[1]! - 3) < 1e-9, "a cabeça desce 3 no golpe");
+  assert.ok(Math.abs(boarHead(.5)[0]!.args[1]! - boarHead(0)[0]!.args[1]! - 1.5) < 1e-9);
+});
+
+test("o cogumelo: o corpo balança com a passada e os pés se alternam no pulinho (medidas exatas)", () => {
+  const calls = (m: object) => pathCalls(c => drawWalkingMushroom(c, WALKING_MUSHROOM_PALETTE, 1.3, { seed: .3, phase: 0, moving: 0, bite: 0, wound: 0, ...m }));
+  const sway = (m: { phase: number; moving: number }) => Math.sin(m.phase) * m.moving * 1.6 + Math.sin(1.3 * 1.6 + .3 * 5) * .5;
+  // o caule é o disco de 10,5 × 12: o centro é o balanço
+  const stemX = (m: { phase: number; moving: number }) => calls(m).find(call => call.name === "ellipse" && call.args[2] === 10.5 && call.args[3] === 12)!.args[0]!;
+  for (const m of [{ phase: 0, moving: 0 }, { phase: 1.1, moving: 1 }, { phase: 2.6, moving: .5 }]) assert.ok(Math.abs(stemX(m) - sway(m)) < 1e-9, JSON.stringify(m));
+  // os pés: discos de 5,4 × 3,2 em x = ±6 + 2 por seno da passada (alternados) e subindo até 4 no passo
+  const feet = (m: { phase: number; moving: number }) => calls(m).filter(call => call.name === "ellipse" && call.args[2] === 5.4 && call.args[3] === 3.2).map(call => [call.args[0]!, call.args[1]!]);
+  const still = feet({ phase: 0, moving: 0 });
+  assert.deepEqual(still.map(([x]) => x).sort((a, b) => a! - b!), [-6, -6, 6, 6], "parado, os pés ficam em ±6");
+  assert.ok(still.every(([, y]) => y === -3));
+  const step = feet({ phase: 1.1, moving: 1 }), left = step.filter(([x]) => x! < 0), right = step.filter(([x]) => x! > 0);
+  assert.ok(Math.abs(left[0]![0]! - (-6 + Math.sin(1.1) * 2)) < 1e-9 && Math.abs(right[0]![0]! - (6 + Math.sin(1.1 + Math.PI) * 2)) < 1e-9, "os pés se alternam");
+  assert.ok(Math.abs(left[0]![1]! - (-3 - Math.max(0, Math.sin(1.1)) * 4)) < 1e-9 && Math.abs(right[0]![1]! - -3) < 1e-9, "só o pé do passo sobe");
 });

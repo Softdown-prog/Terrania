@@ -1,5 +1,7 @@
 # ADR 0088 — Bestiário do Centro, lote 2: slime de musgo, cobra-cipó e besouro de raiz
 
+> **Atualização ([ADR 0089](0089-bestiario-do-centro-lote-3.md)):** na fila de doze da Gruta das Raízes, o cogumelo andante passou a ocupar o lugar do segundo rato; o slime de musgo deixou de ser "o mais lento do Centro" (o cogumelo é mais lento). O texto abaixo é o registro do lote 2.
+
 **Estado:** entregue em 2026-11-26, direto na `main`, na sequência do [ADR 0087](0087-bestiario-do-centro-lote-1.md) e do plano de [docs/BESTIARIO_CENTRO.md](../BESTIARIO_CENTRO.md). O Centro passa de 3 para **6 criaturas próprias** (além do slime comum).
 
 ## O que muda
@@ -7,7 +9,7 @@
 
    | Criatura | Vida | Dano | XP | Ritmo | Efeito | Saque |
    | --- | ---: | ---: | ---: | --- | --- | --- |
-   | Slime de Musgo (`moss-slime`) | 30 | 5 | 10 | rasteja de frente, o mais lento do Centro (46) | o contato deixa o herói lento por 2 s | Gel Esverdeado (60 %), Musgo Úmido (30 %) |
+   | Slime de Musgo (`moss-slime`) | 30 | 5 | 10 | rasteja de frente, o mais lento dos que vão até o herói (46) | o contato deixa o herói lento por 2 s | Gel Esverdeado (60 %), Musgo Úmido (30 %) |
    | Cobra-Cipó (`vine-snake`) | 34 | 8 | 14 | ondula e se joga contra o herói (investida) | veneno fraco (4 s) | Pele de Cipó (50 %), Presa de Cobra-Cipó (25 %) |
    | Besouro de Raiz (`root-beetle`) | 55 | 6 | 17 | anda pesado e em linha reta | **casca dura: cada golpe do herói perde 1 de dano** | Carapaça de Raiz (50 %), Seiva Escura (20 %) |
 

@@ -12,12 +12,12 @@ export const CENTRAL_CAVE_MONSTERS = 6;
 const MIN_FROM_PLAYER = 170, MIN_BETWEEN = 92;
 
 /**
- * Quem mora em cada ponto da Gruta das Raízes: uma fila de doze (três slimes, dois ratos, dois morcegos, dois slimes de musgo, uma aranha, uma cobra-cipó e um
- * besouro) de que cada caverna usa os seis primeiros a partir de um ponto de partida sorteado pela própria entrada. Assim cada gruta tem a sua mistura, e qualquer
+ * Quem mora em cada ponto da Gruta das Raízes: uma fila de doze (três slimes, um rato, dois morcegos, dois slimes de musgo, uma aranha, uma cobra-cipó, um
+ * besouro e um cogumelo andante) de que cada caverna usa os seis primeiros a partir de um ponto de partida sorteado pela própria entrada. Assim cada gruta tem a sua mistura, e qualquer
  * janela de seis tem ao menos um slime e quatro tipos diferentes (conferido nos testes); nenhum tipo some do Centro, porque as janelas juntas passam por todos.
  * Quando só cabem três pontos (caverna estreita), valem os três primeiros da fila girada.
  */
-export const CENTRAL_ROSTER: readonly CreatureKind[] = ["slime", "giant-rat", "cave-bat", "root-spider", "slime", "moss-slime", "cave-bat", "root-beetle", "slime", "vine-snake", "giant-rat", "moss-slime"];
+export const CENTRAL_ROSTER: readonly CreatureKind[] = ["slime", "giant-rat", "cave-bat", "root-spider", "slime", "moss-slime", "cave-bat", "root-beetle", "slime", "vine-snake", "walking-mushroom", "moss-slime"];
 /** A criatura do ponto `index` (0, 1, 2...) da caverna de sal `salt`. Pura: mesma entrada, mesma criatura. */
 export function centralCaveKind(salt: number, index: number): CreatureKind {
   const turn = Math.floor(hash2(salt, 5, 97) * CENTRAL_ROSTER.length);

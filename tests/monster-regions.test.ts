@@ -20,7 +20,10 @@ const speciesFamilies = {
     "root-spider": "spiders",
     "moss-slime": "slimes",
     "vine-snake": "snakes",
-    "root-beetle": "beetles"
+    "root-beetle": "beetles",
+    "wild-boar": "boars",
+    "gray-wolf": "wolves",
+    "walking-mushroom": "mushrooms"
   },
   "north": {
     "boreal-yeti": "yetis",
@@ -64,10 +67,10 @@ const speciesFamilies = {
 } as const;
 
 
-test("bestiário: 38 fichas únicas e nenhuma espécie ausente do catálogo",()=>{
+test("bestiário: 41 fichas únicas e nenhuma espécie ausente do catálogo",()=>{
   assert.deepEqual(Object.keys(CREATURE_CATALOG).sort(),["slime",...REGIONAL_CREATURE_KINDS].sort());
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,37);
-  assert.equal(Object.keys(CREATURE_CATALOG).length,38);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,40);
+  assert.equal(Object.keys(CREATURE_CATALOG).length,41);
 });
 
 test("bestiário: uma ficha por espécie em região/categoria/nome.ts, sem duplicatas",()=>{
@@ -108,7 +111,7 @@ test("bestiário: uma ficha por espécie em região/categoria/nome.ts, sem dupli
       assert.equal(definition.region,region);
     }
   }
-  assert.equal(count,38,"38 arquivos individuais reais, nenhum monstro esquecido");
+  assert.equal(count,41,"41 arquivos individuais reais, nenhum monstro esquecido");
 });
 
 test("bestiário: API anterior aponta para as mesmas definições (sem cópias)",async()=>{

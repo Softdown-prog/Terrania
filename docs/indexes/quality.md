@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (210)
+## Todos os arquivos deste módulo (212)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -42,6 +42,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/cave-mage.spec.ts`](../../tests/browser/cave-mage.spec.ts)
 - [`tests/browser/cave.spec.ts`](../../tests/browser/cave.spec.ts)
 - [`tests/browser/center-capital.spec.ts`](../../tests/browser/center-capital.spec.ts)
+- [`tests/browser/center-wild.spec.ts`](../../tests/browser/center-wild.spec.ts)
 - [`tests/browser/character-controls.spec.ts`](../../tests/browser/character-controls.spec.ts)
 - [`tests/browser/chunk-time.spec.ts`](../../tests/browser/chunk-time.spec.ts)
 - [`tests/browser/classic-battle-list.spec.ts`](../../tests/browser/classic-battle-list.spec.ts)
@@ -100,6 +101,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/center-capital-walls.test.ts`](../../tests/center-capital-walls.test.ts)
 - [`tests/center-capital.test.ts`](../../tests/center-capital.test.ts)
 - [`tests/center-creatures.test.ts`](../../tests/center-creatures.test.ts)
+- [`tests/center-wild.test.ts`](../../tests/center-wild.test.ts)
 - [`tests/chunk-cost-budget.test.ts`](../../tests/chunk-cost-budget.test.ts)
 - [`tests/chunk-prefetch.test.ts`](../../tests/chunk-prefetch.test.ts)
 - [`tests/chunk-steps.test.ts`](../../tests/chunk-steps.test.ts)

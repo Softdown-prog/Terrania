@@ -13,5 +13,5 @@ export const mossSlime = {
   loot: [{ item: "Gel Esverdeado", chance: .6 }, { item: "Musgo Úmido", chance: .3 }],
 } satisfies CreatureDefinition;
 
-/** Rasteja de frente, sem rodeio e sem pressa: o mais lento do Centro. */
+/** Rasteja de frente, sem rodeio e sem pressa: mais lento que o rato e a cobra. */
 export const mossSlimeBehavior = { gait: "crawl", pursuit: "direct", cadence: 1.02, weave: .08 } satisfies SpeciesBehavior;

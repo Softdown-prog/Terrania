@@ -1,6 +1,6 @@
 # Bestiário do Centro (campos, matas e a Gruta das Raízes)
 
-**Proposta** (2026-11-26), na sequência do conserto das cavernas do Centro vazias ([ADR 0083](adr/0083-cavernas-do-centro-com-slimes.md)): hoje o Centro só tem o slime (e, nas cavernas comuns, seis slimes de arranjo provisório). **Todos os números e nomes são propostas que o dono ajusta.** **Feito:** o lote L1 ([ADR 0087](adr/0087-bestiario-do-centro-lote-1.md)): rato gigante, morcego de caverna e aranha das raízes, na Gruta das Raízes. **Feito também:** o lote L2 ([ADR 0088](adr/0088-bestiario-do-centro-lote-2.md)): slime de musgo, cobra-cipó e besouro de raiz. **A fazer:** L3 e L4. Mesmo molde: **um arquivo por criatura** em `src/monsters/center/<espécie>/`, painter em `src/render/creatures/center/...`, arte no contrato. O Centro é a região dos humanos e do começo do jogo: criaturas **fracas e comuns** (nível 1 a 20), para o jogador novo.
+**Proposta** (2026-11-26), na sequência do conserto das cavernas do Centro vazias ([ADR 0083](adr/0083-cavernas-do-centro-com-slimes.md)): hoje o Centro só tem o slime (e, nas cavernas comuns, seis slimes de arranjo provisório). **Todos os números e nomes são propostas que o dono ajusta.** **Feito:** o lote L1 ([ADR 0087](adr/0087-bestiario-do-centro-lote-1.md)): rato gigante, morcego de caverna e aranha das raízes, na Gruta das Raízes. **Feito também:** o lote L2 ([ADR 0088](adr/0088-bestiario-do-centro-lote-2.md)): slime de musgo, cobra-cipó e besouro de raiz. **Feito também:** o lote L3 ([ADR 0089](adr/0089-bestiario-do-centro-lote-3.md)): javali, lobo cinzento e cogumelo andante (os primeiros na superfície, só longe da vila). **A fazer:** L4. Mesmo molde: **um arquivo por criatura** em `src/monsters/center/<espécie>/`, painter em `src/render/creatures/center/...`, arte no contrato. O Centro é a região dos humanos e do começo do jogo: criaturas **fracas e comuns** (nível 1 a 20), para o jogador novo.
 
 ## As 12 criaturas (1 que existe + 11 novas)
 | # | Criatura | Tier | Vida | Dano | XP | Ataque e efeito | Onde | Saque |
@@ -30,6 +30,8 @@
 2. **L2 (feito, [ADR 0088](adr/0088-bestiario-do-centro-lote-2.md)):** cobra-cipó, besouro, slime de musgo (2, 6, 7). A fila da caverna passou a doze lugares (cada caverna usa seis seguidos); a poça do slime de musgo que reduz a velocidade do chão ficou para quando o terreno aceitar efeito de criatura.
 
    ![Slime de Musgo, Cobra-Cipó e Besouro de Raiz](screenshots/centro-lote-2-criaturas.png)
-3. **L3:** javali, lobo, cogumelo (8 a 10) e as matas do Centro.
+3. **L3 (feito, [ADR 0089](adr/0089-bestiario-do-centro-lote-3.md)):** javali, lobo, cogumelo (8 a 10). Andam pela superfície do Centro a partir de 240 tiles da vila (em 20 % dos blocos; o lobo em matilha); o cogumelo também mora na caverna. As constantes de distância e de taxa são propostas que o dono ajusta.
+
+   ![Javali, Lobo Cinzento e Cogumelo Andante](screenshots/centro-lote-3-criaturas.png)
 4. **L4:** a Raiz-Viva e a masmorra do Centro (3 andares), com o Ent Ancião.
 Cada lote: ficha, painter, arte no contrato, saque, testes, e o bot de QA ganha as criaturas.
