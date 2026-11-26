@@ -9,15 +9,15 @@ O jogo povoa uma caverna com as **criaturas regionais** do tema dela (`caveMonst
 1. **O povo do Centro são os slimes.** A caverna comum do tema "verdant" que não tem criatura regional nasce com **seis slimes** (`CENTRAL_CAVE_SLIMES`), colocados por `engine/rooms/CaveSlimes.ts` (um assunto, um arquivo; `CaveRoom` só chama).
 2. **Posições**: sorteadas pela entrada (sempre as mesmas para a mesma caverna, e diferentes de uma caverna para outra), só em solo transitável, a pelo menos 170 px de quem chega e 92 px uns dos outros; 64 tentativas no máximo (nada de laço aberto) e, se o sorteio só cair em parede, uma varredura das câmaras garante pelo menos três.
 3. **Persistência**: o id leva o andar e o número (`<andar>:slime:<n>`); quem já caiu (`defeated`, o save) não volta.
-4. **Recompensa**: igual à de qualquer abate de caverna: experiência, contagem de abates e moedas; o **gel é só da gruta de treino** (a do começo do mundo), como já era.
+4. **Recompensa**: igual à de qualquer abate de caverna: experiência, contagem de abates e, desde o [ADR 0084](0084-saque-e-lista-de-batalha-na-caverna.md), gel e moedas que caem no chão da caverna.
 5. **Não mudam**: a gruta de treino (sete encontros), as cavernas dos outros temas e as masmorras do Sul.
 6. **Provisório de propósito**: seis slimes é o conserto mínimo para a caverna não ficar vazia. O Centro merece o seu bestiário (ratos, morcegos, aranhas de raiz, cobras...), com uma ficha, um painter e uma entrada de arte por criatura, cada uma no seu arquivo; isso entra em lotes, junto com o das outras regiões.
 
 ## Verificação
-- `tests/cave-central-slimes.test.ts` (7): toda caverna comum do Centro varrida perto do começo do mundo nasce com seis slimes, em solo transitável, longe do herói e uns dos outros; determinístico e diferente por caverna; quem caiu não volta; a garantia quando o sorteio cai em parede; a gruta de treino e os outros temas intactos; o abate dá experiência e conta sem dar gel; o herói derruba um slime com a espada; a ligação em `CaveRoom`.
+- `tests/cave-central-slimes.test.ts` (7): toda caverna comum do Centro varrida perto do começo do mundo nasce com seis slimes, em solo transitável, longe do herói e uns dos outros; determinístico e diferente por caverna; quem caiu não volta; a garantia quando o sorteio cai em parede; a gruta de treino e os outros temas intactos; o abate dá experiência e conta (o gel e as moedas ficam no chão da caverna, ADR 0084); o herói derruba um slime com a espada; a ligação em `CaveRoom`.
 - `tests/browser/cave-center.spec.ts` (desktop e Android): entra-se numa caverna comum do Centro pela entrada de verdade, abre sem erro, com o nome "Gruta das Raízes". Captura em `docs/screenshots/caverna-do-centro.png`.
 - Mutações: **10** estragos de propósito (a quantidade, as distâncias, a parede, os abatidos, a semente por caverna, os ids, a garantia e a condição do tema). Duas passaram batido na primeira rodada (a semente que repetia a disposição em toda caverna e a garantia nunca exercitada) e foram fechadas com testes novos; as 10 foram pegas.
 
 ## Limites
-- As cavernas do Centro continuam pequenas (42 × 30 tiles) e de um andar só, sem missão e sem chefe; o painel da lista de batalha segue escondido na caverna, e o saque ainda vai direto para a bolsa (tarefas seguintes).
+- As cavernas do Centro continuam pequenas (42 × 30 tiles) e de um andar só, sem missão e sem chefe; a lista de batalha e o saque no chão vieram no [ADR 0084](0084-saque-e-lista-de-batalha-na-caverna.md).
 - Só slimes: sem variedade de criaturas no Centro ainda.

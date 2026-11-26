@@ -68,7 +68,7 @@
       </nav>
 
 
-      @if (hud.targetCombat() && !hud.cave()) {
+      @if (hud.targetCombat()) {
         <section id="battleSidebar" class="classic-battle" aria-label="Battle List de criaturas visíveis">
           <button id="battleToggle" class="battle-toggle" type="button"
             [attr.aria-expanded]="battleOpen()" aria-controls="battlePanel"
@@ -127,7 +127,7 @@
             aria-label="Fechar aviso">Fechar</button>
         </div>
       }
-      @if (hud.targetCombat() && !hud.cave() && !hud.travelNotice() && !notice() && (hud.combatTarget() || combatHelpVisible())) {
+      @if (hud.targetCombat() && !hud.travelNotice() && !notice() && (hud.combatTarget() || combatHelpVisible())) {
         <aside id="classicCombat" class="classic-status" aria-label="Combate por alvo">
           <strong>COMBATE POR ALVO</strong>
           <span id="classicTileHint">PASSOS 32×32</span>

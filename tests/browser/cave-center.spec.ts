@@ -31,6 +31,7 @@ test("entrar numa caverna comum do Centro: abre sem erro e tem slimes dentro (de
   if (info.project.name === "android") await action.tap(); else await action.click();
   await expect(page.locator("#coords")).toContainText("Subsolo");
   await expect(page.locator("#quest")).toHaveText("Gruta das Raízes");
+  await expect(page.locator("#battleSidebar")).toBeVisible(); // a lista de batalha vale também dentro da caverna (ADR 0084)
   await page.waitForTimeout(600);
   await page.locator("canvas#game").screenshot({ path: test.info().outputPath("caverna-do-centro.png") });
   expect(errors).toEqual([]);

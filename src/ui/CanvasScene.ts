@@ -296,7 +296,12 @@ export class CanvasScene {
     const scale=Math.max(1,zoom),width=this.width/scale,height=this.height/scale;
     const left=room.player.x-width/2,top=room.player.y-height/2;
     this.ctx.setTransform(this.dpr*scale,0,0,this.dpr*scale,0,0);
-    drawCaveView(this.ctx,room,left,top,width,height,time,gear,weapon,playerClass);
+    // O saque no chão da caverna (gel e moedas) é desenhado como na superfície, em profundidade com as criaturas e o herói.
+    const loot=[...room.drops.values()].filter(drop=>Math.abs(drop.x-room.player.x)<=width/2+12&&Math.abs(drop.y-room.player.y)<=height/2+18).map(drop=>({y:drop.y,render:()=>{
+      if(drop.item==="coin")renderCoinDrop(this.ctx,coinDropTier(drop.amount),drop.x-left,drop.y-top,time);
+      else renderGel(this.ctx,drop.x-left,drop.y-top,time);
+    }}));
+    drawCaveView(this.ctx,room,left,top,width,height,time,gear,weapon,playerClass,loot);
     spells?.render(this.ctx,left,top);
     if(destination)drawTarget(this.ctx,{x:destination.x-left,y:destination.y-top},time);
     this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);

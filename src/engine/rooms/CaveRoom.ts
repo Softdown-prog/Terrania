@@ -2,6 +2,8 @@ import { resolveSwordStrike, swordStrikeTargets } from "../combat/SwordCombat.ts
 import { SOUTH_COMMON_KINDS, type CreatureKind } from "../../actors/CreatureCatalog.ts";
 import { Slime } from "../../actors/Slime.ts";
 import { centralCaveSlimes } from "./CaveSlimes.ts";
+import { caveDefeatDrops } from "./CaveLoot.ts";
+import { MAX_WORLD_DROPS, type LootDrop } from "../character/loot.ts";
 import { AELA_SLIME_GOAL } from "../../world/aelaQuest.ts";
 import { RegionalMonster, caveMonsterKinds } from "../../actors/RegionalMonster.ts";
 import { faceTarget } from "../combat/combat.ts";
@@ -30,6 +32,8 @@ export class CaveRoom {
   readonly floor: CaveFloor;
   readonly player: Player;
   readonly monsters = new Map<string, Slime>();
+  /** O que as criaturas derrubadas deixaram no chão desta caverna (gel e moedas); o herói recolhe ao chegar perto (ADR 0084). */
+  readonly drops = new Map<string, LootDrop>();
   readonly collision: CollisionMap;
   readonly floorIndex: number;
   readonly floorCount: number;
@@ -159,6 +163,8 @@ export class CaveRoom {
     if (monster instanceof RegionalMonster)monster.deathBurst(this.player,this.collision,defense,false);
     this.monsters.delete(id);
     this.victories.push({kind:monster.kind,id});
+    for(const drop of caveDefeatDrops(monster.kind,id,monster.x,monster.y))
+      if(this.drops.size<MAX_WORLD_DROPS)this.drops.set(drop.id,drop);
   }
   /** A escada de saída: no andar 1 leva à superfície; nos de baixo, ao andar de cima. */
   get nearExit():boolean {

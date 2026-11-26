@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { caveEntranceInCell } from "../../src/world/caves.ts";
+import { CaveRoom } from "../../src/engine/rooms/CaveRoom.ts";
 import { caveStyleFor } from "../../src/world/caveStyle/index.ts";
 
 /**
@@ -37,10 +38,12 @@ for (const style of ["plain", "luminous"] as const) {
     expect(caveStyleFor(entrance)).toBe(style);
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(error.message));
-    await page.addInitScript(({ seed, x, y }) => {
-      localStorage.setItem("terrania-origins-v1", JSON.stringify({ seed, x, y, hp: 100, kills: 0, defeated: [] }));
+    // Os slimes do Centro (ADR 0083) também são verde-água; como o teste mede o brilho do chão e das poças, a caverna entra já limpa deles.
+    const defeated = [...new CaveRoom(entrance).monsters.keys()];
+    await page.addInitScript(({ seed, x, y, defeated }) => {
+      localStorage.setItem("terrania-origins-v1", JSON.stringify({ seed, x, y, hp: 100, kills: 0, defeated }));
       localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false }));
-    }, { seed: SEED, x: entrance.x, y: entrance.y });
+    }, { seed: SEED, x: entrance.x, y: entrance.y, defeated });
     await page.goto("/jogar/?modo=solo");
     await expect(page.locator("canvas#game")).toBeVisible();
     const action = page.locator("#talkButton");

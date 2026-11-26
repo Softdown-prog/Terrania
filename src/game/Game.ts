@@ -40,6 +40,7 @@ import { wellQuestSummary } from "../engine/quests/south/well/index.ts";
 import { WELL_LINES } from "./messages/south/well/index.ts";
 import { visibleBattleCreatures } from "../engine/combat/ClassicBattleList.ts";
 import { experienceProgress } from "../engine/character/Experience.ts";
+import { collectDrops } from "../engine/character/loot.ts";
 
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
@@ -290,6 +291,7 @@ export class Game {
   }
   private changeCaveFloor(move:"descend"|"ascend"):void {
     if(!this.cave) return;
+    collectDrops(this.cave.drops,this.cave.player,this.sim.inventory,true); // trocar de andar não perde o que ficou no chão
     this.sim.expireDefeats();
     const next=roomAfterMove(this.cave,move,this.sim.defeated);
     this.travel.stopAll();
@@ -304,7 +306,10 @@ export class Game {
     this.save();
   }
   private leaveCave():void {
-    if(this.cave) this.sim.player.syncAdventureStateFrom(this.cave.player);
+    if(this.cave) {
+      collectDrops(this.cave.drops,this.cave.player,this.sim.inventory,true); // nem sair da caverna
+      this.sim.player.syncAdventureStateFrom(this.cave.player);
+    }
     this.cave=null;
     this.travel.stopAll();
     this.travel.autoFollow=false;

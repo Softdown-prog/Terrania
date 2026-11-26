@@ -24,7 +24,8 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
   await expect(page.locator("#coords")).toContainText("Subsolo");
   await expect(page.locator("#quest")).toHaveText(entrance.name);
   await expect(page.locator(".quest .stat-heading")).toContainText("EXPLORAÇÃO · SUBSOLO");
-  await expect(page.locator("#battleSidebar")).toHaveCount(0);
+  // a lista de batalha também vale dentro da caverna (ADR 0084)
+  await expect(page.locator("#battleSidebar")).toBeVisible();
   await page.locator("canvas#game").screenshot({path:test.info().outputPath("cave-scene.png")});
   await page.locator("#gameMenuButton").click();
   await page.locator("#inventoryButton").click();

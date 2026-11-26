@@ -14,7 +14,7 @@ import { MAP_VERSION } from "../world/mapSize.ts";
 import { faceTarget } from "./combat/combat.ts";
 import type { ClassicTileWalker, WalkDirection } from "./movement/ClassicTileWalker.ts";
 import { Inventory, type InventoryState } from "./character/Inventory.ts";
-import { MAX_WORLD_DROPS, PICKUP_DISTANCE, normalizeDrops, type LootDrop } from "./character/loot.ts";
+import { MAX_WORLD_DROPS, collectDrops, normalizeDrops, type LootDrop } from "./character/loot.ts";
 import { rollCoinDrop } from "./character/coins/index.ts";
 import { LEGACY_RESPAWN_SECONDS, respawnSecondsForId } from "./combat/respawn.ts";
 import type { CreatureKind } from "../actors/CreatureCatalog.ts";
@@ -349,21 +349,8 @@ export class OfflineSimulation {
       });
       }
     }
-    // O jogador recolhe automaticamente o gel ao se aproximar. Se a bolsa
-    // estiver cheia, o item permanece visível no chão até haver espaço.
-    for (const [id, drop] of this.drops) {
-      if (Math.hypot(this.player.x - drop.x, this.player.y - drop.y) > PICKUP_DISTANCE) continue;
-      if (drop.item === "gel") {
-        if (this.inventory.addGel()) { this.drops.delete(id); changed = true; }
-        continue;
-      }
-      // Moedas: a carteira tem teto; o que não couber fica no chão até haver espaço.
-      const added = this.inventory.addCoins(drop.amount);
-      if (added <= 0) continue;
-      if (added >= drop.amount) this.drops.delete(id);
-      else this.drops.set(id, { ...drop, amount: drop.amount - added });
-      changed = true;
-    }
+    // O jogador recolhe automaticamente o gel e as moedas ao se aproximar (a mesma regra da caverna).
+    if (collectDrops(this.drops, this.player, this.inventory)) changed = true;
     // Derrota por veneno, queimadura ou espinhos também é progresso: salvar na hora.
     return changed || this.awaitingRespawn;
   }

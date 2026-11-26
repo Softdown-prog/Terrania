@@ -4,6 +4,7 @@ import { OfflineSimulation, type OfflineSave } from "../src/engine/OfflineSimula
 import { MAX_EXPERIENCE } from "../src/engine/character/Experience.ts";
 import { BOSS_CROWN_CHANCE, MAX_COINS, coinBreakdown, rollCoinDrop } from "../src/engine/character/coins/index.ts";
 import { normalizeDrops, PICKUP_DISTANCE } from "../src/engine/character/loot.ts";
+import { caveDefeatDrops } from "../src/engine/rooms/CaveLoot.ts";
 import { applyCaveVictories } from "../src/engine/rooms/CaveRewards.ts";
 import { CREATURE_CATALOG } from "../src/actors/CreatureCatalog.ts";
 import { RegionalMonster } from "../src/actors/RegionalMonster.ts";
@@ -136,23 +137,25 @@ test("carteira cheia: a moeda recolhe só o que cabe e o resto continua no chão
   assert.equal(sim.drops.get("slime-cheia:coin")?.item === "coin", true, "carteira cheia não recolhe mais");
 });
 
-test("na masmorra o dinheiro vai direto para a bolsa e o chefe deixa o baú", () => {
+test("na masmorra o dinheiro cai no chão (como na superfície) e o chefe deixa o baú; cada criatura só premia uma vez", () => {
   const sim = new OfflineSimulation(SEED, saveOf());
   const hero = { hp: 100, maxHp: 100 };
   const regular = { kind: "dune-scorpion" as const, id: `cave:${SEED}:1:2:floor:1:mob:3` };
   const boss = { kind: "carrion-sandworm" as const, id: `cave:${SEED}:1:2:floor:3:boss` };
+  // a vitória dá experiência e o material da criatura, mas o dinheiro não vai direto: ele fica no chão da caverna (`CaveRoom.drops`, ADR 0084)
   assert.equal(applyCaveVictories(sim, { drainVictories: () => [regular], player: hero }), true);
-  assert.equal(sim.inventory.coins, rollCoinDrop(regular.kind, regular.id));
-  const before = sim.inventory.coins;
-  applyCaveVictories(sim, { drainVictories: () => [boss], player: hero });
-  assert.equal(sim.inventory.coins - before, rollCoinDrop(boss.kind, boss.id, { boss: true }));
-  const again = sim.inventory.coins;
-  applyCaveVictories(sim, { drainVictories: () => [boss], player: hero });
-  assert.equal(sim.inventory.coins, again, "cada criatura só premia uma vez");
-  // os slimes de treino da gruta de Aela seguem dando só gel
-  const training = new OfflineSimulation(SEED, saveOf());
+  assert.equal(sim.inventory.coins, 0, "o dinheiro não vai direto para a bolsa");
+  assert.deepEqual(caveDefeatDrops(regular.kind, regular.id, 10, 20), [{ id: regular.id + ":coin", item: "coin", x: 10, y: 20, amount: rollCoinDrop(regular.kind, regular.id) }]);
+  const chest = caveDefeatDrops(boss.kind, boss.id, 1, 2);
+  assert.equal(chest.length, 1); assert.equal(chest[0]!.item === "coin" ? chest[0]!.amount : 0, rollCoinDrop(boss.kind, boss.id, { boss: true }), "o chefe deixa o baú");
+  assert.ok(rollCoinDrop(boss.kind, boss.id, { boss: true }) > rollCoinDrop(boss.kind, boss.id));
+  const again = sim.experience;
+  applyCaveVictories(sim, { drainVictories: () => [regular], player: hero });
+  assert.equal(sim.experience, again, "cada criatura só premia uma vez");
+  // slime: gel e moedas, como na superfície (os slimes de treino também; a missão de Aela conta por abate, não por gel)
   const slime = { kind: "slime" as const, id: `cave:${SEED}:0:0:floor:1:slime:0` };
+  assert.deepEqual(caveDefeatDrops(slime.kind, slime.id, 5, 6).map(drop => drop.item), ["gel", "coin"]);
+  const training = new OfflineSimulation(SEED, saveOf());
   applyCaveVictories(training, { drainVictories: () => [slime], player: hero });
-  assert.equal(training.inventory.coins, 0);
-  assert.equal(training.inventory.gel, 1);
+  assert.equal(training.trainingKills, 1); assert.equal(training.inventory.gel, 0, "o gel também fica no chão"); assert.equal(training.inventory.coins, 0);
 });

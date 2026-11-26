@@ -1,4 +1,5 @@
 import { applyCaveVictories } from "../../engine/rooms/CaveRewards.ts";
+import { collectDrops } from "../../engine/character/loot.ts";
 import type { CaveRoom } from "../../engine/rooms/CaveRoom.ts";
 import { nearbyStairsMove, reachedStairsMove } from "../../engine/rooms/caveStairs.ts";
 import { TILE_SIZE } from "../../world/terrain.ts";
@@ -30,8 +31,10 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
     host.sim.advanceClock(dt); // o tempo de volta dos monstros também anda dentro da masmorra (ADR 0029)
     // A magia do Mago também se vê na caverna: o projétil voa e o estouro mostra o dano (ADR 0070).
     host.effects.spells.update(paused ? 0 : dt, cave.player, cave.monsters.values());
+    // O que as criaturas derrubadas deixam no chão da caverna é recolhido ao chegar perto, como na superfície (ADR 0084).
     const changed = applyCaveVictories(host.sim, cave);
-    if(changed)host.save();
+    const collected = collectDrops(cave.drops, cave.player, host.sim.inventory);
+    if(changed || collected)host.save();
   }
   const stairs=reachedStairsMove(cave);
   if(cave.player.hp<=0){

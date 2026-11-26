@@ -44,3 +44,28 @@ export function normalizeDrops(value: unknown): LootDrop[] {
   }
   return result;
 }
+
+/** O que o recolhimento precisa da bolsa: gel (devolve se coube) e moedas (devolve quantas couberam). */
+export interface DropPurse { addGel(): boolean; addCoins(amount: number): number }
+
+/**
+ * O herói recolhe sozinho o que está ao alcance (`PICKUP_DISTANCE`), ou tudo, com `everywhere` (ao sair da caverna, para não perder nada). Bolsa cheia
+ * deixa o gel no chão; a carteira tem teto e o que não couber de moedas fica no chão até haver espaço. É a mesma regra na superfície e na caverna.
+ * Devolve `true` se algo foi recolhido (e vale salvar).
+ */
+export function collectDrops(drops: Map<string, LootDrop>, hero: { readonly x: number; readonly y: number }, purse: DropPurse, everywhere = false): boolean {
+  let changed = false;
+  for (const [id, drop] of drops) {
+    if (!everywhere && Math.hypot(hero.x - drop.x, hero.y - drop.y) > PICKUP_DISTANCE) continue;
+    if (drop.item === "gel") {
+      if (purse.addGel()) { drops.delete(id); changed = true; }
+      continue;
+    }
+    const added = purse.addCoins(drop.amount);
+    if (added <= 0) continue;
+    if (added >= drop.amount) drops.delete(id);
+    else drops.set(id, { ...drop, amount: drop.amount - added });
+    changed = true;
+  }
+  return changed;
+}

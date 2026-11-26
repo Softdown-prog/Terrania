@@ -224,7 +224,9 @@ export function drawCaveEntrance(ctx:CanvasRenderingContext2D, entry:CaveEntranc
 }
 export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   left:number,top:number,width:number,height:number,time:number,
-  gear?:GearState,weapon?:WeaponId,playerClass?:HeroClassLook):void {
+  gear?:GearState,weapon?:WeaponId,playerClass?:HeroClassLook,
+  /** Outros desenhos que se ordenam em profundidade com as criaturas e o herói (o saque no chão, ADR 0084). */
+  extras:ReadonlyArray<{readonly y:number;readonly render:()=>void}>=[]):void {
   ctx.fillStyle="#070e13";ctx.fillRect(0,0,width,height);
   let texture=wallCache.get(room.floor);
   if(!texture){texture=paintFloor(room.floor);wallCache.set(room.floor,texture);}
@@ -239,6 +241,7 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   }
   occupants.push({y:player.y,render:()=>renderHero(ctx,
     {...player,gear,equippedWeapon:weapon,...playerClass},player.x-left,player.y-top,time)});
+  occupants.push(...extras);
   occupants.sort((a,b)=>a.y-b.y);
   for(const actor of occupants)actor.render();
   // Static darkness with a local light pool following the real cave player.

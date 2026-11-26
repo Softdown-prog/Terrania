@@ -1,7 +1,6 @@
 import { CREATURE_CATALOG, type CreatureKind } from "../../actors/CreatureCatalog.ts";
 import { rollCreatureLoot } from "../../actors/RegionalMonster.ts";
 import { grantExperience } from "../character/Experience.ts";
-import { rollCoinDrop } from "../character/coins/index.ts";
 import { MAX_KILLS } from "../Limits.ts";
 import type { OfflineSimulation } from "../OfflineSimulation.ts";
 
@@ -24,15 +23,10 @@ export function applyCaveVictories(sim: OfflineSimulation, cave: CaveVictorySour
     sim.experience = grantExperience(sim.experience, CREATURE_CATALOG[victory.kind].experience, cave.player, sim.heroClass);
     // O total histórico é um contador de slimes (usado também pela missão de montaria).
     if (victory.kind === "slime") sim.kills = Math.min(MAX_KILLS, sim.kills + 1);
-    if (victory.kind === "slime" && victory.id.startsWith(`cave:${sim.seed}:0:0:floor:1:slime:`)) {
-      sim.trainingKills = Math.min(5, sim.trainingKills + 1);
-      sim.inventory.addGel();
-    } else {
-      // Dentro da masmorra o dinheiro vai direto para a bolsa; o chefe do último andar deixa um baú (ADR 0024).
-      sim.inventory.addCoins(rollCoinDrop(victory.kind, victory.id, { boss: victory.id.endsWith(":boss") }));
-      if (victory.kind !== "slime")
-        for (const item of rollCreatureLoot(victory.kind, victory.id)) sim.inventory.addMaterial(item);
-    }
+    if (victory.kind === "slime" && victory.id.startsWith(`cave:${sim.seed}:0:0:floor:1:slime:`)) sim.trainingKills = Math.min(5, sim.trainingKills + 1);
+    // Os materiais da criatura vão direto para a bolsa, como na superfície; o gel e as moedas ficam no chão (`CaveRoom.drops`, ADR 0084).
+    else if (victory.kind !== "slime")
+      for (const item of rollCreatureLoot(victory.kind, victory.id)) sim.inventory.addMaterial(item);
     changed = true;
   }
   return changed;

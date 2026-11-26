@@ -78,12 +78,12 @@ test("a caverna de treino e as cavernas dos outros temas não mudaram", () => {
   }
 });
 
-test("derrubar um slime da caverna do Centro conta como abate e dá experiência, mas não dá gel (o gel é só da gruta de treino)", () => {
+test("derrubar um slime da caverna do Centro conta como abate e dá experiência; o gel e as moedas ficam no chão da caverna", () => {
   const sim = new OfflineSimulation(SEED), entrance = central[0]!, room = new CaveRoom(entrance);
   const mob = [...room.monsters.values()][0]!, xp = sim.experience;
   const source = { drainVictories: () => [{ kind: "slime" as const, id: mob.id }], player: room.player };
   assert.equal(applyCaveVictories(sim, source), true);
-  assert.ok(sim.experience > xp, "ganhou experiência"); assert.equal(sim.inventory.gel, 0, "sem gel fora da gruta de treino"); assert.equal(sim.kills, 1); assert.equal(sim.trainingKills, 0);
+  assert.ok(sim.experience > xp, "ganhou experiência"); assert.equal(sim.inventory.gel, 0, "o gel e as moedas ficam no chão da caverna, não vão direto para a bolsa"); assert.equal(sim.kills, 1); assert.equal(sim.trainingKills, 0);
   assert.equal(sim.defeated.has(mob.id), true);
 });
 
