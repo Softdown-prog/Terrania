@@ -1,12 +1,10 @@
 import { MAX_STACK } from "../Limits.ts";
+import { APPLE } from "./foods/apple.ts";
+import { BREAD } from "./foods/bread.ts";
+import { MEAT } from "./foods/meat.ts";
 
-/** Alimentação da vocação inicial (Cavaleiro) no jogo solo. */
-export const FOODS = {
-  /** `price` em Terrania Gold (ADR 0025). */
-  apple: { name: "Maçã", healBudget: 8, price: 6 },
-  bread: { name: "Pão", healBudget: 18, price: 12 },
-  meat: { name: "Carne assada", healBudget: 30, price: 18 },
-} as const;
+/** Os alimentos do jogo solo; cada um mora no seu arquivo em `foods/`. */
+export const FOODS = { apple: APPLE, bread: BREAD, meat: MEAT } as const;
 export type FoodId = keyof typeof FOODS;
 export const FOOD_IDS: readonly FoodId[] = ["apple", "bread", "meat"];
 export type FoodCounts = Record<FoodId, number>;

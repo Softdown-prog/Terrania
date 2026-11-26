@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { Inventory, normalizeInventory } from "../src/engine/character/Inventory.ts";
 import { GEAR, MAGE_STARTING_GEAR, gearForClass, gearHeroClass, gearIdsFor, type GearId } from "../src/engine/character/Equipment.ts";
-import { APPRENTICE_GEAR } from "../src/engine/character/mage/gear/apprentice.ts";
+import { APPRENTICE_GEAR } from "../src/engine/character/mage/gear/apprentice/index.ts";
 import { MAGE } from "../src/engine/character/classes/index.ts";
 import { equipGear } from "../src/game/actions/shopActions.ts";
 import type { ShopContext } from "../src/game/actions/shopContext.ts";

@@ -1,6 +1,7 @@
 import type { HeroClassId } from "./classes/heroClass.ts";
-import { APPRENTICE_GEAR } from "./mage/gear/apprentice.ts";
-import { BREEZE_GEAR } from "./mage/gear/breeze.ts";
+import { KNIGHT_GEAR } from "./knight/gear/index.ts";
+import { APPRENTICE_GEAR } from "./mage/gear/apprentice/index.ts";
+import { BREEZE_GEAR } from "./mage/gear/breeze/index.ts";
 
 export const EQUIPMENT_SLOTS = [
   { id: "ring", label: "Anel", icon: "◈" },
@@ -27,17 +28,9 @@ export interface GearBonusValues { mana?: number; regen?: number; damage?: numbe
  */
 export interface GearDefinition { slot: GearSlot; name: string; defense: number; heroClass?: HeroClassId; bonus?: GearBonusValues; level?: number; set?: string }
 
-/** The initial kit is owned by every adventurer. The two swords keep their own acquisition rules. */
+/** O kit inicial do Cavaleiro e as roupas de cada conjunto do Mago; cada peça mora no seu arquivo. (Espadas e cajados têm o catálogo e as regras de aquisição deles.) */
 export const GEAR = {
-  "copper-ring": { slot: "ring", name: "Anel de cobre", defense: 0 },
-  "trail-helm": { slot: "head", name: "Elmo de trilha", defense: 1 },
-  "river-pendant": { slot: "neck", name: "Pingente do rio", defense: 0 },
-  "willow-shield": { slot: "shield", name: "Escudo de salgueiro", defense: 2 },
-  "quilted-vest": { slot: "chest", name: "Peitoral acolchoado", defense: 1 },
-  "canvas-pack": { slot: "backpack", name: "Mochila de lona", defense: 0 },
-  "travel-trousers": { slot: "legs", name: "Calça de viagem", defense: 0 },
-  "reed-arrows": { slot: "ammo", name: "Flechas de junco", defense: 0 },
-  "trail-boots": { slot: "feet", name: "Botas de trilha", defense: 0 },
+  ...KNIGHT_GEAR,
   ...APPRENTICE_GEAR,
   ...BREEZE_GEAR,
 } as const satisfies Record<string, GearDefinition>;

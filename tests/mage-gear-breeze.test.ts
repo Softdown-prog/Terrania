@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { Inventory } from "../src/engine/character/Inventory.ts";
 import { GEAR, MAGE_STARTING_GEAR, gearHeroClass, gearIdsFor, gearLevel, gearSetName, gearUnlocked, type GearId } from "../src/engine/character/Equipment.ts";
-import { BREEZE_GEAR } from "../src/engine/character/mage/gear/breeze.ts";
+import { BREEZE_GEAR } from "../src/engine/character/mage/gear/breeze/index.ts";
 import { gearBonus, scaledMaxMana } from "../src/engine/character/gearBonus.ts";
 import { MAGE } from "../src/engine/character/classes/index.ts";
 import { experienceForLevel } from "../src/engine/character/Experience.ts";

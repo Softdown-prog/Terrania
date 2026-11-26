@@ -136,6 +136,7 @@
 - [`docs/adr/0079-atributos-das-roupas-do-mago.md`](../../docs/adr/0079-atributos-das-roupas-do-mago.md)
 - [`docs/adr/0080-conjunto-da-brisa-e-nivel-das-roupas.md`](../../docs/adr/0080-conjunto-da-brisa-e-nivel-das-roupas.md)
 - [`docs/adr/0081-personagem-do-mago-cabeca-jovem.md`](../../docs/adr/0081-personagem-do-mago-cabeca-jovem.md)
+- [`docs/adr/0082-um-item-um-arquivo.md`](../../docs/adr/0082-um-item-um-arquivo.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/cajados-lote-1.png`](../../docs/screenshots/cajados-lote-1.png)

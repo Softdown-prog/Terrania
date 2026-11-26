@@ -1,7 +1,7 @@
-import { BREEZE_GEAR } from "../../../../engine/character/mage/gear/breeze.ts";
-import { APPRENTICE_GEAR } from "../../../../engine/character/mage/gear/apprentice.ts";
-import { APPRENTICE_THEME } from "./apprentice.ts";
-import { BREEZE_THEME } from "./breeze.ts";
+import { BREEZE_GEAR } from "../../../../engine/character/mage/gear/breeze/index.ts";
+import { APPRENTICE_GEAR } from "../../../../engine/character/mage/gear/apprentice/index.ts";
+import { APPRENTICE_THEME } from "./apprentice/index.ts";
+import { BREEZE_THEME } from "./breeze/index.ts";
 import type { MageSetTheme } from "./theme.ts";
 
 /** Os conjuntos de roupas do Mago, com a ficha de aparência de cada um (ADR 0080); cada lote novo acrescenta o seu aqui. */
