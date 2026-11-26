@@ -13,7 +13,7 @@ import { ELIXIR_IDS, elixirRecipe, emptyElixirCounts, normalizeElixirs, type Eli
 import { DEFAULT_STAFF_LOADOUT, isDefaultStaffLoadout, normalizeStaffLoadout, sanitizeStaffLoadout, type StaffBuyResult, type StaffEquipResult, type StaffLoadout } from "./StaffLoadout.ts";
 import { STAVES, isStaffId, staffUnlocked, type StaffId } from "./Staves.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
-import { GEAR, MAGE_STARTING_GEAR, gearDefense, gearForClass, gearHeroClass, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
+import { GEAR, MAGE_STARTING_GEAR, gearDefense, gearForClass, gearForLevel, gearHeroClass, gearUnlocked, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 import { DEFAULT_HERO_CLASS, type HeroClassId } from "./classes/index.ts";
 
 /** Regras da bolsa do jogo solo (antes compartilhadas com a sala Node, já retirada). */
@@ -121,7 +121,8 @@ export class Inventory {
     this.weapons = weaponUnlocked(restored.equipped, level, restored.forged)
       ? restored : { ...restored, equipped: "starter" };
     // Só vale o que é da vocação. O Mago sem registro de equipamento (mundo novo ou save antigo) nasce com o conjunto do Aprendiz.
-    this.equippedGear = heroClass === "mage" && state.gear === undefined ? MAGE_STARTING_GEAR : gearForClass(state.gear ?? {}, heroClass);
+    // E só o que o nível já libera (ADR 0080).
+    this.equippedGear = heroClass === "mage" && state.gear === undefined ? MAGE_STARTING_GEAR : gearForLevel(gearForClass(state.gear ?? {}, heroClass), level);
     this.staffLoadout = normalizeStaffLoadout(state.staves, level);
   }
 
@@ -188,9 +189,11 @@ export class Inventory {
   get gear(): GearState { return this.equippedGear; }
   get defense(): number { return gearDefense(this.equippedGear); }
 
-  equipGear(slot: GearSlot, item: GearId | null): GearResult {
+  /** Veste (ou tira, com `null`) uma peça: tem de ser do espaço e da vocação, e o `level` do herói tem de liberar a peça (ADR 0080). */
+  equipGear(slot: GearSlot, item: GearId | null, level: number): GearResult {
     if (!isGearSlot(slot) || (item !== null && (!isGearId(item) || GEAR[item].slot !== slot))) return "wrong-slot";
     if (item !== null && gearHeroClass(item) !== this.heroClass) return "gear-wrong-class";
+    if (item !== null && !gearUnlocked(item, level)) return "gear-level-too-low";
     if ((this.equippedGear[slot] ?? null) === item) return "gear-unchanged";
     const next = { ...this.equippedGear };
     if (item === null) delete next[slot];

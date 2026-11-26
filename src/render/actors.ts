@@ -308,7 +308,7 @@ export function renderHero(
     ctx.beginPath(); ctx.moveTo(-3.5, -25); ctx.quadraticCurveTo(0, -19, 3.5, -25); ctx.stroke();
     ellipse(ctx, 0, -20.8, 1.8, 2.1, tone("#71b7b3"));
   }
-  if (wear?.pendant) drawMagePendant(ctx, side, back, tone);
+  if (wear?.pendant) drawMagePendant(ctx, side, back, tone, wear.pendant);
   // cinto, fivela e bolsa
   ctx.fillStyle = tone(PAL.leather);
   ctx.fillRect(-9.2 * wf, -13.3, 18.4 * wf, 3.4);
@@ -347,7 +347,7 @@ export function renderHero(
     const bookSide = -swordSide;
     const hx = bookSide * 9.6 * wf + mvx * swing * -bookSide * 4.2;
     const hy = -12.5 + mvy * swing * -bookSide * 2.8 - swing * -bookSide * 1.2 + breath * 0.3;
-    drawMageBook(ctx, hx, hy, bookSide, swing, tone);
+    drawMageBook(ctx, hx, hy, bookSide, swing, tone, wear.book);
   }
   const gripX = held.gripX, gripY = held.gripY;
   const swordArm = (): void => {
@@ -364,7 +364,7 @@ export function renderHero(
     ctx.fill(); ctx.strokeStyle = tone("#d7b581"); ctx.lineWidth = 0.9; ctx.stroke();
     ctx.fillStyle = tone("#c0a577"); ctx.fillRect(-2.2 * wf, -21, 4.4 * wf, 2.2);
   }
-  if (!back) { swordArm(); drawHeld(); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); if (wear?.ring) drawMageRing(ctx, gripX, gripY, tone); }
+  if (!back) { swordArm(); drawHeld(); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); if (wear?.ring) drawMageRing(ctx, gripX, gripY, tone, wear.ring); }
   // rabo-de-cavalo/mecha traseira
   ctx.strokeStyle = tone(PAL.hair); ctx.lineWidth = 4.2; ctx.lineCap = "round";
   ctx.beginPath();
@@ -471,7 +471,7 @@ export function renderHero(
   }
   look?.hat(ctx, hc);
   if (back) { swordArm(); }
-  if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); if (wear?.ring) drawMageRing(ctx, gripX, gripY, tone); }
+  if (back) { ellipse(ctx, gripX, gripY, 2.4, 2.4, tone(PAL.skin)); if (wear?.ring) drawMageRing(ctx, gripX, gripY, tone, wear.ring); }
   // Rastro e brilho por cima de tudo para ler bem em qualquer direção.
   if (!look) renderTrail(ctx, player, frame);
   ctx.restore();

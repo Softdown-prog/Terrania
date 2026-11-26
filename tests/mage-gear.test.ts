@@ -29,7 +29,7 @@ test("o conjunto do Aprendiz: sete peças, uma por espaço, só do Mago, com a d
   assert.deepEqual(IDS.map(id => GEAR[id].name), ["Chapéu de Aprendiz", "Túnica de Aprendiz", "Calça de Aprendiz", "Botas de Aprendiz", "Caderno de Feitiços", "Anel de Latão", "Pingente de Cristal Baço"]);
   assert.deepEqual(IDS.map(id => GEAR[id].defense), [0, 1, 0, 0, 0, 0, 0], "só a túnica dá defesa (1)");
   for (const id of IDS) assert.equal(gearHeroClass(id), "mage", id);
-  assert.deepEqual(gearIdsFor("mage"), [...IDS]); assert.equal(gearIdsFor("knight").length, 9, "o kit do Cavaleiro continua com as nove peças");
+  assert.deepEqual(gearIdsFor("mage").filter(id => GEAR[id].set === "Aprendiz"), [...IDS]); assert.equal(gearIdsFor("knight").length, 9, "o kit do Cavaleiro continua com as nove peças");
   assert.equal(gearIdsFor("knight").some(id => gearHeroClass(id) !== "knight"), false); for (const id of gearIdsFor("knight")) assert.equal(gearHeroClass(id), "knight", id);
   assert.deepEqual(MAGE_STARTING_GEAR, { head: "apprentice-hat", chest: "apprentice-robe", legs: "apprentice-trousers", feet: "apprentice-boots", shield: "apprentice-notebook", ring: "brass-ring", neck: "dull-crystal-pendant" });
   const doc = read("docs/MAGO_ROUPAS.md"); for (const id of IDS) assert.ok(doc.includes(GEAR[id].name), "o documento lista " + GEAR[id].name);
@@ -53,10 +53,10 @@ test("o Mago nasce vestido com o conjunto do Aprendiz; o Cavaleiro nasce sem nad
 
 test("equipar e tirar peças: só da vocação, só no espaço certo; quem tirou tudo não volta a nascer vestido (o save lembra o registro vazio)", () => {
   const mage = new Inventory(undefined, 1, "mage"), knight = new Inventory(undefined, 1, "knight");
-  assert.equal(mage.equipGear("head", "trail-helm"), "gear-wrong-class"); assert.equal(knight.equipGear("head", "apprentice-hat"), "gear-wrong-class");
-  assert.equal(mage.equipGear("feet", "apprentice-hat"), "wrong-slot", "o chapéu não vai nas botas"); assert.equal(mage.equipGear("head", "apprentice-hat"), "gear-unchanged");
+  assert.equal(mage.equipGear("head", "trail-helm", 99), "gear-wrong-class"); assert.equal(knight.equipGear("head", "apprentice-hat", 99), "gear-wrong-class");
+  assert.equal(mage.equipGear("feet", "apprentice-hat", 99), "wrong-slot", "o chapéu não vai nas botas"); assert.equal(mage.equipGear("head", "apprentice-hat", 99), "gear-unchanged");
   assert.deepEqual(mage.gear, MAGE_STARTING_GEAR, "as tentativas inválidas não mudaram nada"); assert.deepEqual(knight.gear, {});
-  for (const id of IDS) assert.equal(mage.equipGear(GEAR[id].slot, null), "gear-removed", id);
+  for (const id of IDS) assert.equal(mage.equipGear(GEAR[id].slot, null, 99), "gear-removed", id);
   assert.deepEqual(mage.gear, {}); assert.equal(mage.defense, 0);
   const snapshot = JSON.parse(JSON.stringify(mage.snapshot())) as { gear?: unknown }; assert.deepEqual(snapshot.gear, {}, "o save do Mago guarda o registro vazio");
   assert.deepEqual(new Inventory(snapshot, 1, "mage").gear, {}, "e ao recarregar ele continua sem nada vestido");
@@ -65,7 +65,7 @@ test("equipar e tirar peças: só da vocação, só no espaço certo; quem tirou
   for (const junk of [[], null, "x", 3, [["head", "apprentice-hat"]]]) { assert.equal("gear" in normalizeInventory({ gear: junk }), false, "registro inválido não vira registro: " + JSON.stringify(junk)); assert.deepEqual(new Inventory({ gear: junk }, 1, "mage").gear, MAGE_STARTING_GEAR, "e o Mago nasce vestido: " + JSON.stringify(junk)); }
   assert.equal("gear" in new Inventory(undefined, 1, "knight").snapshot(), false, "o save do Cavaleiro sem nada vestido continua sem o campo");
   assert.equal("gear" in new Inventory(JSON.parse(JSON.stringify(new Inventory(undefined, 1, "mage").snapshot())), 1, "mage").snapshot(), true);
-  assert.equal(mage.equipGear("chest", "apprentice-robe"), "gear-equipped"); assert.equal(mage.defense, 1);
+  assert.equal(mage.equipGear("chest", "apprentice-robe", 1), "gear-equipped"); assert.equal(mage.defense, 1);
 });
 
 test("no mundo: o Mago tem 1 de defesa, tira e veste pelo jogo, o save volta como foi e um save antigo (sem registro) nasce vestido; o Cavaleiro não muda", () => {
@@ -101,17 +101,17 @@ test("o desenho: cada peça do Aprendiz aparece quando vestida e some quando tir
 });
 
 test("mageWear: a calça, as botas, o livro, o anel e o colar só valem com a peça certa no espaço certo", () => {
-  const full = mageWear(undefined); assert.deepEqual([full.legwear.pants, full.legwear.boots, full.book, full.ring, full.pendant], [APPRENTICE_LEGWEAR.pants, APPRENTICE_LEGWEAR.boots, true, true, true]);
-  const none = mageWear({}); assert.deepEqual([none.legwear.pants, none.legwear.boots, none.legwear.bootsLight, none.book, none.ring, none.pendant], [null, null, null, false, false, false]);
-  const wrong = mageWear({ legs: "travel-trousers", feet: "trail-boots", shield: "willow-shield", ring: "copper-ring", neck: "river-pendant" }); assert.deepEqual([wrong.legwear.pants, wrong.legwear.boots, wrong.book, wrong.ring, wrong.pendant], [null, null, false, false, false]);
+  const full = mageWear(undefined); assert.deepEqual([full.legwear.pants, full.legwear.boots, full.book?.id, full.ring?.id, full.pendant?.id], [APPRENTICE_LEGWEAR.pants, APPRENTICE_LEGWEAR.boots, "apprentice", "apprentice", "apprentice"]);
+  const none = mageWear({}); assert.deepEqual([none.legwear.pants, none.legwear.boots, none.legwear.bootsLight, none.book, none.ring, none.pendant], [null, null, null, null, null, null]);
+  const wrong = mageWear({ legs: "travel-trousers", feet: "trail-boots", shield: "willow-shield", ring: "copper-ring", neck: "river-pendant" }); assert.deepEqual([wrong.legwear.pants, wrong.legwear.boots, wrong.book, wrong.ring, wrong.pendant], [null, null, null, null, null]);
   assert.notStrictEqual(mageWear({}).look, mageWear(undefined).look); assert.strictEqual(mageWear({}).look, mageWear({ head: "trail-helm" }).look, "o look é reaproveitado entre quadros");
 });
 
 test("a ligação do HUD e da tela: espaços, nomes e peças da vocação, ícones do Mago e o painel de oito espaços", () => {
   const service = read("src/app/hud.service.ts"), page = read("src/app/game-page.html"), css = read("src/app/styles/inventory.css"), icons = read("src/app/item-icon.component.ts");
-  assert.match(service, /for \(const id of this\.kitIds\(\)\) \{/, "a mochila lista as peças da vocação"); assert.match(service, /'Conjunto do Aprendiz · '/);
+  assert.match(service, /for \(const id of this\.kitIds\(\)\) \{/, "a mochila lista as peças da vocação"); assert.match(service, /'Conjunto ' \+ \(mage \? gearSetName\(id\) : 'inicial'\) \+ ' · '/);
   assert.match(service, /icon: gearItemIcon\(item\.slot, this\.heroClass\(\)\),/); assert.match(service, /readonly selectedGearOptions = computed\(\(\) => this\.kitIds\(\)\.filter/);
-  assert.match(page, /\[class\.mage-grid\]="hud\.heroClass\(\) === 'mage'"/); assert.match(page, /"do Aprendiz"/);
+  assert.match(page, /\[class\.mage-grid\]="hud\.heroClass\(\) === 'mage'"/); assert.match(page, /hud\.gearSetOf\(id\)/);
   for (const slot of ["head", "neck", "chest", "legs", "ring", "weapon", "shield", "feet"]) assert.match(css, new RegExp(`mage-grid \\.equipment-slot\\[data-equipment-slot="${slot}"\\]`), slot);
   for (const id of ["mage-hat", "mage-robe", "mage-trousers", "mage-boots", "mage-book"]) { assert.ok(icons.includes(`'${id}'`), id + " no tipo"); assert.ok(icons.includes(`@case ('${id}')`), id + " tem o desenho"); }
   assert.match(icons, /head: 'mage-hat', chest: 'mage-robe', legs: 'mage-trousers', feet: 'mage-boots', shield: 'mage-book'/);

@@ -1,6 +1,6 @@
 # As roupas do Mago
 
-**Proposta** do dono (2026-11-25), no mesmo molde dos cajados ([MAGO_CAJADOS.md](MAGO_CAJADOS.md)), seguida com as opções recomendadas. **Todos os números são propostas que o dono ajusta.** **Feito:** o lote A1 ([ADR 0078](adr/0078-roupas-do-mago.md)): o Mago veste, com o conjunto do Aprendiz. O lote A2 ([ADR 0079](adr/0079-atributos-das-roupas-do-mago.md)): os bônus de mana máxima, recarga de mana e dano das magias funcionam no motor. **A fazer:** os conjuntos dos níveis 10 em diante, com os números reais (lotes B a E).
+**Proposta** do dono (2026-11-25), no mesmo molde dos cajados ([MAGO_CAJADOS.md](MAGO_CAJADOS.md)), seguida com as opções recomendadas. **Todos os números são propostas que o dono ajusta.** **Feito:** o lote A1 ([ADR 0078](adr/0078-roupas-do-mago.md)): o Mago veste, com o conjunto do Aprendiz. O lote A2 ([ADR 0079](adr/0079-atributos-das-roupas-do-mago.md)): os bônus de mana máxima, recarga de mana e dano das magias funcionam no motor. O lote B1 ([ADR 0080](adr/0080-conjunto-da-brisa-e-nivel-das-roupas.md)): o nível mínimo das peças, as cores por conjunto e o conjunto da **Brisa** (nível 10). **A fazer:** Rocha Viva e Marés (B2 e B3) e os conjuntos dos níveis 30 em diante, com os números reais (lotes C a E).
 
 ## Onde estamos hoje
 
@@ -62,13 +62,15 @@ Defesa, em pontos de defesa por peça (a soma de cada linha é a defesa total). 
 
 - Cada peça tem um **desenho próprio** no corpo do Mago, no mesmo padrão dos cajados (uma ficha de aparência por peça e um arquivo por peça, tudo no contrato de arte): o **chapéu** troca o chapéu, a **túnica** a cor e a estampa, a **calça** e as **botas** as pernas e os pés, o **livro** aparece na mão livre (aberto, flutuando ou preso à cintura), o **anel** e o **colar** são detalhes pequenos (o anel brilha na mão, o colar no peito).
 - O desenho do herói hoje reconhece as 9 peças do Cavaleiro por nome fixo; vira **dado por peça** (como os cajados), e o Cavaleiro continua igual.
-- Cada peça nova é registrada em `tests/helpers/artAssets.ts`, sem baixar piso. São **77 peças**: por isso entram em lotes.
+- Cada peça nova é registrada em `tests/helpers/artAssets.ts`, sem baixar piso. São **77 peças**: por isso entram em lotes. Cada conjunto é uma **ficha de cor e de enfeite** (`render/hero/mage/sets/`) que os painters leem; as peças de um conjunto parecem parentes (mesma paleta e mesmo enfeite bordado: a estrela do Aprendiz, o redemoinho de vento da Brisa), e misturar conjuntos é livre.
+
+![O Mago com o conjunto da Brisa](screenshots/mago-roupas-brisa.png)
 
 ## Os lotes (proposta)
 
 1. **Lote A1 (feito, [ADR 0078](adr/0078-roupas-do-mago.md)):** o Mago passa a vestir (os oito espaços dele no inventário, sem mochila e sem flechas), a regra de vocação das peças e o **conjunto do Aprendiz** completo (sete peças desenhadas no corpo do Mago e com ícone). O Cavaleiro não muda.
 2. **Lote A2 (feito, [ADR 0079](adr/0079-atributos-das-roupas-do-mago.md)):** os três atributos novos no motor (mana máxima, recarga de mana, dano das magias), na superfície e na caverna, com o texto no inventário. As peças do Aprendiz seguem sem bônus; os números reais entram com cada conjunto.
-3. **Lote B:** Brisa, Rocha Viva e Marés (níveis 10, 15 e 20).
+3. **Lote B:** Brisa, Rocha Viva e Marés (níveis 10, 15 e 20), em três entregas: **B1 (feito, [ADR 0080](adr/0080-conjunto-da-brisa-e-nivel-das-roupas.md)): o nível mínimo das peças, as cores por conjunto e a Brisa**; B2, a Rocha Viva; B3, as Marés.
 4. **Lote C:** Brasa Rubra, Espinheiro e Geada Boreal (níveis 30, 45 e 60).
 5. **Lote D:** Sol Nascente, Lua Negra e Tempestade (níveis 70, 80 e 90).
 6. **Lote E:** o Astral (nível 100).

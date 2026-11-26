@@ -114,6 +114,6 @@ export function equipStaff({ sim }: ShopContext, staff: StaffId): ShopResult {
 
 export function equipGear({ sim }: ShopContext, slot: GearSlot, item: GearId | null): ShopResult {
   if (sim.awaitingRespawn) return say("unavailable");
-  const result = sim.inventory.equipGear(slot, item);
+  const result = sim.inventory.equipGear(slot, item, experienceProgress(sim.experience).level);
   return say(result, result === "gear-equipped" || result === "gear-removed");
 }

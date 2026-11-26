@@ -232,7 +232,7 @@
                     [attr.aria-label]="hud.slotLabel(slot.id) + ': ' + (equipped || 'vazio')"
                     [attr.title]="hud.slotLabel(slot.id) + ': ' + (equipped || 'vazio')"
                     (click)="hud.selectEquipmentSlot(slot.id)">
-                    <app-item-icon class="equipment-symbol" [name]="hud.slotIcon(slot.id)" />
+                    <app-item-icon class="equipment-symbol" [name]="hud.slotIcon(slot.id)" [set]="hud.slotIconSet(slot.id)" />
                     <strong>{{ hud.slotLabel(slot.id) }}</strong><small>{{ equipped || 'Vazio' }}</small>
                   </button>
                 }
@@ -319,10 +319,14 @@
                     @let gear = hud.gearCatalog[id];
                     @let equipped = hud.gear()?.[gear.slot] === id;
                     <strong>{{ gear.name }}</strong>
-                    <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto " + (hud.heroClass() === 'mage' ? "do Aprendiz" : "inicial") }}{{ hud.gearBonusLabel(id) ? " · " + hud.gearBonusLabel(id) : "" }}</p>
+                    <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto " + (hud.heroClass() === 'mage' ? hud.gearSetOf(id) : "inicial") }}{{ hud.gearBonusLabel(id) ? " · " + hud.gearBonusLabel(id) : "" }}</p>
                     @if (hud.gear() !== null) {
-                      <button type="button" class="secondary-button"
-                        (click)="hud.equipGear(id)">{{ equipped ? 'Retirar' : 'Equipar' }} {{ gear.name }}</button>
+                      @if (hud.gearLocked(id)) {
+                        <p class="dialog-note" [attr.data-gear-locked]="id">Bloqueada: exige o nível {{ hud.gearLevelOf(id) }}.</p>
+                      } @else {
+                        <button type="button" class="secondary-button"
+                          (click)="hud.equipGear(id)">{{ equipped ? 'Retirar' : 'Equipar' }} {{ gear.name }}</button>
+                      }
                     }
                   }
                 }
@@ -350,7 +354,7 @@
                   [class.is-empty]="item.quantity === 0" [class.is-selected]="hud.selectedBagId() === item.id"
                   [attr.data-rarity]="item.rarity ?? null"
                   (click)="hud.selectBagItem(item.id)">
-                  <span class="backpack-icon" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" /></span>
+                  <span class="backpack-icon" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" [set]="item.iconSet" /></span>
                   <span class="backpack-name">{{ item.name }}</span>
                   @if (item.kind === 'coin') {
                     <b class="backpack-quantity" [attr.id]="'coinCount-' + item.id">{{ item.quantity }}</b>
@@ -364,7 +368,7 @@
             <div class="backpack-details" aria-live="polite">
               @if (hud.selectedBagItem(); as item) {
                 <div class="backpack-details-head">
-                  <span class="backpack-icon large" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" /></span>
+                  <span class="backpack-icon large" [attr.data-kind]="item.kind"><app-item-icon [name]="item.icon" [set]="item.iconSet" /></span>
                   <div>
                     <span class="dialog-kicker">{{ item.rarity === 'rare' ? 'ITEM RARO · REGIÃO SUL' : 'ITEM SELECIONADO' }}</span>
                     <h3 id="selectedBagName">{{ item.name }}</h3>

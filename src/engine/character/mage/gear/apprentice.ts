@@ -4,11 +4,11 @@
  * seguintes entram no lote A2. Números propostos (o dono ajusta aqui). As peças são só do Mago (`heroClass`).
  */
 export const APPRENTICE_GEAR = {
-  "apprentice-hat": { slot: "head", name: "Chapéu de Aprendiz", defense: 0, heroClass: "mage" },
-  "apprentice-robe": { slot: "chest", name: "Túnica de Aprendiz", defense: 1, heroClass: "mage" },
-  "apprentice-trousers": { slot: "legs", name: "Calça de Aprendiz", defense: 0, heroClass: "mage" },
-  "apprentice-boots": { slot: "feet", name: "Botas de Aprendiz", defense: 0, heroClass: "mage" },
-  "apprentice-notebook": { slot: "shield", name: "Caderno de Feitiços", defense: 0, heroClass: "mage" },
-  "brass-ring": { slot: "ring", name: "Anel de Latão", defense: 0, heroClass: "mage" },
-  "dull-crystal-pendant": { slot: "neck", name: "Pingente de Cristal Baço", defense: 0, heroClass: "mage" },
+  "apprentice-hat": { slot: "head", name: "Chapéu de Aprendiz", defense: 0, heroClass: "mage", set: "Aprendiz" },
+  "apprentice-robe": { slot: "chest", name: "Túnica de Aprendiz", defense: 1, heroClass: "mage", set: "Aprendiz" },
+  "apprentice-trousers": { slot: "legs", name: "Calça de Aprendiz", defense: 0, heroClass: "mage", set: "Aprendiz" },
+  "apprentice-boots": { slot: "feet", name: "Botas de Aprendiz", defense: 0, heroClass: "mage", set: "Aprendiz" },
+  "apprentice-notebook": { slot: "shield", name: "Caderno de Feitiços", defense: 0, heroClass: "mage", set: "Aprendiz" },
+  "brass-ring": { slot: "ring", name: "Anel de Latão", defense: 0, heroClass: "mage", set: "Aprendiz" },
+  "dull-crystal-pendant": { slot: "neck", name: "Pingente de Cristal Baço", defense: 0, heroClass: "mage", set: "Aprendiz" },
 } as const;

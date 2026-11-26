@@ -79,6 +79,7 @@ import { drawMageTorso } from "../../src/render/hero/mage/torso.ts";
 import { drawMageBook } from "../../src/render/hero/mage/gear/book.ts";
 import { drawMageRing } from "../../src/render/hero/mage/gear/ring.ts";
 import { drawMagePendant } from "../../src/render/hero/mage/gear/pendant.ts";
+import { BREEZE_THEME } from "../../src/render/hero/mage/sets/index.ts";
 import { renderNpc } from "../../src/render/npcs.ts";
 import { clearSceneryCache, renderScenery } from "../../src/render/scenery.ts";
 import { renderBarrelReference } from "../../src/render/reference/barrelReference.ts";
@@ -161,6 +162,13 @@ export const ASSETS: ArtAsset[] = [
   { id: "mago: livro de magias do Aprendiz", tier: "prop", fn: "drawMageBook", draw: c => drawMageBook(c, 20, 24, 1, 0.5, t => t) },
   { id: "mago: anel de latão", tier: "prop", fn: "drawMageRing", draw: c => drawMageRing(c, 20, 24, t => t) },
   { id: "mago: pingente de cristal baço", tier: "prop", fn: "drawMagePendant", draw: c => drawMagePendant(c, 1, false, t => t) },
+  { id: "mago: Chapéu de Penas (Brisa)", tier: "prop", fn: "drawWizardHat", draw: c => drawWizardHat(c, mageCtx(), BREEZE_THEME) },
+  { id: "mago: manto da Brisa", tier: "prop", fn: "drawMageCloak", draw: c => drawMageCloak(c, mageCtx({ back: true }), BREEZE_THEME) },
+  { id: "mago: barra da Túnica da Brisa", tier: "prop", fn: "drawMageRobe", draw: c => drawMageRobe(c, mageCtx(), BREEZE_THEME) },
+  { id: "mago: tronco da Túnica da Brisa", tier: "prop", fn: "drawMageTorso", draw: c => drawMageTorso(c, mageCtx(), BREEZE_THEME) },
+  { id: "mago: Compêndio das Brisas", tier: "prop", fn: "drawMageBook", draw: c => drawMageBook(c, 20, 24, 1, 0.5, t => t, BREEZE_THEME) },
+  { id: "mago: Anel do Sopro", tier: "prop", fn: "drawMageRing", draw: c => drawMageRing(c, 20, 24, t => t, BREEZE_THEME) },
+  { id: "mago: Colar de Pena e Vidro", tier: "prop", fn: "drawMagePendant", draw: c => drawMagePendant(c, 1, false, t => t, BREEZE_THEME) },
   // O cajado do Mago (ADR 0068): o cajado inteiro de cada ficha e as duas peças que o compõem, cada uma cumprindo o piso das peças pequenas.
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "Cajado procedural " + kind, tier: "prop", fn: "drawMageStaff", draw: c => drawMageStaff(c, kind, 1) })),
   { id: "cajado: haste de carvalho", tier: "prop", fn: "paintStaffShaft", draw: c => paintStaffShaft(c, STAVES.apprentice.visual, t => t) },

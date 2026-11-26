@@ -11,7 +11,7 @@ Páginas do site, navegação, HUD e ações de interface. Não calcula regras a
 - [`src/app/routes.ts`](../../src/app/routes.ts)
 - [`src/app/game-page.component.ts`](../../src/app/game-page.component.ts)
 
-## Todos os arquivos deste módulo (35)
+## Todos os arquivos deste módulo (36)
 
 - [`src/app/README.md`](../../src/app/README.md)
 - [`src/app/catalog-page.component.ts`](../../src/app/catalog-page.component.ts)
@@ -19,6 +19,7 @@ Páginas do site, navegação, HUD e ações de interface. Não calcula regras a
 - [`src/app/game-page.html`](../../src/app/game-page.html)
 - [`src/app/hud.service.ts`](../../src/app/hud.service.ts)
 - [`src/app/item-icon.component.ts`](../../src/app/item-icon.component.ts)
+- [`src/app/mage-set-icon.ts`](../../src/app/mage-set-icon.ts)
 - [`src/app/online-players.component.ts`](../../src/app/online-players.component.ts)
 - [`src/app/pages.ts`](../../src/app/pages.ts)
 - [`src/app/pages/404.html`](../../src/app/pages/404.html)

@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (97)
+## Todos os arquivos deste módulo (98)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -61,6 +61,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/gearBonus.ts`](../../src/engine/character/gearBonus.ts)
 - [`src/engine/character/loot.ts`](../../src/engine/character/loot.ts)
 - [`src/engine/character/mage/gear/apprentice.ts`](../../src/engine/character/mage/gear/apprentice.ts)
+- [`src/engine/character/mage/gear/breeze.ts`](../../src/engine/character/mage/gear/breeze.ts)
 - [`src/engine/character/south/alchemy/alchemist.ts`](../../src/engine/character/south/alchemy/alchemist.ts)
 - [`src/engine/character/south/alchemy/catalog.ts`](../../src/engine/character/south/alchemy/catalog.ts)
 - [`src/engine/character/south/alchemy/counts.ts`](../../src/engine/character/south/alchemy/counts.ts)

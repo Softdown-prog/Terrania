@@ -61,5 +61,6 @@ export const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "gear-removed": "Item guardado na bolsa.",
   "gear-unchanged": "O espaço já está assim.",
   "gear-wrong-class": "Essa peça é de outra vocação: o Mago veste roupas mágicas e o Cavaleiro, armaduras.",
+  "gear-level-too-low": "Seu nível ainda não permite vestir essa peça.",
   "wrong-slot": "Este item pertence a outro espaço.",
 };

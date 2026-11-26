@@ -3,7 +3,7 @@ import type { CaveMapState, GameUi, HeroHudState, NearbyAction, NpcOffer, Prefer
 import { MOUNTS, MOUNT_IDS, RIDING_LEVEL, STABLE_UPGRADE_PRICE, type MountId } from '../actors/MountCatalog.ts';
 import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/character/Weapons.ts';
-import { EQUIPMENT_SLOTS, GEAR, gearDefense, gearIdsFor, type GearDefinition, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
+import { EQUIPMENT_SLOTS, GEAR, gearDefense, gearIdsFor, gearLevel, gearSetName, gearUnlocked, type GearDefinition, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
 import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { AelaQuestProgress } from '../world/aelaQuest.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
@@ -16,6 +16,7 @@ import { BANK_STEPS } from '../engine/character/center/bank/index.ts';
 import { DEFAULT_RESPAWN_POINT, RESPAWN_POINTS, type RespawnPointId } from '../engine/character/center/shrine/index.ts';
 import { HERO_CLASSES, HERO_CLASS_IDS, isHeroClassPlayable, sameManaMeter, type HeroClassId, type ManaMeter } from '../engine/character/classes/index.ts';
 import { describeStaffEffect } from '../game/messages/staffEffects.ts';
+import { themeOfPiece, type MageSetTheme } from '../render/hero/mage/sets/index.ts';
 import { describeGearBonus, describeGearTotals } from '../game/messages/gearBonus.ts';
 import { NO_GEAR_BONUS, gearBonus } from '../engine/character/gearBonus.ts';
 import { HERO_CLASS_HINT, HERO_CLASS_INTRO, HERO_CLASS_LOCKED, HERO_CLASS_TITLE } from '../game/messages/classIntro.ts';
@@ -42,6 +43,8 @@ export interface BackpackItemView {
   readonly name: string;
   readonly description: string;
   readonly icon: ItemIconId;
+  /** A ficha de cor do conjunto, nas roupas do Mago (ADR 0080). */
+  readonly iconSet?: MageSetTheme | null;
   readonly quantity: number;
   readonly rarity?: 'rare';
   readonly foodId?: FoodId;
@@ -178,6 +181,14 @@ export class HudService implements GameUi {
   /** Os bônus das roupas do Mago vestidas e o texto deles (ADR 0079); zeros para quem não usa mana. */
   readonly gearBonusTotal = computed(() => this.heroClass() === 'mage' ? gearBonus(this.gear() ?? {}) : NO_GEAR_BONUS);
   readonly gearBonusText = computed(() => describeGearTotals(this.gearBonusTotal()));
+  /** A peça ainda está bloqueada pelo nível do herói (ADR 0080)? */
+  gearLocked(id: GearId): boolean { return !gearUnlocked(id, this.progression()?.level ?? 1); }
+  gearLevelOf(id: GearId): number { return gearLevel(id); }
+  gearSetOf(id: GearId): string { return gearSetName(id); }
+  /** A ficha de cor do conjunto da peça (para tingir o ícone), ou `null` nas peças do Cavaleiro. */
+  gearIconSet(id: GearId): MageSetTheme | null { return themeOfPiece(id); }
+  /** O conjunto da peça vestida no espaço, para o ícone do espaço. */
+  slotIconSet(slot: EquipmentSlot): MageSetTheme | null { return slot === 'weapon' ? null : themeOfPiece(this.gear()?.[slot]); }
   gearBonusLabel(id: GearId): string { return describeGearBonus((GEAR[id] as GearDefinition).bonus); }
   readonly gear = signal<GearState | null>(null, { equal: (a, b) => a === b ||
     (a !== null && b !== null && EQUIPMENT_SLOTS.every(({ id }) => id === 'weapon' || a[id] === b[id])) });
@@ -223,12 +234,12 @@ export class HudService implements GameUi {
       const mage = this.heroClass() === 'mage';
       for (const id of this.kitIds()) {
         const item = GEAR[id];
-        if (gear[item.slot] === id) continue;
+        if (gear[item.slot] === id || !gearUnlocked(id, this.progression()?.level ?? 1)) continue;
         const current = gear[item.slot];
         result.push({ id: 'gear-' + id, kind: 'gear', gearId: id, name: item.name,
-          icon: gearItemIcon(item.slot, this.heroClass()),
+          icon: gearItemIcon(item.slot, this.heroClass()), iconSet: themeOfPiece(id),
           quantity: 1, defense: item.defense, comparedDefense: current ? GEAR[current].defense : 0,
-          description: (mage ? 'Conjunto do Aprendiz · ' : 'Conjunto inicial · ') + (item.defense > 0 ? 'Defesa +' + item.defense : 'Acessório') + (this.gearBonusLabel(id) ? ' · ' + this.gearBonusLabel(id) : '') });
+          description: 'Conjunto ' + (mage ? gearSetName(id) : 'inicial') + ' · ' + (item.defense > 0 ? 'Defesa +' + item.defense : 'Acessório') + (this.gearBonusLabel(id) ? ' · ' + this.gearBonusLabel(id) : '') });
       }
     }
     const loadout = this.loadout();

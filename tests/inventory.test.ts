@@ -19,16 +19,16 @@ const still = { x: 0, y: 0 };
 test("os dez espaços aceitam somente itens compatíveis e restauram o equipamento", () => {
   const inventory = new Inventory();
   assert.equal(EQUIPMENT_SLOTS.length, 10);
-  assert.equal(inventory.equipGear("head", "willow-shield"), "wrong-slot");
+  assert.equal(inventory.equipGear("head", "willow-shield", 99), "wrong-slot");
   for (const id of gearIdsFor("knight")) {
-    assert.equal(inventory.equipGear(GEAR[id].slot, id), "gear-equipped");
-    assert.equal(inventory.equipGear(GEAR[id].slot, id), "gear-unchanged");
+    assert.equal(inventory.equipGear(GEAR[id].slot, id, 99), "gear-equipped");
+    assert.equal(inventory.equipGear(GEAR[id].slot, id, 99), "gear-unchanged");
   }
   assert.equal(Object.keys(inventory.gear).length, 9);
   assert.equal(inventory.defense, 4);
   const restored = new Inventory(JSON.parse(JSON.stringify(inventory.snapshot())));
   assert.deepEqual(restored.gear, inventory.gear);
-  assert.equal(restored.equipGear("shield", null), "gear-removed");
+  assert.equal(restored.equipGear("shield", null, 1), "gear-removed");
   assert.equal(restored.defense, 2);
   assert.equal(inventory.defense, 4);
   const invalid = new Inventory({ gear: { head: "willow-shield", chest: "__proto__", ring: "copper-ring" } });
@@ -38,9 +38,9 @@ test("os dez espaços aceitam somente itens compatíveis e restauram o equipamen
 test("elmo, peitoral e escudo reduzem o dano de Slime no solo", () => {
   const save = { seed, x: -560, y: -1008, hp: 100, kills: 0, defeated: [] };
   const sim = new OfflineSimulation(seed, save);
-  assert.equal(sim.inventory.equipGear("head", "trail-helm"), "gear-equipped");
-  assert.equal(sim.inventory.equipGear("chest", "quilted-vest"), "gear-equipped");
-  assert.equal(sim.inventory.equipGear("shield", "willow-shield"), "gear-equipped");
+  assert.equal(sim.inventory.equipGear("head", "trail-helm", 99), "gear-equipped");
+  assert.equal(sim.inventory.equipGear("chest", "quilted-vest", 99), "gear-equipped");
+  assert.equal(sim.inventory.equipGear("shield", "willow-shield", 99), "gear-equipped");
   sim.update(0.05, still, false);
   assert.equal(sim.player.hp, 95);
   sim.player.hp = 0;

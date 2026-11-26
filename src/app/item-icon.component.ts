@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { mageIconTint, mageSetTheme, type MageSetId } from './mage-set-icon.ts';
 import type { EquipmentSlot, GearSlot } from '../engine/character/Equipment.ts';
 import type { FoodId } from '../engine/character/Food.ts';
 import type { WeaponId } from '../engine/character/Weapons.ts';
@@ -53,7 +54,7 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
 @Component({
   selector: 'app-item-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'item-icon', 'aria-hidden': 'true', '[attr.data-icon]': 'name()' },
+  host: { class: 'item-icon', 'aria-hidden': 'true', '[attr.data-icon]': 'name()', '[attr.data-set]': 'theme()?.id ?? null', '[style]': 'tint()' },
   template: `
     <svg viewBox="0 0 32 32" focusable="false" stroke="#20150f" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
       @switch (name()) {
@@ -432,43 +433,57 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
           </g>
         }
         @case ('ring') {
-          <path fill-rule="evenodd" d="M7 19A9 8 0 1 0 25 19A9 8 0 1 0 7 19ZM10.4 19.4A5.6 4.8 0 1 0 21.6 19.4A5.6 4.8 0 1 0 10.4 19.4Z" fill="#e3b647"/>
-          <path d="M16 3.5L20.6 8L16 13.5L11.4 8Z" fill="#5cc8f2"/>
-          <path d="M11.4 8H20.6M16 3.5V13.5" fill="none" stroke="#d9f4ff" stroke-width="1"/>
+          <path fill-rule="evenodd" d="M7 19A9 8 0 1 0 25 19A9 8 0 1 0 7 19ZM10.4 19.4A5.6 4.8 0 1 0 21.6 19.4A5.6 4.8 0 1 0 10.4 19.4Z" fill="#e3b647" data-fill="trim"/>
+          <path d="M16 3.5L20.6 8L16 13.5L11.4 8Z" fill="#5cc8f2" data-fill="gem"/>
+          <path d="M11.4 8H20.6M16 3.5V13.5" fill="none" stroke="#d9f4ff" stroke-width="1" data-stroke="gem-light"/>
         }
         @case ('mage-hat') {
-          <path d="M3.6 24.6Q16 29.4 28.4 24.6Q22.4 22.2 16 22.2Q9.6 22.2 3.6 24.6Z" fill="#3d3685"/>
-          <path d="M10 23C10.8 15 13.4 8.4 20.4 3.4C21.6 6.4 20.6 8.8 22.2 11.6C23 15.4 22.2 19 22 23Q16 24.8 10 23Z" fill="#4b4fa0"/>
-          <path d="M10.2 21.2Q16 23.4 21.9 21.2L22 23Q16 24.8 10 23Z" fill="#e0c277" stroke-width="1"/>
-          <path d="M15.8 12.2L16.8 14.4L19.2 14.7L17.4 16.3L18 18.6L15.8 17.4L13.6 18.6L14.2 16.3L12.4 14.7L14.8 14.4Z" fill="#e0c277" stroke-width=".8"/>
-          <path d="M12 21C12.6 15 14.4 10.4 17.2 6.8" fill="none" stroke="#7a7fd6" stroke-width="1.4"/>
+          <path d="M3.6 24.6Q16 29.4 28.4 24.6Q22.4 22.2 16 22.2Q9.6 22.2 3.6 24.6Z" fill="#3d3685" data-fill="dark"/>
+          <path d="M10 23C10.8 15 13.4 8.4 20.4 3.4C21.6 6.4 20.6 8.8 22.2 11.6C23 15.4 22.2 19 22 23Q16 24.8 10 23Z" fill="#4b4fa0" data-fill="main"/>
+          <path d="M10.2 21.2Q16 23.4 21.9 21.2L22 23Q16 24.8 10 23Z" fill="#e0c277" stroke-width="1" data-fill="trim"/>
+          @if (motif() === 'wind') {
+            <path d="M22.2 21.4C22.6 15.4 21.2 9.6 25.4 3.4C28.4 8.6 27.2 15.6 23.8 21.6Z" fill="#e0c277" stroke-width=".9" data-fill="trim"/>
+            <path d="M23.2 21.2C24 14.6 24.4 9.4 25.4 4.4" fill="none" stroke="#a8863e" stroke-width=".8" data-stroke="trim-dark"/>
+            <path d="M19.6 22.4C19.2 17.4 17.6 12.8 20.4 8.4C23.2 12 22.6 17.4 21.2 22.6Z" fill="#e0c277" stroke-width=".9" data-fill="trim"/>
+          } @else {
+            <path d="M15.8 12.2L16.8 14.4L19.2 14.7L17.4 16.3L18 18.6L15.8 17.4L13.6 18.6L14.2 16.3L12.4 14.7L14.8 14.4Z" fill="#e0c277" stroke-width=".8" data-fill="trim"/>
+          }
+          <path d="M12 21C12.6 15 14.4 10.4 17.2 6.8" fill="none" stroke="#7a7fd6" stroke-width="1.4" data-stroke="light"/>
         }
         @case ('mage-robe') {
-          <path d="M10 4.6Q16 8 22 4.6L26.6 12.6L23.8 15L23.2 28.4H8.8L8.2 15L5.4 12.6Z" fill="#4b4fa0"/>
-          <path d="M12.4 5.2Q16 11 19.6 5.2" fill="none" stroke="#e0c277" stroke-width="1.7"/>
-          <rect x="8.6" y="14.4" width="14.8" height="2.6" fill="#e0c277" stroke-width="1"/>
-          <path d="M8.8 27.2Q16 29.8 23.2 27.2" fill="none" stroke="#e0c277" stroke-width="1.5"/>
-          <path d="M16 19.2L16.9 21L18.8 21.2L17.4 22.4L17.8 24.2L16 23.2L14.2 24.2L14.6 22.4L13.2 21.2L15.1 21Z" fill="#9fe3ff" stroke-width=".6"/>
-          <path d="M11.4 17.6L10.8 26" fill="none" stroke="#7a7fd6" stroke-width="1.2"/>
+          <path d="M10 4.6Q16 8 22 4.6L26.6 12.6L23.8 15L23.2 28.4H8.8L8.2 15L5.4 12.6Z" fill="#4b4fa0" data-fill="main"/>
+          <path d="M12.4 5.2Q16 11 19.6 5.2" fill="none" stroke="#e0c277" stroke-width="1.7" data-stroke="trim"/>
+          <rect x="8.6" y="14.4" width="14.8" height="2.6" fill="#e0c277" stroke-width="1" data-fill="trim"/>
+          <path d="M8.8 27.2Q16 29.8 23.2 27.2" fill="none" stroke="#e0c277" stroke-width="1.5" data-stroke="trim"/>
+          @if (motif() === 'wind') {
+            <path d="M13 24C13.4 19.6 18.6 18.6 19 22.2C19.2 24.2 16.2 24.6 15.8 22.6" fill="none" stroke="#9fe3ff" stroke-width="1.5" data-stroke="gem"/>
+          } @else {
+            <path d="M16 19.2L16.9 21L18.8 21.2L17.4 22.4L17.8 24.2L16 23.2L14.2 24.2L14.6 22.4L13.2 21.2L15.1 21Z" fill="#9fe3ff" stroke-width=".6" data-fill="gem"/>
+          }
+          <path d="M11.4 17.6L10.8 26" fill="none" stroke="#7a7fd6" stroke-width="1.2" data-stroke="light"/>
         }
         @case ('mage-trousers') {
-          <path d="M8.4 4.6H23.6L25.2 27.6H18L16 13.6L14 27.6H6.8Z" fill="#3d3a7a"/>
-          <rect x="8.2" y="4.6" width="15.6" height="3.4" fill="#e0c277" stroke-width="1"/>
-          <path d="M10.6 9.6L8.8 25.4" fill="none" stroke="#7a7fd6" stroke-width="1.3"/>
+          <path d="M8.4 4.6H23.6L25.2 27.6H18L16 13.6L14 27.6H6.8Z" fill="#3d3a7a" data-fill="main"/>
+          <rect x="8.2" y="4.6" width="15.6" height="3.4" fill="#e0c277" stroke-width="1" data-fill="trim"/>
+          <path d="M10.6 9.6L8.8 25.4" fill="none" stroke="#7a7fd6" stroke-width="1.3" data-stroke="light"/>
           <path d="M16 13.6L16 8.4" fill="none" stroke="#20150f" stroke-width="1"/>
         }
         @case ('mage-boots') {
-          <path d="M9 4.8H18.4V18.4C18.4 20.4 21.2 21.2 25.2 22.8C27 23.6 27.4 25.2 27.4 27.4H7.8V4.8Z" fill="#3a2d78"/>
-          <rect x="8.4" y="4.8" width="10.4" height="4" fill="#7a7fd6" stroke-width="1"/>
+          <path d="M9 4.8H18.4V18.4C18.4 20.4 21.2 21.2 25.2 22.8C27 23.6 27.4 25.2 27.4 27.4H7.8V4.8Z" fill="#3a2d78" data-fill="main"/>
+          <rect x="8.4" y="4.8" width="10.4" height="4" fill="#7a7fd6" stroke-width="1" data-fill="light"/>
           <path d="M7.8 26.2H27.4" fill="none" stroke="#20150f" stroke-width="2.4"/>
-          <path d="M20 22.8L24 24.2" fill="none" stroke="#9aa0e8" stroke-width="1.2"/>
+          <path d="M20 22.8L24 24.2" fill="none" stroke="#9aa0e8" stroke-width="1.2" data-stroke="light"/>
         }
         @case ('mage-book') {
-          <path d="M6.4 5.6H24.6Q26.4 5.6 26.4 7.4V25.6H8.2Q6.4 25.6 6.4 23.8Z" fill="#4b4fa0"/>
-          <path d="M6.4 23.8Q6.4 25.6 8.2 25.6H26.4V27.6H8.4Q5 27.6 5 24.2V8" fill="#f1efe0" stroke-width="1"/>
-          <path d="M9.6 5.6V25.6" fill="none" stroke="#2c2d6b" stroke-width="1.6"/>
-          <rect x="12" y="9.2" width="11" height="8.6" rx="1" fill="#e0c277" stroke="#a8863e" stroke-width="1"/>
-          <path d="M17.5 10.8L18.3 12.8L20.4 13L18.8 14.3L19.3 16.3L17.5 15.2L15.7 16.3L16.2 14.3L14.6 13L16.7 12.8Z" fill="#3d3685" stroke-width=".6"/>
+          <path d="M6.4 5.6H24.6Q26.4 5.6 26.4 7.4V25.6H8.2Q6.4 25.6 6.4 23.8Z" fill="#4b4fa0" data-fill="main"/>
+          <path d="M6.4 23.8Q6.4 25.6 8.2 25.6H26.4V27.6H8.4Q5 27.6 5 24.2V8" fill="#f1efe0" stroke-width="1" data-fill="page"/>
+          <path d="M9.6 5.6V25.6" fill="none" stroke="#2c2d6b" stroke-width="1.6" data-stroke="dark"/>
+          <rect x="12" y="9.2" width="11" height="8.6" rx="1" fill="#e0c277" stroke="#a8863e" stroke-width="1" data-fill="trim" data-stroke="trim-dark"/>
+          @if (motif() === 'wind') {
+            <path d="M14 14.8C14.4 11.2 19.6 10.8 20.2 13.6M14.8 16.4C16.4 17 19.2 16.6 20 15M16.2 13.8C17 13 18.4 13.2 18.4 14.2" fill="none" stroke="#3d3685" stroke-width="1" data-stroke="dark"/>
+          } @else {
+            <path d="M17.5 10.8L18.3 12.8L20.4 13L18.8 14.3L19.3 16.3L17.5 15.2L15.7 16.3L16.2 14.3L14.6 13L16.7 12.8Z" fill="#3d3685" stroke-width=".6" data-fill="dark"/>
+          }
         }
         @case ('helm') {
           <path d="M6 24.5V17C6 10 10 5 16 5C22 5 26 10 26 17V24.5Z" fill="#aeb8c2"/>
@@ -480,8 +495,8 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
         @case ('pendant') {
           <path d="M8.5 3.5C8.5 13.5 12 18.5 16 20.5C20 18.5 23.5 13.5 23.5 3.5" fill="none" stroke="#20150f" stroke-width="3.2"/>
           <path d="M8.5 3.5C8.5 13.5 12 18.5 16 20.5C20 18.5 23.5 13.5 23.5 3.5" fill="none" stroke="#e3b647" stroke-width="1.4"/>
-          <path d="M16 20C13 23 12 25 12 26.6C12 29 14 30 16 30C18 30 20 29 20 26.6C20 25 19 23 16 20Z" fill="#3fb7c9"/>
-          <path d="M14.2 25.2C14.4 26.6 15 27.4 15.8 27.8" fill="none" stroke="#d6faff" stroke-width="1.4"/>
+          <path d="M16 20C13 23 12 25 12 26.6C12 29 14 30 16 30C18 30 20 29 20 26.6C20 25 19 23 16 20Z" fill="#3fb7c9" data-fill="gem"/>
+          <path d="M14.2 25.2C14.4 26.6 15 27.4 15.8 27.8" fill="none" stroke="#d6faff" stroke-width="1.4" data-stroke="gem-light"/>
         }
         @case ('shield') {
           <path d="M5.5 5.5H26.5V16C26.5 23 21.5 27 16 29C10.5 27 5.5 23 5.5 16Z" fill="#a47946"/>
@@ -619,8 +634,28 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
         }
       }
     </svg>`,
-  styles: ':host { display: inline-block; width: 1em; height: 1em; line-height: 0; } svg { width: 100%; height: 100%; overflow: visible; }',
+  styles: [
+    ':host { display: inline-block; width: 1em; height: 1em; line-height: 0; } svg { width: 100%; height: 100%; overflow: visible; }',
+    // As roupas do Mago de cada conjunto (ADR 0080): o mesmo desenho, pintado com as cores do conjunto, que chegam por variáveis CSS.
+    ':host([data-set]) [data-fill="main"] { fill: var(--mi-main); }',
+    ':host([data-set]) [data-fill="dark"] { fill: var(--mi-dark); }',
+    ':host([data-set]) [data-fill="light"] { fill: var(--mi-light); }',
+    ':host([data-set]) [data-fill="trim"] { fill: var(--mi-trim); }',
+    ':host([data-set]) [data-fill="gem"] { fill: var(--mi-gem); }',
+    ':host([data-set]) [data-fill="page"] { fill: var(--mi-page); }',
+    ':host([data-set]) [data-stroke="dark"] { stroke: var(--mi-dark); }',
+    ':host([data-set]) [data-stroke="light"] { stroke: var(--mi-light); }',
+    ':host([data-set]) [data-stroke="trim"] { stroke: var(--mi-trim); }',
+    ':host([data-set]) [data-stroke="trim-dark"] { stroke: var(--mi-trim-dark); }',
+    ':host([data-set]) [data-stroke="gem"] { stroke: var(--mi-gem); }',
+    ':host([data-set]) [data-stroke="gem-light"] { stroke: var(--mi-gem-light); }',
+  ],
 })
 export class ItemIconComponent {
   readonly name = input.required<ItemIconId>();
+  /** O conjunto de roupas do Mago a que a peça pertence (ADR 0080); sem ele (ou sem ficha de cor), o ícone tem as cores de origem. */
+  readonly set = input<MageSetId | null | undefined>(undefined);
+  protected readonly theme = computed(() => mageSetTheme(this.set()));
+  protected readonly motif = computed(() => this.theme()?.motif ?? 'star');
+  protected readonly tint = computed(() => mageIconTint(this.theme(), this.name()));
 }
