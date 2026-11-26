@@ -9,6 +9,8 @@ on:
       - 'tests/qa-combat.test.ts'
       - 'tests/qa-natural.test.ts'
       - 'tests/qa-expedition.test.ts'
+      - 'tests/qa-caves.test.ts'
+      - 'tests/qa-mage.test.ts'
       - '.github/workflows/qa-bot.yml'
 permissions:
   contents: read

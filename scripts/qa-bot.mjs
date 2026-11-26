@@ -1,6 +1,8 @@
 import { runExpeditionQa } from "../src/qa/QaExpedition.ts";
 import { runNaturalQa } from "../src/qa/QaNatural.ts";
 import { runCombatQa } from "../src/qa/QaCombat.ts";
+import { runCaveQa } from "../src/qa/QaCaves.ts";
+import { runMageQa } from "../src/qa/QaMage.ts";
 import { runQaBot } from "../src/qa/QaBot.ts";
 function integerOption(name) {
   const item = process.argv.slice(2).find(arg => arg.startsWith(name + "="));
@@ -19,12 +21,14 @@ try {
   const combat = runCombatQa(exploration.seed);
   const natural = runNaturalQa(exploration.seed);
   const expedition = runExpeditionQa({ seed: exploration.seed });
-  const scenarios = [exploration, combat, natural, expedition];
+  const caves = runCaveQa(exploration.seed);
+  const mage = runMageQa(exploration.seed);
+  const scenarios = [exploration, combat, natural, expedition, caves, mage];
   const status = scenarios.every(item => item.status === "passed")
     ? "passed" : scenarios.some(item => item.status === "failed")
       ? "failed" : "incomplete";
   const report = {
-    schemaVersion: 6,
+    schemaVersion: 7,
     botId: exploration.botId,
     seed: exploration.seed,
     status,
@@ -32,6 +36,8 @@ try {
     combat,
     natural,
     expedition,
+    caves,
+    mage,
   };
   process.stdout.write(JSON.stringify(report, null, 2) + "\n");
   if (process.argv.includes("--strict") && status !== "passed")

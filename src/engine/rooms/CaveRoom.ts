@@ -3,6 +3,7 @@ import { SOUTH_COMMON_KINDS, type CreatureKind } from "../../actors/CreatureCata
 import { Slime } from "../../actors/Slime.ts";
 import { centralCaveSlimes } from "./CaveSlimes.ts";
 import { caveDefeatDrops } from "./CaveLoot.ts";
+import { caveReach } from "../../world/caveReach.ts";
 import { MAX_WORLD_DROPS, type LootDrop } from "../character/loot.ts";
 import { AELA_SLIME_GOAL } from "../../world/aelaQuest.ts";
 import { RegionalMonster, caveMonsterKinds } from "../../actors/RegionalMonster.ts";
@@ -61,13 +62,15 @@ export class CaveRoom {
     this.populate(entrance);
   }
   private populate(entrance: CaveEntrance): void {
+    // Criatura só nasce em chão que o herói alcança a pé (nada de ilha isolada ou câmara fechada).
+    const reaches = caveReach(this.collision, this.player);
     if (entrance.id === `cave:${entrance.seed}:0:0`) {
       // Sete encontros de treino, com locais garantidamente transitáveis.
       const spots: Array<{ x: number; y: number }> = [];
       for (let ty = 5; ty <= 23 && spots.length < AELA_SLIME_GOAL + 2; ty += 2)
         for (let tx = 6; tx <= 36 && spots.length < AELA_SLIME_GOAL + 2; tx += 2) {
           const x = (tx + .5) * TILE_SIZE, y = (ty + .5) * TILE_SIZE;
-          if (!this.collision.canMove(x, y) ||
+          if (!this.collision.canMove(x, y) || !reaches(x, y) ||
               Math.hypot(x - this.player.x, y - this.player.y) < 210 ||
               spots.some(point => Math.hypot(x - point.x, y - point.y) < 92)) continue;
           spots.push({ x, y });
@@ -82,7 +85,7 @@ export class CaveRoom {
     const kinds=plan ? plan.monsters : caveMonsterKinds(entrance.theme);
     if (!kinds.length) {
       // O Centro não tem criatura regional: as cavernas comuns dele (Gruta das Raízes) são dos slimes, em vez de nascerem vazias.
-      if (entrance.theme === "verdant") for (const slime of centralCaveSlimes(entrance, this.floor.id, this.collision, this.player, this.defeated)) this.monsters.set(slime.id, slime);
+      if (entrance.theme === "verdant") for (const slime of centralCaveSlimes(entrance, this.floor.id, this.collision, this.player, this.defeated, reaches)) this.monsters.set(slime.id, slime);
       return;
     }
     const salt=entrance.seed ^ Math.imul(entrance.tileX,1033) ^ Math.imul(entrance.tileY,2053) ^
@@ -96,7 +99,7 @@ export class CaveRoom {
       const tx=4+Math.floor(hash2(i,7,salt+71)*(CAVE_WIDTH-8));
       const ty=4+Math.floor(hash2(i,11,salt+83)*(CAVE_HEIGHT-12));
       const x=(tx+.5)*TILE_SIZE,y=(ty+.5)*TILE_SIZE;
-      if (!this.collision.canMove(x,y) ||
+      if (!this.collision.canMove(x,y) || !reaches(x,y) ||
           Math.hypot(x-this.player.x,y-this.player.y)<170 ||
           (stairs && Math.hypot(x-stairs.x,y-stairs.y)<130)) continue;
       if (viableSpots >= wanted) break;
@@ -115,7 +118,7 @@ export class CaveRoom {
     // Garantia de encontro nas câmaras, caso o hash caia só em paredes.
     if(!this.monsters.size && viableSpots===0){
       for(let y=5;y<22 && !this.monsters.size;y++) for(let x=5;x<38 && !this.monsters.size;x++){
-        if(!this.collision.canMove((x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE))continue;
+        if(!this.collision.canMove((x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE)||!reaches((x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE))continue;
         const kind=kinds[Math.floor(hash2(x,y,salt+99)*kinds.length)]!;
         const id=this.floor.id+":mob:0";
         if (!this.defeated.has(id)) this.monsters.set(id,new RegionalMonster(id,kind,(x+.5)*TILE_SIZE,(y+.5)*TILE_SIZE));

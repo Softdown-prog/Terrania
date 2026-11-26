@@ -142,6 +142,7 @@
 - [`docs/adr/0083-cavernas-do-centro-com-slimes.md`](../../docs/adr/0083-cavernas-do-centro-com-slimes.md)
 - [`docs/adr/0084-saque-e-lista-de-batalha-na-caverna.md`](../../docs/adr/0084-saque-e-lista-de-batalha-na-caverna.md)
 - [`docs/adr/0085-comida-devolve-mana.md`](../../docs/adr/0085-comida-devolve-mana.md)
+- [`docs/adr/0086-bot-de-qa-cavernas-e-mago.md`](../../docs/adr/0086-bot-de-qa-cavernas-e-mago.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/cajados-lote-1.png`](../../docs/screenshots/cajados-lote-1.png)

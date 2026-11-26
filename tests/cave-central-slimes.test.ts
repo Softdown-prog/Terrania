@@ -9,6 +9,7 @@ import { CaveRoom } from "../src/engine/rooms/CaveRoom.ts";
 import { CENTRAL_CAVE_SLIMES, centralCaveSlimes } from "../src/engine/rooms/CaveSlimes.ts";
 import { applyCaveVictories } from "../src/engine/rooms/CaveRewards.ts";
 import { caveEntranceInCell, type CaveEntrance, type CaveTheme } from "../src/world/caves.ts";
+import { sampleCaves } from "../src/qa/QaCaves.ts";
 
 /**
  * Relato do dono: as cavernas do Centro estavam vazias (sem monstro, sem nada). Causa: o jogo povoa a caverna com as criaturas regionais do tema dela, e o tema
@@ -17,11 +18,11 @@ import { caveEntranceInCell, type CaveEntrance, type CaveTheme } from "../src/wo
 const SEED = 842136;
 const read = (path: string): string => readFileSync(path, "utf8");
 const STARTER = `cave:${SEED}:0:0`;
-/** Entradas de caverna comum de cada tema, achadas varrendo as células perto do centro do mundo. */
-const byTheme = new Map<CaveTheme, CaveEntrance[]>();
+/** Entradas de caverna comum de cada tema: o Centro fica perto do começo do mundo e os outros temas ficam longe (o bot de QA varre as oito direções). */
+const byTheme = new Map<CaveTheme, CaveEntrance[]>(sampleCaves(SEED));
 for (let cx = -8; cx <= 8; cx++) for (let cy = -8; cy <= 8; cy++) {
   const entrance = caveEntranceInCell(cx, cy, SEED);
-  if (entrance && entrance.id !== STARTER && !entrance.tower) byTheme.set(entrance.theme, [...(byTheme.get(entrance.theme) ?? []), entrance]);
+  if (entrance && entrance.id !== STARTER && !entrance.tower && entrance.theme === "verdant" && !(byTheme.get("verdant") ?? []).some(item => item.id === entrance.id)) byTheme.set("verdant", [...(byTheme.get("verdant") ?? []), entrance]);
 }
 const central = byTheme.get("verdant") ?? [];
 
@@ -62,14 +63,20 @@ test("quem já caiu não volta (o save), e os outros continuam", () => {
   const guaranteed = centralCaveSlimes(entrance, "f", lowFloor, far, new Set());
   assert.equal(guaranteed.length, 3, "a garantia põe três slimes mesmo quando o sorteio cai só em parede");
   assert.ok(guaranteed.every(mob => mob.y >= 22 * 32) && new Set(guaranteed.map(mob => mob.id)).size === 3);
+  // só chão que o herói alcança: sem alcance nenhum não nasce slime; com alcance só da metade da direita, só nasce lá
+  const open = { canMove: () => true }, middle = 21 * 32;
+  assert.equal(centralCaveSlimes(entrance, "f", open, far, new Set(), () => false).length, 0, "nenhum ponto alcançável: nenhum slime");
+  const rightHalf = centralCaveSlimes(entrance, "f", open, far, new Set(), x => x >= middle);
+  assert.ok(rightHalf.length > 0 && rightHalf.every(mob => mob.x >= middle), "só nascem onde o herói alcança")
 });
 
 test("a caverna de treino e as cavernas dos outros temas não mudaram", () => {
   const training = new CaveRoom(caveEntranceInCell(0, 0, SEED)!);
   assert.equal(training.monsters.size, AELA_SLIME_GOAL + 2, "a gruta de treino segue com os seus encontros");
   assert.ok([...training.monsters.values()].every(mob => mob.id.startsWith(`${STARTER}:floor:1:slime:`)));
-  for (const theme of ["glacial", "desert", "coastal", "basalt"] as const) {
+  for (const theme of ["glacial", "desert", "coastal", "basalt", "marsh"] as const) {
     const entrances = byTheme.get(theme) ?? [];
+    assert.ok(entrances.length >= 3, `${theme}: há cavernas para conferir (antes a varredura curta não achava nenhuma e o teste não conferia nada)`);
     for (const entrance of entrances.slice(0, 3)) {
       const room = new CaveRoom(entrance);
       assert.ok(room.monsters.size > 0, `${theme}: tem monstros`);
@@ -98,6 +105,6 @@ test("o herói de verdade derruba um slime da caverna do Centro com a espada", (
 
 test("a ligação: a caverna só povoa com slimes quando é do tema do Centro e não tem criatura regional", () => {
   const cave = read("src/engine/rooms/CaveRoom.ts");
-  assert.match(cave, /if \(!kinds\.length\) \{[^}]*if \(entrance\.theme === "verdant"\) for \(const slime of centralCaveSlimes\(entrance, this\.floor\.id, this\.collision, this\.player, this\.defeated\)\) this\.monsters\.set\(slime\.id, slime\);\s*return;\s*\}/);
+  assert.match(cave, /if \(!kinds\.length\) \{[^}]*if \(entrance\.theme === "verdant"\) for \(const slime of centralCaveSlimes\(entrance, this\.floor\.id, this\.collision, this\.player, this\.defeated, reaches\)\) this\.monsters\.set\(slime\.id, slime\);\s*return;\s*\}/);
   assert.match(cave, /import \{ centralCaveSlimes \} from "\.\/CaveSlimes\.ts";/);
 });
