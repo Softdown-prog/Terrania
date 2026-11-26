@@ -2,6 +2,7 @@ import { MAGE_STARTING_GEAR, type GearState } from "../../../engine/character/Eq
 import type { HeroLook } from "../look.ts";
 import { drawMageCloak } from "./cloak.ts";
 import { drawWizardHat } from "./hat.ts";
+import { drawMageHead } from "./head.ts";
 import { drawMageRobe } from "./robe.ts";
 import { drawMageTorso } from "./torso.ts";
 import { legwearOf, type LegWear } from "./gear/legwear.ts";
@@ -14,7 +15,7 @@ function buildLook(robe: MageSetTheme | null, hat: MageSetTheme | null): HeroLoo
   const base = robe ?? APPRENTICE_THEME;
   return {
     tunic: { light: base.tunic.light, mid: base.tunic.mid, dark: base.tunic.dark },
-    sleeve: base.tunic.mid, cuff: base.cuff,
+    sleeve: base.tunic.mid, cuff: base.cuff, head: drawMageHead,
     robe: robe ? (ctx, c) => drawMageRobe(ctx, c, robe) : none,
     cloak: robe ? (ctx, c) => drawMageCloak(ctx, c, robe) : none,
     torso: robe ? (ctx, c) => drawMageTorso(ctx, c, robe) : none,

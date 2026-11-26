@@ -30,4 +30,9 @@ export interface HeroDrawContext {
   readonly tailSway: number;
   /** Relógio para brilhos suaves; 0 nas prévias estáticas. */
   readonly time: number;
+  /** O rosto: quanto as pálpebras estão fechadas (piscada ou dano, de 0 a 1), o franzir ao golpear, a boca aberta (golpe ou dano) e se é dano. */
+  readonly closed: number;
+  readonly fierce: number;
+  readonly shout: boolean;
+  readonly hurting: boolean;
 }

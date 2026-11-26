@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (198)
+## Todos os arquivos deste módulo (199)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCombat.ts`](../../src/qa/QaCombat.ts)
@@ -142,6 +142,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/mage-gear-bonus.test.ts`](../../tests/mage-gear-bonus.test.ts)
 - [`tests/mage-gear-breeze.test.ts`](../../tests/mage-gear-breeze.test.ts)
 - [`tests/mage-gear.test.ts`](../../tests/mage-gear.test.ts)
+- [`tests/mage-head.test.ts`](../../tests/mage-head.test.ts)
 - [`tests/mage-release.test.ts`](../../tests/mage-release.test.ts)
 - [`tests/mana-meter.test.ts`](../../tests/mana-meter.test.ts)
 - [`tests/map-migration.test.ts`](../../tests/map-migration.test.ts)

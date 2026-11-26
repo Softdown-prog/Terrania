@@ -19,4 +19,6 @@ export interface HeroLook {
   readonly torso: (ctx: CanvasRenderingContext2D, c: HeroDrawContext) => void;
   /** O que vai na cabeça, por cima do cabelo. */
   readonly hat: (ctx: CanvasRenderingContext2D, c: HeroDrawContext) => void;
+  /** A cabeça do personagem (cabelo, rosto): se a vocação tem a sua, ela substitui a do Cavaleiro (o rosto, o cabelo e o rabo de cavalo). */
+  readonly head?: (ctx: CanvasRenderingContext2D, c: HeroDrawContext) => void;
 }

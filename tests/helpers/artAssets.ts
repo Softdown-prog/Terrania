@@ -74,6 +74,7 @@ import { drawSpellBurst } from "../../src/render/spells/burst.ts";
 import { paintStaffHead } from "../../src/render/staves/head.ts";
 import { drawWizardHat } from "../../src/render/hero/mage/hat.ts";
 import { drawMageCloak } from "../../src/render/hero/mage/cloak.ts";
+import { drawMageHead } from "../../src/render/hero/mage/head.ts";
 import { drawMageRobe } from "../../src/render/hero/mage/robe.ts";
 import { drawMageTorso } from "../../src/render/hero/mage/torso.ts";
 import { drawMageBook } from "../../src/render/hero/mage/gear/book.ts";
@@ -140,7 +141,7 @@ export const LIGHTEST_MIN = 0.85;
 const hero = { faceX: 0, faceY: 1, walkTime: 0.3, attackTime: 0 };
 /** O quadro de um herói parado, de frente, para desenhar uma peça do Mago sozinha. */
 const mageCtx = (extra: Partial<HeroDrawContext> = {}): HeroDrawContext => ({ tone: c => c, wf: 1, side: 0, back: false, faceX: 0, faceY: 1, mvx: 0, mvy: 1,
-  trailX: 0, trailY: 0, walkTime: 0.3, moving: 0, liftA: 0, liftB: 0, headX: 0, headY: -31.5, tailSway: 0, time: 1, ...extra });
+  trailX: 0, trailY: 0, walkTime: 0.3, moving: 0, liftA: 0, liftB: 0, headX: 0, headY: -31.5, tailSway: 0, time: 1, closed: 0, fierce: 0, shout: false, hurting: false, ...extra });
 const kit = { head: "trail-helm", shield: "willow-shield", chest: "quilted-vest", feet: "trail-boots",
   legs: "travel-trousers", backpack: "canvas-pack", neck: "river-pendant" } as const;
 
@@ -155,6 +156,8 @@ export const ASSETS: ArtAsset[] = [
   { id: "hero mago de costas", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, faceY: -1, heroClass: "mage" }, 0, 0, 1) },
   { id: "hero mago de lado", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, faceX: 1, faceY: 0, heroClass: "mage" }, 0, 0, 1) },
   // As quatro peças que só o Mago veste, sozinhas, cada uma cumprindo o piso das peças pequenas (ADR 0067).
+  { id: "mago: cabeça jovem de frente", tier: "prop", fn: "drawMageHead", draw: c => drawMageHead(c, mageCtx()) },
+  { id: "mago: cabeça jovem de lado", tier: "prop", fn: "drawMageHead", draw: c => drawMageHead(c, mageCtx({ side: 1, faceX: 1, faceY: 0 })) },
   { id: "mago: chapéu pontudo", tier: "prop", fn: "drawWizardHat", draw: c => drawWizardHat(c, mageCtx()) },
   { id: "mago: manto escuro com capuz", tier: "prop", fn: "drawMageCloak", draw: c => drawMageCloak(c, mageCtx({ back: true })) },
   { id: "mago: barra da túnica", tier: "prop", fn: "drawMageRobe", draw: c => drawMageRobe(c, mageCtx()) },

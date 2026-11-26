@@ -243,7 +243,9 @@ export function renderHero(
     ctx.stroke();
   };
   const hc: HeroDrawContext = { tone, wf, side, back, faceX: player.faceX, faceY: player.faceY, mvx, mvy, trailX, trailY,
-    walkTime: player.walkTime, moving: g.moving, liftA: g.a.lift, liftB: g.b.lift, headX, headY, tailSway, time: t };
+    walkTime: player.walkTime, moving: g.moving, liftA: g.a.lift, liftB: g.b.lift, headX, headY, tailSway, time: t,
+    closed: Math.max(blink(t, seed * 10), hurt > 0.4 ? 0.85 : 0), fierce: player.attackTime > 0 ? 0.8 : 0,
+    shout: player.attackTime > 0 || hurt > 0.4, hurting: hurt > 0.4 };
   const drawCape = (): void => { if (look) look.cloak(ctx, hc); else drawKnightCape(); };
   if (!back) drawCape();
   look?.robe(ctx, hc);
@@ -365,6 +367,8 @@ export function renderHero(
     ctx.fillStyle = tone("#c0a577"); ctx.fillRect(-2.2 * wf, -21, 4.4 * wf, 2.2);
   }
   if (!back) { swordArm(); drawHeld(); ellipse(ctx, gripX, gripY, 2.6, 2.6, tone(PAL.skin)); if (wear?.ring) drawMageRing(ctx, gripX, gripY, tone, wear.ring); }
+  if (look?.head) look.head(ctx, hc);
+  else {
   // rabo-de-cavalo/mecha traseira
   ctx.strokeStyle = tone(PAL.hair); ctx.lineWidth = 4.2; ctx.lineCap = "round";
   ctx.beginPath();
@@ -432,6 +436,7 @@ export function renderHero(
     ctx.beginPath(); ctx.moveTo(headX - 5, headY - 6); ctx.quadraticCurveTo(headX, headY - 8.6, headX + 4, headY - 6.4); ctx.stroke();
     ctx.strokeStyle = rgba("#000000", 0.2);
     ctx.beginPath(); ctx.moveTo(headX, headY - 2); ctx.lineTo(headX, headY + 7); ctx.stroke();
+  }
   }
   // faixa de cabeça com nó (o Mago usa o chapéu)
   if (!look) {
