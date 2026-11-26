@@ -18,6 +18,9 @@ import { renderFrostBansheeCreature } from "../../src/render/creatures/north/ban
 import { renderRunicPolarBearCreature } from "../../src/render/creatures/north/bears/runicPolarBear.ts";
 import { renderAbyssalOctopusCreature } from "../../src/render/creatures/east/octopuses/abyssalOctopus.ts";
 import { renderTideHunterTritonCreature } from "../../src/render/creatures/east/tritons/tideHunterTriton.ts";
+import { renderGiantRatCreature, drawGiantRat, CREATURE_PALETTE as GIANT_RAT_PALETTE } from "../../src/render/creatures/center/rats/giantRat.ts";
+import { renderCaveBatCreature, drawCaveBat, CREATURE_PALETTE as CAVE_BAT_PALETTE } from "../../src/render/creatures/center/bats/caveBat.ts";
+import { renderRootSpiderCreature, drawRootSpider, CREATURE_PALETTE as ROOT_SPIDER_PALETTE } from "../../src/render/creatures/center/spiders/rootSpider.ts";
 import { renderDuneRatCreature } from "../../src/render/creatures/south/rats/duneRat.ts";
 import { renderSandGoblinCreature } from "../../src/render/creatures/south/goblins/sandGoblin.ts";
 import { renderDesertOrcCreature } from "../../src/render/creatures/south/orcs/desertOrc.ts";
@@ -279,6 +282,18 @@ export const ASSETS: ArtAsset[] = [
     draw:c=>renderCarrionVultureCreature(c,{kind:"carrion-vulture",hp:CREATURE_CATALOG["carrion-vulture"].maxHp,id:"art-individual-carrion-vulture"},0,0,1)},
   {id:"render individual cactus-sprout",tier:"creature",fn:"renderCactusSproutCreature",
     draw:c=>renderCactusSproutCreature(c,{kind:"cactus-sprout",hp:CREATURE_CATALOG["cactus-sprout"].maxHp,id:"art-individual-cactus-sprout"},0,0,1)},
+  ...(["giant-rat","cave-bat","root-spider"] as const).map<ArtAsset>(kind=>({
+    id:"centro "+kind,tier:"creature",
+    fn:kind==="giant-rat"?"renderGiantRatCreature":kind==="cave-bat"?"renderCaveBatCreature":"renderRootSpiderCreature",
+    draw:c=>({"giant-rat":renderGiantRatCreature,"cave-bat":renderCaveBatCreature,"root-spider":renderRootSpiderCreature})[kind](c,
+      {kind,hp:CREATURE_CATALOG[kind].maxHp,id:"art-center-"+kind,moving:.6,motionPhase:1.4},0,0,1)
+  })),
+  {id:"desenho do Rato Gigante (sem moldura)",tier:"creature",fn:"drawGiantRat",
+    draw:c=>drawGiantRat(c,GIANT_RAT_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},
+  {id:"desenho do Morcego de Caverna (sem moldura)",tier:"creature",fn:"drawCaveBat",
+    draw:c=>drawCaveBat(c,CAVE_BAT_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},
+  {id:"desenho da Aranha das Raízes (sem moldura)",tier:"creature",fn:"drawRootSpider",
+    draw:c=>drawRootSpider(c,ROOT_SPIDER_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},
   {id:"frame de composição regional",tier:"creature",fn:"renderRegionalFrame",
     draw:c=>renderRegionalFrame(c,{kind:"glacial-wolf",hp:CREATURE_CATALOG["glacial-wolf"].maxHp},0,0,1,
       {base:"#368cc4",light:"#a0f0fd",dark:"#24436e",accent:"#5bccf9",eye:"#e9fcfc"},drawWolf)},

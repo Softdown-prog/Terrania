@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (209)
+## Todos os arquivos deste módulo (210)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -76,7 +76,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/bundle-budget.test.ts`](../../tests/bundle-budget.test.ts)
 - [`tests/capital-sprite-release.test.ts`](../../tests/capital-sprite-release.test.ts)
 - [`tests/cave-art-contract.test.ts`](../../tests/cave-art-contract.test.ts)
-- [`tests/cave-central-slimes.test.ts`](../../tests/cave-central-slimes.test.ts)
+- [`tests/cave-central-monsters.test.ts`](../../tests/cave-central-monsters.test.ts)
 - [`tests/cave-floor.test.ts`](../../tests/cave-floor.test.ts)
 - [`tests/cave-floors.test.ts`](../../tests/cave-floors.test.ts)
 - [`tests/cave-formations.test.ts`](../../tests/cave-formations.test.ts)
@@ -99,6 +99,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/center-capital-shrine.test.ts`](../../tests/center-capital-shrine.test.ts)
 - [`tests/center-capital-walls.test.ts`](../../tests/center-capital-walls.test.ts)
 - [`tests/center-capital.test.ts`](../../tests/center-capital.test.ts)
+- [`tests/center-creatures.test.ts`](../../tests/center-creatures.test.ts)
 - [`tests/chunk-cost-budget.test.ts`](../../tests/chunk-cost-budget.test.ts)
 - [`tests/chunk-prefetch.test.ts`](../../tests/chunk-prefetch.test.ts)
 - [`tests/chunk-steps.test.ts`](../../tests/chunk-steps.test.ts)

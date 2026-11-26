@@ -3,8 +3,8 @@ import { caveEntranceInCell } from "../../src/world/caves.ts";
 
 /**
  * Relato do dono: as cavernas do Centro estavam vazias. Aqui entra-se numa caverna comum do Centro (Gruta das Raízes) pela entrada de verdade e confere-se que
- * ela abre sem erro, com o nome certo, e que o primeiro quadro desenha slimes de verdade (cor de gel na tela). A contagem exata de slimes é conferida no
- * teste unitário (`tests/cave-central-slimes.test.ts`).
+ * ela abre sem erro, com o nome certo, e que o povo do Centro (slimes, rato gigante, morcego de caverna e aranha das raízes) vem até o herói e aparece na lista
+ * de batalha. A contagem e a mistura exatas são conferidas no teste unitário (`tests/cave-central-monsters.test.ts`).
  */
 const SEED = 842136;
 const entrance = (() => {
@@ -15,7 +15,7 @@ const entrance = (() => {
   return null;
 })();
 
-test("entrar numa caverna comum do Centro: abre sem erro e tem slimes dentro (desktop/Android)", async ({ page }, info) => {
+test("entrar numa caverna comum do Centro: abre sem erro e tem o povo do Centro dentro, na lista de batalha (desktop/Android)", async ({ page }, info) => {
   expect(entrance, "há uma caverna do Centro perto do começo do mundo").not.toBeNull();
   if (!entrance) return;
   const errors: string[] = [];
@@ -32,7 +32,10 @@ test("entrar numa caverna comum do Centro: abre sem erro e tem slimes dentro (de
   await expect(page.locator("#coords")).toContainText("Subsolo");
   await expect(page.locator("#quest")).toHaveText("Gruta das Raízes");
   await expect(page.locator("#battleSidebar")).toBeVisible(); // a lista de batalha vale também dentro da caverna (ADR 0084)
-  await page.waitForTimeout(600);
+  // as criaturas perseguem a partir de 245 px: com o herói parado, as mais próximas chegam e entram na lista (só nomes do povo do Centro)
+  await expect.poll(() => page.locator("#battleRows .battle-entry strong").allTextContents(), { timeout: 25_000 }).not.toEqual([]);
+  const names = await page.locator("#battleRows .battle-entry strong").allTextContents();
+  for (const name of names) expect(["Slime", "Rato Gigante", "Morcego de Caverna", "Aranha das Raízes"]).toContain(name);
   await page.locator("canvas#game").screenshot({ path: test.info().outputPath("caverna-do-centro.png") });
   expect(errors).toEqual([]);
 });

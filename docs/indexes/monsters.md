@@ -15,13 +15,16 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/east/index.ts`](../../src/monsters/east/index.ts)
 - [`src/monsters/west/index.ts`](../../src/monsters/west/index.ts)
 
-## Todos os arquivos deste módulo (46)
+## Todos os arquivos deste módulo (49)
 
 - [`src/monsters/README.md`](../../src/monsters/README.md)
 - [`src/monsters/behavior.ts`](../../src/monsters/behavior.ts)
 - [`src/monsters/catalog.ts`](../../src/monsters/catalog.ts)
+- [`src/monsters/center/bats/cave-bat.ts`](../../src/monsters/center/bats/cave-bat.ts)
 - [`src/monsters/center/index.ts`](../../src/monsters/center/index.ts)
+- [`src/monsters/center/rats/giant-rat.ts`](../../src/monsters/center/rats/giant-rat.ts)
 - [`src/monsters/center/slimes/slime.ts`](../../src/monsters/center/slimes/slime.ts)
+- [`src/monsters/center/spiders/root-spider.ts`](../../src/monsters/center/spiders/root-spider.ts)
 - [`src/monsters/east/crabs/coral-crab.ts`](../../src/monsters/east/crabs/coral-crab.ts)
 - [`src/monsters/east/index.ts`](../../src/monsters/east/index.ts)
 - [`src/monsters/east/octopuses/abyssal-octopus.ts`](../../src/monsters/east/octopuses/abyssal-octopus.ts)

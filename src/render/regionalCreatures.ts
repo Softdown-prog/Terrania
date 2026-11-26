@@ -30,6 +30,9 @@ import { renderMirageImpCreature } from "./creatures/south/demons/mirageImp.ts";
 import { renderHornedViperCreature } from "./creatures/south/snakes/hornedViper.ts";
 import { renderCarrionVultureCreature } from "./creatures/south/vultures/carrionVulture.ts";
 import { renderCactusSproutCreature } from "./creatures/south/plants/cactusSprout.ts";
+import { renderGiantRatCreature } from "./creatures/center/rats/giantRat.ts";
+import { renderCaveBatCreature } from "./creatures/center/bats/caveBat.ts";
+import { renderRootSpiderCreature } from "./creatures/center/spiders/rootSpider.ts";
 /** Dados visuais de leitura: renderização não aplica dano ou loot. */
 export interface RegionalCreatureVisual {
  readonly kind:RegionalCreatureKind;
@@ -75,6 +78,9 @@ const CREATURE_RENDERERS:Readonly<Record<RegionalCreatureKind,CreatureRenderer>>
   "carrion-vulture":renderCarrionVultureCreature,
   "cactus-sprout":renderCactusSproutCreature,
   "sand-beetle":renderSandBeetle,
+  "giant-rat":renderGiantRatCreature,
+  "cave-bat":renderCaveBatCreature,
+  "root-spider":renderRootSpiderCreature,
 };
 export function renderRegionalCreature(ctx:CanvasRenderingContext2D,
  creature:RegionalCreatureVisual,sx:number,sy:number,time=0):void {

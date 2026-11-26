@@ -3,6 +3,9 @@ import { coralCrabBehavior } from "./east/crabs/coral-crab.ts";
 import { abyssalOctopusBehavior } from "./east/octopuses/abyssal-octopus.ts";
 import { stormSerpentBehavior } from "./east/serpents/storm-serpent.ts";
 import { tideHunterTritonBehavior } from "./east/tritons/tide-hunter-triton.ts";
+import { giantRatBehavior } from "./center/rats/giant-rat.ts";
+import { caveBatBehavior } from "./center/bats/cave-bat.ts";
+import { rootSpiderBehavior } from "./center/spiders/root-spider.ts";
 import { frostBansheeBehavior } from "./north/banshees/frost-banshee.ts";
 import { runicPolarBearBehavior } from "./north/bears/runic-polar-bear.ts";
 import { tundraMammothBehavior } from "./north/mammoths/tundra-mammoth.ts";
@@ -79,6 +82,9 @@ export const SPECIES_BEHAVIORS: Readonly<Record<RegionalCreatureKind, SpeciesBeh
   "carrion-vulture": carrionVultureBehavior,
   "cactus-sprout": cactusSproutBehavior,
   "sand-beetle": sandBeetleBehavior,
+  "giant-rat": giantRatBehavior,
+  "cave-bat": caveBatBehavior,
+  "root-spider": rootSpiderBehavior,
 });
 
 /** A direção e o ritmo mudam conforme a espécie, sem contornar colisões. */

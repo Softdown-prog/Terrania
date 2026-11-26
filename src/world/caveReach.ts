@@ -4,7 +4,7 @@ import { TILE_SIZE } from "./terrain.ts";
 
 /**
  * Onde o herói chega a pé num andar de caverna, a partir de `from` (busca em largura sobre os tiles que a colisão deixa pisar). Serve para não colocar criatura em
- * bolsão isolado (uma ilha cercada de água funda, uma câmara fechada), onde ninguém a alcançaria: o sorteio de pontos de `CaveRoom` e de `CaveSlimes` só usa chão
+ * bolsão isolado (uma ilha cercada de água funda, uma câmara fechada), onde ninguém a alcançaria: o sorteio de pontos de `CaveRoom` e de `CaveCentral` só usa chão
  * alcançável. Devolve um teste por posição em pixels.
  */
 export function caveReach(collision: CollisionMap, from: { readonly x: number; readonly y: number }): (x: number, y: number) => boolean {

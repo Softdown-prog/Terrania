@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (317)
+## Todos os arquivos deste módulo (321)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -81,7 +81,10 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/center/sceneryPainters.ts`](../../src/render/center/sceneryPainters.ts)
 - [`src/render/chunkPrefetch.ts`](../../src/render/chunkPrefetch.ts)
 - [`src/render/coinDrop.ts`](../../src/render/coinDrop.ts)
+- [`src/render/creatures/center/bats/caveBat.ts`](../../src/render/creatures/center/bats/caveBat.ts)
+- [`src/render/creatures/center/rats/giantRat.ts`](../../src/render/creatures/center/rats/giantRat.ts)
 - [`src/render/creatures/center/slimes/slime.ts`](../../src/render/creatures/center/slimes/slime.ts)
+- [`src/render/creatures/center/spiders/rootSpider.ts`](../../src/render/creatures/center/spiders/rootSpider.ts)
 - [`src/render/creatures/east/crabs/coralCrab.ts`](../../src/render/creatures/east/crabs/coralCrab.ts)
 - [`src/render/creatures/east/octopuses/abyssalOctopus.ts`](../../src/render/creatures/east/octopuses/abyssalOctopus.ts)
 - [`src/render/creatures/east/serpents/stormSerpent.ts`](../../src/render/creatures/east/serpents/stormSerpent.ts)
@@ -103,6 +106,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/creatures/north/spirits/frostSpirit.ts`](../../src/render/creatures/north/spirits/frostSpirit.ts)
 - [`src/render/creatures/north/wolves/glacialWolf.ts`](../../src/render/creatures/north/wolves/glacialWolf.ts)
 - [`src/render/creatures/north/yetis/borealYeti.ts`](../../src/render/creatures/north/yetis/borealYeti.ts)
+- [`src/render/creatures/shared/creatureMotion.ts`](../../src/render/creatures/shared/creatureMotion.ts)
 - [`src/render/creatures/shared/regionalFrame.ts`](../../src/render/creatures/shared/regionalFrame.ts)
 - [`src/render/creatures/shared/regionalGeometry.ts`](../../src/render/creatures/shared/regionalGeometry.ts)
 - [`src/render/creatures/shared/southGeometry.ts`](../../src/render/creatures/shared/southGeometry.ts)

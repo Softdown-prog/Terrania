@@ -9,14 +9,20 @@ import { Player } from "../src/actors/Player.ts";
 
 const themes = ["basalt","marsh","desert","glacial","coastal"] as const satisfies readonly CaveTheme[];
 
-test("bestiário: 31 espécies com ficha completa e loot válido", () => {
-  assert.equal(REGIONAL_CREATURE_KINDS.length,31);
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,31);
+test("bestiário: 34 espécies com ficha completa e loot válido", () => {
+  assert.equal(REGIONAL_CREATURE_KINDS.length,34);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,34);
   for (const kind of REGIONAL_CREATURE_KINDS) {
     const def=CREATURE_CATALOG[kind];
     assert.ok(def.name.length>8);
-    assert.ok(def.maxHp>=35 && def.maxHp<=450);
-    assert.ok(def.contactDamage>=6 && def.contactDamage<=40);
+    // O povo do Centro é o do começo do jogo (docs/BESTIARIO_CENTRO.md): mais frágil e mais fraco que o do resto do mundo.
+    if (def.region==="center") {
+      assert.ok(def.maxHp>=20 && def.maxHp<=60,kind);
+      assert.ok(def.contactDamage>=4 && def.contactDamage<=10,kind);
+    } else {
+      assert.ok(def.maxHp>=35 && def.maxHp<=450);
+      assert.ok(def.contactDamage>=6 && def.contactDamage<=40);
+    }
     assert.ok(def.experience>0);
     assert.ok(def.loot.length>=1);
     assert.ok(def.caveThemes.length>0 || kind === "sand-beetle");
@@ -36,7 +42,8 @@ test("geografia: cinco habitats subterrâneos recebem só suas espécies", () =>
     assert.equal(kinds.length,expected[theme],theme);
     for(const kind of kinds) assert.ok(CREATURE_CATALOG[kind].caveThemes.includes(theme));
   }
-  assert.deepEqual(caveMonsterKinds("verdant"),[]);
+  // o Centro tem o seu povo (ADR 0087): as três criaturas do lote 1; o slime nasce à parte, na própria caverna
+  assert.deepEqual(caveMonsterKinds("verdant"),["giant-rat","cave-bat","root-spider"]);
 });
 
 test("superfície: monstros estáveis por seed, ausentes da vila central", () => {

@@ -168,6 +168,8 @@ export class RegionalMonster extends Slime {
     } else if(d.status) hero.applyStatus(d.status,d.statusSeconds);
     if(this.kind==="desert-orc" && !ranged && desertOrcClubKnockback(this.successfulHits))
       hero.pushFrom(this.x,this.y,DESERT_ORC_CLUB_PUSH_DISTANCE,world);
+    // A teia da Aranha das Raízes prende os pés por um instante, além do veneno fraco da mordida.
+    if (d.special === "web") hero.applyStatus("slow",2.5);
     if (d.special === "gust") hero.pushFrom(this.x,this.y,32,world);
     if (d.special === "trample" && Math.hypot(hero.x-this.x,hero.y-this.y)<54)
       hero.applyStatus("stun",.75);

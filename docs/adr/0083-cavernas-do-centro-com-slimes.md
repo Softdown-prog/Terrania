@@ -1,5 +1,7 @@
 # ADR 0083 — As cavernas comuns do Centro deixam de nascer vazias: ganham slimes
 
+> **Atualização ([ADR 0087](0087-bestiario-do-centro-lote-1.md)):** os seis slimes viraram a mistura do Centro (slimes, morcegos, rato e aranha); `CaveSlimes.ts` virou `CaveCentral.ts` e `cave-central-slimes.test.ts` virou `cave-central-monsters.test.ts`. O texto abaixo é o registro do conserto original.
+
 **Estado:** entregue em 2026-11-26, direto na `main`, por relato do dono ("pelo menos ali na área central encontrei algumas cavernas que não têm nada dentro: nem missão, nem monstro, nem nada"). É o primeiro conserto da frente das cavernas; tamanho maior, andares subterrâneos, a lista de batalha na caverna, o saque no chão e as missões vêm em entregas próprias.
 
 ## Causa

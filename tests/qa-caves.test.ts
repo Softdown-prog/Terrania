@@ -21,6 +21,9 @@ test("o bot de cavernas passa nos seis temas, em todos os andares", () => {
   for (const id of ["populated", "monsters-reachable", "exit-reachable", "loot-cycle"]) assert.ok(report.findings.some(item => item.id === id && item.status === "passed"), id);
   assert.ok(report.findings.some(item => item.id === "stairs-reachable"), "as masmorras de vários andares têm a escada conferida");
   assert.equal(report.findings.filter(item => item.id === "populated").length, report.floors, "cada andar é conferido");
+  // a mistura do Centro é conferida em cada caverna do tema (quatro), e só nelas
+  const roster = report.findings.filter(item => item.id === "roster");
+  assert.equal(roster.length, 4); assert.ok(roster.every(item => item.status === "passed" && item.cave.includes("(verdant)") && item.detail === "slime, rato, morcego e aranha"), JSON.stringify(roster));
 });
 
 test("cada tema tem cavernas para conferir (antes só o Centro aparecia na varredura)", () => {

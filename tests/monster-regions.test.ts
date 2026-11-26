@@ -14,7 +14,10 @@ const regions={center:CENTER_MONSTERS,north:NORTH_MONSTERS,south:SOUTH_MONSTERS,
 /** Biologia/linhagem canônica por região, independente do tipo de ataque. */
 const speciesFamilies = {
   "center": {
-    "slime": "slimes"
+    "slime": "slimes",
+    "giant-rat": "rats",
+    "cave-bat": "bats",
+    "root-spider": "spiders"
   },
   "north": {
     "boreal-yeti": "yetis",
@@ -58,10 +61,10 @@ const speciesFamilies = {
 } as const;
 
 
-test("bestiário: 32 fichas únicas e nenhuma espécie ausente do catálogo",()=>{
+test("bestiário: 35 fichas únicas e nenhuma espécie ausente do catálogo",()=>{
   assert.deepEqual(Object.keys(CREATURE_CATALOG).sort(),["slime",...REGIONAL_CREATURE_KINDS].sort());
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,31);
-  assert.equal(Object.keys(CREATURE_CATALOG).length,32);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,34);
+  assert.equal(Object.keys(CREATURE_CATALOG).length,35);
 });
 
 test("bestiário: uma ficha por espécie em região/categoria/nome.ts, sem duplicatas",()=>{
@@ -102,7 +105,7 @@ test("bestiário: uma ficha por espécie em região/categoria/nome.ts, sem dupli
       assert.equal(definition.region,region);
     }
   }
-  assert.equal(count,32,"32 arquivos individuais reais, nenhum monstro esquecido");
+  assert.equal(count,35,"35 arquivos individuais reais, nenhum monstro esquecido");
 });
 
 test("bestiário: API anterior aponta para as mesmas definições (sem cópias)",async()=>{

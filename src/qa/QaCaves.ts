@@ -85,6 +85,11 @@ export function runCaveQa(seed: number = 842136): CaveQaReport {
       const label = `${entrance.id} (${theme}) andar ${floorIndex}`;
       monsters += room.monsters.size;
       record("populated", "population", room.monsters.size > 0, `${room.monsters.size} criaturas`, label);
+      // O povo do Centro (ADR 0087): a Gruta das Raízes mistura slimes e as três criaturas do Centro; um tipo sumido da mistura é um defeito de povoamento.
+      if (theme === "verdant") {
+        const kinds = new Set([...room.monsters.values()].map(mob => mob.kind)), missing = ["slime", "giant-rat", "cave-bat", "root-spider"].filter(kind => !kinds.has(kind as never));
+        record("roster", "population", missing.length === 0, missing.length ? `faltam: ${missing.join(", ")}` : "slime, rato, morcego e aranha", label);
+      }
       const reach = reachableTiles(room), unreachable = [...room.monsters.values()].filter(mob => !reach.has(Math.floor(mob.y / TILE_SIZE) * CAVE_WIDTH + Math.floor(mob.x / TILE_SIZE)));
       record("monsters-reachable", "reachability", unreachable.length === 0, unreachable.length ? `inalcançáveis: ${unreachable.map(mob => mob.id).join(", ")}` : "todas alcançáveis", label);
       const exit = tileCenter(CAVE_EXIT), exitTile = Math.floor(exit.y / TILE_SIZE) * CAVE_WIDTH + Math.floor(exit.x / TILE_SIZE);

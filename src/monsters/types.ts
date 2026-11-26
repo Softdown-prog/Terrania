@@ -10,7 +10,7 @@ export type SpecialAttack =
   "gust" | "lava-burst" | "spore-cloud" | "tongue" | "burrow" |
   "trample" | "spectral-ice" | "rune-bite" | "ink" | "tidal-lightning" |
   "infected-bite" | "sand-throw" | "orc-club" | "clay-clod" | "sling" |
-  "sun-spear" | "mirage-sparks" | "weak-venom" | "carrion-dive" | "thorns";
+  "sun-spear" | "mirage-sparks" | "weak-venom" | "carrion-dive" | "thorns" | "web";
 export type DebuffKind = "slow" | "poison" | "freeze" | "attack-slow" | "burn" | "stun" | "blind" | "infection" | "weak-venom";
 export interface LootChance { readonly item: string; readonly chance: number; }
 export interface CreatureDefinition {

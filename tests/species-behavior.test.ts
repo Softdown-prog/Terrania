@@ -8,10 +8,10 @@ import { REGIONAL_CREATURE_KINDS } from "../src/monsters/catalog.ts";
 import { monsterPose } from "../src/render/monsterMotion.ts";
 
 const open={canMove:()=>true};
-test("todas as 31 espécies têm comportamento explícito e não duplicado",()=>{
+test("todas as 34 espécies têm comportamento explícito e não duplicado",()=>{
   assert.deepEqual(Object.keys(SPECIES_BEHAVIORS).sort(),[...REGIONAL_CREATURE_KINDS].sort());
   assert.equal(new Set(Object.values(SPECIES_BEHAVIORS).map(x=>
-    [x.gait,x.pursuit,x.cadence,x.weave].join(":"))).size,31);
+    [x.gait,x.pursuit,x.cadence,x.weave].join(":"))).size,34);
   for(const kind of REGIONAL_CREATURE_KINDS){
     const b=SPECIES_BEHAVIORS[kind];
     assert.ok(b.cadence>.4&&b.cadence<3);
@@ -91,11 +91,12 @@ test("o registro usa o comportamento exportado pela ficha, sem duplicação",asy
   assert.strictEqual(SPECIES_BEHAVIORS["desert-orc"],desertOrcBehavior);
   const { readdirSync }=await import("node:fs");
   let found=0;
-  for(const region of ["north","south","east","west"]){
+  for(const region of ["center","north","south","east","west"]){
     const regionRoot="src/monsters/"+region;
     for(const category of readdirSync(regionRoot,{withFileTypes:true}).filter(x=>x.isDirectory())){
       for(const file of readdirSync(regionRoot+"/"+category.name).filter(x=>x.endsWith(".ts"))){
         const species=file.slice(0,-3);
+        if(species==="slime")continue; // o slime é anterior ao bestiário regional e não tem comportamento de espécie
         const name=species.replace(/-([a-z])/g,(_,c:string)=>c.toUpperCase())+"Behavior";
         const path=regionRoot+"/"+category.name+"/"+file;
         assert.ok(existsSync(path));

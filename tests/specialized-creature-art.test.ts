@@ -75,7 +75,7 @@ test("profundidade visual não altera parâmetros de combate e loot",()=>{
 });
 
 
-test("32 criaturas possuem corpo procedural específico, e não só ficha de atributos", async()=>{
+test("34 criaturas possuem corpo procedural específico, e não só ficha de atributos", async()=>{
   const { REGIONAL_CREATURE_KINDS }=await import("../src/actors/CreatureCatalog.ts");
   const { readFileSync, existsSync }=await import("node:fs");
   const paths: Record<string,string>={
@@ -110,8 +110,11 @@ test("32 criaturas possuem corpo procedural específico, e não só ficha de atr
     "coral-crab":"east/crabs/coralCrab",
     "storm-serpent":"east/serpents/stormSerpent",
     "sand-beetle":"south/beetles/sandBeetle",
+    "giant-rat":"center/rats/giantRat",
+    "cave-bat":"center/bats/caveBat",
+    "root-spider":"center/spiders/rootSpider",
   };
-  assert.equal(REGIONAL_CREATURE_KINDS.length,31);
+  assert.equal(REGIONAL_CREATURE_KINDS.length,34);
   for(const kind of REGIONAL_CREATURE_KINDS){
     const loc=paths[kind];
     assert.ok(loc,kind+" não tem arte individual");
@@ -190,13 +193,14 @@ test("render de monstros: registro apenas delega a paleta e função exclusivas 
   const { readFileSync }=await import("node:fs");
   const { REGIONAL_CREATURE_KINDS }=await import("../src/actors/CreatureCatalog.ts");
   const root=readFileSync("src/render/regionalCreatures.ts","utf8");
-  assert.equal(REGIONAL_CREATURE_KINDS.length,31);
+  assert.equal(REGIONAL_CREATURE_KINDS.length,34);
   for(const kind of REGIONAL_CREATURE_KINDS){
     const named="render"+kind.split("-").map(part=>part[0]!.toUpperCase()+part.slice(1)).join("")+"Creature";
     if(kind!=="sand-beetle"){
       const pattern=new RegExp('import\\s*\\{\\s*'+named+'\\s*\\}\\s*from\\s*"\\./creatures/([^"]+)\\.ts"');
       const match=pattern.exec(root);
       assert.ok(match,kind+" ausente do registro de renderizadores individuais");
+      assert.ok(new RegExp('"'+kind+'":\\s*'+named+'\\b').test(root),kind+" não aponta para o próprio renderizador no registro");
       const art=readFileSync("src/render/creatures/"+match[1]+".ts","utf8");
       assert.ok(art.includes("const CREATURE_PALETTE:"),kind+" não possui paleta própria");
       assert.ok(art.includes("export function "+named+"("),kind+" não possui função de render própria");
