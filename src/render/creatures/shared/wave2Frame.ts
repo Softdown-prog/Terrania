@@ -4,6 +4,8 @@ import { clamp01, ellipse, hashString, mix, pill, rgba, softShadow, TAU } from "
 import type { RegionalCreatureVisual } from "../../regionalCreatures.ts";
 import type { Ramp } from "./wave2Geometry.ts";
 import { EDGE, GLINT } from "./wave2Geometry.ts";
+import { drawLit } from "../../lighting/litSprite.ts";
+import { visualGroup, visualKey } from "../../lighting/visualKey.ts";
 /** Animação e indicador visual compartilhados, sem selecionar anatomias. */
 export function renderWave2Frame(ctx:CanvasRenderingContext2D,
  actor:RegionalCreatureVisual,sx:number,sy:number,time:number,c:Ramp,
@@ -15,13 +17,15 @@ export function renderWave2Frame(ctx:CanvasRenderingContext2D,
   ctx.translate(pose.sway,pose.lift);
   ctx.rotate(pose.tilt);
   ctx.scale(pose.stretchX,pose.stretchY);
-  draw(ctx,c,time);
-  // Shared specular accents, deterministic by identity, not Math.random or real time.
-  for(let i=0;i<11;i++){
-    const x=Math.sin(i*7.77+seed*23)*15,y=-13-Math.abs(Math.cos(i*17+seed*11))*25;
-    ellipse(ctx,x,y,1.05+(i%3)*.25,.55,rgba(i%2?c.light:c.accent,.62));
-    ellipse(ctx,x-.4,y-.6,.5,.3,rgba(GLINT,.62));
-  }
+  drawLit({key:visualKey(actor,time),group:visualGroup(actor)},ctx,lit=>{
+    draw(lit,c,time);
+    // Shared specular accents, deterministic by identity, not Math.random or real time.
+    for(let i=0;i<11;i++){
+      const x=Math.sin(i*7.77+seed*23)*15,y=-13-Math.abs(Math.cos(i*17+seed*11))*25;
+      ellipse(lit,x,y,1.05+(i%3)*.25,.55,rgba(i%2?c.light:c.accent,.62));
+      ellipse(lit,x-.4,y-.6,.5,.3,rgba(GLINT,.62));
+    }
+  });
   if((actor.hurtTime??0)>.02)
     ellipse(ctx,0,-31,29,31,rgba(GLINT,clamp01((actor.hurtTime??0)/.25)*.18));
   if((actor.casting??0)>0){

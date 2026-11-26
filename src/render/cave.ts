@@ -1,4 +1,5 @@
 import { renderRegionalCreature } from "./regionalCreatures.ts";
+import { beginLightingFrame } from "./lighting/litSprite.ts";
 import { renderSlime } from "./actors.ts";
 import { RegionalMonster } from "../actors/RegionalMonster.ts";
 import type { GearState } from "../engine/character/Equipment.ts";
@@ -227,6 +228,7 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
   gear?:GearState,weapon?:WeaponId,playerClass?:HeroClassLook,
   /** Outros desenhos que se ordenam em profundidade com as criaturas e o herói (o saque no chão, ADR 0084). */
   extras:ReadonlyArray<{readonly y:number;readonly render:()=>void}>=[]):void {
+  beginLightingFrame(); // orçamento de iluminações novas por quadro (ADR 0090)
   ctx.fillStyle="#070e13";ctx.fillRect(0,0,width,height);
   let texture=wallCache.get(room.floor);
   if(!texture){texture=paintFloor(room.floor);wallCache.set(room.floor,texture);}

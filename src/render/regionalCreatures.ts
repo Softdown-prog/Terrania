@@ -39,6 +39,7 @@ import { renderRootBeetleCreature } from "./creatures/center/beetles/rootBeetle.
 import { renderWildBoarCreature } from "./creatures/center/boars/wildBoar.ts";
 import { renderGrayWolfCreature } from "./creatures/center/wolves/grayWolf.ts";
 import { renderWalkingMushroomCreature } from "./creatures/center/mushrooms/walkingMushroom.ts";
+import { stepTime, stepVisual } from "./lighting/visualKey.ts";
 /** Dados visuais de leitura: renderização não aplica dano ou loot. */
 export interface RegionalCreatureVisual {
  readonly kind:RegionalCreatureKind;
@@ -96,5 +97,6 @@ const CREATURE_RENDERERS:Readonly<Record<RegionalCreatureKind,CreatureRenderer>>
 };
 export function renderRegionalCreature(ctx:CanvasRenderingContext2D,
  creature:RegionalCreatureVisual,sx:number,sy:number,time=0):void {
- CREATURE_RENDERERS[creature.kind](ctx,creature,sx,sy,time);
+ // O estado visual entra em degraus (10 quadros por segundo, oito posições de passada): é o que deixa a luz comum guardar e reaproveitar quadros.
+ CREATURE_RENDERERS[creature.kind](ctx,stepVisual(creature),sx,sy,stepTime(time));
 }

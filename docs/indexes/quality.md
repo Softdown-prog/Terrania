@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (212)
+## Todos os arquivos deste módulo (213)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -147,6 +147,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/knight-swords.test.ts`](../../tests/knight-swords.test.ts)
 - [`tests/landmarks.test.ts`](../../tests/landmarks.test.ts)
 - [`tests/layering.test.ts`](../../tests/layering.test.ts)
+- [`tests/lighting.test.ts`](../../tests/lighting.test.ts)
 - [`tests/mage-cast.test.ts`](../../tests/mage-cast.test.ts)
 - [`tests/mage-combat.test.ts`](../../tests/mage-combat.test.ts)
 - [`tests/mage-gear-bonus.test.ts`](../../tests/mage-gear-bonus.test.ts)

@@ -3,6 +3,9 @@
  * Registra o que foi desenhado (preenchimentos, traços, cores, gradientes, curvas) e deixa
  * medir se uma peça tem camadas de acabamento. Mede estrutura, não beleza.
  */
+import { lightingEnabled, setLightingEnabled } from "../../src/render/lighting/litSprite.ts";
+import { resetPool } from "../../src/render/lighting/spritePool.ts";
+
 export interface Metrics {
   /** Chamadas que realmente pintam: fill, stroke, fillRect, strokeRect, drawImage. */
   paintOps: number;
@@ -157,10 +160,15 @@ export class Recorder {
   }
 }
 
-/** `document.createElement("canvas")` falso: cada canvas de cache grava no mesmo Recorder. */
-export function withFakeDocument<T>(recorder: Recorder, run: () => T): T {
+/**
+ * `document.createElement("canvas")` falso: cada canvas de cache grava no mesmo Recorder. A luz comum (ADR 0090) fica **desligada** por padrão aqui: o contrato de
+ * arte mede o desenho, e as camadas de luz acrescentariam operações que escondem um desenho fino. Os testes da própria luz passam `{ lighting: true }`; nesse caso o
+ * cache de quadros começa e termina vazio, para o fluxo gravado não depender do que rodou antes.
+ */
+export function withFakeDocument<T>(recorder: Recorder, run: () => T, options: { readonly lighting?: boolean } = {}): T {
   const g = globalThis as Record<string, unknown>;
-  const previous = g.document;
+  const previous = g.document, wasLit = lightingEnabled();
   g.document = { createElement: () => ({ width: 0, height: 0, getContext: () => recorder.ctx }) };
-  try { return run(); } finally { if (previous === undefined) delete g.document; else g.document = previous; }
+  setLightingEnabled(options.lighting === true); resetPool();
+  try { return run(); } finally { if (previous === undefined) delete g.document; else g.document = previous; setLightingEnabled(wasLit); resetPool(); }
 }

@@ -27,6 +27,9 @@ Em arte procedural, desenhos ricos costumam ter muitas linhas, mas **linhas não
 - Contorno: `#142a2a`. Brilho: `#fff6dc`. Reutilize; não invente um preto puro.
 - Reutilize as primitivas de `draw.ts` (`ellipse`, `limb`, `pill`, `softShadow`, `rgba`, `shade`, `mix`) antes de escrever as suas.
 
+
+**Luz comum das criaturas e montarias ([ADR 0090](adr/0090-luz-comum-e-cache-de-quadros.md)):** toda criatura (as três molduras de `render/creatures/shared`) e toda montaria passa por `drawLit`, que acrescenta, só dentro da silhueta, contorno interno escurecido, degradê da luz (alto à esquerda), quinas iluminadas e na sombra, oclusão junto ao chão e brilho de material, e guarda o quadro num cache por degraus de tempo e de passada. **Peça nova de criatura não refaz isso**: desenha os volumes (gradientes e contornos) e deixa a luz para a camada comum. O contrato mede o desenho **sem** a luz (`withFakeDocument` a desliga), então a luz não é desculpa para um desenho fino.
+
 ## Forma da função
 
 - Assinatura: `(ctx, …dados, sx, sy, time?)`. **A origem é o ponto de contato com o chão.**

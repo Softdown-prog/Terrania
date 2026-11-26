@@ -12,39 +12,46 @@ import { drawDarkGriffin } from "./creatures/mounts/darkGriffin.ts";
 import { drawTidalHippocampus } from "./creatures/mounts/tidalHippocampus.ts";
 import { renderSandBasiliskDetail } from "./creatures/mounts/sandBasilisk.ts";
 import { renderCargoBeetleDetail } from "./creatures/mounts/cargoBeetle.ts";
+import { drawLit } from "./lighting/litSprite.ts";
+import { MOUNT_BOX } from "./lighting/lightRig.ts";
+import { FRAMES_PER_SECOND, stepTime } from "./lighting/visualKey.ts";
 
 /** x/y = contato real com o solo; mantém contrato usado pela cena e miniatura. */
 export function renderMount(ctx:CanvasRenderingContext2D,id:MountId,x:number,y:number,time=0):void {
   const p=PALETTES[id];
   ctx.save();ctx.translate(x,y);
   softShadow(ctx,0,3,id==="cargo-beetle"?34:29,9,.42);
-  // Répteis e besouros possuem membros próprios em seus módulos especializados.
-  if(id!=="sand-basilisk"&&id!=="cargo-beetle"){
-    const heavy=id==="cavern-bear";
-    const step=Math.sin(time*5)*1.7;
-    if(id!=="tidal-hippocampus"){
-      for(const xx of [-15,14])for(const side of [-1,1])
-        outlineLeg(ctx,xx,-21,side*4,side*step,p,heavy);
+  // O corpo entra em degraus de 1/10 s e recebe a luz comum (ADR 0090): o mesmo degrau volta do cache em vez de ser redesenhado.
+  const t=stepTime(time);
+  drawLit({key:`mount|${id}|${Math.round(t*FRAMES_PER_SECOND)}`,group:`mount|${id}`,box:MOUNT_BOX},ctx,lit=>{
+    // Répteis e besouros possuem membros próprios em seus módulos especializados.
+    if(id!=="sand-basilisk"&&id!=="cargo-beetle"){
+      const heavy=id==="cavern-bear";
+      const step=Math.sin(t*5)*1.7;
+      if(id!=="tidal-hippocampus"){
+        for(const xx of [-15,14])for(const side of [-1,1])
+          outlineLeg(lit,xx,-21,side*4,side*step,p,heavy);
+      }
+      body(lit,0,-26,heavy?29:25,heavy?18:14,p);
+      if(id!=="tidal-hippocampus")
+        decorativeFur(lit,p,id.length,heavy?25:21,heavy?17:13);
     }
-    body(ctx,0,-26,heavy?29:25,heavy?18:14,p);
-    if(id!=="tidal-hippocampus")
-      decorativeFur(ctx,p,id.length,heavy?25:21,heavy?17:13);
-  }
-  switch(id){
-    case "warhorse":drawWarhorse(ctx,p,time);break;
-    case "mountain-goat":drawMountainGoat(ctx,p,time);break;
-    case "imperial-elk":drawImperialElk(ctx,p,time);break;
-    case "fire-lion":drawFireLion(ctx,p,time);break;
-    case "sand-basilisk":renderSandBasiliskDetail(ctx,time);break;
-    case "cavern-bear":drawCavernBear(ctx,p,time);break;
-    case "silver-unicorn":drawSilverUnicorn(ctx,p,time);break;
-    case "dark-griffin":drawDarkGriffin(ctx,p,time);break;
-    case "cargo-beetle":renderCargoBeetleDetail(ctx,time);break;
-    case "tidal-hippocampus":drawTidalHippocampus(ctx,p,time);break;
-    default:{const neverId:never=id;return neverId;}
-  }
-  if(id!=="cargo-beetle"&&id!=="sand-basilisk")pack(ctx,p);
-  flankMarks(ctx,p,time,5);
+    switch(id){
+      case "warhorse":drawWarhorse(lit,p,t);break;
+      case "mountain-goat":drawMountainGoat(lit,p,t);break;
+      case "imperial-elk":drawImperialElk(lit,p,t);break;
+      case "fire-lion":drawFireLion(lit,p,t);break;
+      case "sand-basilisk":renderSandBasiliskDetail(lit,t);break;
+      case "cavern-bear":drawCavernBear(lit,p,t);break;
+      case "silver-unicorn":drawSilverUnicorn(lit,p,t);break;
+      case "dark-griffin":drawDarkGriffin(lit,p,t);break;
+      case "cargo-beetle":renderCargoBeetleDetail(lit,t);break;
+      case "tidal-hippocampus":drawTidalHippocampus(lit,p,t);break;
+      default:{const neverId:never=id;return neverId;}
+    }
+    if(id!=="cargo-beetle"&&id!=="sand-basilisk")pack(lit,p);
+    flankMarks(lit,p,t,5);
+  });
   ctx.restore();
 }
 

@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (327)
+## Todos os arquivos deste módulo (332)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -181,6 +181,11 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/hero/mage/torso.ts`](../../src/render/hero/mage/torso.ts)
 - [`src/render/heroPose.ts`](../../src/render/heroPose.ts)
 - [`src/render/interior.ts`](../../src/render/interior.ts)
+- [`src/render/lighting/lightRig.ts`](../../src/render/lighting/lightRig.ts)
+- [`src/render/lighting/litSprite.ts`](../../src/render/lighting/litSprite.ts)
+- [`src/render/lighting/relight.ts`](../../src/render/lighting/relight.ts)
+- [`src/render/lighting/spritePool.ts`](../../src/render/lighting/spritePool.ts)
+- [`src/render/lighting/visualKey.ts`](../../src/render/lighting/visualKey.ts)
 - [`src/render/monsterMotion.ts`](../../src/render/monsterMotion.ts)
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/npcs.ts`](../../src/render/npcs.ts)

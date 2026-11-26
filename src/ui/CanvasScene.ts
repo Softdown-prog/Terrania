@@ -1,5 +1,6 @@
 import { RegionalMonster } from "../actors/RegionalMonster.ts";
 import { renderRegionalCreature } from "../render/regionalCreatures.ts";
+import { beginLightingFrame } from "../render/lighting/litSprite.ts";
 import type { Player } from '../actors/Player.ts';
 import type { BattleViewport } from '../engine/combat/ClassicBattleList.ts';
 import type { Slime } from '../actors/Slime.ts';
@@ -78,6 +79,7 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   playerGear?: GearState, playerWeapon?: WeaponId,
   mount: MountId | null = null, wildHorse=true, stableBuilt=false,
   tracksVisible=false, leadingHorse=false, playerClass?: HeroClassLook): void {
+  beginLightingFrame(); // a luz comum das criaturas e montarias gasta, no máximo, poucas iluminações novas por quadro (ADR 0090)
   ctx.fillStyle = '#506f50'; ctx.fillRect(0, 0, width, height);
   world.render(ctx, cameraX, cameraY, width, height, time, animated);
   world.warmAhead(cameraX, cameraY, width, height, time);
