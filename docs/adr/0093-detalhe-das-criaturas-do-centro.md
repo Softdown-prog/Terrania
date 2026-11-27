@@ -1,6 +1,6 @@
 # ADR 0093 — Mais detalhe nas nove criaturas do Centro (etapa C, em três entregas)
 
-**Estado:** C1 (lobo, javali e rato) e C2 (aranha, besouro e morcego) entregues em 2026-11-26. C3 (cobra, slime de musgo e cogumelo) segue na próxima entrega, no mesmo ADR. É a terceira etapa de qualidade, depois da luz comum ([ADR 0090](0090-luz-comum-e-cache-de-quadros.md)) e das montarias ([ADR 0091](0091-kit-de-anatomia-das-montarias.md)).
+**Estado:** concluído em 2026-11-26, em três entregas: C1 (lobo, javali e rato), C2 (aranha, besouro e morcego) e C3 (cobra, slime de musgo e cogumelo). É a terceira etapa de qualidade, depois da luz comum ([ADR 0090](0090-luz-comum-e-cache-de-quadros.md)) e das montarias ([ADR 0091](0091-kit-de-anatomia-das-montarias.md)).
 
 ## O problema
 As nove criaturas do Centro eram elipses com hastes: patas de palito que só balançavam, espetos soltos no dorso no lugar de pelo, rosto de poucos traços. Ao lado das montarias novas destoavam.
@@ -30,5 +30,18 @@ As nove criaturas do Centro eram elipses com hastes: patas de palito que só bal
 
 **Testes** (`tests/center-arthropods.test.ts`, 8): oito patas em leque com ossos inteiros, joelho alto e pé no chão; passada alternada com valores exatos (e o pé nunca afunda); tripé do besouro; ordem das patas (distantes antes do corpo, próximas depois); quelíceras, mandíbulas, antenas e rachaduras por limiar; o morcego (juntas, nariz, língua, presas); caixa da luz comum e determinismo. **32 mutações** (patas, quadril, passo, quelíceras, mandíbulas, antenas, limiares, espelho, ordem das patas, `solveLeg`...) são todas pegas (6 sobreviveram na primeira rodada e ganharam teste próprio).
 
-## Falta (C3)
-Cobra-cipó, slime de musgo e cogumelo andante: escamas, gel com camadas, chapéu e lamelas com mais detalhe.
+## C3 — cobra-cipó, slime de musgo e cogumelo andante
+![Antes (em cima) e depois (embaixo): slime de musgo, cobra-cipó e cogumelo](../screenshots/centro-c3-antes-depois.png)
+
+Estas três não têm pernas de dois ossos; o ganho é de **camadas**, e tudo o que os testes antigos já media (a língua, a poça, a boca, os pés, o caule) ficou exatamente igual.
+
+- **Cobra-Cipó:** escamas (a barriga em placas largas e as costas em fileiras de três escamas pequenas, só nos segmentos de raio ≥ 3, mais um brilho em cada), brilho corrido ao longo do dorso, **duas gavinhas de cipó** com folhinha, nervura e gota de orvalho nas folhas e, na cabeça, crista sobre o olho, três escamas grandes na testa, a linha da boca e as quatro fossetas de calor do lábio.
+- **Slime de Musgo:** por dentro, a **espessura da parede** (um contorno 1,9 para dentro), um **núcleo escuro** que flutua, cinco detritos em suspensão, a luz que atravessa por baixo, duas gotas que pendem e, andando, três **respingos** que ficam para trás; no alto, a franja de **fibras de musgo** (as mesmas mechas do kit de pelagem) e dois trevos; no rosto, sobrancelhas que sobem no golpe e o brilho de baixo dos olhos.
+- **Cogumelo Andante:** **terra e raízes** nos pés (quatro torrões), **fibras** no caule, o **anel de pele** logo abaixo do chapéu, onze **nervuras** que saem do alto do chapéu, pintas pequenas espalhadas (por indivíduo), a luz da borda e um tufo de musgo num lado.
+
+**Testes** (`tests/center-details.test.ts`, 6): escamas e placas medidas segmento a segmento, gavinhas, gotas, fossetas, parede, núcleo (com a fórmula do relevo), detritos, respingos, fibras, trevos, sobrancelhas, terra, anel, nervuras, pintas por semente e olhos antigos intactos; caixa da luz comum, determinismo e ausência de relógio. **27 mutações** são todas pegas (6 sobreviveram na primeira rodada e ganharam teste próprio).
+
+## Resultado da etapa
+As nove criaturas do Centro têm o acabamento das montarias: patas articuladas onde há patas, pelagem e carapaça em camadas, rosto com olhos, presas e dentes, tudo sob a luz comum ([ADR 0090](0090-luz-comum-e-cache-de-quadros.md)). Ficha, comportamento e saque não mudaram.
+
+**Regra daqui para a frente:** criatura nova de quatro patas nasce no kit de anatomia e na pelagem em mechas; criatura sem patas nasce em camadas (escamas, gel por dentro, fibras) e pensada para a luz comum.

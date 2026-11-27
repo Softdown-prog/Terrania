@@ -37,4 +37,4 @@
 Cada lote: ficha, painter, arte no contrato, saque, testes, e o bot de QA ganha as criaturas.
 
 ## Acabamento do desenho
-O lobo, o javali, o rato, a aranha, o besouro e o morcego foram redesenhados com o kit de anatomia (patas articuladas, pelagem, carapaça) ([ADR 0093](adr/0093-detalhe-das-criaturas-do-centro.md)); a cobra, o slime de musgo e o cogumelo seguem na próxima entrega da mesma etapa. Ficha, comportamento e saque não mudaram.
+As nove criaturas foram refeitas ou detalhadas ([ADR 0093](adr/0093-detalhe-das-criaturas-do-centro.md)): o lobo, o javali, o rato, a aranha e o besouro com o kit de anatomia (patas articuladas, pelagem, carapaça); o morcego, a cobra, o slime de musgo e o cogumelo com mais camadas (veias, escamas, gel por dentro, fibras). Ficha, comportamento e saque não mudaram.
