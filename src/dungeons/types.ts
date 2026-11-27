@@ -30,4 +30,9 @@ export interface DungeonDefinition {
    * enxuta. O primeiro e o último andar devem estar sempre nela.
    */
   readonly shortVariant?: readonly number[];
+  /**
+   * Que fração das cavernas do tema vira esta masmorra (0 a 1), sorteada pela posição da entrada; as outras ficam como cavernas comuns do tema. Sem isso, todas as do
+   * tema viram a masmorra (como a Cripta das Dunas). A caverna de treinamento da Aela nunca vira masmorra.
+   */
+  readonly share?: number;
 }

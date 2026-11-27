@@ -11,6 +11,7 @@ import { CENTRAL_CAVE_MONSTERS, CENTRAL_ROSTER, centralCaveKind, centralCaveMons
 import { applyCaveVictories } from "../src/engine/rooms/CaveRewards.ts";
 import { caveEntranceInCell, type CaveEntrance, type CaveTheme } from "../src/world/caves.ts";
 import { sampleCaves } from "../src/qa/QaCaves.ts";
+import { dungeonFor } from "../src/dungeons/index.ts";
 
 /**
  * Relato do dono: as cavernas do Centro estavam vazias (sem monstro, sem nada). Primeiro vieram seis slimes (ADR 0083); com o lote 1 do bestiário do Centro
@@ -25,7 +26,8 @@ for (let cx = -8; cx <= 8; cx++) for (let cy = -8; cy <= 8; cy++) {
   const entrance = caveEntranceInCell(cx, cy, SEED);
   if (entrance && entrance.id !== STARTER && !entrance.tower && entrance.theme === "verdant" && !(byTheme.get("verdant") ?? []).some(item => item.id === entrance.id)) byTheme.set("verdant", [...(byTheme.get("verdant") ?? []), entrance]);
 }
-const central = byTheme.get("verdant") ?? [];
+// as cavernas do Centro que são a Gruta das Raízes comum: uma parte delas é a Masmorra das Raízes (ADR 0094), com povo e andares próprios
+const central = (byTheme.get("verdant") ?? []).filter(entrance => dungeonFor(entrance) === null);
 // quem mora na caverna do Centro (o javali e o lobo só andam pela superfície)
 const CENTER_KINDS: readonly string[] = ["giant-rat", "cave-bat", "root-spider", "moss-slime", "vine-snake", "root-beetle", "walking-mushroom"];
 const ALL_KINDS = ["slime", ...CENTER_KINDS];

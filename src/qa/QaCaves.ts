@@ -3,7 +3,7 @@ import { collectDrops } from "../engine/character/loot.ts";
 import { CaveRoom } from "../engine/rooms/CaveRoom.ts";
 import { applyCaveVictories } from "../engine/rooms/CaveRewards.ts";
 import { caveMonsterKinds } from "../actors/RegionalMonster.ts";
-import { caveFloorCount } from "../dungeons/index.ts";
+import { caveFloorCount, dungeonFloor, dungeonFor } from "../dungeons/index.ts";
 import { CAVE_EXIT, CAVE_HEIGHT, CAVE_STAIRS_DOWN, CAVE_WIDTH } from "../world/caveFloor.ts";
 import { caveEntranceInCell, type CaveEntrance, type CaveTheme } from "../world/caves.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
@@ -96,9 +96,16 @@ export function runCaveQa(seed: number = 842136): CaveQaReport {
       monsters += room.monsters.size;
       record("populated", "population", room.monsters.size > 0, `${room.monsters.size} criaturas`, label);
       // O povo do Centro (ADR 0087 e 0088): a Gruta das Raízes mistura slimes e as criaturas do Centro; caverna sem essa mistura é defeito de povoamento.
-      if (theme === "verdant") {
+      if (theme === "verdant" && !dungeonFor(entrance)) {
         const kinds = new Set<string>([...room.monsters.values()].map(mob => mob.kind)), problem = centralRosterProblem(kinds);
         record("roster", "population", problem === null, problem ?? `${kinds.size} tipos: ${[...kinds].sort().join(", ")}`, label);
+      }
+      // Uma masmorra (Cripta, Brejo, Masmorra das Raízes): só mora quem a tabela do andar manda, e o chefe espera no último andar.
+      const plan = dungeonFloor(entrance, floorIndex);
+      if (plan) {
+        const allowed = new Set<string>([...plan.monsters, ...(plan.boss ? [plan.boss] : [])]), stray = [...room.monsters.values()].filter(mob => !allowed.has(mob.kind));
+        record("plan", "population", stray.length === 0, stray.length ? `fora da tabela do andar: ${stray.map(mob => mob.kind).sort().join(", ")}` : `só a tabela de "${plan.name}"`, label);
+        if (plan.boss) record("boss", "population", [...room.monsters.keys()].some(id => id.endsWith(":boss")), `o chefe (${plan.boss}) espera no último andar`, label);
       }
       const reach = reachableTiles(room), unreachable = [...room.monsters.values()].filter(mob => !reach.has(Math.floor(mob.y / TILE_SIZE) * CAVE_WIDTH + Math.floor(mob.x / TILE_SIZE)));
       record("monsters-reachable", "reachability", unreachable.length === 0, unreachable.length ? `inalcançáveis: ${unreachable.map(mob => mob.id).join(", ")}` : "todas alcançáveis", label);

@@ -12,9 +12,11 @@ Masmorras de vários andares: nome de cada andar, moradores e chefe, uma masmorr
 - [`src/dungeons/types.ts`](../../src/dungeons/types.ts)
 - [`src/dungeons/south/index.ts`](../../src/dungeons/south/index.ts)
 
-## Todos os arquivos deste módulo (9)
+## Todos os arquivos deste módulo (11)
 
 - [`src/dungeons/README.md`](../../src/dungeons/README.md)
+- [`src/dungeons/center/index.ts`](../../src/dungeons/center/index.ts)
+- [`src/dungeons/center/masmorra-das-raizes.ts`](../../src/dungeons/center/masmorra-das-raizes.ts)
 - [`src/dungeons/index.ts`](../../src/dungeons/index.ts)
 - [`src/dungeons/south/cripta-das-dunas.ts`](../../src/dungeons/south/cripta-das-dunas.ts)
 - [`src/dungeons/south/index.ts`](../../src/dungeons/south/index.ts)

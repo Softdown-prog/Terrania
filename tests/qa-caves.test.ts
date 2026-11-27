@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { centralRosterProblem, runCaveQa, sampleCaves } from "../src/qa/QaCaves.ts";
 import { CaveRoom } from "../src/engine/rooms/CaveRoom.ts";
+import { caveFloorCount, dungeonFor } from "../src/dungeons/index.ts";
 import { caveReach } from "../src/world/caveReach.ts";
 import { TILE_SIZE } from "../src/world/terrain.ts";
 
@@ -21,9 +22,16 @@ test("o bot de cavernas passa nos seis temas, em todos os andares", () => {
   for (const id of ["populated", "monsters-reachable", "exit-reachable", "loot-cycle"]) assert.ok(report.findings.some(item => item.id === id && item.status === "passed"), id);
   assert.ok(report.findings.some(item => item.id === "stairs-reachable"), "as masmorras de vários andares têm a escada conferida");
   assert.equal(report.findings.filter(item => item.id === "populated").length, report.floors, "cada andar é conferido");
-  // a mistura do Centro é conferida em cada caverna do tema (quatro), e só nelas: ao menos um slime e quatro tipos, todos do povo do Centro
+  // a mistura do Centro é conferida em cada Gruta das Raízes comum do tema, e só nelas: ao menos um slime e quatro tipos, todos do povo do Centro
+  const verdant = sampleCaves(SEED).get("verdant") ?? [], commons = verdant.filter(entrance => dungeonFor(entrance) === null), masmorras = verdant.filter(entrance => dungeonFor(entrance) !== null);
   const roster = report.findings.filter(item => item.id === "roster");
-  assert.equal(roster.length, 4); assert.ok(roster.every(item => item.status === "passed" && item.cave.includes("(verdant)") && /^[4-8] tipos: .*slime/.test(item.detail)), JSON.stringify(roster));
+  assert.ok(commons.length >= 1 && masmorras.length >= 1, `a amostra tem as duas: ${commons.length} comuns e ${masmorras.length} masmorras do Centro`);
+  assert.equal(roster.length, commons.length); assert.ok(roster.every(item => item.status === "passed" && item.cave.includes("(verdant)") && /^[4-8] tipos: .*slime/.test(item.detail)), JSON.stringify(roster));
+  // cada andar de masmorra confere a tabela do andar, e o último confere o chefe (a Masmorra das Raízes entra com o Ent Ancião)
+  const plans = report.findings.filter(item => item.id === "plan" && item.cave.includes("(verdant)")), bosses = report.findings.filter(item => item.id === "boss" && item.cave.includes("(verdant)"));
+  assert.equal(plans.length, masmorras.reduce((n, entrance) => n + caveFloorCount(entrance), 0), "um conferido por andar de masmorra do Centro");
+  assert.equal(bosses.length, masmorras.length, "o chefe é conferido uma vez por masmorra"); assert.ok(bosses.every(item => item.status === "passed" && item.detail.includes("elder-cave-ent")), JSON.stringify(bosses));
+  assert.ok(plans.every(item => item.status === "passed"), JSON.stringify(plans));
 });
 
 test("cada tema tem cavernas para conferir (antes só o Centro aparecia na varredura)", () => {

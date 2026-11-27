@@ -86,6 +86,8 @@ function computeEntrance(cx:number,cy:number,seed:number):CaveEntrance|null {
   }
   return null;
 }
+/** A caverna de treinamento da Aela, a primeira do jogo (a da célula 0,0): fica sempre como é, com um andar só. */
+export const isStarterCave = (entrance: CaveEntrance): boolean => entrance.id === `cave:${entrance.seed}:0:0`;
 /** Bounded viewport query. Never enumerate the entire procedural world. */
 export function caveEntrancesInArea(minTileX: number, minTileY: number,
   maxTileX: number, maxTileY: number, seed: number): CaveEntrance[] {

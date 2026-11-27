@@ -1,18 +1,25 @@
-import type { CaveEntrance } from "../world/caves.ts";
+import { isStarterCave, type CaveEntrance } from "../world/caves.ts";
 import { hash2 } from "../world/random.ts";
 import type { DungeonDefinition, DungeonFloorDefinition } from "./types.ts";
 import { SOUTH_DUNGEONS } from "./south/index.ts";
+import { CENTER_DUNGEONS } from "./center/index.ts";
 
 export type { DungeonDefinition, DungeonFloorDefinition } from "./types.ts";
 
 /** Todas as masmorras, por região. Norte, Leste e Oeste entram aqui, cada uma na sua pasta. */
-export const DUNGEONS: readonly DungeonDefinition[] = [...SOUTH_DUNGEONS];
+export const DUNGEONS: readonly DungeonDefinition[] = [...SOUTH_DUNGEONS, ...CENTER_DUNGEONS];
+
+/** Esta caverna é desta masmorra? Sem `share`, toda do tema é; com `share`, só a fração sorteada pela posição da entrada (sempre a mesma para a mesma entrada). */
+export function usesDungeon(dungeon: DungeonDefinition, entrance: CaveEntrance): boolean {
+  return dungeon.share === undefined || hash2(entrance.tileX, entrance.tileY, entrance.seed + 7013) < dungeon.share;
+}
 
 /** A masmorra a que esta caverna (ou porta de torre) pertence, ou nada: cavernas sem masmorra têm um andar só. */
 export function dungeonFor(entrance: CaveEntrance): DungeonDefinition | null {
   // Porta de torre: manda a ficha da torre. Caverna comum: manda o tema, ignorando as masmorras de torre.
   if (entrance.tower) return DUNGEONS.find(dungeon => dungeon.tower === entrance.tower) ?? null;
-  return DUNGEONS.find(dungeon => !dungeon.tower && dungeon.theme === entrance.theme) ?? null;
+  if (isStarterCave(entrance)) return null;
+  return DUNGEONS.find(dungeon => !dungeon.tower && dungeon.theme === entrance.theme && usesDungeon(dungeon, entrance)) ?? null;
 }
 
 /** Os andares desta caverna, na ordem. A versão curta é sorteada pela posição da entrada. */
