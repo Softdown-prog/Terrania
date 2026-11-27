@@ -130,8 +130,11 @@ test("masmorra de 3 andares: descer, subir e sair pela mesma entrada (desktop/An
     [...new CaveRoom(entrance, 100, 100, new Set(), { floorIndex }).monsters.keys()]);
   expect(defeated.length).toBeGreaterThan(8);
   await page.addInitScript(({ x, y, defeated }) => {
+    // Os derrotados voltam depois de um prazo de tempo de jogo (10 minutos sem a hora de volta no save, ADR 0029): numa CI lenta o teste passa disso e eles ressurgem
+    // no caminho (execução 743: "Você tombou na caverna"). A hora de volta fica no máximo aceito (2 horas) para ninguém voltar durante o teste.
+    const respawnAt = Object.fromEntries((defeated as string[]).map(id => [id, 7_200]));
     localStorage.setItem("terrania-origins-v1", JSON.stringify({
-      seed: 842136, x, y, hp: 1090, kills: 0, defeated, experience: 148500,
+      seed: 842136, x, y, hp: 1090, kills: 0, defeated, respawnAt, experience: 148500,
     }));
     localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false }));
   }, { x: entrance.x, y: entrance.y, defeated });
