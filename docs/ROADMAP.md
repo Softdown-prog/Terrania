@@ -1,5 +1,7 @@
 # Terrania — Roadmap enxuto de RPG clássico
 
+> **O que ainda falta, em uma lista só:** [PENDENCIAS.md](PENDENCIAS.md) reúne tudo o que está proposto nos documentos e não está pronto (cidades, vocações, regiões, montarias, qualidade), com o estado de cada frente.
+
 > **Direção atual:** RPG 2D de fantasia medieval inspirado nas *mecânicas* dos MMORPGs clássicos (sensação de Tibia antigo), mas com mundo, nomes, arte, interface e código próprios. Não reproduzir ativos ou conteúdo de terceiros.
 >
 > **Status (2026-11-08):** o jogo é **solo e offline**; as salas online foram retiradas ([ADR 0012](adr/0012-retirada-do-multiplayer.md)). Os itens abaixo marcados `[x]` que citam *sala Node*, *snapshots* ou *online* registram o que existiu e foi removido; eles não descrevem o produto atual. Caminhada por tiles e combate por alvo seguem integrados à entrada do solo. O plano anterior foi preservado em [ROADMAP_ANTERIOR_20261104.md](ROADMAP_ANTERIOR_20261104.md).

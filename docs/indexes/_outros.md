@@ -43,6 +43,7 @@
 - [`docs/MIGRACAO_TERRANIUM.md`](../../docs/MIGRACAO_TERRANIUM.md)
 - [`docs/MOUNTS.md`](../../docs/MOUNTS.md)
 - [`docs/MULTIPLAYER_VPS.md`](../../docs/MULTIPLAYER_VPS.md)
+- [`docs/PENDENCIAS.md`](../../docs/PENDENCIAS.md)
 - [`docs/PHASER_4_LAB.md`](../../docs/PHASER_4_LAB.md)
 - [`docs/POCO_NEGRO.md`](../../docs/POCO_NEGRO.md)
 - [`docs/POSTGRES-OPERACAO.md`](../../docs/POSTGRES-OPERACAO.md)
