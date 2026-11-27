@@ -143,6 +143,9 @@ export class CaveRoom {
       monster.update(dt,this.player,this.collision,defense,false);
       if(monster.hp<=0)this.defeat(id,monster,defense);
     }
+    // Como na superfície: o golpe em andamento segue virado para o alvo mesmo com o herói andando (fugir e atacar).
+    const focused=typeof targetId==="string" ? this.monsters.get(targetId) : undefined;
+    if(focused && this.player.attackTime>0)faceTarget(this.player,focused);
     if(this.player.consumeStrike()){
       const staff=this.player.attackStaff;
       if(staff){

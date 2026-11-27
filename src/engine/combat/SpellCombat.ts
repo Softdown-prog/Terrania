@@ -12,6 +12,12 @@ import { clearPath, moveBody } from "../../world/collision.ts";
  */
 export const spellReach = (staff: StaffId): number => STAVES[staff].range * TILE_SIZE;
 
+/**
+ * A magia vai atrás do alvo que o jogador escolheu, para onde quer que o herói esteja virado: quem corre do monstro olha para longe dele e ainda assim
+ * lança. (A espada continua exigindo o alvo à frente; o valor abaixo de -1 desliga o cone do `canStrike`.)
+ */
+const ANY_DIRECTION = -2;
+
 /** A largura do feixe do Sol Nascente de cada lado da reta, em pixels: quem está mais longe dela que isso não é atravessado. */
 export const BEAM_HALF_WIDTH = 16;
 
@@ -88,7 +94,7 @@ export function spellStrikeTargets<T extends Slime>(staff: StaffId,
   mobs: Iterable<T>, world: CollisionMap, targetId?: string | null): T[] {
   if (typeof targetId !== "string") return [];
   const pool = [...mobs], primary = pool.find(mob => mob.id === targetId);
-  if (!primary || primary.hp <= 0 || !canStrike(hero, primary, world, spellReach(staff), -0.1)) return [];
+  if (!primary || primary.hp <= 0 || !canStrike(hero, primary, world, spellReach(staff), ANY_DIRECTION)) return [];
   return [primary, ...extraTargets(staff, hero, primary, pool, world)];
 }
 

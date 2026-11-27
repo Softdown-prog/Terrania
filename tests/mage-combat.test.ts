@@ -114,7 +114,8 @@ test("a regra da magia: alcance de 6 tiles, só o alvo escolhido, à vista, vivo
   assert.equal(spellStrikeTargets("apprentice", hero, [at("a", 150, 0)], OPEN, "a").length, 0, "morto não é atingido");
   assert.equal(spellStrikeTargets("apprentice", hero, mobs, wall(120), "a").length, 0, "parede no caminho barra a magia");
   assert.equal(spellStrikeTargets("apprentice", hero, [at("a", 60)], wall(120), "a").length, 1, "parede depois do alvo não atrapalha");
-  assert.equal(spellStrikeTargets("apprentice", { ...hero, faceX: -1 }, mobs, OPEN, "a").length, 0, "de costas para o alvo não acerta");
+  for (const [faceX, faceY] of [[-1, 0], [0, 1], [0, -1], [-0.7, 0.7]] as const)
+    assert.deepEqual(spellStrikeTargets("apprentice", { ...hero, faceX, faceY }, [target], OPEN, "a"), [target], `virado para (${faceX}, ${faceY}) a magia ainda vai no alvo escolhido`);
   for (const [kind, defense] of [["glacial-wolf", 0], ["clay-troll", 8], ["basalt-golem", 20]] as const) {
     const mob = new RegionalMonster("x", kind, 0, 0); assert.equal(mob.defense, defense);
     assert.equal(spellHitDamage("apprentice", mob), Math.max(1, STAFF.damage - defense), `${kind}: ${STAFF.damage} menos a defesa, no mínimo 1`);

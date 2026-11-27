@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (220)
+## Todos os arquivos deste módulo (221)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -78,6 +78,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/capital-sprite-release.test.ts`](../../tests/capital-sprite-release.test.ts)
 - [`tests/cave-art-contract.test.ts`](../../tests/cave-art-contract.test.ts)
 - [`tests/cave-central-monsters.test.ts`](../../tests/cave-central-monsters.test.ts)
+- [`tests/cave-flee-strike.test.ts`](../../tests/cave-flee-strike.test.ts)
 - [`tests/cave-floor.test.ts`](../../tests/cave-floor.test.ts)
 - [`tests/cave-floors.test.ts`](../../tests/cave-floors.test.ts)
 - [`tests/cave-formations.test.ts`](../../tests/cave-formations.test.ts)
