@@ -57,6 +57,11 @@ export interface GameUi {
   onTalk(callback: () => void): void;
   onPotionTrade(callback: () => string): void;
   onPotionUse(callback: () => string): void;
+  /** O jogador escolheu um destino no mapa do mundo (em tiles); devolve o aviso. A viagem de longa distância (ADR 0099). */
+  onJourneyStart(callback: (tileX: number, tileY: number) => string): void;
+  onJourneyCancel(callback: () => void): void;
+  /** Quantos tiles faltam da viagem em andamento; `null` sem viagem. */
+  setJourney(remainingTiles: number | null): void;
   onFoodUse(callback: (id: FoodId) => string): void;
   onFoodTrade(callback: (id: FoodId) => string): void;
   onSwordPurchase(callback: () => string): void;

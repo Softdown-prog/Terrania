@@ -19,6 +19,9 @@ import type { CaveEntrance } from "../world/caves.ts";
 import { dungeonEntranceNear } from "../world/entrances.ts";
 import { nearestCombatCreature } from "../engine/combat/ClassicCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
+import { JOURNEY_ARRIVAL, nearestWalkable } from "../engine/movement/Journey.ts";
+import { driveJourney, type JourneyEvent } from "./journeyDriver.ts";
+import { JOURNEY_MESSAGES } from "./messages/journeyMessages.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { runMountAction } from "../engine/mounts/MountActions.ts";
 import { buyFood, buyStaff, buySword, eatFood, equipGear, equipStaff, equipWeapon, restAtInn, sellMaterial, tradeGelForPotion, usePotion,
@@ -44,11 +47,15 @@ import { collectDrops } from "../engine/character/loot.ts";
 
 
 /** Coordinates adapters. Shared simulations own movement, collision and combat. */
+/** Perto assim de uma criatura (em unidades) a viagem pelo mapa para: ela vai atacar. */
+const JOURNEY_DANGER_RADIUS = 150;
 export class Game {
   private readonly input = new Input();
   private readonly lifecycle = new AbortController();
   private readonly camera = new Camera();
   private readonly effects = new Effects();
+  /** A vida do herói no quadro anterior da viagem: perder vida interrompe a viagem. */
+  private journeyHp = 0;
   private readonly travel = new TravelState();
   private readonly timers: FrameTimers = { clock: 0, battleClock: 0.25, saveClock: 0, accumulator: 0 };
   /** A única porta pela qual os arquivos de `modes/` alcançam o jogo. */
@@ -109,6 +116,8 @@ export class Game {
     this.hud.onMountAction(action=>this.mountAction(action));
     this.hud.onRespawn(() => this.respawn());
     this.hud.onPotionUse(() => this.shop(usePotion));
+    this.hud.onJourneyStart((tileX, tileY) => this.startJourney(tileX, tileY));
+    this.hud.onJourneyCancel(() => this.cancelJourney());
     this.updateHud();
   }
   private createHost(): ModeHost {
@@ -172,6 +181,48 @@ export class Game {
     this.travel.pursuit.reset();
     this.timers.battleClock = 0.25;
     this.hud.setCombatTarget(null);
+  }
+  /** Viajar pelo mapa (ADR 0099): o destino é um ponto do atlas, em tiles; cai no chão andável mais perto e o herói vai sozinho, em trechos. */
+  private startJourney(tileX: number, tileY: number): string {
+    if (this.cave || this.interior) return JOURNEY_MESSAGES.outside;
+    if (this.sim.awaitingRespawn || this.sim.player.hp <= 0) return JOURNEY_MESSAGES.down;
+    if (!Number.isFinite(tileX) || !Number.isFinite(tileY)) return JOURNEY_MESSAGES.blocked;
+    const walkable = nearestWalkable({ x: (Math.floor(tileX) + .5) * TILE_SIZE, y: (Math.floor(tileY) + .5) * TILE_SIZE }, this.sim.collision);
+    if (!walkable) return JOURNEY_MESSAGES.blocked;
+    const goal = this.tileCenter(walkable), player = this.sim.player;
+    const remaining = Math.hypot(goal.x - player.x, goal.y - player.y);
+    if (remaining < JOURNEY_ARRIVAL) return JOURNEY_MESSAGES.here;
+    this.travel.stopSteps();
+    this.travel.journey.start(goal);
+    // Como num toque no chão: a perseguição fica suspensa até o próximo alvo.
+    this.travel.autoFollow = false;
+    this.travel.pursuit.reset();
+    this.journeyHp = player.hp;
+    this.hud.setJourney(Math.round(remaining / TILE_SIZE));
+    return JOURNEY_MESSAGES.started(Math.round(remaining / TILE_SIZE));
+  }
+  private cancelJourney(): void {
+    if (!this.travel.journey.active) return;
+    this.travel.journey.cancel();
+    this.travel.navigator.cancel();
+    this.hud.setJourney(null);
+    this.hud.setTravelNotice(JOURNEY_MESSAGES.cancelled);
+  }
+  /** Um quadro da viagem: pede o próximo trecho, para ao chegar, no perigo ou sem caminho, e mantém o aviso de quanto falta. */
+  private tickJourney(): void {
+    const journey = this.travel.journey;
+    if (this.cave || this.interior) { if (journey.active) { journey.cancel(); this.hud.setJourney(null); } return; }
+    if (!journey.active) return;
+    const player = this.sim.player;
+    const hurt = player.hp < this.journeyHp - .001;
+    this.journeyHp = player.hp;
+    const threatened = nearestCombatCreature(player, this.battleCreatures(), JOURNEY_DANGER_RADIUS) !== null;
+    const event: JourneyEvent = driveJourney({
+      journey, navigator: this.travel.navigator, collision: this.sim.collision, from: this.travel.walker.destination ?? player,
+      tileSteps: true, snap: point => this.tileCenter(point), hurt, threatened,
+    });
+    if (event) { this.hud.setJourney(null); this.hud.setTravelNotice(JOURNEY_MESSAGES[event]); return; }
+    if (this.timers.battleClock >= .2) this.hud.setJourney(Math.round(journey.remaining(player) / TILE_SIZE));
   }
   private tileCenter(point: { x: number; y: number }): { x: number; y: number } {
     return {
@@ -375,15 +426,18 @@ export class Game {
       if (this.travel.combat.targetId) {
         this.travel.autoFollow = true;
         this.travel.navigator.cancel();
+        this.cancelJourney();
       }
     }
     const manualActive = Math.hypot(manual.x, manual.y) >= 0.08;
     if (paused || manualActive) this.travel.navigator.cancel();
+    if (manualActive) this.cancelJourney(); // apertar uma tecla de andar assume o controle: a viagem para
     if (manualActive) this.travel.pursuit.suspend();
     const tap = this.input.consumeTap();
     const walkByTiles = !this.interior && !this.cave;
     const committedStep = walkByTiles ? this.travel.walker.destination : null;
     if (tap && !paused && !manualActive && !attack) {
+      this.cancelJourney(); // um toque no chão ou numa criatura assume o controle
       const destination = this.cave
         ? this.scene.cavePoint(tap,this.cave,this.camera.zoom)
         : this.interior ? this.scene.interiorPoint(tap)
@@ -404,6 +458,7 @@ export class Game {
         }
       }
     }
+    this.tickJourney();
     const controlled = this.cave?.player ?? this.interior?.player ?? this.sim.player;
     const tileRoute = walkByTiles && this.travel.navigator.target !== null;
     const movement = paused ? still : manualActive ? manual : tileRoute ? still :

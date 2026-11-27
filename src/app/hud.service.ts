@@ -131,6 +131,8 @@ export class HudService implements GameUi {
   readonly nutrition = signal<NutritionState>({ reserve: 0, elapsed: 0, cooldown: 0 });
   readonly inventoryFeedback = signal('');
   readonly quickPotionFeedback = signal('');
+  /** Tiles que faltam da viagem pelo mapa (ADR 0099); `null` sem viagem. */
+  readonly journeyRemaining = signal<number | null>(null);
   readonly weapons = WEAPONS;
   readonly availableWeapons = computed<readonly WeaponId[]>(() => {
     const level=this.progression()?.level ?? 1;
@@ -307,6 +309,8 @@ export class HudService implements GameUi {
   private elixirUseCallback: (id: ElixirId) => string = () => '';
   private materialSaleCallback: (market: MarketId, material: string, quantity: number) => string = () => '';
   private potionCallback: () => string = () => '';
+  private journeyStartCallback: (tileX: number, tileY: number) => string = () => '';
+  private journeyCancelCallback: () => void = () => undefined;
   private foodCallback: (id: FoodId) => string = () => '';
   private foodTradeCallback: (id: FoodId) => string = () => '';
   private swordPurchaseCallback: () => string = () => '';
@@ -344,6 +348,16 @@ export class HudService implements GameUi {
   onTalk(callback: () => void): void { this.talkCallback = callback; }
   onPotionTrade(callback: () => string): void { this.potionTradeCallback = callback; }
   onPotionUse(callback: () => string): void { this.potionCallback = callback; }
+  onJourneyStart(callback: (tileX: number, tileY: number) => string): void { this.journeyStartCallback = callback; }
+  onJourneyCancel(callback: () => void): void { this.journeyCancelCallback = callback; }
+  setJourney(remainingTiles: number | null): void { this.journeyRemaining.set(remainingTiles); }
+  /** Viajar até o ponto escolhido no mapa: devolve o aviso (a viagem começou, ou por que não). */
+  startJourney(tileX: number, tileY: number): string {
+    const message = this.journeyStartCallback(tileX, tileY);
+    this.setTravelNotice(message);
+    return message;
+  }
+  cancelJourney(): void { this.journeyCancelCallback(); }
   onElixirCraft(callback: (id: ElixirId) => string): void { this.elixirCraftCallback = callback; }
   onElixirUse(callback: (id: ElixirId) => string): void { this.elixirUseCallback = callback; }
   onFoodUse(callback: (id: FoodId) => string): void { this.foodCallback = callback; }

@@ -2,6 +2,7 @@ import { ClassicCombat } from "../engine/combat/ClassicCombat.ts";
 import { ClassicPursuit } from "../engine/combat/ClassicPursuit.ts";
 import { ClassicTileWalker } from "../engine/movement/ClassicTileWalker.ts";
 import { TapNavigator } from "../engine/movement/TapNavigator.ts";
+import { Journey } from "../engine/movement/Journey.ts";
 
 /**
  * Tudo que move o herói "sozinho" (rota por toque, passo em tiles, perseguição e alvo de combate)
@@ -18,15 +19,18 @@ export class TravelState {
   readonly combat: ClassicCombat;
   readonly pursuit: ClassicPursuit;
   readonly walker: ClassicTileWalker;
+  /** A viagem de longa distância pelo mapa (ADR 0099): anda em trechos até um ponto distante; mudar de lugar ou parar tudo a cancela. */
+  readonly journey: Journey;
   /** Depois de um toque no mapa a perseguição fica suspensa até o próximo alvo ser escolhido. */
   autoFollow = true;
 
   /** As peças podem ser trocadas (os testes usam dublês para ver quem é chamado); no jogo, `new TravelState()`. */
-  constructor(parts: Partial<Pick<TravelState, "navigator" | "combat" | "pursuit" | "walker">> = {}) {
+  constructor(parts: Partial<Pick<TravelState, "navigator" | "combat" | "pursuit" | "walker" | "journey">> = {}) {
     this.navigator = parts.navigator ?? new TapNavigator();
     this.combat = parts.combat ?? new ClassicCombat();
     this.pursuit = parts.pursuit ?? new ClassicPursuit();
     this.walker = parts.walker ?? new ClassicTileWalker();
+    this.journey = parts.journey ?? new Journey();
   }
 
   /** Cancela a rota e o passo já comprometido (montar e desmontar mudam a velocidade). */
@@ -35,9 +39,10 @@ export class TravelState {
     this.walker.reset();
   }
 
-  /** Para de se mover: rota, passo e perseguição. O combate fica como está (alvo e recarga). */
+  /** Para de se mover: rota, passo, viagem e perseguição. O combate fica como está (alvo e recarga). */
   stopMotion(): void {
     this.stopSteps();
+    this.journey.cancel();
     this.pursuit.reset();
   }
 

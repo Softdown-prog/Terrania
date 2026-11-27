@@ -79,3 +79,13 @@ export function atlasFrame(scale: AtlasScale, tileX: number, tileY: number,
   }
   return { centerX: tileX, centerY: tileY, spanTiles: 128 };
 }
+
+/**
+ * Onde, no mundo, fica um ponto do atlas: `fx` e `fy` (de 0 a 1, da esquerda para a direita e de cima para baixo) dentro da moldura do mapa. Devolve o tile; pontos fora do
+ * mapa ou números inválidos devolvem nada. É o que o clique no Mapa do mundo usa para escolher o destino da viagem (ADR 0099).
+ */
+export function atlasTileAt(frame: AtlasFrame, fx: number, fy: number): { x: number; y: number } | null {
+  if (![fx, fy, frame.centerX, frame.centerY, frame.spanTiles].every(Number.isFinite) || fx < 0 || fx > 1 || fy < 0 || fy > 1) return null;
+  const x = Math.floor(frame.centerX + (fx - .5) * frame.spanTiles), y = Math.floor(frame.centerY + (fy - .5) * frame.spanTiles);
+  return Math.abs(x) > WORLD_HALF_TILES || Math.abs(y) > WORLD_HALF_TILES ? null : { x, y };
+}

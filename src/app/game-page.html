@@ -120,6 +120,12 @@
         <span id="coords">{{ hud.coords() }}</span><span>Mundo <b id="seed">{{ hud.seed() }}</b></span
         ><small id="saveMode">Aventura local · progresso neste navegador</small>
       </div>
+      @if (hud.journeyRemaining() !== null) {
+        <div id="journeyBar" role="status" aria-live="off">
+          <span>Em viagem · faltam {{ hud.journeyRemaining() }} tiles</span>
+          <button type="button" id="journeyCancel" (click)="hud.cancelJourney()">Cancelar</button>
+        </div>
+      }
       @if (notice() || hud.travelNotice()) {
         <div id="gameNotice" role="status" aria-live="polite">
           <span>{{ notice() || hud.travelNotice() }}</span>
@@ -452,8 +458,9 @@
             <div class="atlas-main">
               <div class="atlas-map-frame">
                 <div class="atlas-map-topline"><span>✦ TERRA COGNITA ✦</span><span>N ↑</span></div>
-                <canvas #atlasCanvas id="worldAtlasCanvas" width="256" height="256" role="img"
-                  [attr.aria-label]="'Atlas com norte para cima, escala ' + atlasScale() + ', centrado na região escolhida.'"></canvas>
+                <canvas #atlasCanvas id="worldAtlasCanvas" width="256" height="256" role="img" class="atlas-pickable"
+                  (click)="pickAtlasTarget($event)"
+                  [attr.aria-label]="'Atlas com norte para cima, escala ' + atlasScale() + ', centrado na região escolhida. Clique para escolher um destino de viagem.'"></canvas>
                 <div class="atlas-map-bottomline"><span>O ←</span><span>COORDENADAS REAIS</span><span>→ L</span></div>
               </div>
               <div class="atlas-details">
@@ -464,6 +471,18 @@
                 <span id="atlasCoordinates">Sua posição: {{ hud.coords() }}</span>
                 <span id="atlasGround">Terreno atual: {{ currentAtlasGround() }}</span>
                 <span id="atlasScaleDetails">Largura da visão: {{ atlasView().spanTiles.toFixed(0) }} tiles</span>
+                <div class="atlas-travel" aria-label="Viagem pelo mapa">
+                  @if (atlasTarget(); as target) {
+                    <span id="atlasTravelTarget">Destino: X {{ target.x }} · Y {{ target.y }} · cerca de {{ atlasTargetDistance() }} tiles</span>
+                    <button type="button" id="atlasTravelGo" (click)="travelToTarget()">Viajar até aqui</button>
+                  } @else {
+                    <span id="atlasTravelHint">Clique no mapa para escolher um destino de viagem.</span>
+                  }
+                  @if (hud.journeyRemaining() !== null) {
+                    <span id="atlasTravelProgress">Em viagem: faltam {{ hud.journeyRemaining() }} tiles.</span>
+                    <button type="button" id="atlasTravelCancel" (click)="hud.cancelJourney()">Cancelar viagem</button>
+                  }
+                </div>
                 <div class="atlas-legend" aria-label="Legenda do atlas">
                   <span><i class="atlas-swatch self"></i> Você</span>
                   <span><i class="atlas-swatch village"></i> Vila da Travessia</span>

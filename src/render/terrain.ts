@@ -580,6 +580,8 @@ function paintAtlasTerrain(ctx: CanvasRenderingContext2D, seed: number,
 export function drawWorldAtlas(
   ctx: CanvasRenderingContext2D, scale: AtlasScale,
   tileX: number, tileY: number, seed: number, selectedSector: number,
+  /** O destino da viagem escolhido no mapa (ADR 0099), em tiles: uma linha tracejada do herói até ele e um marcador dourado. */
+  destination: { readonly x: number; readonly y: number } | null = null,
 ): void {
   const { centerX, centerY, spanTiles } = atlasFrame(scale, tileX, tileY, selectedSector);
   const width = ctx.canvas.width, height = ctx.canvas.height;
@@ -627,6 +629,17 @@ export function drawWorldAtlas(
   }
   mark(Math.floor(VILLAGE_RESPAWN.x / TILE_SIZE),
     Math.floor(VILLAGE_RESPAWN.y / TILE_SIZE), "#ffe0a1", 5);
-  // A posição do herói vence a vila quando as duas se sobrepõem.
+  if (destination && Number.isFinite(destination.x) && Number.isFinite(destination.y)) {
+    const at = (x: number, y: number): [number, number] => [(x - startX) / spanTiles * width, (y - startY) / spanTiles * height];
+    const [hx, hy] = at(tileX, tileY), [dx, dy] = at(destination.x, destination.y);
+    ctx.save(); ctx.strokeStyle = "#ffd36b"; ctx.lineWidth = 1.4; ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(dx, dy); ctx.stroke(); ctx.restore();
+    mark(destination.x, destination.y, "#ffd36b", 8);
+    if (dx >= 0 && dx <= width && dy >= 0 && dy <= height) {
+      ctx.strokeStyle = "#142922"; ctx.lineWidth = 1; ctx.beginPath();
+      ctx.moveTo(dx - 7, dy); ctx.lineTo(dx + 7, dy); ctx.moveTo(dx, dy - 7); ctx.lineTo(dx, dy + 7); ctx.stroke();
+    }
+  }
+  // A posição do herói vence a vila e o destino quando se sobrepõem.
   mark(tileX, tileY, "#ffffff", 6);
 }

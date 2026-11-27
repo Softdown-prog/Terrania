@@ -131,3 +131,11 @@
   #gameNotice:has(#dismissTravelNotice) { max-width: calc(100% - 24px); }
 }
 
+
+/* Viagem pelo mapa (ADR 0099): o mapa é clicável e o painel mostra o destino escolhido. */
+.atlas-pickable { cursor: crosshair; }
+.atlas-travel { display: grid; gap: 6px; margin: 8px 0; padding: 8px; border: 1px solid #718a76; border-radius: 6px; background: #14271fb8; color: #e8e7d0; font: 600 12px system-ui; }
+.atlas-travel button { min-height: 40px; border: 1px solid #e9cf8f; border-radius: 6px; background: linear-gradient(180deg, #567357, #324939); color: #fff1ce; font: 700 13px system-ui; }
+#journeyBar { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 10px;
+  padding: 6px 10px; border: 1px solid #e9cf8f; border-radius: 999px; background: #14271fe6; color: #fff1ce; font: 700 12px system-ui; }
+#journeyBar button { min-height: 28px; padding: 0 10px; border: 1px solid #e9cf8f; border-radius: 999px; background: #324939; color: #fff1ce; font: 700 12px system-ui; }

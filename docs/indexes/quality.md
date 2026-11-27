@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (224)
+## Todos os arquivos deste módulo (228)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -52,6 +52,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/coin-shop.spec.ts`](../../tests/browser/coin-shop.spec.ts)
 - [`tests/browser/coins.spec.ts`](../../tests/browser/coins.spec.ts)
 - [`tests/browser/hero-select.spec.ts`](../../tests/browser/hero-select.spec.ts)
+- [`tests/browser/journey.spec.ts`](../../tests/browser/journey.spec.ts)
 - [`tests/browser/mage-cast.spec.ts`](../../tests/browser/mage-cast.spec.ts)
 - [`tests/browser/mage-food.spec.ts`](../../tests/browser/mage-food.spec.ts)
 - [`tests/browser/mage-gear-breeze.spec.ts`](../../tests/browser/mage-gear-breeze.spec.ts)
@@ -152,6 +153,9 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/inventory-storage.test.ts`](../../tests/inventory-storage.test.ts)
 - [`tests/inventory.test.ts`](../../tests/inventory.test.ts)
 - [`tests/item-catalog.test.ts`](../../tests/item-catalog.test.ts)
+- [`tests/journey-driver.test.ts`](../../tests/journey-driver.test.ts)
+- [`tests/journey-wiring.test.ts`](../../tests/journey-wiring.test.ts)
+- [`tests/journey.test.ts`](../../tests/journey.test.ts)
 - [`tests/knight-sword-proportions.test.ts`](../../tests/knight-sword-proportions.test.ts)
 - [`tests/knight-swords.test.ts`](../../tests/knight-swords.test.ts)
 - [`tests/landmarks.test.ts`](../../tests/landmarks.test.ts)

@@ -10,7 +10,7 @@ import { runtimeConfig } from './runtime-config.ts';
 import { renderHero } from '../render/actors.ts';
 import { drawWorldAtlas } from '../render/terrain.ts';
 import { drawCaveAtlas } from '../render/cave.ts';
-import { atlasFrame, GROUND_NAMES, BIOME_NAMES, sectorIndex, surveySectors, type AtlasScale } from '../world/atlas.ts';
+import { atlasFrame, atlasTileAt, GROUND_NAMES, BIOME_NAMES, sectorIndex, surveySectors, type AtlasScale } from '../world/atlas.ts';
 import { REGIONS, getWorldRegion } from '../world/regions.ts';
 import { getRegionDifficulty } from '../world/regionDifficulty.ts';
 import { getTile } from '../world/terrain.ts';
@@ -30,6 +30,12 @@ export class GamePageComponent implements AfterViewInit {
   readonly previewDirection = signal(0);
   readonly atlasScale = signal<AtlasScale>('world');
   readonly selectedSector = signal(4);
+  /** O destino da viagem escolhido com um clique no Mapa do mundo, em tiles (ADR 0099). */
+  readonly atlasTarget = signal<{ x: number; y: number } | null>(null);
+  readonly atlasTargetDistance = computed(() => {
+    const target = this.atlasTarget(), here = this.hud.mapTile();
+    return target ? Math.round(Math.hypot(target.x - here.x, target.y - here.y)) : null;
+  });
   readonly groundNames = GROUND_NAMES;
   readonly atlasSectors = computed(() => surveySectors(this.hud.seed()));
   readonly currentAtlasSector = computed(() =>
@@ -86,7 +92,7 @@ export class GamePageComponent implements AfterViewInit {
         const seed = this.hud.seed();
         const scale = this.atlasScale();
         const sector = this.selectedSector();
-        drawWorldAtlas(ctx, scale, x, y, seed, sector);
+        drawWorldAtlas(ctx, scale, x, y, seed, sector, this.atlasTarget());
       }
     });
     effect(() => {
@@ -110,6 +116,23 @@ export class GamePageComponent implements AfterViewInit {
       if (awaitingRespawn) dialog.showModal();
       else dialog.close();
     });
+  }
+  /** Clicar no Mapa do mundo escolhe o destino da viagem; trocar a escala do mapa mantém o destino, que é uma posição no mundo. */
+  pickAtlasTarget(event: MouseEvent): void {
+    if (this.hud.cave() || !(event.currentTarget instanceof HTMLCanvasElement)) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (!(rect.width > 0) || !(rect.height > 0)) return;
+    const target = atlasTileAt(this.atlasView(), (event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height);
+    if (target) this.atlasTarget.set(target);
+  }
+  /** Começa a viagem até o destino escolhido e fecha o mapa para o herói ser visto andando. */
+  travelToTarget(): void {
+    const target = this.atlasTarget();
+    if (!target) return;
+    this.hud.startJourney(target.x, target.y);
+    if (this.hud.journeyRemaining() === null) return; // não começou: o aviso diz por quê, e o mapa continua aberto
+    this.atlasTarget.set(null);
+    this.inventoryDialog().nativeElement.close();
   }
   showOwnSector(): void {
     const { x, y } = this.hud.mapTile();
