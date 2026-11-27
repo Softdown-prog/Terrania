@@ -13,7 +13,7 @@ import { RES, hasSprite } from "../src/render/props/spriteCache.ts";
 import { clearSceneryCache, renderScenery, type Scenery } from "../src/render/scenery.ts";
 import { WorldRenderer } from "../src/render/WorldRenderer.ts";
 import { BUILDING_MARGIN, BUILDING_RISE, CAPITAL, CAPITAL_BUILDINGS, CAPITAL_BUILT, CAPITAL_PLOTS, CAPITAL_PROPS, CAPITAL_PROP_REACH, capitalBuildingBlocks, capitalGround, capitalPoint, capitalPropsInView,
-  doorApproach, inPlot } from "../src/world/center/capital/index.ts";
+  capitalDecorBlocks, doorApproach, inPlot } from "../src/world/center/capital/index.ts";
 import { canMoveOnSeed } from "../src/world/collision.ts";
 import { Recorder } from "./helpers/recordingContext.ts";
 import { withDocument } from "./helpers/paintChunk.ts";
@@ -61,7 +61,7 @@ test("o bloqueio de um edifício é o terreno inteiro mais o corpo de quem anda,
   assert.equal(capitalBuildingBlocks(Number.NaN, 0, 7), true); assert.equal(capitalBuildingBlocks(0, 0, Number.POSITIVE_INFINITY), true);
 });
 
-test("no jogo, todo tile dos oito edifícios bloqueia o herói; a frente da porta, as ruas em volta e os terrenos sem edifício seguem livres", () => {
+test("no jogo, todo tile dos oito edifícios bloqueia o herói; a frente da porta, as ruas em volta e os terrenos sem edifício seguem livres (menos o pé das árvores, ADR 0106)", () => {
   for (const seed of SEEDS) {
     let solid = 0, ring = 0, open = 0;
     for (const b of CAPITAL_BUILDINGS) {
@@ -78,12 +78,17 @@ test("no jogo, todo tile dos oito edifícios bloqueia o herói; a frente da port
       }
     }
     for (const p of CAPITAL_PLOTS.filter(p => !CAPITAL_BUILT.includes(p.id as never)))
-      for (let ly = p.y; ly < p.y + p.h; ly++) for (let lx = p.x; lx < p.x + p.w; lx++) { const c = tileCenter(lx, ly); assert.equal(canMoveOnSeed(c.x, c.y, seed), true, `${p.id} bloqueado em ${lx},${ly} sem ter arte`); open++; }
+      for (let ly = p.y; ly < p.y + p.h; ly++) for (let lx = p.x; lx < p.x + p.w; lx++) {
+        const c = tileCenter(lx, ly);
+        // só o tronco de uma árvore pode bloquear num terreno sem edifício (a regra do tronco está em `capital-decor.test.ts`)
+        if (capitalDecorBlocks(c.x, c.y, 7)) continue;
+        assert.equal(canMoveOnSeed(c.x, c.y, seed), true, `${p.id} bloqueado em ${lx},${ly} sem ter arte`); open++;
+      }
     assert.equal(solid, 12 * 11 + 18 * 11 + 18 * 11 + 11 * 11 + 12 * 13 + 11 * 13 * 3, "tiles dos oito edifícios");
     assert.ok(ring > 150, `ruas em volta conferidas: ${ring}`); assert.ok(open > 1000, `tiles de terrenos sem edifício: ${open}`);
     for (let ly = CAPITAL.minY + 1; ly <= -3; ly++) { const c = tileCenter(0, ly); assert.equal(canMoveOnSeed(c.x, c.y, seed), true, `Grande Avenida em ${ly}`); }
   }
-  assert.match(readFileSync("src/world/collision.ts", "utf8"), /capitalMonumentBlocks\(x, y, radius\) \|\| capitalBuildingBlocks\(x, y, radius\)/);
+  assert.match(readFileSync("src/world/collision.ts", "utf8"), /capitalMonumentBlocks\(x, y, radius\) \|\| capitalBuildingBlocks\(x, y, radius\) \|\| capitalDecorBlocks\(x, y, radius\)/);
 });
 
 test("cada edifício é uma peça da capital: a variação é a posição na lista e o alcance cobre o sprite inteiro", () => {

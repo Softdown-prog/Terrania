@@ -58,3 +58,7 @@ Cada interior com serviço tem um morador na frente da porta (como a Madame Víb
 2. Casa da Moeda (banco, feito) e Templo (renascimento, feito).
 3. Conselho, Quartel e as três guildas, quando o dono decidir a função de cada um.
 4. Só depois, os 13 terrenos que faltam desenhar (Ofícios e Bairro Residencial, porta ao norte, vistos de trás), e apenas os que têm função.
+
+## Terrenos vazios
+
+Enquanto um terreno não tem edifício (nem função), ele é um **parque**: árvores em grade, sem colisão além do tronco ([ADR 0106](adr/0106-vida-na-capital.md)). Quando o terreno entra em `CAPITAL_BUILT`, as árvores saem sozinhas.

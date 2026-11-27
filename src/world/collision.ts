@@ -2,7 +2,7 @@ import { getTile, isWalkable, TILE_SIZE } from "./terrain.ts";
 import { landmarkBlocks } from "./landmarks.ts";
 import { villageBlocks } from "./village.ts";
 import { southCityBlocks } from "./southCity.ts";
-import { capitalBuildingBlocks, capitalMonumentBlocks, capitalWallBlocks } from "./center/capital/index.ts";
+import { capitalBuildingBlocks, capitalDecorBlocks, capitalMonumentBlocks, capitalWallBlocks } from "./center/capital/index.ts";
 import { southDecorBlocks } from "./south/decor/index.ts";
 import { MAP_EDGE_TILES } from "./mapSize.ts";
 /** Limite técnico por eixo da colisão (a parede invisível, ADR 0059), não uma fronteira geográfica desenhada. */
@@ -55,7 +55,7 @@ export function canMoveOnSeed(x: number, y: number, seed: number): boolean {
     return false;
   const radius = 7;
   if (landmarkBlocks(x, y, radius, seed) || villageBlocks(x, y, radius) ||
-      southCityBlocks(x,y,radius) || capitalWallBlocks(x, y, radius) || capitalMonumentBlocks(x, y, radius) || capitalBuildingBlocks(x, y, radius)) return false;
+      southCityBlocks(x,y,radius) || capitalWallBlocks(x, y, radius) || capitalMonumentBlocks(x, y, radius) || capitalBuildingBlocks(x, y, radius) || capitalDecorBlocks(x, y, radius)) return false;
   return ([
     [-radius, -radius],
     [radius, -radius],

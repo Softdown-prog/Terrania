@@ -1,9 +1,10 @@
 import { CAPITAL_BUILDINGS } from "./buildings.ts";
 import { CAPITAL, CAPITAL_TILE, capitalPoint } from "./layout.ts";
+import { CAPITAL_DECOR } from "./decor.ts";
 import { CAPITAL_TOWERS, TOWER_TILES } from "./towers.ts";
 
-/** O que se desenha na capital: trecho de muralha de frente (muros norte e sul) e de lado (leste e oeste), portão, torre, o monumento da praça e os edifícios. */
-export type CapitalPropKind = "wall" | "wall-side" | "gate" | "tower" | "monument" | "building";
+/** O que se desenha na capital: poste de lampião, banco e árvore (ADR 0106), trecho de muralha de frente (muros norte e sul) e de lado (leste e oeste), portão, torre, o monumento da praça e os edifícios. */
+export type CapitalPropKind = "wall" | "wall-side" | "gate" | "tower" | "monument" | "building" | "lamp" | "bench" | "tree";
 /**
  * Uma peça de cenário da capital, em pixels do mundo: a base fica no pé da peça. `variant` escolhe a variação do desenho (nos
  * edifícios, qual deles). As peças grandes dizem até onde vão para os lados e para cima (`reach`), para a câmera não cortá-las.
@@ -52,6 +53,8 @@ function makeProps(): readonly CapitalProp[] {
   props.push({ kind: "monument", x: capitalPoint(0, 0).x, y: capitalPoint(0, 0).y, variant: 0, id: "monumento-da-concordia" });
   // Os edifícios construídos (ADR 0058): a base no meio da borda sul do terreno; a variação é a posição em `CAPITAL_BUILDINGS`.
   CAPITAL_BUILDINGS.forEach((b, i) => props.push({ kind: "building", x: b.x, y: b.y, variant: i, id: b.id, reach: { side: b.width / 2 + BUILDING_MARGIN, up: b.depth + BUILDING_RISE } }));
+  // Vida na cidade (ADR 0106): lampiões, bancos e árvores dos terrenos vazios.
+  props.push(...CAPITAL_DECOR);
   return props;
 }
 /** Todas as peças da capital (muralha, portões, torres, monumento e edifícios), determinísticas e fixas (independentes da semente). */

@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (234)
+## Todos os arquivos deste módulo (236)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -41,6 +41,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/cave-luminous.spec.ts`](../../tests/browser/cave-luminous.spec.ts)
 - [`tests/browser/cave-mage.spec.ts`](../../tests/browser/cave-mage.spec.ts)
 - [`tests/browser/cave.spec.ts`](../../tests/browser/cave.spec.ts)
+- [`tests/browser/center-capital-decor.spec.ts`](../../tests/browser/center-capital-decor.spec.ts)
 - [`tests/browser/center-capital.spec.ts`](../../tests/browser/center-capital.spec.ts)
 - [`tests/browser/center-wild.spec.ts`](../../tests/browser/center-wild.spec.ts)
 - [`tests/browser/character-controls.spec.ts`](../../tests/browser/character-controls.spec.ts)
@@ -77,6 +78,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/support/returning-player.ts`](../../tests/browser/support/returning-player.ts)
 - [`tests/browser/tower-interior.spec.ts`](../../tests/browser/tower-interior.spec.ts)
 - [`tests/bundle-budget.test.ts`](../../tests/bundle-budget.test.ts)
+- [`tests/capital-decor.test.ts`](../../tests/capital-decor.test.ts)
 - [`tests/capital-sprite-release.test.ts`](../../tests/capital-sprite-release.test.ts)
 - [`tests/cave-art-contract.test.ts`](../../tests/cave-art-contract.test.ts)
 - [`tests/cave-central-monsters.test.ts`](../../tests/cave-central-monsters.test.ts)

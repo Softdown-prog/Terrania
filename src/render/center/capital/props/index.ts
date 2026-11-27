@@ -1,6 +1,9 @@
+import { paintCapitalBench } from "./bench.ts";
 import { paintCapitalGate } from "./gate.ts";
+import { paintCapitalLamp } from "./lamp.ts";
 import { paintCapitalMonument } from "./monument.ts";
 import { paintCapitalTower } from "./tower.ts";
+import { paintCapitalTree } from "./tree.ts";
 import { paintCapitalWall } from "./wall.ts";
 import { paintCapitalWallSide } from "./wallSide.ts";
 
@@ -17,5 +20,9 @@ export const CAPITAL_PROP_ART: Readonly<Record<string, CapitalPropArt>> = {
   gate: { paint: paintCapitalGate, variants: 1, box: [320, 164, 160, 150] },
   tower: { paint: paintCapitalTower, variants: 2, box: [96, 200, 48, 184] },
   monument: { paint: paintCapitalMonument, variants: 1, box: [210, 218, 84, 148] },
+  // Vida na cidade (ADR 0106): poste de lampião, banco de praça e três espécies de árvore.
+  lamp: { paint: paintCapitalLamp, variants: 1, box: [72, 100, 24, 88] },
+  bench: { paint: paintCapitalBench, variants: 2, box: [60, 44, 30, 36] },
+  tree: { paint: paintCapitalTree, variants: 3, box: [92, 110, 46, 96] },
 };
-export { paintCapitalGate, paintCapitalMonument, paintCapitalTower, paintCapitalWall, paintCapitalWallSide };
+export { paintCapitalBench, paintCapitalGate, paintCapitalLamp, paintCapitalMonument, paintCapitalTower, paintCapitalTree, paintCapitalWall, paintCapitalWallSide };

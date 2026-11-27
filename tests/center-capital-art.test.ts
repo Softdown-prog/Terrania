@@ -18,16 +18,16 @@ import { signature, spy, type Spy } from "./helpers/spyContext.ts";
 const count = (s: Spy, method: string, pick: (a: number[]) => boolean): number => (s.args[method] ?? []).filter(pick).length;
 const balanced = (draw: (c: CanvasRenderingContext2D) => void): boolean => { const r = new Recorder(); draw(r.ctx); const m = r.metrics(); return m.saves === m.restores; };
 
-test("cada peça está no seu arquivo, na pasta da região central, e o cadastro tem os cinco tipos com a quantidade de variações", () => {
-  assert.deepEqual(readdirSync(new URL("../src/render/center/capital/props/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort(), ["gate", "index", "monument", "tower", "wall", "wallSide"]);
+test("cada peça está no seu arquivo, na pasta da região central, e o cadastro tem os oito tipos com a quantidade de variações", () => {
+  assert.deepEqual(readdirSync(new URL("../src/render/center/capital/props/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort(), ["bench", "gate", "index", "lamp", "monument", "tower", "tree", "wall", "wallSide"]);
   assert.deepEqual(readdirSync(new URL("../src/render/center/kit/", import.meta.url)).map(f => f.replace(/\.ts$/, "")).sort(), ["banner", "brush", "index", "palette"]);
-  assert.deepEqual(Object.keys(CAPITAL_PROP_ART).sort(), ["gate", "monument", "tower", "wall", "wall-side"]);
-  assert.deepEqual(["wall", "wall-side", "gate", "tower", "monument"].map(k => CAPITAL_PROP_ART[k]!.variants), [8, 2, 1, 2, 1]);
+  assert.deepEqual(Object.keys(CAPITAL_PROP_ART).sort(), ["bench", "gate", "lamp", "monument", "tower", "tree", "wall", "wall-side"]);
+  assert.deepEqual(["wall", "wall-side", "gate", "tower", "monument", "lamp", "bench", "tree"].map(k => CAPITAL_PROP_ART[k]!.variants), [8, 2, 1, 2, 1, 1, 2, 3]);
   for (const [kind, art] of Object.entries(CAPITAL_PROP_ART)) {
     assert.ok(art.box.every(n => n > 0), kind);
     assert.ok(art.box[2] < art.box[0] && art.box[3] < art.box[1], `${kind}: a origem fica dentro do sprite`);
   }
-  for (const f of ["props/wall", "props/wallSide", "props/tower", "props/gate", "props/monument", "sceneryPainter"]) {
+  for (const f of ["props/wall", "props/wallSide", "props/tower", "props/gate", "props/monument", "props/lamp", "props/bench", "props/tree", "sceneryPainter"]) {
     const src = readFileSync(`src/render/center/capital/${f}.ts`, "utf8");
     for (const bad of ["Math.random", "Date.now", "performance.now", "new Date(", "render/south", "world/south"]) assert.equal(src.includes(bad), false, `${f}: ${bad}`);
   }

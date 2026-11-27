@@ -123,7 +123,7 @@ import { drawTowerWallFace } from "../../src/render/south/towers/interior/wallFa
 import { drawTowerWindow } from "../../src/render/south/towers/interior/window.ts";
 import { RUIN_NAMES, RUIN_PIECES, type RuinVariant } from "../../src/world/southRuins.ts";
 import { paintCityPaving } from "../../src/render/south/city/paving/index.ts";
-import { paintCapitalGate, paintCapitalMonument, paintCapitalTower, paintCapitalWall, paintCapitalWallSide } from "../../src/render/center/capital/props/index.ts";
+import { paintCapitalBench, paintCapitalGate, paintCapitalLamp, paintCapitalMonument, paintCapitalTower, paintCapitalTree, paintCapitalWall, paintCapitalWallSide } from "../../src/render/center/capital/props/index.ts";
 import { paintCapitalPaving } from "../../src/render/center/capital/paving/index.ts";
 import { paintArcaneAcademy, paintArchersLodge, paintConcordTemple, paintCouncilHall, paintGuardBarracks, paintKnightsHall, paintMintHall, paintTravelersInn } from "../../src/render/center/capital/buildings/index.ts";
 import { paintCityArena, paintCityBarrel, paintCityBones, paintCityCorral, paintCityGate, paintCityPalm, paintCityPropAnimation, paintCitySign,
@@ -484,6 +484,10 @@ export const ASSETS: ArtAsset[] = [
   { id: "piso da capital: anel da praça", tier: "prop", fn: "paintCapitalPaving", draw: c => paintCapitalPaving(c, { x: 0, y: 0, tx: -4, ty: -803, seed: 842136, plaza: true }) },
   { id: "piso da capital: raio da praça", tier: "prop", fn: "paintCapitalPaving", draw: c => paintCapitalPaving(c, { x: 0, y: 0, tx: -3, ty: -794, seed: 842136, plaza: true }) },
   { id: "monumento da Concórdia", tier: "structure", fn: "paintCapitalMonument", draw: c => paintCapitalMonument(c, 0) },
+  // Vida na capital (ADR 0106): o poste de lampião, o banco de praça e as três árvores dos terrenos sem edifício.
+  { id: "poste de lampião da capital", tier: "prop", fn: "paintCapitalLamp", draw: c => paintCapitalLamp(c, 0) },
+  ...([0, 1] as const).map<ArtAsset>(v => ({ id: "banco de praça da capital " + v, tier: "prop", fn: "paintCapitalBench", draw: c => paintCapitalBench(c, v) })),
+  ...([0, 1, 2] as const).map<ArtAsset>(v => ({ id: ["carvalho", "cipreste", "cerejeira"][v] + " da capital", tier: "prop", fn: "paintCapitalTree", draw: c => paintCapitalTree(c, v) })),
   // Edifícios da Cidadela dos Povos (ADR 0058): um pintor por edifício, na pasta da região central.
   { id: "Salão do Conselho dos Povos", tier: "structure", fn: "paintCouncilHall", draw: paintCouncilHall },
   { id: "Quartel da Guarda", tier: "structure", fn: "paintGuardBarracks", draw: paintGuardBarracks },

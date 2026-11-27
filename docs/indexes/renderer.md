@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (350)
+## Todos os arquivos deste módulo (353)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -68,10 +68,13 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/center/capital/paving/paving.ts`](../../src/render/center/capital/paving/paving.ts)
 - [`src/render/center/capital/paving/setts.ts`](../../src/render/center/capital/paving/setts.ts)
 - [`src/render/center/capital/paving/sun.ts`](../../src/render/center/capital/paving/sun.ts)
+- [`src/render/center/capital/props/bench.ts`](../../src/render/center/capital/props/bench.ts)
 - [`src/render/center/capital/props/gate.ts`](../../src/render/center/capital/props/gate.ts)
 - [`src/render/center/capital/props/index.ts`](../../src/render/center/capital/props/index.ts)
+- [`src/render/center/capital/props/lamp.ts`](../../src/render/center/capital/props/lamp.ts)
 - [`src/render/center/capital/props/monument.ts`](../../src/render/center/capital/props/monument.ts)
 - [`src/render/center/capital/props/tower.ts`](../../src/render/center/capital/props/tower.ts)
+- [`src/render/center/capital/props/tree.ts`](../../src/render/center/capital/props/tree.ts)
 - [`src/render/center/capital/props/wall.ts`](../../src/render/center/capital/props/wall.ts)
 - [`src/render/center/capital/props/wallSide.ts`](../../src/render/center/capital/props/wallSide.ts)
 - [`src/render/center/capital/sceneryPainter.ts`](../../src/render/center/capital/sceneryPainter.ts)
