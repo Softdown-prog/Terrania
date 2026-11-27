@@ -201,7 +201,7 @@ export class OfflineSimulation {
     if (Number.isFinite(dt) && dt > 0) { this.clock += Math.min(dt, 0.1); this.regenerateMana(Math.min(dt, 0.1)); }
   }
   /** Anota quando a criatura derrotada volta (ou que nunca volta). */
-  noteDefeat(id: string, kind: CreatureKind): void {
+  noteDefeat(id: string, kind?: CreatureKind): void {
     const seconds = respawnSecondsForId(id, kind);
     if (seconds === null) this.respawnAt.delete(id);
     else this.respawnAt.set(id, this.clock + seconds);

@@ -1,3 +1,4 @@
+import { drawCaveChest } from "../render/caveChestArt.ts";
 import { RegionalMonster } from "../actors/RegionalMonster.ts";
 import { renderRegionalCreature } from "../render/regionalCreatures.ts";
 import { beginLightingFrame } from "../render/lighting/litSprite.ts";
@@ -314,6 +315,10 @@ export class CanvasScene {
       if(drop.item==="coin")renderCoinDrop(this.ctx,coinDropTier(drop.amount),drop.x-left,drop.y-top,time);
       else renderGel(this.ctx,drop.x-left,drop.y-top,time);
     }}));
+    // Os baús das tocas entram na mesma fila de profundidade (ADR 0103).
+    for(const spot of room.chests.standing.values())
+      if(Math.abs(spot.x-room.player.x)<=width/2+24&&Math.abs(spot.y-room.player.y)<=height/2+30)
+        loot.push({y:spot.y,render:()=>drawCaveChest(this.ctx,spot.x-left,spot.y-top,time)});
     drawCaveView(this.ctx,room,left,top,width,height,time,gear,weapon,playerClass,loot);
     spells?.render(this.ctx,left,top);
     if(destination)drawTarget(this.ctx,{x:destination.x-left,y:destination.y-top},time);

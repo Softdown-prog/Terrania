@@ -1,3 +1,4 @@
+import { CHEST_RESPAWN_SECONDS } from "../rooms/CaveChests.ts";
 import { CREATURE_CATALOG, type CreatureKind } from "../../actors/CreatureCatalog.ts";
 
 /**
@@ -11,11 +12,13 @@ export const MAX_RESPAWN_SECONDS = 600;
 export const BOSS_RESPAWN_SECONDS = 1_800;
 /** Quem foi derrotado em save antigo (sem hora de volta) volta depois disto, contado do carregamento. */
 export const LEGACY_RESPAWN_SECONDS = 600;
+const CHEST_ID = /:chest:\d+$/;
 const TRAINING_SLIME = /^cave:\d+:0:0:floor:1:slime:/;
 
 /** `null` = nunca volta. */
 export function respawnSecondsForId(id: string, kind?: CreatureKind): number | null {
   if (TRAINING_SLIME.test(id)) return null;
+  if (CHEST_ID.test(id)) return CHEST_RESPAWN_SECONDS; // baú de toca (ADR 0103)
   if (id.endsWith(":boss")) return BOSS_RESPAWN_SECONDS;
   if (!kind) return LEGACY_RESPAWN_SECONDS;
   const experience = CREATURE_CATALOG[kind].experience;

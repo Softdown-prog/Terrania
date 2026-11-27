@@ -2,6 +2,7 @@ import { resolveSwordStrike, swordStrikeTargets } from "../combat/SwordCombat.ts
 import { SOUTH_COMMON_KINDS, type CreatureKind, type RegionalCreatureKind } from "../../actors/CreatureCatalog.ts";
 import { Slime } from "../../actors/Slime.ts";
 import { caveDefeatDrops } from "./CaveLoot.ts";
+import { CaveChests } from "./CaveChests.ts";
 import { caveReach } from "../../world/caveReach.ts";
 import { MAX_WORLD_DROPS, type LootDrop } from "../character/loot.ts";
 import { AELA_SLIME_GOAL } from "../../world/aelaQuest.ts";
@@ -37,6 +38,8 @@ export class CaveRoom {
   readonly monsters = new Map<string, Slime>();
   /** O que as criaturas derrubadas deixaram no chão desta caverna (gel e moedas); o herói recolhe ao chegar perto (ADR 0084). */
   readonly drops = new Map<string, LootDrop>();
+  /** Os baús das tocas deste andar (ADR 0103). */
+  readonly chests = new CaveChests();
   readonly collision: CollisionMap;
   readonly floorIndex: number;
   readonly floorCount: number;
@@ -68,6 +71,7 @@ export class CaveRoom {
     for(const [id,mob] of this.monsters)this.spawns.set(id,{kind:mob.kind,x:mob.x,y:mob.y});
     this.defeated=defeated;
     for(const id of this.spawns.keys())if(defeated.has(id))this.monsters.delete(id);
+    this.chests.settle(defeated);
   }
   /**
    * O tempo de volta também corre dentro do andar (ADR 0029): a cada segundo `release` devolve ao mundo quem já pode voltar e quem estava caído reaparece onde
@@ -87,8 +91,12 @@ export class CaveRoom {
       this.drops.delete(id);this.drops.delete(id+":coin");
       back.push(id);
     }
+    // O baú volta cheio, sem a moeda que o herói deixou para trás.
+    for(const id of this.chests.respawn(this.player,this.defeated))this.drops.delete(id+":coin");
     return back;
   }
+  /** Os baús abertos desde a última chamada (ids); `applyCaveVictories` os anota na simulação, para ficarem no save e voltarem depois. */
+  drainOpenings():string[] { return this.chests.drainOpened(); }
   private populate(entrance: CaveEntrance): void {
     // Criatura só nasce em chão que o herói alcança a pé (nada de ilha isolada ou câmara fechada).
     const reaches = caveReach(this.collision, this.player);
@@ -140,6 +148,13 @@ export class CaveRoom {
       const x=(chamber.x+.5)*TILE_SIZE,y=(chamber.y+.5)*TILE_SIZE,id=this.floor.id+":den:"+chamber.index;
       if (!this.collision.canMove(x,y)||!reaches(x,y)) continue;
       this.monsters.set(id,new RegionalMonster(id,kinds[Math.floor(hash2(chamber.index,29,salt+137)*kinds.length)]!,x,y));
+      // O baú da toca fica a dois tiles do guardião, no primeiro lado livre que o herói alcança (ADR 0103).
+      for(const [dx,dy] of [[2,0],[-2,0],[0,2],[0,-2]] as const){
+        const cx=(chamber.x+dx+.5)*TILE_SIZE,cy=(chamber.y+dy+.5)*TILE_SIZE;
+        if(!this.collision.canMove(cx,cy)||!reaches(cx,cy))continue;
+        this.chests.place(this.floor.id+":chest:"+chamber.index,cx,cy);
+        break;
+      }
     }
     // O chefe espera na câmara do fundo, onde nos andares de cima fica a escada.
     if (plan?.boss) {
@@ -173,6 +188,7 @@ export class CaveRoom {
       monster.update(dt,this.player,this.collision,defense,false);
       if(monster.hp<=0)this.defeat(id,monster,defense);
     }
+    this.chests.update(this.player,this.monsters,this.drops,this.floorIndex);
     // Como na superfície: o golpe em andamento segue virado para o alvo mesmo com o herói andando (fugir e atacar).
     const focused=typeof targetId==="string" ? this.monsters.get(targetId) : undefined;
     if(focused && this.player.attackTime>0)faceTarget(this.player,focused);
