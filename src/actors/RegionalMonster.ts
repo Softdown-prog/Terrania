@@ -25,6 +25,8 @@ export class RegionalMonster extends Slime {
   /** Distância percorrida alimenta a animação, não apenas o relógio visual. */
   motionPhase = 0;
   moving = 0;
+  /** Para onde a criatura olha: o sentido em que anda e, parada perto do herói, o lado dele (-1 esquerda, 1 direita). Só desenho; nada de regra de jogo. */
+  facing: -1 | 1 = -1;
   private cooldown = 0;
   private windup = 0;
   private enraged = 0;
@@ -118,6 +120,10 @@ export class RegionalMonster extends Slime {
       this.moving=Math.min(1,traveled/Math.max(.001,ability.speed*dt));
       this.motionPhase+=traveled/TILE_SIZE*SPECIES_BEHAVIORS[this.kind].cadence*Math.PI*2;
     }
+    if(traveled>.001){
+      const stepX=this.x-beforeX, stepY=this.y-beforeY;
+      if(Math.abs(stepX)>.001 && Math.abs(stepX)>=Math.abs(stepY)*.4)this.facing=stepX<0?-1:1;
+    } else if(d<245 && Math.abs(dx)>6)this.facing=dx<0?-1:1;
     if(retreating)return;
     const inSight = d <= ability.range && d > .001 && clearPath(this, hero, world);
     if (this.windup > 0) {

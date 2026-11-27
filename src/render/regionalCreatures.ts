@@ -51,6 +51,8 @@ export interface RegionalCreatureVisual {
  readonly casting?:number;
  readonly motionPhase?:number;
  readonly moving?:number;
+ /** Para que lado a criatura olha (-1 esquerda, 1 direita); as espécies de perfil são espelhadas quando olham para o lado contrário ao do desenho. */
+ readonly facing?:number;
 }
 type CreatureRenderer=(ctx:CanvasRenderingContext2D,creature:RegionalCreatureVisual,
  sx:number,sy:number,time:number)=>void;

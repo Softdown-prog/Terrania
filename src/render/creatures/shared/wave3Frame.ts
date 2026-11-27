@@ -5,7 +5,8 @@ import type { RegionalCreatureVisual } from "../../regionalCreatures.ts";
 import type { Palette } from "./southGeometry.ts";
 import { GLOW, OUTLINE } from "./southGeometry.ts";
 import { drawLit } from "../../lighting/litSprite.ts";
-import { visualGroup, visualKey } from "../../lighting/visualKey.ts";
+import { visualGroup } from "../../lighting/visualKey.ts";
+import { facingKey, paintFacing } from "./facing.ts";
 /** Animação e indicador visual compartilhados, sem selecionar anatomias. */
 export function renderWave3Frame(ctx:CanvasRenderingContext2D,
  actor:RegionalCreatureVisual,sx:number,sy:number,time:number,c:Palette,
@@ -14,8 +15,8 @@ export function renderWave3Frame(ctx:CanvasRenderingContext2D,
   ctx.save();ctx.translate(sx,sy);
   softShadow(ctx,0,3,shadowRadius,5,.3);
   const pose=monsterPose(actor,time);ctx.translate(pose.sway,pose.lift);ctx.rotate(pose.tilt);ctx.scale(pose.stretchX,pose.stretchY);
-  drawLit({key:visualKey(actor,time),group:visualGroup(actor)},ctx,lit=>{
-    draw(lit,c,time);
+  drawLit({key:facingKey(actor,time),group:visualGroup(actor)},ctx,lit=>{
+    paintFacing(actor,lit,()=>draw(lit,c,time));
     // Stable micro-highlights supply material structure even on the smallest actors.
     for(let i=0;i<13;i++){
       const x=Math.sin(i*9.31+seed*7)*11,y=-12-Math.abs(Math.cos(i*5.71+seed))*19;

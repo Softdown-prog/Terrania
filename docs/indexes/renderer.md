@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (346)
+## Todos os arquivos deste módulo (347)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -125,6 +125,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/creatures/shared/anatomy/quadruped.ts`](../../src/render/creatures/shared/anatomy/quadruped.ts)
 - [`src/render/creatures/shared/anatomy/torso.ts`](../../src/render/creatures/shared/anatomy/torso.ts)
 - [`src/render/creatures/shared/creatureMotion.ts`](../../src/render/creatures/shared/creatureMotion.ts)
+- [`src/render/creatures/shared/facing.ts`](../../src/render/creatures/shared/facing.ts)
 - [`src/render/creatures/shared/regionalFrame.ts`](../../src/render/creatures/shared/regionalFrame.ts)
 - [`src/render/creatures/shared/regionalGeometry.ts`](../../src/render/creatures/shared/regionalGeometry.ts)
 - [`src/render/creatures/shared/southGeometry.ts`](../../src/render/creatures/shared/southGeometry.ts)

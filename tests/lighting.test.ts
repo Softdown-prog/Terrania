@@ -238,7 +238,8 @@ test("as criaturas e as montarias passam pela luz: o mesmo estado (e o mesmo dé
 test("a ligação: as três molduras de criatura e as montarias desenham o corpo por `drawLit`, e a barra de vida e os efeitos de golpe ficam fora", () => {
   for (const file of ["regionalFrame", "wave2Frame", "wave3Frame"]) {
     const code = readFileSync(`src/render/creatures/shared/${file}.ts`, "utf8");
-    assert.match(code, /drawLit\(\{key:visualKey\(\w+,time\),group:visualGroup\(\w+\)\},ctx,lit=>\{/, file);
+    assert.match(code, /drawLit\(\{key:facingKey\(\w+,time\),group:visualGroup\(\w+\)\},ctx,lit=>\{/, file);
+    assert.match(code, /paintFacing\(\w+,lit,\(\)=>draw\(lit,c,time\)\)/, file + ": o corpo é pintado pelo espelho de direção");
     const effect = { regionalFrame: "if(flash>.02)", wave2Frame: "if((actor.hurtTime??0)>.02)", wave3Frame: "if((actor.hurtTime??0)>0)" }[file]!;
     const bar = { regionalFrame: "if(creature.hp<max)", wave2Frame: "if(actor.hp<max)", wave3Frame: "if(actor.hp<max)" }[file]!;
     assert.ok(code.includes(effect) && code.includes(bar) && code.indexOf("drawLit(") < code.indexOf(effect) && code.indexOf("drawLit(") < code.indexOf(bar), file + ": o efeito de golpe e a barra de vida vêm depois");

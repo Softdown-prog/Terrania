@@ -5,7 +5,8 @@ import type { RegionalCreatureVisual } from "../../regionalCreatures.ts";
 import type { ColorRamp } from "./regionalGeometry.ts";
 import { OUTLINE, GLINT } from "./regionalGeometry.ts";
 import { drawLit } from "../../lighting/litSprite.ts";
-import { visualGroup, visualKey } from "../../lighting/visualKey.ts";
+import { visualGroup } from "../../lighting/visualKey.ts";
+import { facingKey, paintFacing } from "./facing.ts";
 /** Animação e indicador visual compartilhados, sem selecionar anatomias. */
 export function renderRegionalFrame(ctx:CanvasRenderingContext2D,
  creature:RegionalCreatureVisual,sx:number,sy:number,time:number,c:ColorRamp,
@@ -20,8 +21,8 @@ export function renderRegionalFrame(ctx:CanvasRenderingContext2D,
   ctx.rotate(pose.tilt);
   ctx.scale(pose.stretchX,pose.stretchY);
   if(flash>.01)ctx.globalAlpha=1;
-  drawLit({key:visualKey(creature,time),group:visualGroup(creature)},ctx,lit=>{
-    draw(lit,c,time);  // Micro-reflexos e grãos da matéria completam o volume sem textura externa.
+  drawLit({key:facingKey(creature,time),group:visualGroup(creature)},ctx,lit=>{
+    paintFacing(creature,lit,()=>draw(lit,c,time));  // Micro-reflexos e grãos da matéria completam o volume sem textura externa.
     for(let i=0;i<7;i++){
       const px=Math.sin(i*23.1+seed*17)*14,py=-9-Math.abs(Math.cos(i*11.7+seed))*23;
       ellipse(lit,px,py,1.1+i%3*.5,.55+i%2*.25,i%2?rgba(c.accent,.6):rgba(c.light,.6));
