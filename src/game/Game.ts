@@ -41,6 +41,8 @@ import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.
 import { buildJournal } from "../engine/quests/journal/index.ts";
 import { caveEntranceInCell } from "../world/caves.ts";
 import { WELL_LINES } from "./messages/south/well/index.ts";
+import { ROOTS_LINES } from "./messages/center/roots/index.ts";
+import { nearestRootsDungeon } from "../world/nearestRootsDungeon.ts";
 import { visibleBattleCreatures } from "../engine/combat/ClassicBattleList.ts";
 import { experienceProgress, levelForExperience } from "../engine/character/Experience.ts";
 import { collectDrops } from "../engine/character/loot.ts";
@@ -147,9 +149,12 @@ export class Game {
       mana: this.sim.usesMana ? manaMeter(this.sim.mana, this.sim.maxMana, STAVES[this.sim.equippedStaff].manaCost) : null,
     });
     const mounts = this.sim.mounts.view(kills), starter = caveEntranceInCell(0, 0, this.sim.seed);
+    // A entrada da Masmorra das Raízes mais perto só importa enquanto a Raiz Velha está em andamento (a procura é cara para fazer a cada quadro).
+    const rootsDungeon = this.sim.roots.view.accepted && !this.sim.roots.view.bossDown ? nearestRootsDungeon(this.sim.seed, Math.floor(player.x / TILE_SIZE), Math.floor(player.y / TILE_SIZE)) : null;
     this.hud.updateJournal(buildJournal({
       trainingKills: this.sim.trainingKills, clearingRewardClaimed: inventory.questRewardClaimed, mounts, level: levelForExperience(this.sim.experience),
-      well: this.sim.well.view, ...(starter ? { trainingCave: { x: starter.x, y: starter.y } } : {}),
+      well: this.sim.well.view, roots: this.sim.roots.view, ...(starter ? { trainingCave: { x: starter.x, y: starter.y } } : {}),
+      ...(rootsDungeon ? { rootsDungeon: { x: rootsDungeon.x, y: rootsDungeon.y } } : {}),
     }));
     this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins, inventory.elixirs);
     this.hud.updateBank(this.sim.bank.balance);
@@ -302,11 +307,14 @@ export class Game {
       const lines = npcDialogue(npc, this.sim.trainingKills, offer?.item === "sword");
       const well = this.sim.well.talk(npc.id, this.sim.inventory);
       if (well.changed) { this.save(); this.updateHud(); }
+      // A segunda missão de Aela, a Raiz Velha (ADR 0104), só depois da recompensa da clareira.
+      const roots = this.sim.roots.talk(npc.id, this.sim.inventory, this.sim.inventory.questRewardClaimed && !rewarded);
+      if (roots.changed) { this.save(); this.updateHud(); }
       // O banqueiro paga os juros devidos ao começar a conversa (ADR 0063).
       const bank = npc.id === BANKER_ID ? bankOnTalk(this.sim) : null;
       if (bank?.changed) { this.save(); this.updateHud(); }
       const extra = [...(bank?.line ? [bank.line] : []),...(rewarded ? [`Recompensa de Aela: ${QUEST_REWARD_POTIONS} poções de cura guardadas na sua bolsa!`] : []),
-        ...(well.event ? WELL_LINES[well.event] : [])];
+        ...(well.event ? WELL_LINES[well.event] : []),...(roots.event ? ROOTS_LINES[roots.event] : [])];
       this.hud.showNpcDialogue(npc.name, npc.role, extra.length ? [...lines, ...extra] : lines, offer);
     }
   }

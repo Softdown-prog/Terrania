@@ -1,7 +1,9 @@
 import type { MountView } from "../../mounts/MountStable.ts";
 import type { WellQuestState } from "../south/well/questState.ts";
+import type { RootsQuestState } from "../center/roots/index.ts";
 import { clearingEntry } from "./clearing.ts";
 import { warhorseEntry } from "./warhorse.ts";
+import { rootsEntry } from "./roots.ts";
 import { wellEntry } from "./well.ts";
 import type { JournalEntry, JournalStatus } from "./types.ts";
 
@@ -17,6 +19,10 @@ export interface JournalSources {
   readonly mounts: MountView;
   readonly level: number;
   readonly well: WellQuestState;
+  /** A segunda missão de Aela (ADR 0104). */
+  readonly roots: RootsQuestState;
+  /** A entrada da Masmorra das Raízes mais perto do herói, se se sabe, para o guia da Raiz Velha. */
+  readonly rootsDungeon?: { readonly x: number; readonly y: number };
 }
 
 const ORDER: Readonly<Record<JournalStatus, number>> = { active: 0, available: 1, completed: 2 };
@@ -25,6 +31,7 @@ const ORDER: Readonly<Record<JournalStatus, number>> = { active: 0, available: 1
 export function buildJournal(sources: JournalSources): readonly JournalEntry[] {
   const entries = [
     clearingEntry(sources.trainingKills, sources.clearingRewardClaimed, sources.trainingCave),
+    rootsEntry(sources.roots, sources.clearingRewardClaimed, sources.rootsDungeon),
     warhorseEntry(sources.mounts, sources.level),
     wellEntry(sources.well),
   ];

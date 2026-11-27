@@ -25,13 +25,14 @@ async function openJournal(page: Page): Promise<void> {
   await expect(page.locator("#questJournal")).toBeVisible();
 }
 
-test("começo do jogo: o painel mostra a clareira e o diário lista uma em andamento e duas para começar (desktop/Android)", async ({ page }) => {
+test("começo do jogo: o painel mostra a clareira e o diário lista uma em andamento e três para começar (desktop/Android)", async ({ page }) => {
   const errors = await open(page, {});
   await expect(page.locator("#quest")).toHaveText("Proteja a clareira");
   await expect(page.locator(".quest .stat-heading")).toHaveText("MISSÃO");
   await openJournal(page);
   await expect(page.locator("#questGroup-active")).toHaveText("Em andamento (1)");
-  await expect(page.locator("#questGroup-available")).toHaveText("Para começar (2)");
+  await expect(page.locator("#questGroup-available")).toHaveText("Para começar (3)");
+  await expect(page.locator('[data-quest="roots"]')).toContainText("Termine antes a missão");
   await expect(page.locator("#questGroup-completed")).toHaveCount(0);
   await expect(page.locator('[data-quest="clearing"]')).toContainText("derrote 5 slimes (0/5)");
   await expect(page.locator('[data-quest="warhorse"]')).toContainText("nível 15");
@@ -46,6 +47,7 @@ test("clareira concluída: sai do painel da tela e vai para as concluídas do di
   await expect(page.locator("#quest")).not.toContainText("Clareira");
   await openJournal(page);
   await expect(page.locator("#questGroup-completed")).toHaveText("Concluídas (1)");
+  await expect(page.locator('[data-quest="roots"]')).toContainText("Fale com Aela"); // a clareira feita libera a Raiz Velha
   await expect(page.locator('[data-quest="clearing"]')).toHaveClass(/completed/);
   await expect(page.locator("#questGroup-active")).toHaveCount(0);
   expect(errors).toEqual([]);
@@ -77,5 +79,47 @@ test("missão do Garrano em andamento: as etapas aparecem e a atual diz onde ir 
   await expect(entry.locator(".step-guide")).toContainText("as marcas de cascos: a");
   await expect(entry.locator(".step-guide")).toContainText("a oeste");
   await expect(entry.locator(".step-current, .step-done, .step-todo")).toHaveCount(5);
+  expect(errors).toEqual([]);
+});
+
+test("A Raiz Velha: com o Ent Ancião derrotado o painel manda voltar a Aela, e com a missão paga ela vai para as concluídas (desktop/Android)", async ({ page }) => {
+  const claimed = { trainingKills: 5, inventory: { gel: 0, potion: 2, questRewardClaimed: true } };
+  const errors = await open(page, { ...claimed, rootsQuest: { accepted: true, bossDown: true, reported: false } });
+  await expect(page.locator("#quest")).toHaveText("A Raiz Velha");
+  await expect(page.locator("#questProgress")).toContainText("Volte a falar com a Aela");
+  await openJournal(page);
+  await expect(page.locator('[data-quest="roots"]')).toContainText("300 Terrania Gold");
+  await expect(page.locator("#questGroup-active")).toHaveText("Em andamento (1)");
+  expect(errors).toEqual([]);
+});
+
+test("A Raiz Velha paga: sai do painel e fica nas concluídas do diário (desktop/Android)", async ({ page }) => {
+  const errors = await open(page, { trainingKills: 5, inventory: { gel: 0, potion: 2, questRewardClaimed: true }, rootsQuest: { accepted: true, bossDown: true, reported: true } });
+  await expect(page.locator("#quest")).toHaveText("Nenhuma missão em andamento");
+  await openJournal(page);
+  await expect(page.locator("#questGroup-completed")).toHaveText("Concluídas (2)");
+  await expect(page.locator('[data-quest="roots"]')).toHaveClass(/completed/);
+  expect(errors).toEqual([]);
+});
+
+test("A Raiz Velha: ao falar com Aela depois de vencer o Ent Ancião, ela paga 300 Terrania Gold uma vez, o painel esvazia e a missão vai para o save como paga (desktop/Android)", async ({ page }, info) => {
+  const errors = await open(page, { trainingKills: 5, inventory: { gel: 0, potion: 2, questRewardClaimed: true }, rootsQuest: { accepted: true, bossDown: true, reported: false } });
+  const talk = page.locator("#talkButton"), next = page.locator("#npcNext");
+  await expect(page.locator("#questProgress")).toContainText("Volte a falar com a Aela");
+  if (info.project.name === "android") await talk.tap(); else await talk.click();
+  await expect(page.locator("#npcName")).toHaveText("Aela");
+  for (let index = 0; index < 3; index++) await next.click();
+  await expect(page.locator("#npcSpeech")).toContainText("Você venceu o Ent Ancião");
+  await next.click();
+  await expect(page.locator("#npcSpeech")).toContainText("300 Terrania Gold");
+  await next.click();
+  await expect(page.locator("#npcDialog")).toBeHidden();
+  await expect(page.locator("#quest")).toHaveText("Nenhuma missão em andamento");
+  const save = await page.evaluate(() => JSON.parse(localStorage.getItem("terrania-origins-v1") ?? "{}"));
+  expect(save.rootsQuest).toEqual({ accepted: true, bossDown: true, reported: true });
+  expect(save.inventory.coins).toBe(300);
+  // falar de novo não paga outra vez
+  if (info.project.name === "android") await talk.tap(); else await talk.click();
+  await expect(page.locator("#npcStep")).toHaveText("Mensagem 1 de 3");
   expect(errors).toEqual([]);
 });

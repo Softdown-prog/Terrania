@@ -4,6 +4,7 @@ import { normalizeDrops } from '../engine/character/loot.ts';
 import { maxHpForExperience, normalizeExperience } from '../engine/character/Experience.ts';
 import { hasNutrition, normalizeNutrition } from '../engine/character/Food.ts';
 import { normalizeWellQuest, wellQuestStarted } from '../engine/quests/south/well/index.ts';
+import { normalizeRootsQuest, rootsQuestStarted } from '../engine/quests/center/roots/index.ts';
 import { normalizeMountSave } from '../engine/mounts/MountStable.ts';
 import { normalizeBank } from '../engine/character/center/bank/index.ts';
 import { DEFAULT_RESPAWN_POINT, normalizeRespawnPoint } from '../engine/character/center/shrine/index.ts';
@@ -49,6 +50,7 @@ export function loadLocalSave(): OfflineSave | null {
       ...(Object.keys(normalizeMountSave(save.mounts)).length ?
         { mounts: normalizeMountSave(save.mounts) } : {}),
       ...(wellQuestStarted(normalizeWellQuest(save.wellQuest)) ? { wellQuest: normalizeWellQuest(save.wellQuest) } : {}),
+      ...(rootsQuestStarted(normalizeRootsQuest(save.rootsQuest)) ? { rootsQuest: normalizeRootsQuest(save.rootsQuest) } : {}),
       // O relógio da aventura volta com o save: os juros do banco contam por ele (ADR 0063).
       ...(clock > 0 ? { time: clock } : {}),
       ...(bank.balance > 0 ? { bank } : {}),

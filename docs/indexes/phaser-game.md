@@ -18,7 +18,7 @@ Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir reg
 - [`src/game/modes/caveMode.ts`](../../src/game/modes/caveMode.ts)
 - [`src/game/modes/interiorMode.ts`](../../src/game/modes/interiorMode.ts)
 
-## Todos os arquivos deste módulo (37)
+## Todos os arquivos deste módulo (42)
 
 - [`src/game/Game.ts`](../../src/game/Game.ts)
 - [`src/game/PhaserGame.ts`](../../src/game/PhaserGame.ts)
@@ -34,6 +34,11 @@ Integra loop, inputs, simulação, câmera, render e rede. Evitar transferir reg
 - [`src/game/journeyDriver.ts`](../../src/game/journeyDriver.ts)
 - [`src/game/messages/capitalInn.ts`](../../src/game/messages/capitalInn.ts)
 - [`src/game/messages/center/bank.ts`](../../src/game/messages/center/bank.ts)
+- [`src/game/messages/center/roots/accepted.ts`](../../src/game/messages/center/roots/accepted.ts)
+- [`src/game/messages/center/roots/index.ts`](../../src/game/messages/center/roots/index.ts)
+- [`src/game/messages/center/roots/reminder.ts`](../../src/game/messages/center/roots/reminder.ts)
+- [`src/game/messages/center/roots/report-wallet-full.ts`](../../src/game/messages/center/roots/report-wallet-full.ts)
+- [`src/game/messages/center/roots/reported.ts`](../../src/game/messages/center/roots/reported.ts)
 - [`src/game/messages/center/shrine.ts`](../../src/game/messages/center/shrine.ts)
 - [`src/game/messages/classIntro.ts`](../../src/game/messages/classIntro.ts)
 - [`src/game/messages/classRules.ts`](../../src/game/messages/classRules.ts)

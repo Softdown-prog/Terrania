@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 import { MountStable, WILD_HOOFPRINTS, WILD_WARHORSE, STABLE_MASTER } from "../src/engine/mounts/MountStable.ts";
 import { experienceForLevel } from "../src/engine/character/Experience.ts";
 import { emptyWellQuest, wellQuestSummary, type WellQuestState } from "../src/engine/quests/south/well/index.ts";
+import { emptyRootsQuest } from "../src/engine/quests/center/roots/index.ts";
+import { rootsEntry } from "../src/engine/quests/journal/roots.ts";
 import { MOUNT_QUESTS } from "../src/world/mountQuests.ts";
 import { buildJournal, currentStep, GUIDE_HERE_TILES, questGuide, questPanel, trackedEntry, type JournalEntry, type JournalSources } from "../src/engine/quests/journal/index.ts";
 import { clearingEntry } from "../src/engine/quests/journal/clearing.ts";
@@ -103,16 +105,16 @@ test("os percentuais da Água Escura continuam os de sempre (os do resumo do pai
     assert.equal(wellEntry(state).percent, wellQuestSummary(state).percent, JSON.stringify(state));
 });
 
-const sources = (over: Partial<JournalSources> = {}): JournalSources => ({ trainingKills: 0, clearingRewardClaimed: false, mounts: new MountStable().view(0), level: 1, well: well(), ...over });
+const sources = (over: Partial<JournalSources> = {}): JournalSources => ({ trainingKills: 0, clearingRewardClaimed: false, mounts: new MountStable().view(0), level: 1, well: well(), roots: emptyRootsQuest(), ...over });
 
-test("o diário junta as três missões: em andamento primeiro, depois as que dá para começar, por fim as concluídas", () => {
+test("o diário junta as quatro missões: em andamento primeiro, depois as que dá para começar, por fim as concluídas", () => {
   const start = buildJournal(sources());
-  assert.deepEqual(start.map(entry => [entry.id, entry.status]), [["clearing", "active"], ["warhorse", "available"], ["well", "available"]]);
+  assert.deepEqual(start.map(entry => [entry.id, entry.status]), [["clearing", "active"], ["roots", "available"], ["warhorse", "available"], ["well", "available"]]);
   const mid = buildJournal(sources({ trainingKills: 5, clearingRewardClaimed: true, well: well({ heard: ["south-gorrak"] }) }));
-  assert.deepEqual(mid.map(entry => [entry.id, entry.status]), [["well", "active"], ["warhorse", "available"], ["clearing", "completed"]], "a Água Escura subiu: em andamento vem antes");
-  assert.equal(new Set(mid.map(entry => entry.id)).size, 3, "ids únicos");
+  assert.deepEqual(mid.map(entry => [entry.id, entry.status]), [["well", "active"], ["roots", "available"], ["warhorse", "available"], ["clearing", "completed"]], "a Água Escura subiu: em andamento vem antes");
+  assert.equal(new Set(mid.map(entry => entry.id)).size, 4, "ids únicos");
   const all = buildJournal(sources({ trainingKills: 5, clearingRewardClaimed: true, well: well({ reported: true, heard: ["south-gorrak", "south-khemet", "south-sylrael"], inspected: true, analyzed: true }) }));
-  assert.deepEqual(all.map(entry => entry.id), ["warhorse", "clearing", "well"], "disponível, depois as concluídas na ordem do jogo");
+  assert.deepEqual(all.map(entry => entry.id), ["roots", "warhorse", "clearing", "well"], "disponíveis, depois as concluídas na ordem do jogo");
 });
 
 test("o painel da tela acompanha só missão em andamento: a escolhida, senão a primeira; concluída sai do painel", () => {
@@ -139,6 +141,7 @@ test("o painel da tela é pequeno: toda etapa atual tem uma versão curta (até 
   for (const level of [1, 15]) all.push(warhorseEntry(new MountStable().view(0), level), warhorseEntry(stableAt(level).stable.view(0), level));
   for (const kills of [0, 2, 5]) all.push(warhorseEntry(stable.view(kills), 15));
   for (const state of [well(), well({ heard: ["south-gorrak"] }), well({ heard: [...three] }), well({ heard: [...three], inspected: true }), well({ heard: [...three], inspected: true, analyzed: true })]) all.push(wellEntry(state));
+  for (const roots of [emptyRootsQuest(), { accepted: true, bossDown: false, reported: false }, { accepted: true, bossDown: true, reported: false }]) for (const clearingDone of [false, true]) all.push(rootsEntry(roots, clearingDone, { x: 1, y: 1 }));
   let checked = 0;
   for (const entry of all) for (const step of entry.steps) {
     if (entry.status === "completed") continue;

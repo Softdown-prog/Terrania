@@ -22,6 +22,7 @@ import type { CreatureKind } from "../actors/CreatureCatalog.ts";
 import { grantExperience, levelForExperience, maxHpForExperience, normalizeExperience } from "./character/Experience.ts";
 import { foodMana, hasNutrition, type FoodId, type FoodUseResult, type NutritionState } from "./character/Food.ts";
 import { WellInvestigation, wellQuestStarted, type WellQuestState } from "./quests/south/well/index.ts";
+import { RootsQuest, rootsQuestStarted, type RootsQuestState } from "./quests/center/roots/index.ts";
 import { Bank, type BankState } from "./character/center/bank/index.ts";
 import { STAVES, type StaffId } from "./character/Staves.ts";
 import { resolveSpellStrike, spellReach, spellStrikeTargets } from "./combat/SpellCombat.ts";
@@ -49,6 +50,8 @@ export interface OfflineSave {
   mounts?: MountSave;
   /** Missão "A Água Escura" (ADR 0031); ausente enquanto não começou. */
   wellQuest?: WellQuestState;
+  /** Missão "A Raiz Velha" (ADR 0104); ausente enquanto não foi aceita. */
+  rootsQuest?: RootsQuestState;
   /** Banco da Casa da Moeda (ADR 0063); ausente enquanto não há saldo. */
   bank?: BankState;
   /** Onde o herói renasce (ADR 0064); ausente = a Vila da Travessia. */
@@ -82,6 +85,8 @@ export class OfflineSimulation {
   readonly inventory: Inventory;
   /** Missão "A Água Escura" (ADR 0031). */
   readonly well: WellInvestigation;
+  /** A segunda missão de Aela: vencer o Ent Ancião (ADR 0104). */
+  readonly roots: RootsQuest;
   /** Banco da Casa da Moeda da capital (ADR 0063). */
   readonly bank: Bank;
   /** Onde o herói renasce depois de cair: a Vila, ou o Templo da capital se o consagrou (ADR 0064). */
@@ -113,6 +118,7 @@ export class OfflineSimulation {
     this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined,
       levelForExperience(saved?.seed === seed ? normalizeExperience(saved?.experience) : 0), this.heroClass);
     this.well = new WellInvestigation(saved?.seed === seed ? saved.wellQuest : undefined);
+    this.roots = new RootsQuest(saved?.seed === seed ? saved.rootsQuest : undefined);
     this.mounts = new MountStable(saved?.seed === seed ? saved.mounts : undefined);
     if (saved && saved.seed === seed) {
       // Um save antigo pode ficar sobre um obstáculo novo. Se o terreno, os marcos e a cidade estão livres e só a
@@ -379,6 +385,7 @@ export class OfflineSimulation {
       inventory: this.inventory.snapshot(),
       ...(Object.keys(this.mounts.snapshot()).length ? { mounts: this.mounts.snapshot() } : {}),
       ...(wellQuestStarted(this.well.view) ? { wellQuest: this.well.snapshot() } : {}),
+      ...(rootsQuestStarted(this.roots.view) ? { rootsQuest: this.roots.snapshot() } : {}),
       ...(this.bank.used ? { bank: this.bank.snapshot() } : {}),
       ...(this.respawnPoint !== DEFAULT_RESPAWN_POINT ? { respawnPoint: this.respawnPoint } : {}),
       ...(this.heroClass !== DEFAULT_HERO_CLASS ? { heroClass: this.heroClass, mana: Math.round(this.manaPoints * 100) / 100 } : {}),

@@ -164,6 +164,7 @@
 - [`docs/adr/0101-toda-gruta-das-raizes-e-masmorra.md`](../../docs/adr/0101-toda-gruta-das-raizes-e-masmorra.md)
 - [`docs/adr/0102-tocas-e-atalhos-da-masmorra-das-raizes.md`](../../docs/adr/0102-tocas-e-atalhos-da-masmorra-das-raizes.md)
 - [`docs/adr/0103-baus-das-tocas.md`](../../docs/adr/0103-baus-das-tocas.md)
+- [`docs/adr/0104-a-raiz-velha.md`](../../docs/adr/0104-a-raiz-velha.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/bau-da-toca.png`](../../docs/screenshots/bau-da-toca.png)

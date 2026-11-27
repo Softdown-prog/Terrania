@@ -1,6 +1,6 @@
 # ADR 0103 — Baús nas tocas da Masmorra das Raízes (L5c)
 
-**Estado:** entregue em 2026-11-27, terceira fatia do pedido do dono para a Gruta das Raízes ("coisas para fazer dentro da gruta"). Antes vieram os [cinco andares](0101-toda-gruta-das-raizes-e-masmorra.md) e as [tocas e atalhos](0102-tocas-e-atalhos-da-masmorra-das-raizes.md); faltam a coleta que volta (matérias-primas para colher) e o objetivo da gruta (L5d).
+**Estado:** entregue em 2026-11-27, terceira fatia do pedido do dono para a Gruta das Raízes ("coisas para fazer dentro da gruta"). Antes vieram os [cinco andares](0101-toda-gruta-das-raizes-e-masmorra.md) e as [tocas e atalhos](0102-tocas-e-atalhos-da-masmorra-das-raizes.md); o objetivo da gruta veio no [ADR 0104](0104-a-raiz-velha.md); falta a coleta que volta (matérias-primas para colher).
 
 ![O baú da toca, com cintas de ferro, fechadura de latão e ouro na fresta](../screenshots/bau-da-toca.png)
 

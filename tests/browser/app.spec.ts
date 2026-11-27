@@ -99,12 +99,21 @@ test('HUD e diálogo da Aela exibem o progresso do jogo e a recompensa é entreg
   // Recompensa recebida: a missão concluída sai do painel da tela (ADR 0100) e fica no diário.
   await expect(page.locator('#quest')).toHaveText('Nenhuma missão em andamento');
 
+  // Na conversa seguinte Aela conta da Raiz Velha (ADR 0104): as três falas de sempre mais as duas da missão nova, que passa a ser a do painel.
   await interact();
-  await expect(page.locator('#npcStep')).toHaveText('Mensagem 1 de 3');
+  await expect(page.locator('#npcStep')).toHaveText('Mensagem 1 de 5');
+  for (let index = 0; index < 3; index++) await next.click();
+  await expect(page.locator('#npcSpeech')).toContainText('Missão nova: A Raiz Velha');
+  await next.click();
+  await expect(page.locator('#npcSpeech')).toContainText('derrote o Ent Ancião');
+  await next.click();
+  await expect(npcDialog).toBeHidden();
+  await expect(page.locator('#quest')).toHaveText('A Raiz Velha');
+  await expect(page.locator('#questProgress')).toContainText('Vença o Ent Ancião');
   expect(await page.evaluate(() => {
     const save = JSON.parse(localStorage.getItem('terrania-origins-v1') ?? '{}');
-    return save.inventory;
-  })).toEqual({ gel: 0, potion: 2, questRewardClaimed: true });
+    return [save.inventory, save.rootsQuest];
+  })).toEqual([{ gel: 0, potion: 2, questRewardClaimed: true }, { accepted: true, bossDown: false, reported: false }]);
 });
 
 test('abates de slimes na superfície não completam missão da gruta de Aela', async ({ page }) => {
