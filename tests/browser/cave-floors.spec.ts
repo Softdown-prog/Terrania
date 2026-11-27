@@ -63,9 +63,19 @@ async function heroTile(page: Page): Promise<Tile> {
  */
 async function walk(page: Page, floor: CaveFloor, goal: Tile, act: () => Promise<void>,
   done: () => Promise<boolean>): Promise<void> {
+  let last: Tile | null = null, still = 0;
   for (let step = 0; step < 300; step++) {
     const here = await heroTile(page);
     if (await done()) return; // a leitura de `here` pode já ser da superfície (saiu agora)
+    // Herói parado fora da escada: a tecla não está chegando ao jogo (o foco saiu da tela?). Devolve o foco e, se não adiantar, falha cedo e
+    // dizendo onde parou, em vez de girar até o limite de 5 minutos do teste sem nenhuma pista (a CI não guarda o rastro).
+    still = last && last.x === here.x && last.y === here.y && !(here.x === goal.x && here.y === goal.y) ? still + 1 : 0;
+    last = here;
+    if (still >= 2) await page.locator("canvas#game").focus();
+    if (still >= 6) {
+      const where = ((await page.locator("#questProgress").textContent()) ?? "?").trim();
+      throw new Error(`o herói parou em ${here.x},${here.y} (destino ${goal.x},${goal.y}, ${where}) e não saiu do lugar por ${still} tentativas`);
+    }
     if (here.x === goal.x && here.y === goal.y) {
       await act();
       await page.waitForTimeout(150);
