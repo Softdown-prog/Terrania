@@ -3,6 +3,8 @@ import { TILE_SIZE } from "./terrain.ts";
 import { hash2 } from "./random.ts";
 import type { CaveEntrance, CaveTheme } from "./caves.ts";
 import { carveTowerFloor } from "./towers/floorLayout.ts";
+import { isStarterCave } from "./caves.ts";
+import { sideChambersFor, shortcutsFor, type SideChamber } from "./caveSideChambers.ts";
 
 /**
  * Planta de um andar de caverna: paredes, água funda e colisão, sem nenhuma criatura.
@@ -14,6 +16,14 @@ export const CAVE_EXIT = { x: 21, y: 26 } as const;
 /** Escada para o andar de baixo: a câmara do fundo, no mesmo lugar em todo andar que tem escada. */
 export const CAVE_STAIRS_DOWN = { x: 8, y: 8 } as const;
 export type CaveCell = 0 | 1 | 2; // wall, floor, deep water
+type Carve = (x: number, y: number, cell?: CaveCell) => void;
+/** Corredor reto de 3 tiles de largura, primeiro no eixo x e depois no y: mantém todas as câmaras alcançáveis. */
+function carveCorridor(carve: Carve, ax: number, ay: number, bx: number, by: number): void {
+  let x=ax,y=ay;
+  while(x!==bx) {for(let dy=-1;dy<=1;dy++)carve(x,y+dy);x+=Math.sign(bx-x);}
+  while(y!==by) {for(let dx=-1;dx<=1;dx++)carve(x+dx,y);y+=Math.sign(by-y);}
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)carve(x+dx,y+dy);
+}
 export class CaveFloor {
   readonly cells = new Uint8Array(CAVE_WIDTH * CAVE_HEIGHT);
   readonly collision: CollisionMap;
@@ -26,6 +36,10 @@ export class CaveFloor {
   readonly floorCount: number;
   /** Há escada para baixo em todo andar, menos no último. */
   readonly hasStairsDown: boolean;
+  /** Tocas laterais deste andar (só nas grutas verdes do Centro, ADR 0102); vazio nas outras. */
+  readonly chambers: readonly SideChamber[];
+  /** Centros (em tiles) das cinco salas principais, na ordem da fila; vazio nos andares de torre. */
+  readonly rooms: readonly { readonly x: number; readonly y: number }[];
   constructor(entrance: CaveEntrance, floorIndex = 1, floorCount = 1) {
     this.entrance = entrance;
     this.theme = entrance.theme;
@@ -41,8 +55,29 @@ export class CaveFloor {
       if (x > 1 && y > 1 && x < CAVE_WIDTH-2 && y < CAVE_HEIGHT-2)
         this.cells[y*CAVE_WIDTH+x] = cell;
     };
+    let chambers: readonly SideChamber[] = [];
+    let mainRooms: readonly { x: number; y: number }[] = [];
     if (entrance.tower) carveTowerFloor(carve, salt);
-    else this.carveCaverns(carve, salt);
+    else {
+      const rooms = mainRooms = this.carveCaverns(carve, salt);
+      // As grutas verdes do Centro (a de treinamento da Aela fica como sempre foi) ganham tocas e atalhos que crescem com a profundidade (ADR 0102).
+      if (entrance.theme === "verdant" && !isStarterCave(entrance)) {
+        chambers = sideChambersFor(floorIndex, salt);
+        for (const chamber of chambers) {
+          for (let y = chamber.y - chamber.ry - 1; y <= chamber.y + chamber.ry + 1; y++)
+            for (let x = chamber.x - chamber.rx - 1; x <= chamber.x + chamber.rx + 1; x++)
+              if (((x - chamber.x) / chamber.rx) ** 2 + ((y - chamber.y) / chamber.ry) ** 2 < .88 + hash2(x, y, salt + 619) * .22) carve(x, y);
+          const door = rooms[chamber.joinsRoom]!;
+          carveCorridor(carve, chamber.x, chamber.y, door.x, door.y);
+        }
+        for (const link of shortcutsFor(floorIndex)) {
+          const from = rooms[link.fromRoom]!, to = rooms[link.toRoom]!;
+          carveCorridor(carve, from.x, from.y, to.x, to.y);
+        }
+      }
+    }
+    this.chambers = chambers;
+    this.rooms = mainRooms;
     for(let y=CAVE_EXIT.y-5;y<=CAVE_EXIT.y+1;y++)
       for(let x=CAVE_EXIT.x-2;x<=CAVE_EXIT.x+2;x++)carve(x,y);
     // A escada para baixo cabe numa clareira de 7x5 tiles, sempre ligada pelos corredores.
@@ -60,7 +95,7 @@ export class CaveFloor {
     };
   }
   /** A planta de caverna de sempre, intacta: salas ovais, corredores de 3 tiles e poças nos temas úmidos. */
-  private carveCaverns(carve: (x: number, y: number, cell?: CaveCell) => void, salt: number): void {
+  private carveCaverns(carve: Carve, salt: number): readonly { x: number; y: number }[] {
     const rooms = [
       {x:21,y:24,rx:7,ry:5},
       {x:12+Math.floor(hash2(1,2,salt)*4),y:16,rx:7,ry:5},
@@ -74,13 +109,7 @@ export class CaveFloor {
           const r = ((x-room.x)/room.rx)**2 + ((y-room.y)/room.ry)**2;
           if (r < .88 + hash2(x,y,salt+283)*.22) carve(x,y);
         }
-    const corridor = (ax:number,ay:number,bx:number,by:number): void => {
-      let x=ax,y=ay;
-      // Straight connectors and 3-tile width keep all chambers reachable.
-      while(x!==bx) {for(let dy=-1;dy<=1;dy++)carve(x,y+dy);x+=Math.sign(bx-x);}
-      while(y!==by) {for(let dx=-1;dx<=1;dx++)carve(x+dx,y);y+=Math.sign(by-y);}
-      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)carve(x+dx,y+dy);
-    };
+    const corridor = (ax:number,ay:number,bx:number,by:number): void => carveCorridor(carve,ax,ay,bx,by);
     for(let i=1;i<rooms.length;i++) corridor(rooms[i-1]!.x,rooms[i-1]!.y,rooms[i]!.x,rooms[i]!.y);
     // Small flooded pockets; never flood the guaranteed central passages.
     for(let y=3;y<CAVE_HEIGHT-3;y++)for(let x=3;x<CAVE_WIDTH-3;x++){
@@ -92,6 +121,7 @@ export class CaveFloor {
     }
     // Preserve the same connected corridors after wet-pocket decoration.
     for(let i=1;i<rooms.length;i++) corridor(rooms[i-1]!.x,rooms[i-1]!.y,rooms[i]!.x,rooms[i]!.y);
+    return rooms;
   }
   at(tx:number,ty:number): CaveCell {
     if(!Number.isInteger(tx)||!Number.isInteger(ty)||tx<0||ty<0||tx>=CAVE_WIDTH||ty>=CAVE_HEIGHT)return 0;

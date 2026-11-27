@@ -82,7 +82,7 @@ test("masmorra das raízes: cada andar sorteia o povo da sua tabela, no número 
       const plan = dungeonFloor(entrance, index)!, room = new CaveRoom(entrance, 100, 100, new Set(), { floorIndex: index });
       const kinds = new Set<string>([...room.monsters.values()].map(mob => mob.kind)), allowed = new Set<string>([...plan.monsters, ...("boss" in plan ? [plan.boss] : [])]);
       for (const kind of kinds) assert.ok(allowed.has(kind), `${plan.name}: ${kind} fora da tabela`);
-      const common = [...room.monsters.keys()].filter(id => !id.endsWith(":boss")).length;
+      const common = [...room.monsters.keys()].filter(id => id.includes(":mob:")).length; // os guardiões das tocas (`:den:`) têm o seu teste em `cave-side-chambers.test.ts`
       assert.ok(common >= Math.min(3, plan.encounters) && common <= plan.encounters, `${plan.name}: ${common} encontros de até ${plan.encounters}`);
       assert.equal([...room.monsters.keys()].some(id => id.endsWith(":boss")), index === count, `${plan.name}: chefe só no último`);
     }

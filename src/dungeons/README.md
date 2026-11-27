@@ -7,7 +7,7 @@ Uma **masmorra** é uma caverna de vários andares. Aqui ficam só os **dados**:
 | Região | Pasta | Masmorras |
 | --- | --- | --- |
 | Sul | [`south/`](./south/index.ts) | Cripta das Dunas (3 andares, ou 2 na versão curta), Masmorra do Brejo (2 andares) |
-| Centro | [`center/`](./center/index.ts) | Masmorra das Raízes (5 andares, ou 3 na versão curta; **toda** gruta verde, menos a de treinamento, ADR 0094 e 0101) |
+| Centro | [`center/`](./center/index.ts) | Masmorra das Raízes (5 andares, ou 3 na versão curta; **toda** gruta verde, menos a de treinamento, com tocas laterais e atalhos que crescem com o andar; ADR 0094, 0101 e 0102) |
 | Norte, Leste, Oeste | _(ainda sem masmorras de vários andares)_ | |
 
 ## Nova masmorra

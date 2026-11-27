@@ -39,3 +39,29 @@ test("entrar numa gruta verde do Centro: é a Masmorra das Raízes, abre no prim
   for (const name of names) expect(["Rato Gigante", "Morcego de Caverna", "Aranha das Raízes", "Slime de Musgo", "Besouro de Raiz"]).toContain(name);
   expect(errors).toEqual([]);
 });
+
+test("o mapa do andar da Masmorra das Raízes abre com a planta (salas, tocas e atalhos) e o nome certo (desktop/Android)", async ({ page }, info) => {
+  expect(dungeon, "há uma Masmorra das Raízes perto do começo do mundo").not.toBeNull();
+  if (!dungeon) return;
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.addInitScript(({ seed, x, y }) => {
+    localStorage.setItem("terrania-origins-v1", JSON.stringify({ seed, x, y, hp: 100, kills: 0, defeated: [] }));
+    localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false }));
+  }, { seed: SEED, x: dungeon.x, y: dungeon.y });
+  await page.goto("/jogar/?modo=solo");
+  await expect(page.locator("canvas#game")).toBeVisible();
+  const action = page.locator("#talkButton");
+  await expect(action).toContainText("Entrar (E)");
+  if (info.project.name === "android") await action.tap(); else await action.click();
+  await expect(page.locator("#coords")).toContainText("Subsolo");
+  await page.locator("#gameMenuButton").click();
+  await page.locator("#inventoryButton").click();
+  await page.locator("#inventoryTabMap").click();
+  await expect(page.locator("#caveMapTitle")).toHaveText(dungeon.name);
+  await expect(page.locator("#worldMapDimensions")).toContainText(/Andar 1 de [35] — Raízes Rasas/);
+  const atlas = page.locator("#worldAtlasCanvas");
+  await expect(atlas).toBeVisible();
+  await atlas.screenshot({ path: test.info().outputPath("mapa-da-masmorra-das-raizes.png") });
+  expect(errors).toEqual([]);
+});

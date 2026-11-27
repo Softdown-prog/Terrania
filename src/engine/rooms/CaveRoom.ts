@@ -134,6 +134,13 @@ export class CaveRoom {
       const id=this.floor.id+":mob:"+i;
       if (!this.defeated.has(id)) this.monsters.set(id,new RegionalMonster(id,kind,x,y));
     }
+    // Cada toca lateral tem o seu guardião, no meio da sala (ADR 0102): quem foge do caminho principal encontra bicho e, depois, o que a toca guarda.
+    // (Quem já foi derrotado sai logo depois, junto com os outros, pela lista de `spawns` do construtor.)
+    for (const chamber of this.floor.chambers) {
+      const x=(chamber.x+.5)*TILE_SIZE,y=(chamber.y+.5)*TILE_SIZE,id=this.floor.id+":den:"+chamber.index;
+      if (!this.collision.canMove(x,y)||!reaches(x,y)) continue;
+      this.monsters.set(id,new RegionalMonster(id,kinds[Math.floor(hash2(chamber.index,29,salt+137)*kinds.length)]!,x,y));
+    }
     // O chefe espera na câmara do fundo, onde nos andares de cima fica a escada.
     if (plan?.boss) {
       const id=this.floor.id+":boss", spot=pixel(CAVE_STAIRS_DOWN);

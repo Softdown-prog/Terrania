@@ -20,7 +20,9 @@ const BASELINE: ReadonlyArray<readonly [number, number, string, string]> = [
   [127, 0, "coastal", "d4d14945"], [100, -17, "coastal", "693dac23"],
   [-124, 0, "basalt", "82c7f924"], [-121, 0, "basalt", "857b2760"],
   [124, 125, "marsh", "4bed6a4f"], [126, 125, "marsh", "7581eadb"],
-  [4, 3, "verdant", "f126c2ef"], [7, 3, "verdant", "77c6fd54"],
+  // As grutas verdes do Centro ganharam tocas e atalhos (ADR 0102): as duas impressões abaixo são as novas; as de antes eram f126c2ef e 77c6fd54.
+  // A gruta de treinamento da Aela (também verde) não mudou, e `tests/cave-side-chambers.test.ts` confere isso.
+  [4, 3, "verdant", "3d4638e2"], [7, 3, "verdant", "7026bd03"],
 ];
 
 test("andar de caverna: o mapa de cada tema é idêntico ao de antes da mudança de arquivo", () => {
