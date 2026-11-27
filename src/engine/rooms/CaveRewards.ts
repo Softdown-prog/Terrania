@@ -42,3 +42,18 @@ export function applyCaveVictories(sim: OfflineSimulation, cave: CaveVictorySour
   }
   return changed;
 }
+
+/**
+ * O que o herói colheu nos pontos de coleta da caverna (ADR 0105): o material vai para a bolsa e o ponto fica na lista dos colhidos, com o prazo de brotar de novo.
+ * Devolve os materiais colhidos (vazio se nada), para a tela avisar e o jogo salvar.
+ */
+export function applyCaveGathering(sim: OfflineSimulation, cave: { drainGathered(): Array<{ readonly id: string; readonly item: string }> }): string[] {
+  const items: string[] = [];
+  for (const { id, item } of cave.drainGathered()) {
+    if (sim.defeated.has(id) || !sim.inventory.addMaterial(item)) continue;
+    sim.defeated.add(id);
+    sim.noteDefeat(id);
+    items.push(item);
+  }
+  return items;
+}

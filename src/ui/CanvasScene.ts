@@ -1,4 +1,5 @@
 import { drawCaveChest } from "../render/caveChestArt.ts";
+import { drawCaveHerb } from "../render/caveHerbArt.ts";
 import { RegionalMonster } from "../actors/RegionalMonster.ts";
 import { renderRegionalCreature } from "../render/regionalCreatures.ts";
 import { beginLightingFrame } from "../render/lighting/litSprite.ts";
@@ -319,6 +320,9 @@ export class CanvasScene {
     for(const spot of room.chests.standing.values())
       if(Math.abs(spot.x-room.player.x)<=width/2+24&&Math.abs(spot.y-room.player.y)<=height/2+30)
         loot.push({y:spot.y,render:()=>drawCaveChest(this.ctx,spot.x-left,spot.y-top,time)});
+    for(const node of room.gathering.standing.values())
+      if(Math.abs(node.x-room.player.x)<=width/2+24&&Math.abs(node.y-room.player.y)<=height/2+30)
+        loot.push({y:node.y,render:()=>drawCaveHerb(this.ctx,node.kind,node.x-left,node.y-top,time)});
     drawCaveView(this.ctx,room,left,top,width,height,time,gear,weapon,playerClass,loot);
     spells?.render(this.ctx,left,top);
     if(destination)drawTarget(this.ctx,{x:destination.x-left,y:destination.y-top},time);

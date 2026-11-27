@@ -1,6 +1,6 @@
 # ADR 0104 — A Raiz Velha: a missão da Gruta das Raízes (L5d)
 
-**Estado:** entregue em 2026-11-27, quarta fatia do pedido do dono para a Gruta das Raízes ("coisas para fazer dentro da gruta"). Depois dos [cinco andares](0101-toda-gruta-das-raizes-e-masmorra.md), das [tocas e atalhos](0102-tocas-e-atalhos-da-masmorra-das-raizes.md) e dos [baús](0103-baus-das-tocas.md), a masmorra ganha um **objetivo**. Falta só a coleta que volta.
+**Estado:** entregue em 2026-11-27, quarta fatia do pedido do dono para a Gruta das Raízes ("coisas para fazer dentro da gruta"). Depois dos [cinco andares](0101-toda-gruta-das-raizes-e-masmorra.md), das [tocas e atalhos](0102-tocas-e-atalhos-da-masmorra-das-raizes.md) e dos [baús](0103-baus-das-tocas.md), a masmorra ganha um **objetivo**. A coleta que volta veio no [ADR 0105](0105-pontos-de-coleta.md).
 
 ## A missão
 Segunda missão da **Aela** (a do começo do jogo), no [diário de missões](0100-diario-de-missoes.md):

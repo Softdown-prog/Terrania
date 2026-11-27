@@ -1,4 +1,4 @@
-import { applyCaveVictories } from "../../engine/rooms/CaveRewards.ts";
+import { applyCaveGathering, applyCaveVictories } from "../../engine/rooms/CaveRewards.ts";
 import { collectDrops } from "../../engine/character/loot.ts";
 import type { CaveRoom } from "../../engine/rooms/CaveRoom.ts";
 import { nearbyStairsMove, reachedStairsMove } from "../../engine/rooms/caveStairs.ts";
@@ -22,6 +22,8 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
     const caveMovement = follow
       ? host.travel.pursuit.direction(dt,cave.player,focused,cave.monsters,cave.collision,false,null,profile.followStop)
       : movement;
+    // Os pontos de coleta só dão o que cabe na bolsa; a pergunta vale já neste quadro, antes de a caverna andar (ADR 0105).
+    cave.canGather = item => host.sim.inventory.canAddMaterial(item);
     cave.update(dt,caveMovement,attack || classicStrike,
       host.sim.inventory.loadout.equipped,host.sim.inventory.defense,
       // O alvo do golpe vai em TODOS os quadros, como na superfície: a magia sai depois do preparo, em outro quadro que o do pedido.
@@ -33,9 +35,12 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
     host.effects.spells.update(paused ? 0 : dt, cave.player, cave.monsters.values());
     // O que as criaturas derrubadas deixam no chão da caverna é recolhido ao chegar perto, como na superfície (ADR 0084).
     const changed = applyCaveVictories(host.sim, cave);
+    // O que foi colhido vai para a bolsa e a tela avisa (ADR 0105).
+    const gathered = applyCaveGathering(host.sim, cave);
+    if (gathered.length) { host.hud.setTravelNotice(`Você colheu: ${gathered.join(", ")}.`); host.updateHud(); }
     cave.respawnTick(dt, () => host.sim.expireDefeats()); // quem já pode voltar reaparece no lugar onde nasceu, com o herói longe (ADR 0029)
     const collected = collectDrops(cave.drops, cave.player, host.sim.inventory);
-    if(changed || collected)host.save();
+    if(changed || collected || gathered.length)host.save();
   }
   const stairs=reachedStairsMove(cave);
   if(cave.player.hp<=0){

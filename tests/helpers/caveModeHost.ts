@@ -12,16 +12,17 @@ export const CAVE_SEED = 842136;
 export const FRAME: Frame = { dt: 1 / 60, paused: false, movement: { x: 0, y: 0 }, attack: false, manualActive: false, tileRoute: false, still: { x: 0, y: 0 } };
 const quiet = new Proxy({}, { get: () => () => undefined }) as unknown;
 
-export interface CaveHost { host: ModeHost; sim: OfflineSimulation; cave: CaveRoom }
+export interface CaveHost { host: ModeHost; sim: OfflineSimulation; cave: CaveRoom; /** Quantas vezes a ligação pediu para salvar. */ saves: { count: number } }
 export function caveHost(heroClass: "knight" | "mage", entrance = caveEntranceInCell(0, 0, CAVE_SEED)!): CaveHost {
   const sim = new OfflineSimulation(CAVE_SEED, undefined, heroClass);
   const cave = new CaveRoom(entrance, sim.player.hp, sim.player.maxHp, sim.defeated);
+  const saves = { count: 0 };
   const fake = {
     sim, travel: new TravelState(), hud: quiet, scene: quiet, input: { acknowledgeMovement: () => undefined }, effects: { spells: new SpellBolts() }, camera: { zoom: 1 },
     timers: { clock: 0, battleClock: 0, saveClock: 0, accumulator: 0 }, world: quiet,
-    save: () => undefined, updateHud: () => undefined, hudBattleRows: () => [], leaveCave: () => undefined, changeCaveFloor: () => undefined, leaveInterior: () => undefined,
+    save: () => { saves.count++; }, updateHud: () => undefined, hudBattleRows: () => [], leaveCave: () => undefined, changeCaveFloor: () => undefined, leaveInterior: () => undefined,
   };
-  return { host: fake as unknown as ModeHost, sim, cave };
+  return { host: fake as unknown as ModeHost, sim, cave, saves };
 }
 
 /** Põe o herói a `distance` pixels do slime 5 do treino, em linha reta e livre, e escolhe esse slime como alvo (como um toque nele). Devolve o id. */

@@ -1,4 +1,5 @@
 import { CHEST_RESPAWN_SECONDS } from "../rooms/CaveChests.ts";
+import { GATHER_RESPAWN_SECONDS, isGatherId } from "../rooms/CaveGathering.ts";
 import { CREATURE_CATALOG, type CreatureKind } from "../../actors/CreatureCatalog.ts";
 
 /**
@@ -19,6 +20,7 @@ const TRAINING_SLIME = /^cave:\d+:0:0:floor:1:slime:/;
 export function respawnSecondsForId(id: string, kind?: CreatureKind): number | null {
   if (TRAINING_SLIME.test(id)) return null;
   if (CHEST_ID.test(id)) return CHEST_RESPAWN_SECONDS; // baú de toca (ADR 0103)
+  if (isGatherId(id)) return GATHER_RESPAWN_SECONDS; // ponto de coleta (ADR 0105)
   if (id.endsWith(":boss")) return BOSS_RESPAWN_SECONDS;
   if (!kind) return LEGACY_RESPAWN_SECONDS;
   const experience = CREATURE_CATALOG[kind].experience;

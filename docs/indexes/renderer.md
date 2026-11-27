@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (349)
+## Todos os arquivos deste módulo (350)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -31,6 +31,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/caveFormations/outline.ts`](../../src/render/caveFormations/outline.ts)
 - [`src/render/caveFormations/parts.ts`](../../src/render/caveFormations/parts.ts)
 - [`src/render/caveFormations/placement.ts`](../../src/render/caveFormations/placement.ts)
+- [`src/render/caveHerbArt.ts`](../../src/render/caveHerbArt.ts)
 - [`src/render/caveRock/field.ts`](../../src/render/caveRock/field.ts)
 - [`src/render/caveRock/index.ts`](../../src/render/caveRock/index.ts)
 - [`src/render/caveRock/layer.ts`](../../src/render/caveRock/layer.ts)

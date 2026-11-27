@@ -3,6 +3,7 @@ import { SOUTH_COMMON_KINDS, type CreatureKind, type RegionalCreatureKind } from
 import { Slime } from "../../actors/Slime.ts";
 import { caveDefeatDrops } from "./CaveLoot.ts";
 import { CaveChests } from "./CaveChests.ts";
+import { CaveGathering, GATHER_PER_FLOOR, gatherKindOf } from "./CaveGathering.ts";
 import { caveReach } from "../../world/caveReach.ts";
 import { MAX_WORLD_DROPS, type LootDrop } from "../character/loot.ts";
 import { AELA_SLIME_GOAL } from "../../world/aelaQuest.ts";
@@ -40,6 +41,10 @@ export class CaveRoom {
   readonly drops = new Map<string, LootDrop>();
   /** Os baús das tocas deste andar (ADR 0103). */
   readonly chests = new CaveChests();
+  /** Os pontos de coleta deste andar (ADR 0105). */
+  readonly gathering = new CaveGathering();
+  /** Se a bolsa tem lugar para o material de um ponto de coleta; a ligação do jogo troca por `inventory.canAddMaterial` a cada quadro. Sem ligação à bolsa nada se colhe (o material não se perde). */
+  canGather: (item: string) => boolean = () => false;
   readonly collision: CollisionMap;
   readonly floorIndex: number;
   readonly floorCount: number;
@@ -72,6 +77,7 @@ export class CaveRoom {
     this.defeated=defeated;
     for(const id of this.spawns.keys())if(defeated.has(id))this.monsters.delete(id);
     this.chests.settle(defeated);
+    this.gathering.settle(defeated);
   }
   /**
    * O tempo de volta também corre dentro do andar (ADR 0029): a cada segundo `release` devolve ao mundo quem já pode voltar e quem estava caído reaparece onde
@@ -93,10 +99,13 @@ export class CaveRoom {
     }
     // O baú volta cheio, sem a moeda que o herói deixou para trás.
     for(const id of this.chests.respawn(this.player,this.defeated))this.drops.delete(id+":coin");
+    this.gathering.respawn(this.player,this.defeated);
     return back;
   }
   /** Os baús abertos desde a última chamada (ids); `applyCaveVictories` os anota na simulação, para ficarem no save e voltarem depois. */
   drainOpenings():string[] { return this.chests.drainOpened(); }
+  /** O que o herói colheu desde a última chamada (id do ponto e material); `applyCaveGathering` guarda na bolsa e anota no save. */
+  drainGathered():Array<{readonly id:string;readonly item:string}> { return this.gathering.drainTaken(); }
   private populate(entrance: CaveEntrance): void {
     // Criatura só nasce em chão que o herói alcança a pé (nada de ilha isolada ou câmara fechada).
     const reaches = caveReach(this.collision, this.player);
@@ -156,6 +165,16 @@ export class CaveRoom {
         break;
       }
     }
+    // Pontos de coleta: três por andar, em chão que o herói alcança, longe da entrada e da escada e afastados entre si (ADR 0105).
+    // (Só a Masmorra das Raízes: as masmorras de outros temas, como a Cripta das Dunas, não têm cogumelo nem raiz do Centro.)
+    if (entrance.theme === "verdant") for(let i=0;i<40&&this.gathering.standing.size<GATHER_PER_FLOOR;i++){
+      const tx=3+Math.floor(hash2(i,31,salt+211)*(CAVE_WIDTH-6)),ty=3+Math.floor(hash2(i,37,salt+223)*(CAVE_HEIGHT-9));
+      const x=(tx+.5)*TILE_SIZE,y=(ty+.5)*TILE_SIZE;
+      if(!this.collision.canMove(x,y)||!reaches(x,y)||this.gathering.tooClose(x,y)||
+         Math.hypot(x-this.player.x,y-this.player.y)<150||(stairs&&Math.hypot(x-stairs.x,y-stairs.y)<110))continue;
+      const index=this.gathering.standing.size;
+      this.gathering.place(this.floor.id+":herb:"+index,{x,y,kind:gatherKindOf(index)});
+    }
     // O chefe espera na câmara do fundo, onde nos andares de cima fica a escada.
     if (plan?.boss) {
       const id=this.floor.id+":boss", spot=pixel(CAVE_STAIRS_DOWN);
@@ -189,6 +208,7 @@ export class CaveRoom {
       if(monster.hp<=0)this.defeat(id,monster,defense);
     }
     this.chests.update(this.player,this.monsters,this.drops,this.floorIndex);
+    this.gathering.update(this.player,this.floorIndex,this.canGather);
     // Como na superfície: o golpe em andamento segue virado para o alvo mesmo com o herói andando (fugir e atacar).
     const focused=typeof targetId==="string" ? this.monsters.get(targetId) : undefined;
     if(focused && this.player.attackTime>0)faceTarget(this.player,focused);

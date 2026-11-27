@@ -166,6 +166,8 @@ export class Inventory {
     if (owned - quantity > 0) this.materialCounts[id] = owned - quantity; else delete this.materialCounts[id];
     return true;
   }
+  /** Se `addMaterial(id)` daria certo agora (material conhecido e a pilha ainda tem lugar). */
+  canAddMaterial(id: string): boolean { return KNOWN_MATERIALS.has(id) && (this.materialCounts[id] ?? 0) < MAX_STACK; }
   addMaterial(id: string): boolean {
     if (!KNOWN_MATERIALS.has(id) || (this.materialCounts[id] ?? 0) >= MAX_STACK) return false;
     this.materialCounts[id] = (this.materialCounts[id] ?? 0) + 1;

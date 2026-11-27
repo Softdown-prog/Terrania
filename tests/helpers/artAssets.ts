@@ -135,6 +135,7 @@ import { drawCaveEntrance } from "../../src/render/cave.ts";
 import { drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "../../src/render/caveDetails.ts";
 import { drawCaveDownStair } from "../../src/render/caveStairsDownArt.ts";
 import { drawCaveChest } from "../../src/render/caveChestArt.ts";
+import { drawCaveHerb } from "../../src/render/caveHerbArt.ts";
 import { drawBones, drawCrackedEarth, drawDesertCactus, drawDesertShrub, drawDryGrass } from "../../src/render/south/decor/index.ts";
 import { drawMossRock } from "../../src/render/rocks/mossRock.ts";
 import { drawSandstoneRock } from "../../src/render/south/rocks/sandstoneRock.ts";
@@ -571,6 +572,8 @@ export const ASSETS: ArtAsset[] = [
         draw: c => drawCaveExitStair(c, theme, 0, 0) },
       { id: "escada de descida " + theme, tier: "prop", fn: "drawCaveDownStair",
         draw: c => drawCaveDownStair(c, theme, 0, 0) },
+      ...(theme === "verdant" ? (["spores", "sap"] as const).map(kind => ({ id: "ponto de coleta " + kind, tier: "prop" as const, fn: "drawCaveHerb",
+        draw: (c: CanvasRenderingContext2D) => drawCaveHerb(c, kind, 0, 0, 0) })) : []), // igual em todo tema: duas peças só
       ...(theme === "verdant" ? [{ id: "baú da toca", tier: "prop" as const, fn: "drawCaveChest",
         draw: (c: CanvasRenderingContext2D) => drawCaveChest(c, 0, 0, 0) }] : []), // o baú é igual em todo tema: uma peça só
       ...(["south", "east"] as const).map<ArtAsset>(side => ({
