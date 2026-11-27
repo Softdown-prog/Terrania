@@ -115,7 +115,9 @@ async function walk(page: Page, floor: CaveFloor, goal: Tile, act: () => Promise
 test.describe.configure({ retries: 1 });
 
 test("masmorra de 3 andares: descer, subir e sair pela mesma entrada (desktop/Android)", async ({ page }, info) => {
-  test.setTimeout(300_000);
+  // Na primeira rodada da CI o desktop levou 2,5 min (execução 737) e em outras passou dos 5 (732, 734, 736); no Android e aqui o teste leva 25 s. O limite de 15 min só evita
+  // que a lentidão da primeira rodada derrube o teste; um travamento de verdade cai bem antes, pelas mensagens de `walk`.
+  test.setTimeout(900_000);
   const entrance = threeFloorDesertCave();
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
