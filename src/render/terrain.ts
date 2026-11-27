@@ -393,6 +393,12 @@ function drawDetails(ctx: CanvasRenderingContext2D, grid: Grid, lx: number, ly: 
   }
 }
 
+/**
+ * O quanto o chão é desfocado antes de receber os detalhes (ADR 0107), em px. Cada tile é uma cor lisa; com 4 px a troca de solo (mata, grama, areia) ficava em degraus retos de
+ * tile, com retângulos escuros no meio do campo. Com 11 px o degrau vira um degradê macio e redondo. Precisa caber na folga de um tile (32 px) que cada chunk pinta além da borda.
+ */
+export const GROUND_BLEND_PX = 11;
+
 /** Quantos tiles se pintam entre dois passos da geração em fatias (ADR 0047). */
 export const CHUNK_STEP_TILES = 36;
 
@@ -422,7 +428,7 @@ export function* generateChunkSteps(cx: number, cy: number, seed: number): Gener
     }
   yield;
   // Padding uses global neighboring tiles, preventing seams at chunk boundaries.
-  ctx.filter = "blur(4px)";
+  ctx.filter = `blur(${GROUND_BLEND_PX}px)`;
   ctx.drawImage(padded, -TILE_SIZE, -TILE_SIZE);
   ctx.filter = "none";
   yield;

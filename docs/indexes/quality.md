@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (236)
+## Todos os arquivos deste módulo (237)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -250,6 +250,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/sword-definitions.test.ts`](../../tests/sword-definitions.test.ts)
 - [`tests/sword-strike.test.ts`](../../tests/sword-strike.test.ts)
 - [`tests/tap-navigation.test.ts`](../../tests/tap-navigation.test.ts)
+- [`tests/terrain-ground-blend.test.ts`](../../tests/terrain-ground-blend.test.ts)
 - [`tests/travel-state.test.ts`](../../tests/travel-state.test.ts)
 - [`tests/village.test.ts`](../../tests/village.test.ts)
 - [`tests/world.test.ts`](../../tests/world.test.ts)
