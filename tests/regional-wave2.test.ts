@@ -22,9 +22,9 @@ const profiles = [
   ["tide-hunter-triton",250,36,"east","coastal"],
 ] as const;
 test("bestiário: catálogo consolida vinte espécies, sem repetir IDs, ficha e habitats",()=>{
-  assert.equal(REGIONAL_CREATURE_KINDS.length,40);
+  assert.equal(REGIONAL_CREATURE_KINDS.length,42);
   assert.equal(SECOND_WAVE_KINDS.length,10);
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,40);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,42);
   for(const [kind,hp,attack,region,cave] of profiles){
     const species=CREATURE_CATALOG[kind];
     assert.equal(species.maxHp,hp,kind);

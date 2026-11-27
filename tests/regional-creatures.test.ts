@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../src/actors/CreatureCatalog.ts";
+import { CENTER_DUNGEON_KINDS } from "../src/monsters/catalog.ts";
 import { regionalSurfaceSpawns, caveMonsterKinds, rollCreatureLoot, RegionalMonster } from "../src/actors/RegionalMonster.ts";
 import { CaveRoom } from "../src/engine/rooms/CaveRoom.ts";
 import type { CaveEntrance, CaveTheme } from "../src/world/caves.ts";
@@ -9,14 +10,19 @@ import { Player } from "../src/actors/Player.ts";
 
 const themes = ["basalt","marsh","desert","glacial","coastal"] as const satisfies readonly CaveTheme[];
 
-test("bestiário: 40 espécies com ficha completa e loot válido", () => {
-  assert.equal(REGIONAL_CREATURE_KINDS.length,40);
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,40);
+test("bestiário: 42 espécies com ficha completa e loot válido", () => {
+  assert.equal(REGIONAL_CREATURE_KINDS.length,42);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,42);
   for (const kind of REGIONAL_CREATURE_KINDS) {
     const def=CREATURE_CATALOG[kind];
     assert.ok(def.name.length>8);
     // O povo do Centro é o do começo do jogo (docs/BESTIARIO_CENTRO.md): mais frágil e mais fraco que o do resto do mundo.
-    if (def.region==="center") {
+    const dungeon=(CENTER_DUNGEON_KINDS as readonly string[]).includes(kind);
+    if (def.region==="center" && dungeon) {
+      // A elite e o chefe da Masmorra das Raízes (ADR 0094) são o desafio do fim do Centro, não o do começo do jogo.
+      assert.ok(def.maxHp>=200 && def.maxHp<=700,kind);
+      assert.ok(def.contactDamage>=15 && def.contactDamage<=30,kind);
+    } else if (def.region==="center") {
       assert.ok(def.maxHp>=20 && def.maxHp<=120,kind);
       assert.ok(def.contactDamage>=4 && def.contactDamage<=15,kind);
     } else {
@@ -26,7 +32,7 @@ test("bestiário: 40 espécies com ficha completa e loot válido", () => {
     assert.ok(def.experience>0);
     assert.ok(def.loot.length>=1);
     assert.ok(def.caveThemes.length>0 || kind === "sand-beetle" || kind === "wild-boar" || kind === "gray-wolf");
-    assert.ok(def.biomes.length>0);
+    assert.ok(def.biomes.length>0 || dungeon, kind+": só a elite e o chefe da masmorra não andam pela superfície");
     for(const entry of def.loot) assert.ok(entry.chance>0&&entry.chance<=1);
   }
   assert.equal(CREATURE_CATALOG.slime.contactDamage,9);
@@ -42,8 +48,8 @@ test("geografia: cinco habitats subterrâneos recebem só suas espécies", () =>
     assert.equal(kinds.length,expected[theme],theme);
     for(const kind of kinds) assert.ok(CREATURE_CATALOG[kind].caveThemes.includes(theme));
   }
-  // o Centro tem o seu povo (ADR 0087): as sete do Centro que moram na caverna (lotes 1 a 3); o slime nasce à parte, na própria caverna
-  assert.deepEqual(caveMonsterKinds("verdant"),["giant-rat","cave-bat","root-spider","moss-slime","vine-snake","root-beetle","walking-mushroom"]);
+  // o Centro tem o seu povo (ADR 0087): as sete do Centro que moram na caverna (lotes 1 a 3) e as duas da masmorra (lote 4, ADR 0094); o slime nasce à parte, na própria caverna
+  assert.deepEqual(caveMonsterKinds("verdant"),["giant-rat","cave-bat","root-spider","moss-slime","vine-snake","root-beetle","walking-mushroom","living-root","elder-cave-ent"]);
 });
 
 test("superfície: monstros estáveis por seed, ausentes da vila central", () => {

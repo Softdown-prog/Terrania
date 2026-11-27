@@ -39,6 +39,8 @@ import { renderRootBeetleCreature } from "./creatures/center/beetles/rootBeetle.
 import { renderWildBoarCreature } from "./creatures/center/boars/wildBoar.ts";
 import { renderGrayWolfCreature } from "./creatures/center/wolves/grayWolf.ts";
 import { renderWalkingMushroomCreature } from "./creatures/center/mushrooms/walkingMushroom.ts";
+import { renderLivingRootCreature } from "./creatures/center/roots/livingRoot.ts";
+import { renderElderCaveEntCreature } from "./creatures/center/ents/elderCaveEnt.ts";
 import { stepTime, stepVisual } from "./lighting/visualKey.ts";
 /** Dados visuais de leitura: renderização não aplica dano ou loot. */
 export interface RegionalCreatureVisual {
@@ -94,6 +96,8 @@ const CREATURE_RENDERERS:Readonly<Record<RegionalCreatureKind,CreatureRenderer>>
   "wild-boar":renderWildBoarCreature,
   "gray-wolf":renderGrayWolfCreature,
   "walking-mushroom":renderWalkingMushroomCreature,
+  "living-root":renderLivingRootCreature,
+  "elder-cave-ent":renderElderCaveEntCreature,
 };
 export function renderRegionalCreature(ctx:CanvasRenderingContext2D,
  creature:RegionalCreatureVisual,sx:number,sy:number,time=0):void {

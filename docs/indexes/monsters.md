@@ -15,7 +15,7 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/east/index.ts`](../../src/monsters/east/index.ts)
 - [`src/monsters/west/index.ts`](../../src/monsters/west/index.ts)
 
-## Todos os arquivos deste módulo (55)
+## Todos os arquivos deste módulo (57)
 
 - [`src/monsters/README.md`](../../src/monsters/README.md)
 - [`src/monsters/behavior.ts`](../../src/monsters/behavior.ts)
@@ -23,9 +23,11 @@ Fichas individuais de criaturas classificadas por região; fonte única de atrib
 - [`src/monsters/center/bats/cave-bat.ts`](../../src/monsters/center/bats/cave-bat.ts)
 - [`src/monsters/center/beetles/root-beetle.ts`](../../src/monsters/center/beetles/root-beetle.ts)
 - [`src/monsters/center/boars/wild-boar.ts`](../../src/monsters/center/boars/wild-boar.ts)
+- [`src/monsters/center/ents/elder-cave-ent.ts`](../../src/monsters/center/ents/elder-cave-ent.ts)
 - [`src/monsters/center/index.ts`](../../src/monsters/center/index.ts)
 - [`src/monsters/center/mushrooms/walking-mushroom.ts`](../../src/monsters/center/mushrooms/walking-mushroom.ts)
 - [`src/monsters/center/rats/giant-rat.ts`](../../src/monsters/center/rats/giant-rat.ts)
+- [`src/monsters/center/roots/living-root.ts`](../../src/monsters/center/roots/living-root.ts)
 - [`src/monsters/center/slimes/moss-slime.ts`](../../src/monsters/center/slimes/moss-slime.ts)
 - [`src/monsters/center/slimes/slime.ts`](../../src/monsters/center/slimes/slime.ts)
 - [`src/monsters/center/snakes/vine-snake.ts`](../../src/monsters/center/snakes/vine-snake.ts)

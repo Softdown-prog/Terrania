@@ -12,6 +12,8 @@ import { rootBeetleBehavior } from "./center/beetles/root-beetle.ts";
 import { wildBoarBehavior } from "./center/boars/wild-boar.ts";
 import { grayWolfBehavior } from "./center/wolves/gray-wolf.ts";
 import { walkingMushroomBehavior } from "./center/mushrooms/walking-mushroom.ts";
+import { livingRootBehavior } from "./center/roots/living-root.ts";
+import { elderCaveEntBehavior } from "./center/ents/elder-cave-ent.ts";
 import { frostBansheeBehavior } from "./north/banshees/frost-banshee.ts";
 import { runicPolarBearBehavior } from "./north/bears/runic-polar-bear.ts";
 import { tundraMammothBehavior } from "./north/mammoths/tundra-mammoth.ts";
@@ -97,6 +99,8 @@ export const SPECIES_BEHAVIORS: Readonly<Record<RegionalCreatureKind, SpeciesBeh
   "wild-boar": wildBoarBehavior,
   "gray-wolf": grayWolfBehavior,
   "walking-mushroom": walkingMushroomBehavior,
+  "living-root": livingRootBehavior,
+  "elder-cave-ent": elderCaveEntBehavior,
 });
 
 /** A direção e o ritmo mudam conforme a espécie, sem contornar colisões. */

@@ -9,6 +9,8 @@ import { rootBeetle } from "./beetles/root-beetle.ts";
 import { wildBoar } from "./boars/wild-boar.ts";
 import { grayWolf } from "./wolves/gray-wolf.ts";
 import { walkingMushroom } from "./mushrooms/walking-mushroom.ts";
+import { livingRoot } from "./roots/living-root.ts";
+import { elderCaveEnt } from "./ents/elder-cave-ent.ts";
 
 /** Região Centro: apenas agrega fichas, sem duplicar IA e render. */
 export const CENTER_MONSTERS = {
@@ -22,4 +24,6 @@ export const CENTER_MONSTERS = {
   "wild-boar": wildBoar,
   "gray-wolf": grayWolf,
   "walking-mushroom": walkingMushroom,
+  "living-root": livingRoot,
+  "elder-cave-ent": elderCaveEnt,
 } as const satisfies Readonly<Record<string, CreatureDefinition>>;

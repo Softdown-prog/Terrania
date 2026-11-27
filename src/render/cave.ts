@@ -5,6 +5,7 @@ import { RegionalMonster } from "../actors/RegionalMonster.ts";
 import type { GearState } from "../engine/character/Equipment.ts";
 import type { WeaponId } from "../engine/character/Weapons.ts";
 import { renderHero, type HeroClassLook } from "./actors.ts";
+import { renderRootedFeet } from "./rootedFeet.ts";
 import { ellipse, mix, rgba, shade, softShadow, TAU } from "./draw.ts";
 import { CAVE_PALETTE, drawCaveExitStair, drawCaveFormation, drawCaveWallFace } from "./caveDetails.ts";
 import { hash2, valueNoise } from "../world/random.ts";
@@ -241,8 +242,9 @@ export function drawCaveView(ctx:CanvasRenderingContext2D,room:CaveRoom,
       ? renderRegionalCreature(ctx,mob,mob.x-left,mob.y-top,time)
       : renderSlime(ctx,mob,mob.x-left,mob.y-top,{time,lookX:player.x-mob.x,lookY:player.y-mob.y})});
   }
-  occupants.push({y:player.y,render:()=>renderHero(ctx,
-    {...player,gear,equippedWeapon:weapon,...playerClass},player.x-left,player.y-top,time)});
+  occupants.push({y:player.y,render:()=>{renderHero(ctx,
+    {...player,gear,equippedWeapon:weapon,...playerClass},player.x-left,player.y-top,time);
+    if(player.debuffs.root>0)renderRootedFeet(ctx,player.x-left,player.y-top,time,player.debuffs.root);}});
   occupants.push(...extras);
   occupants.sort((a,b)=>a.y-b.y);
   for(const actor of occupants)actor.render();

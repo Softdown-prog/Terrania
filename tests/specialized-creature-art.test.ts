@@ -75,7 +75,7 @@ test("profundidade visual não altera parâmetros de combate e loot",()=>{
 });
 
 
-test("40 criaturas possuem corpo procedural específico, e não só ficha de atributos", async()=>{
+test("42 criaturas possuem corpo procedural específico, e não só ficha de atributos", async()=>{
   const { REGIONAL_CREATURE_KINDS }=await import("../src/actors/CreatureCatalog.ts");
   const { readFileSync, existsSync }=await import("node:fs");
   const paths: Record<string,string>={
@@ -116,11 +116,13 @@ test("40 criaturas possuem corpo procedural específico, e não só ficha de atr
     "moss-slime":"center/slimes/mossSlime",
     "vine-snake":"center/snakes/vineSnake",
     "root-beetle":"center/beetles/rootBeetle",
+    "living-root":"center/roots/livingRoot",
+    "elder-cave-ent":"center/ents/elderCaveEnt",
     "wild-boar":"center/boars/wildBoar",
     "gray-wolf":"center/wolves/grayWolf",
     "walking-mushroom":"center/mushrooms/walkingMushroom",
   };
-  assert.equal(REGIONAL_CREATURE_KINDS.length,40);
+  assert.equal(REGIONAL_CREATURE_KINDS.length,42);
   for(const kind of REGIONAL_CREATURE_KINDS){
     const loc=paths[kind];
     assert.ok(loc,kind+" não tem arte individual");
@@ -199,7 +201,7 @@ test("render de monstros: registro apenas delega a paleta e função exclusivas 
   const { readFileSync }=await import("node:fs");
   const { REGIONAL_CREATURE_KINDS }=await import("../src/actors/CreatureCatalog.ts");
   const root=readFileSync("src/render/regionalCreatures.ts","utf8");
-  assert.equal(REGIONAL_CREATURE_KINDS.length,40);
+  assert.equal(REGIONAL_CREATURE_KINDS.length,42);
   for(const kind of REGIONAL_CREATURE_KINDS){
     const named="render"+kind.split("-").map(part=>part[0]!.toUpperCase()+part.slice(1)).join("")+"Creature";
     if(kind!=="sand-beetle"){

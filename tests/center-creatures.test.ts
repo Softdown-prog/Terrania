@@ -66,7 +66,7 @@ test("as nove criaturas têm a ficha do documento do bestiário (região Centro,
   assert.deepEqual(CREATURE_CATALOG["giant-rat"].loot, [{ item: "Rabo de Rato Gigante", chance: .55 }, { item: "Dente de Roedor", chance: .3 }]);
   assert.deepEqual(CREATURE_CATALOG["cave-bat"].loot, [{ item: "Asa de Morcego", chance: .5 }, { item: "Guano Seco", chance: .25 }]);
   assert.deepEqual(CREATURE_CATALOG["root-spider"].loot, [{ item: "Fio de Teia", chance: .5 }, { item: "Presa de Aranha", chance: .25 }]);
-  assert.deepEqual(Object.keys(CENTER_MONSTERS).sort(), ["cave-bat", "giant-rat", "gray-wolf", "moss-slime", "root-beetle", "root-spider", "slime", "vine-snake", "walking-mushroom", "wild-boar"]);
+  assert.deepEqual(Object.keys(CENTER_MONSTERS).sort(), ["cave-bat", "elder-cave-ent", "giant-rat", "gray-wolf", "living-root", "moss-slime", "root-beetle", "root-spider", "slime", "vine-snake", "walking-mushroom", "wild-boar"]);
   // o Centro é o começo do jogo: os seis comuns (lotes 1 e 2) têm vida até 55, dano até 8 e experiência até 17; os três médios (lote 3), até 110, 14 e 48
   // (as outras regiões chegam a 450 de vida e 40 de dano)
   for (const kind of CENTER_KINDS.slice(0, 6)) { const d = CREATURE_CATALOG[kind]; assert.ok(d.maxHp <= 55 && d.contactDamage <= 8 && d.experience <= 17, kind); }
@@ -146,7 +146,7 @@ test("o morcego quase morto foge do herói em vez de morder; os outros seguem at
 });
 
 test("onde moram: só o cogumelo mora na caverna; o javali e o lobo só na superfície (e nenhum deles em outro tema nem em outra região)", () => {
-  assert.deepEqual(caveMonsterKinds("verdant"), ["giant-rat", "cave-bat", "root-spider", "moss-slime", "vine-snake", "root-beetle", "walking-mushroom"]);
+  assert.deepEqual(caveMonsterKinds("verdant"), ["giant-rat", "cave-bat", "root-spider", "moss-slime", "vine-snake", "root-beetle", "walking-mushroom", "living-root", "elder-cave-ent"]);
   for (const theme of ["glacial", "desert", "coastal", "basalt", "marsh"] as const) for (const kind of CENTER_KINDS) assert.ok(!caveMonsterKinds(theme).includes(kind), `${kind} não mora em ${theme}`);
   // as geradoras das outras regiões nunca criam bicho do Centro
   const seen = new Set<string>();

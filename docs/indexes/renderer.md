@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (343)
+## Todos os arquivos deste módulo (346)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -84,8 +84,10 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/creatures/center/bats/caveBat.ts`](../../src/render/creatures/center/bats/caveBat.ts)
 - [`src/render/creatures/center/beetles/rootBeetle.ts`](../../src/render/creatures/center/beetles/rootBeetle.ts)
 - [`src/render/creatures/center/boars/wildBoar.ts`](../../src/render/creatures/center/boars/wildBoar.ts)
+- [`src/render/creatures/center/ents/elderCaveEnt.ts`](../../src/render/creatures/center/ents/elderCaveEnt.ts)
 - [`src/render/creatures/center/mushrooms/walkingMushroom.ts`](../../src/render/creatures/center/mushrooms/walkingMushroom.ts)
 - [`src/render/creatures/center/rats/giantRat.ts`](../../src/render/creatures/center/rats/giantRat.ts)
+- [`src/render/creatures/center/roots/livingRoot.ts`](../../src/render/creatures/center/roots/livingRoot.ts)
 - [`src/render/creatures/center/slimes/mossSlime.ts`](../../src/render/creatures/center/slimes/mossSlime.ts)
 - [`src/render/creatures/center/slimes/slime.ts`](../../src/render/creatures/center/slimes/slime.ts)
 - [`src/render/creatures/center/snakes/vineSnake.ts`](../../src/render/creatures/center/snakes/vineSnake.ts)
@@ -225,6 +227,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/rocks/style.ts`](../../src/render/rocks/style.ts)
 - [`src/render/rocks/types.ts`](../../src/render/rocks/types.ts)
 - [`src/render/rocks/variant.ts`](../../src/render/rocks/variant.ts)
+- [`src/render/rootedFeet.ts`](../../src/render/rootedFeet.ts)
 - [`src/render/scenery.ts`](../../src/render/scenery.ts)
 - [`src/render/sceneryTrunk.ts`](../../src/render/sceneryTrunk.ts)
 - [`src/render/south/city/buildings/bazaar.ts`](../../src/render/south/city/buildings/bazaar.ts)

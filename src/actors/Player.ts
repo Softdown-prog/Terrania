@@ -27,7 +27,7 @@ export class Player {
   attackCooldown = 0;
   hurtTime = 0;
   private receivedHits = 0;
-  private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0, burn: 0, stun: 0, blind: 0, infection: 0, "weak-venom": 0 };
+  private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0, burn: 0, stun: 0, blind: 0, infection: 0, "weak-venom": 0, root: 0 };
   private poisonElapsed = 0;
   private burnElapsed = 0;
   private infectionElapsed = 0;
@@ -38,7 +38,7 @@ export class Player {
   get stunned(): boolean { return this.effects.stun > 0; }
   /** Status apply equally to tile-mode outdoor movement and free cave movement. */
   get movementMultiplier(): number {
-    if (this.effects.freeze > 0 || this.effects.stun > 0) return 0;
+    if (this.effects.freeze > 0 || this.effects.stun > 0 || this.effects.root > 0) return 0;
     return this.effects.slow > 0 ? .58 : 1;
   }
   /** Copy only adventure vitals across the cave/surface boundary, preserving coordinates. */
@@ -161,7 +161,7 @@ export class Player {
       this.advanceTimers(dt);
       return;
     }
-    if (this.effects.freeze > 0 || this.effects.stun > 0) {
+    if (this.effects.freeze > 0 || this.effects.stun > 0 || this.effects.root > 0) {
       this.vx = 0; this.vy = 0;
     }
     const length = Math.hypot(dir.x, dir.y);

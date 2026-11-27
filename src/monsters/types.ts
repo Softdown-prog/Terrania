@@ -10,8 +10,9 @@ export type SpecialAttack =
   "gust" | "lava-burst" | "spore-cloud" | "tongue" | "burrow" |
   "trample" | "spectral-ice" | "rune-bite" | "ink" | "tidal-lightning" |
   "infected-bite" | "sand-throw" | "orc-club" | "clay-clod" | "sling" |
-  "sun-spear" | "mirage-sparks" | "weak-venom" | "carrion-dive" | "thorns" | "web";
-export type DebuffKind = "slow" | "poison" | "freeze" | "attack-slow" | "burn" | "stun" | "blind" | "infection" | "weak-venom";
+  "sun-spear" | "mirage-sparks" | "weak-venom" | "carrion-dive" | "thorns" | "web" |
+  /** Raízes que prendem os pés do herói (ADR 0094). */ "roots" | /** O pisão e as raízes de área do Ent Ancião: prende e, de perto, atordoa. */ "root-quake";
+export type DebuffKind = "slow" | "poison" | "freeze" | "attack-slow" | "burn" | "stun" | "blind" | "infection" | "weak-venom" | /** Enraizado: não anda, mas ainda luta (ADR 0094). */ "root";
 export interface LootChance { readonly item: string; readonly chance: number; }
 export interface CreatureDefinition {
   readonly name: string;

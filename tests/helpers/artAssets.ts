@@ -36,6 +36,9 @@ import { PALETTES as MOUNT_PALETTES } from "../../src/render/creatures/mounts/ge
 import { renderWildBoarCreature, drawWildBoar, CREATURE_PALETTE as WILD_BOAR_PALETTE } from "../../src/render/creatures/center/boars/wildBoar.ts";
 import { renderGrayWolfCreature, drawGrayWolf, CREATURE_PALETTE as GRAY_WOLF_PALETTE } from "../../src/render/creatures/center/wolves/grayWolf.ts";
 import { renderWalkingMushroomCreature, drawWalkingMushroom, CREATURE_PALETTE as WALKING_MUSHROOM_PALETTE } from "../../src/render/creatures/center/mushrooms/walkingMushroom.ts";
+import { renderRootedFeet } from "../../src/render/rootedFeet.ts";
+import { renderLivingRootCreature, drawLivingRoot, CREATURE_PALETTE as LIVING_ROOT_PALETTE } from "../../src/render/creatures/center/roots/livingRoot.ts";
+import { renderElderCaveEntCreature, drawElderCaveEnt, CREATURE_PALETTE as ELDER_CAVE_ENT_PALETTE } from "../../src/render/creatures/center/ents/elderCaveEnt.ts";
 import { renderGiantRatCreature, drawGiantRat, CREATURE_PALETTE as GIANT_RAT_PALETTE } from "../../src/render/creatures/center/rats/giantRat.ts";
 import { renderCaveBatCreature, drawCaveBat, CREATURE_PALETTE as CAVE_BAT_PALETTE } from "../../src/render/creatures/center/bats/caveBat.ts";
 import { renderRootSpiderCreature, drawRootSpider, CREATURE_PALETTE as ROOT_SPIDER_PALETTE } from "../../src/render/creatures/center/spiders/rootSpider.ts";
@@ -300,14 +303,16 @@ export const ASSETS: ArtAsset[] = [
     draw:c=>renderCarrionVultureCreature(c,{kind:"carrion-vulture",hp:CREATURE_CATALOG["carrion-vulture"].maxHp,id:"art-individual-carrion-vulture"},0,0,1)},
   {id:"render individual cactus-sprout",tier:"creature",fn:"renderCactusSproutCreature",
     draw:c=>renderCactusSproutCreature(c,{kind:"cactus-sprout",hp:CREATURE_CATALOG["cactus-sprout"].maxHp,id:"art-individual-cactus-sprout"},0,0,1)},
-  ...(["giant-rat","cave-bat","root-spider","moss-slime","vine-snake","root-beetle","wild-boar","gray-wolf","walking-mushroom"] as const).map<ArtAsset>(kind=>({
+  ...(["giant-rat","cave-bat","root-spider","moss-slime","vine-snake","root-beetle","wild-boar","gray-wolf","walking-mushroom","living-root","elder-cave-ent"] as const).map<ArtAsset>(kind=>({
     id:"centro "+kind,tier:"creature",
     fn:{"giant-rat":"renderGiantRatCreature","cave-bat":"renderCaveBatCreature","root-spider":"renderRootSpiderCreature",
       "moss-slime":"renderMossSlimeCreature","vine-snake":"renderVineSnakeCreature","root-beetle":"renderRootBeetleCreature",
-      "wild-boar":"renderWildBoarCreature","gray-wolf":"renderGrayWolfCreature","walking-mushroom":"renderWalkingMushroomCreature"}[kind],
+      "wild-boar":"renderWildBoarCreature","gray-wolf":"renderGrayWolfCreature","walking-mushroom":"renderWalkingMushroomCreature",
+      "living-root":"renderLivingRootCreature","elder-cave-ent":"renderElderCaveEntCreature"}[kind],
     draw:c=>({"giant-rat":renderGiantRatCreature,"cave-bat":renderCaveBatCreature,"root-spider":renderRootSpiderCreature,
       "moss-slime":renderMossSlimeCreature,"vine-snake":renderVineSnakeCreature,"root-beetle":renderRootBeetleCreature,
-      "wild-boar":renderWildBoarCreature,"gray-wolf":renderGrayWolfCreature,"walking-mushroom":renderWalkingMushroomCreature})[kind](c,
+      "wild-boar":renderWildBoarCreature,"gray-wolf":renderGrayWolfCreature,"walking-mushroom":renderWalkingMushroomCreature,
+      "living-root":renderLivingRootCreature,"elder-cave-ent":renderElderCaveEntCreature})[kind](c,
       {kind,hp:CREATURE_CATALOG[kind].maxHp,id:"art-center-"+kind,moving:.6,motionPhase:1.4},0,0,1)
   })),
   {id:"desenho do Rato Gigante (sem moldura)",tier:"creature",fn:"drawGiantRat",
@@ -328,6 +333,19 @@ export const ASSETS: ArtAsset[] = [
     draw:c=>drawGrayWolf(c,GRAY_WOLF_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},
   {id:"desenho do Cogumelo Andante (sem moldura)",tier:"creature",fn:"drawWalkingMushroom",
     draw:c=>drawWalkingMushroom(c,WALKING_MUSHROOM_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},
+  {id:"herói enraizado: raízes nos pés (começo, meio e fim do efeito)",tier:"prop",fn:"renderRootedFeet",
+    draw:c=>{
+      // as botas do herói por baixo e as raízes por cima: começo (crescendo), meio e fim (murchando) do efeito
+      for(const [i,[boot,toe,cuff]] of [["#4c3a2d","#7a5c40","#2c3f48"],["#3f4a52","#8a96a0","#2c3f48"],["#6d5238","#a98859","#3f2f22"]].entries()){
+        const x=i*24-24;c.fillStyle=boot;c.fillRect(x-4,-5,8,4);c.fillStyle=cuff;c.fillRect(x-3.4,-8,6.8,3.4);
+        c.fillStyle=toe;c.beginPath();c.ellipse(x+1.4,-.8,5,2.5,0,0,Math.PI*2);c.fill();
+      }
+      renderRootedFeet(c,-24,0,1,2.2);renderRootedFeet(c,0,0,1.4,1.2);renderRootedFeet(c,24,0,1.8,.3);
+    }},
+  {id:"desenho da Raiz-Viva (sem moldura)",tier:"creature",fn:"drawLivingRoot",
+    draw:c=>drawLivingRoot(c,LIVING_ROOT_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},
+  {id:"desenho do Ent Ancião da Gruta (sem moldura)",tier:"creature",fn:"drawElderCaveEnt",
+    draw:c=>drawElderCaveEnt(c,ELDER_CAVE_ENT_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},
   {id:"montaria: pernas articuladas (casco, casco fendido, pata)",tier:"prop",fn:"drawLeg",
     draw:c=>{
       const mk=(foot:LegSpec["foot"],x:number):LegSpec=>({hipX:x,hipY:-30,upper:15,lower:15,widthTop:7.5,widthKnee:4.6,widthAnkle:3,front:true,far:false,foot,stride:6,lift:5.5});

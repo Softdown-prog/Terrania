@@ -172,6 +172,9 @@ export class RegionalMonster extends Slime {
     // A teia da Aranha das Raízes prende os pés por um instante, além do veneno fraco da mordida.
     if (d.special === "web") hero.applyStatus("slow",2.5);
     if (d.special === "gust") hero.pushFrom(this.x,this.y,32,world);
+    // O pisão do Ent Ancião atordoa quem está perto; as raízes (de perto ou de longe) já vêm do status da ficha.
+    if (d.special === "root-quake" && Math.hypot(hero.x-this.x,hero.y-this.y)<54)
+      hero.applyStatus("stun",.6);
     if (d.special === "trample" && Math.hypot(hero.x-this.x,hero.y-this.y)<54)
       hero.applyStatus("stun",.75);
     // Ink is a local accuracy/visibility effect; no random global RNG.

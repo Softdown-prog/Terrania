@@ -15,6 +15,7 @@ import { WorldRenderer } from '../render/WorldRenderer.ts';
 import { drawInterior } from '../render/interior.ts';
 import { drawCaveEntrance, drawCaveView } from '../render/cave.ts';
 import { rideOf } from '../render/hero/ride.ts';
+import { renderRootedFeet } from '../render/rootedFeet.ts';
 import { mountRiderLift, mountRiderShiftX, renderMount, renderMountTracks, renderStableFence } from '../render/mounts.ts';
 import { STABLE_MASTER, WILD_WARHORSE, WILD_HOOFPRINTS } from '../world/mountLocations.ts';
 import type { MountId } from '../actors/MountCatalog.ts';
@@ -74,7 +75,7 @@ function renderGel(ctx: CanvasRenderingContext2D, x: number, y: number, time: nu
 /** Shared by the game and honest, static world previews on the website. */
 export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRenderer,
   cameraX: number, cameraY: number, width: number, height: number,
-  player: HeroVisual & { x: number; y: number }, mobs: ReadonlyArray<Slime>,
+  player: HeroVisual & { x: number; y: number; /** Os efeitos do herói (só o `root` interessa aqui, ADR 0094); as prévias do site não têm. */ debuffs?: Readonly<Record<string, number>> }, mobs: ReadonlyArray<Slime>,
   time = 0, animated = false,
   drops: ReadonlyArray<LootDrop> = [], effects?: Effects,
   playerGear?: GearState, playerWeapon?: WeaponId,
@@ -150,6 +151,8 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
     renderHero(ctx,
       { ...player, gear: playerGear, equippedWeapon: playerWeapon, ...playerClass, ride },
       player.x-left+(mount&&ride?mountRiderShiftX(mount)*ride.facing:0),player.y-top-(mount?mountRiderLift(mount):0),time);
+    // Enraizado (ADR 0094): as raízes prendem os pés, no chão e não sobre a montaria.
+    if((player.debuffs?.root ?? 0)>0)renderRootedFeet(ctx,player.x-left,player.y-top,time,player.debuffs!.root!);
   } });
   actors.sort((a, b) => a.y - b.y);
   for (const actor of actors) actor.draw();

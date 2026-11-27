@@ -25,6 +25,8 @@ export const CENTER_KINDS = ["giant-rat", "cave-bat", "root-spider", "moss-slime
 /** As do lote 3, que andam pela superfície do Centro, longe da vila (`centerSurfaceSpawns`); só o cogumelo também mora na caverna. */
 export const CENTER_WILD_KINDS = ["wild-boar", "gray-wolf", "walking-mushroom"] as const;
 export type CenterKind = typeof CENTER_KINDS[number];
+/** As da Masmorra das Raízes (ADR 0094): a elite Raiz-Viva e o chefe Ent Ancião. Só moram nos andares da masmorra, nunca na superfície nem na Gruta comum. */
+export const CENTER_DUNGEON_KINDS = ["living-root", "elder-cave-ent"] as const;
 export const REGIONAL_CREATURE_KINDS = [
   "basalt-golem", "cliff-draconid", "mire-hydra", "dune-scorpion", "solar-scarab",
   "boreal-yeti", "glacial-wolf", "frost-spirit", "coral-crab", "storm-serpent",
@@ -32,6 +34,7 @@ export const REGIONAL_CREATURE_KINDS = [
   ...SOUTH_COMMON_KINDS,
   ...SOUTH_SURFACE_KINDS,
   ...CENTER_KINDS,
+  ...CENTER_DUNGEON_KINDS,
 ] as const;
 export type RegionalCreatureKind = typeof REGIONAL_CREATURE_KINDS[number];
 export type CreatureKind = "slime" | RegionalCreatureKind;

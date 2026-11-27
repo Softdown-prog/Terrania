@@ -8,10 +8,10 @@ import { REGIONAL_CREATURE_KINDS } from "../src/monsters/catalog.ts";
 import { monsterPose } from "../src/render/monsterMotion.ts";
 
 const open={canMove:()=>true};
-test("todas as 40 espécies têm comportamento explícito e não duplicado",()=>{
+test("todas as 42 espécies têm comportamento explícito e não duplicado",()=>{
   assert.deepEqual(Object.keys(SPECIES_BEHAVIORS).sort(),[...REGIONAL_CREATURE_KINDS].sort());
   assert.equal(new Set(Object.values(SPECIES_BEHAVIORS).map(x=>
-    [x.gait,x.pursuit,x.cadence,x.weave].join(":"))).size,40);
+    [x.gait,x.pursuit,x.cadence,x.weave].join(":"))).size,42);
   for(const kind of REGIONAL_CREATURE_KINDS){
     const b=SPECIES_BEHAVIORS[kind];
     assert.ok(b.cadence>.4&&b.cadence<3);

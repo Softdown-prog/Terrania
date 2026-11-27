@@ -24,10 +24,10 @@ const profiles=[
 ] as const;
 const collision={canMove:()=>true,speedAt:()=>1};
 
-test("terceiro lote: 10 espécies comuns e 40 regionais (31 + as 9 do Centro) com o novo besouro, fichas consistentes",()=>{
+test("terceiro lote: 10 espécies comuns e 42 regionais (31 + as 11 do Centro) com o novo besouro, fichas consistentes",()=>{
   assert.equal(SOUTH_COMMON_KINDS.length,10);
-  assert.equal(REGIONAL_CREATURE_KINDS.length,40);
-  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,40);
+  assert.equal(REGIONAL_CREATURE_KINDS.length,42);
+  assert.equal(new Set(REGIONAL_CREATURE_KINDS).size,42);
   for(const [kind,hp,attack,n,percentages] of profiles) {
     const def=CREATURE_CATALOG[kind];
     assert.equal(def.maxHp,hp,kind);
