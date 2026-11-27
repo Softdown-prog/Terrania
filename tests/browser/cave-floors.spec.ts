@@ -46,11 +46,12 @@ function safePath(floor: CaveFloor, from: Tile, to: Tile): Tile[] | null {
   return null;
 }
 
-async function heroTile(page: Page): Promise<Tile> {
-  const text = (await page.locator("#coords").textContent()) ?? "";
+/** Onde o herói está e se o jogo ainda mostra a caverna ("Subsolo" no `#coords`); a leitura tem prazo, para um elemento que sumiu não prender o teste até o limite. */
+async function heroTile(page: Page): Promise<Tile & { cave: boolean }> {
+  const text = (await page.locator("#coords").textContent({ timeout: 10_000 })) ?? "";
   const match = /X\s+(-?\d+)\s+·\s+Y\s+(-?\d+)/.exec(text);
   if (!match) throw new Error("coordenadas ilegíveis: " + text);
-  return { x: Number(match[1]), y: Number(match[2]) };
+  return { x: Number(match[1]), y: Number(match[2]), cave: text.includes("Subsolo") };
 }
 
 /**
@@ -61,12 +62,15 @@ async function heroTile(page: Page): Promise<Tile> {
  * Poucas chamadas ao navegador por passo: na CI cada ida e volta custa caro e o teste inteiro precisa
  * caber no limite de tempo.
  */
+const navigations: string[] = [];
 async function walk(page: Page, floor: CaveFloor, goal: Tile, act: () => Promise<void>,
   done: () => Promise<boolean>): Promise<void> {
   let last: Tile | null = null, still = 0;
   for (let step = 0; step < 300; step++) {
     const here = await heroTile(page);
     if (await done()) return; // a leitura de `here` pode já ser da superfície (saiu agora)
+    // O jogo saiu da caverna sem o teste pedir (a página recarregou?): falha na hora dizendo isso, em vez de caminhar pela superfície até o limite de 5 minutos.
+    if (!here.cave) throw new Error(`o jogo saiu da caverna fora do roteiro (em ${here.x},${here.y}); a página recarregou? navegações: ${navigations.join(" | ")}`);
     // Herói parado fora da escada: a tecla não está chegando ao jogo (o foco saiu da tela?). Devolve o foco e, se não adiantar, falha cedo e
     // dizendo onde parou, em vez de girar até o limite de 5 minutos do teste sem nenhuma pista (a CI não guarda o rastro).
     still = last && last.x === here.x && last.y === here.y && !(here.x === goal.x && here.y === goal.y) ? still + 1 : 0;
@@ -106,11 +110,18 @@ async function walk(page: Page, floor: CaveFloor, goal: Tile, act: () => Promise
   throw new Error("o herói não chegou ao destino");
 }
 
+// Na CI o desktop trava de vez em quando na primeira rodada deste arquivo (execuções 732, 734 e 736) e passa na seguinte; até a causa aparecer (os registros acima e o rastro salvo
+// como artefato dizem onde), uma repetição evita um CI vermelho por um travamento que não é do jogo. O Playwright mostra a repetição como "flaky" no resumo.
+test.describe.configure({ retries: 1 });
+
 test("masmorra de 3 andares: descer, subir e sair pela mesma entrada (desktop/Android)", async ({ page }, info) => {
   test.setTimeout(300_000);
   const entrance = threeFloorDesertCave();
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
+  // Anota cada navegação da página principal (uma recarga no meio do teste, vinda do servidor de desenvolvimento, explicaria o herói voltar à superfície).
+  navigations.length = 0;
+  page.on("framenavigated", frame => { if (frame === page.mainFrame()) navigations.push(new Date().toISOString().slice(11, 19) + " " + frame.url().replace(/^https?:\/\/[^/]+/, "")); });
   // O teste é de andares, não de combate: os monstros dos três andares já estão derrotados (a lista
   // vem do próprio motor) e o herói é forte (nível 100). O povoamento tem os seus testes unitários.
   const defeated = [1, 2, 3].flatMap(floorIndex =>

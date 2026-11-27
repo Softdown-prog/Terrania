@@ -44,6 +44,14 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Validar Angular, Phaser e presença real no navegador
         run: npm run test:browser
+      - name: Guardar o rastro dos testes de navegador que falharam
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rastros-playwright
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
       - name: Validar empacotamento do Worker e assets (sem publicar)
         if: github.ref == 'refs/heads/main'
         run: npx --no-install wrangler deploy --dry-run
