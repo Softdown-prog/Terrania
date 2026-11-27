@@ -1,7 +1,6 @@
 import { resolveSwordStrike, swordStrikeTargets } from "../combat/SwordCombat.ts";
 import { SOUTH_COMMON_KINDS, type CreatureKind, type RegionalCreatureKind } from "../../actors/CreatureCatalog.ts";
 import { Slime } from "../../actors/Slime.ts";
-import { centralCaveMonsters } from "./CaveCentral.ts";
 import { caveDefeatDrops } from "./CaveLoot.ts";
 import { caveReach } from "../../world/caveReach.ts";
 import { MAX_WORLD_DROPS, type LootDrop } from "../character/loot.ts";
@@ -111,11 +110,6 @@ export class CaveRoom {
       return;
     }
     const plan=dungeonFloor(entrance,this.floorIndex);
-    // As cavernas comuns do Centro (Gruta das Raízes) têm povo próprio: slimes e as criaturas do Centro, em seis pontos (CaveCentral.ts).
-    if (!plan && entrance.theme === "verdant") {
-      for (const mob of centralCaveMonsters(entrance, this.floor.id, this.collision, this.player, this.defeated, reaches)) this.monsters.set(mob.id, mob);
-      return;
-    }
     const kinds=plan ? plan.monsters : caveMonsterKinds(entrance.theme);
     if (!kinds.length) return;
     const salt=entrance.seed ^ Math.imul(entrance.tileX,1033) ^ Math.imul(entrance.tileY,2053) ^

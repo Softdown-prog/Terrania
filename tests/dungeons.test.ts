@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync } from "node:fs";
-import { caveEntranceInCell, type CaveEntrance } from "../src/world/caves.ts";
+import { caveEntranceInCell, isStarterCave, type CaveEntrance } from "../src/world/caves.ts";
 import { CREATURE_CATALOG } from "../src/monsters/catalog.ts";
 import { DUNGEONS, caveFloorCount, dungeonFloor, dungeonFloors, dungeonFor } from "../src/dungeons/index.ts";
 
@@ -43,12 +43,13 @@ test("masmorras: um arquivo por masmorra, na pasta da região", () => {
   }
 });
 
-test("andares: o deserto tem 2 ou 3, o brejo 2, e as outras cavernas continuam com 1", () => {
+test("andares: o deserto tem 2 ou 3, o brejo 2, e as outras cavernas (e a de treinamento) continuam com 1", () => {
   const counts = new Set(desert().map(caveFloorCount));
   assert.deepEqual([...counts].sort(), [2, 3], "as duas versões da Cripta das Dunas aparecem");
   assert.ok(marsh().length >= 2);
   for (const entrance of marsh()) assert.equal(caveFloorCount(entrance), 2);
-  const others = entrancesIn([[0, -125], [5, -125], [127, 0], [-124, 0], [4, 3], [0, 0]]);
+  // as grutas verdes do Centro são a Masmorra das Raízes (ADR 0101); só a de treinamento da Aela segue com um andar
+  const others = entrancesIn([[0, -125], [5, -125], [127, 0], [-124, 0], [4, 3], [0, 0]]).filter(entrance => entrance.theme !== "verdant" || isStarterCave(entrance));
   assert.ok(others.length >= 4);
   for (const entrance of others) {
     assert.equal(caveFloorCount(entrance), 1, entrance.theme);

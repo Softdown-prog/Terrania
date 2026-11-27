@@ -1,7 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { RegionalMonster } from "../src/actors/RegionalMonster.ts";
-import { dungeonFor } from "../src/dungeons/index.ts";
 import { CaveRoom, RESPAWN_MIN_DISTANCE } from "../src/engine/rooms/CaveRoom.ts";
 import { respawnSecondsForId } from "../src/engine/combat/respawn.ts";
 import { caveEntranceInCell, type CaveEntrance } from "../src/world/caves.ts";
@@ -68,19 +67,14 @@ test("quem está vivo não é refeito: segue com a vida e o lugar que tem", () =
   assert.equal(h.cave.monsters.get(id), mob, "é a mesma criatura"); assert.equal(mob.hp, 7); assert.deepEqual({ x: mob.x, y: mob.y }, at);
 });
 
-test("o slime também volta, como slime e no lugar onde nasceu (caverna comum do Centro)", () => {
-  let entrance: CaveEntrance | null = null;
-  for (let cx = -8; cx <= 8 && !entrance; cx++) for (let cy = -8; cy <= 8 && !entrance; cy++) {
-    const found = caveEntranceInCell(cx, cy, CAVE_SEED);
-    if (found && !found.tower && found.theme === "verdant" && found.id !== `cave:${CAVE_SEED}:0:0` && !dungeonFor(found)) entrance = found;
-  }
-  assert.ok(entrance);
-  const h = caveHost("knight", entrance), id = mobIds(h).find(key => h.cave.monsters.get(key)?.kind === "slime");
-  assert.ok(id, "a Gruta das Raízes tem slime"); const spot = { x: h.cave.monsters.get(id)!.x, y: h.cave.monsters.get(id)!.y };
-  farFrom(h, spot.x, spot.y); kill(h, id); wait(h, respawnSecondsForId(id, "slime")! + 5);
-  for (let i = 0; i < 90 && !h.cave.monsters.has(id); i++) tickCave(h.host, h.cave, FRAME);
-  const back = h.cave.monsters.get(id)!;
-  assert.ok(back && !(back instanceof RegionalMonster), "voltou como slime"); assert.deepEqual({ x: back.x, y: back.y }, spot);
+test("o slime também volta como slime, no lugar onde nasceu (o ramo do Slime comum; os de treino da Aela só nunca voltam por regra do prazo)", () => {
+  const room = new CaveRoom(caveEntranceInCell(0, 0, CAVE_SEED)!, 100, 100, new Set());
+  const id = [...room.monsters.keys()][0]!, original = room.monsters.get(id)!, spot = { x: original.x, y: original.y };
+  room.player.x = 700; room.player.y = 700; // longe do ponto
+  room.monsters.delete(id); // simula quem acabou de voltar a poder nascer (fora dos derrotados)
+  assert.deepEqual(room.respawnTick(2, () => undefined), [id]);
+  const back = room.monsters.get(id)!;
+  assert.ok(back && !(back instanceof RegionalMonster), "voltou como slime"); assert.deepEqual({ x: back.x, y: back.y }, spot); assert.equal(back.hp, original.hp, "nasce com a vida de um slime novo");
 });
 
 test("o que a criatura deixou no chão some quando ela volta", () => {

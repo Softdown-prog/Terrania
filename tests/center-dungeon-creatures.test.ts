@@ -6,7 +6,6 @@ import { RegionalMonster, caveMonsterKinds } from "../src/actors/RegionalMonster
 import { CREATURE_CATALOG, REGIONAL_CREATURE_KINDS } from "../src/actors/CreatureCatalog.ts";
 import { CENTER_DUNGEON_KINDS, CENTER_KINDS } from "../src/monsters/catalog.ts";
 import { SPECIES_BEHAVIORS } from "../src/monsters/behavior.ts";
-import { CENTRAL_ROSTER } from "../src/engine/rooms/CaveCentral.ts";
 import { ClassicTileWalker } from "../src/engine/movement/ClassicTileWalker.ts";
 import { normalizeMaterials } from "../src/engine/character/Inventory.ts";
 import { drawLivingRoot, rootLeg, ROOT_LEGS, CREATURE_PALETTE as ROOT } from "../src/render/creatures/center/roots/livingRoot.ts";
@@ -70,7 +69,6 @@ test("fichas: Raiz-Viva (elite) e Ent Ancião (chefe) com os números do documen
   assert.equal(CENTER_KINDS.length, 9, "os nove do começo do jogo não mudam");
   for (const kind of CENTER_DUNGEON_KINDS) {
     assert.ok(REGIONAL_CREATURE_KINDS.includes(kind), kind + " é espécie regional"); assert.ok(caveMonsterKinds("verdant").includes(kind));
-    assert.ok(!(CENTRAL_ROSTER as readonly string[]).includes(kind), kind + " não entra na mistura da Gruta das Raízes");
     for (const { item } of CREATURE_CATALOG[kind].loot) assert.deepEqual(normalizeMaterials({ [item]: 2 }), { [item]: 2 }, item + ": a bolsa aceita");
     assert.ok(!caveMonsterKinds("desert").includes(kind) && !caveMonsterKinds("marsh").includes(kind));
   }

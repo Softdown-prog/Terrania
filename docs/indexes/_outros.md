@@ -161,6 +161,7 @@
 - [`docs/adr/0098-brilho-de-cura-da-pocao.md`](../../docs/adr/0098-brilho-de-cura-da-pocao.md)
 - [`docs/adr/0099-viagem-pelo-mapa.md`](../../docs/adr/0099-viagem-pelo-mapa.md)
 - [`docs/adr/0100-diario-de-missoes.md`](../../docs/adr/0100-diario-de-missoes.md)
+- [`docs/adr/0101-toda-gruta-das-raizes-e-masmorra.md`](../../docs/adr/0101-toda-gruta-das-raizes-e-masmorra.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/cajados-lote-1.png`](../../docs/screenshots/cajados-lote-1.png)

@@ -73,11 +73,25 @@ async function walk(page: Page, floor: CaveFloor, goal: Tile, act: () => Promise
     }
     const path = safePath(floor, here, goal);
     expect(path, `existe caminho seguro de ${here.x},${here.y} até ${goal.x},${goal.y}`).not.toBeNull();
-    const next = path![1] ?? goal;
-    const key = next.x > here.x ? "d" : next.x < here.x ? "a" : next.y > here.y ? "s" : "w";
+    // Segura a tecla ao longo de todo o trecho reto do caminho (e não um toque por tile): na CI, onde cada ida e volta ao navegador
+    // custa caro, isso faz o herói andar de verdade e corta as idas e voltas por quatro ou mais. Depois de cada trecho o caminho é refeito
+    // a partir de onde o herói parou, e como o caminho só passa por tiles com folga, uma passada a mais não o leva à parede.
+    const toward = (a: Tile, b: Tile): string => b.x > a.x ? "d" : b.x < a.x ? "a" : b.y > a.y ? "s" : "w";
+    const key = toward(path![0]!, path![1] ?? goal);
+    let end = 1;
+    while (end + 1 < path!.length && toward(path![end]!, path![end + 1]!) === key) end++;
+    const target = path![end] ?? goal;
+    const arrived = (at: Tile): boolean => key === "d" ? at.x >= target.x : key === "a" ? at.x <= target.x : key === "s" ? at.y >= target.y : at.y <= target.y;
     await page.keyboard.down(key);
-    await page.waitForTimeout(110);
-    await page.keyboard.up(key);
+    const deadline = Date.now() + 2500 + end * 450;
+    try {
+      for (;;) {
+        if (arrived(await heroTile(page)) || await done() || Date.now() > deadline) break;
+        await page.waitForTimeout(30);
+      }
+    } finally {
+      await page.keyboard.up(key);
+    }
   }
   throw new Error("o herói não chegou ao destino");
 }
