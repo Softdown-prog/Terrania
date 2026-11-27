@@ -37,6 +37,7 @@ import { renderWildBoarCreature, drawWildBoar, CREATURE_PALETTE as WILD_BOAR_PAL
 import { renderGrayWolfCreature, drawGrayWolf, CREATURE_PALETTE as GRAY_WOLF_PALETTE } from "../../src/render/creatures/center/wolves/grayWolf.ts";
 import { renderWalkingMushroomCreature, drawWalkingMushroom, CREATURE_PALETTE as WALKING_MUSHROOM_PALETTE } from "../../src/render/creatures/center/mushrooms/walkingMushroom.ts";
 import { renderRootedFeet } from "../../src/render/rootedFeet.ts";
+import { renderHealGlow } from "../../src/render/healGlow.ts";
 import { renderLivingRootCreature, drawLivingRoot, CREATURE_PALETTE as LIVING_ROOT_PALETTE } from "../../src/render/creatures/center/roots/livingRoot.ts";
 import { renderElderCaveEntCreature, drawElderCaveEnt, CREATURE_PALETTE as ELDER_CAVE_ENT_PALETTE } from "../../src/render/creatures/center/ents/elderCaveEnt.ts";
 import { renderGiantRatCreature, drawGiantRat, CREATURE_PALETTE as GIANT_RAT_PALETTE } from "../../src/render/creatures/center/rats/giantRat.ts";
@@ -341,6 +342,16 @@ export const ASSETS: ArtAsset[] = [
         c.fillStyle=toe;c.beginPath();c.ellipse(x+1.4,-.8,5,2.5,0,0,Math.PI*2);c.fill();
       }
       renderRootedFeet(c,-24,0,1,2.2);renderRootedFeet(c,0,0,1.4,1.2);renderRootedFeet(c,24,0,1.8,.3);
+    }},
+  {id:"herói curado: brilho da poção (chão e coluna, aura e faíscas, no começo, meio e fim)",tier:"prop",fn:"renderHealGlow",
+    draw:c=>{
+      // o herói de bota e túnica entre as duas camadas: começo (clarão), meio e fim (apagando) do brilho
+      for(const [i,[seconds,time]] of [[1.55,1],[.9,1.4],[.25,1.8]].entries()){
+        const x=i*40-40;renderHealGlow(c,x,0,time!,seconds!,"back");
+        c.fillStyle="#1b1410";c.fillRect(x-6,-6,12,6);c.fillStyle="#4c3a2d";c.fillRect(x-5,-5,10,4);c.fillStyle="#1f3558";c.fillRect(x-7,-27,14,24);c.fillStyle="#35568a";c.fillRect(x-6,-26,12,22);c.fillStyle="#7a5c40";c.fillRect(x-6,-14,12,2);c.fillStyle="#e1b48c";c.beginPath();c.arc(x,-31,5,0,Math.PI*2);c.fill();c.fillStyle="#6b3f24";c.beginPath();c.arc(x,-33,5,Math.PI,0);c.fill();
+        renderHealGlow(c,x,0,time!,seconds!,"front");
+      }
+      renderHealGlow(c,0,0,1,.9,"front",12);
     }},
   {id:"desenho da Raiz-Viva (sem moldura)",tier:"creature",fn:"drawLivingRoot",
     draw:c=>drawLivingRoot(c,LIVING_ROOT_PALETTE,1,{seed:.3,phase:1.4,moving:.6,bite:.5,wound:.4})},

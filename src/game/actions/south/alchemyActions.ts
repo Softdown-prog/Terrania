@@ -1,4 +1,5 @@
 import { ALCHEMIST_NPC, elixirRecipe, type ElixirId } from "../../../engine/character/south/alchemy/index.ts";
+import { HEAL_GLOW_SECONDS } from "../../../actors/Player.ts";
 import { nearestNpc } from "../../../world/npcs.ts";
 import { INVENTORY_FEEDBACK } from "../../messages/inventoryFeedback.ts";
 import { say } from "../say.ts";
@@ -15,9 +16,10 @@ export function craftElixir({ sim, inInterior, menuOpen }: ShopContext, id: Elix
 }
 
 /** Beber um elixir da bolsa: vale na superfície e na caverna, como a poção. */
-export function drinkElixir({ sim, hero, caveHeroDown }: ShopContext, id: ElixirId): ShopResult {
+export function drinkElixir({ sim, hero, caveHeroDown, effectsEnabled = true }: ShopContext, id: ElixirId): ShopResult {
   if (sim.awaitingRespawn || caveHeroDown) return say("unavailable");
   const outcome = sim.inventory.useElixir(id, hero);
+  if (outcome === "elixir-used" && effectsEnabled && elixirRecipe(id).effect.kind === "heal") hero.healGlow = HEAL_GLOW_SECONDS; // a Poção Maior também faz brilhar
   return outcome === "elixir-used"
     ? { message: `${elixirRecipe(id).name}: ${INVENTORY_FEEDBACK["elixir-used"]}`, changed: true }
     : say(outcome);

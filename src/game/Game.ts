@@ -269,7 +269,7 @@ export class Game {
   private shop(run: (context: ShopContext) => ShopResult): string {
     const result = run({
       sim: this.sim, hero: this.cave?.player ?? this.sim.player, inInterior: !!this.interior,
-      menuOpen: this.hud.menuOpen, caveHeroDown: this.cave?.player.hp === 0,
+      menuOpen: this.hud.menuOpen, caveHeroDown: this.cave?.player.hp === 0, effectsEnabled: this.effects.enabled,
     });
     if (result.changed) { this.save(); this.updateHud(); }
     return result.message;

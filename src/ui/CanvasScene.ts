@@ -16,6 +16,7 @@ import { drawInterior } from '../render/interior.ts';
 import { drawCaveEntrance, drawCaveView } from '../render/cave.ts';
 import { rideOf } from '../render/hero/ride.ts';
 import { renderRootedFeet } from '../render/rootedFeet.ts';
+import { renderHealGlow } from '../render/healGlow.ts';
 import { mountRiderLift, mountRiderShiftX, renderMount, renderMountTracks, renderStableFence } from '../render/mounts.ts';
 import { STABLE_MASTER, WILD_WARHORSE, WILD_HOOFPRINTS } from '../world/mountLocations.ts';
 import type { MountId } from '../actors/MountCatalog.ts';
@@ -75,7 +76,7 @@ function renderGel(ctx: CanvasRenderingContext2D, x: number, y: number, time: nu
 /** Shared by the game and honest, static world previews on the website. */
 export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRenderer,
   cameraX: number, cameraY: number, width: number, height: number,
-  player: HeroVisual & { x: number; y: number; /** Os efeitos do herói (só o `root` interessa aqui, ADR 0094); as prévias do site não têm. */ debuffs?: Readonly<Record<string, number>> }, mobs: ReadonlyArray<Slime>,
+  player: HeroVisual & { x: number; y: number; /** Os efeitos do herói (só o `root` interessa aqui, ADR 0094); as prévias do site não têm. */ debuffs?: Readonly<Record<string, number>>; /** Segundos do brilho de cura da poção (ADR 0098); as prévias do site não têm. */ healGlow?: number }, mobs: ReadonlyArray<Slime>,
   time = 0, animated = false,
   drops: ReadonlyArray<LootDrop> = [], effects?: Effects,
   playerGear?: GearState, playerWeapon?: WeaponId,
@@ -147,12 +148,16 @@ export function drawWorldView(ctx: CanvasRenderingContext2D, world: WorldRendere
   actors.push({ y: player.y, draw: () => {
     // Montado (ADR 0092): a montaria olha para onde o herói olha e anda só quando ele anda; o herói senta no centro da sela e acompanha o lombo.
     const ride = mount ? rideOf(player, "player", time) : undefined;
+    // Brilho de cura (ADR 0098): a poça de luz fica no chão, por baixo da montaria e do herói; a aura vem por cima.
+    const glow = player.healGlow ?? 0;
+    if(glow>0)renderHealGlow(ctx,player.x-left,player.y-top,time,glow,"back");
     if(mount&&ride)renderMount(ctx,mount,player.x-left,player.y-top,time,ride);
     renderHero(ctx,
       { ...player, gear: playerGear, equippedWeapon: playerWeapon, ...playerClass, ride },
       player.x-left+(mount&&ride?mountRiderShiftX(mount)*ride.facing:0),player.y-top-(mount?mountRiderLift(mount):0),time);
     // Enraizado (ADR 0094): as raízes prendem os pés, no chão e não sobre a montaria.
     if((player.debuffs?.root ?? 0)>0)renderRootedFeet(ctx,player.x-left,player.y-top,time,player.debuffs!.root!);
+    if(glow>0)renderHealGlow(ctx,player.x-left,player.y-top,time,glow,"front",mount?mountRiderLift(mount):0);
   } });
   actors.sort((a, b) => a.y - b.y);
   for (const actor of actors) actor.draw();

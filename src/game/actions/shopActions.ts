@@ -4,6 +4,7 @@ import type { GearId, GearSlot } from "../../engine/character/Equipment.ts";
 import type { WeaponId } from "../../engine/character/Weapons.ts";
 import { FOODS } from "../../engine/character/Food.ts";
 import { experienceProgress } from "../../engine/character/Experience.ts";
+import { HEAL_GLOW_SECONDS } from "../../actors/Player.ts";
 import { nearestNpc } from "../../world/npcs.ts";
 import { INNKEEPER_ID, MAGE_MASTER_ID } from "../../npcs/center/capital/index.ts";
 import { MARKET_NPC, describeCoins, type MarketId } from "../../engine/character/coins/index.ts";
@@ -21,9 +22,10 @@ const nearBrigida = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x
 const nearMageMaster = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === MAGE_MASTER_ID;
 const nearLina = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === "lina";
 
-export function usePotion({ sim, hero, caveHeroDown }: ShopContext): ShopResult {
+export function usePotion({ sim, hero, caveHeroDown, effectsEnabled = true }: ShopContext): ShopResult {
   if (sim.awaitingRespawn || caveHeroDown) return say("unavailable");
   if (!sim.inventory.usePotion(hero)) return say(hero.hp >= hero.maxHp ? "full-health" : "no-potion");
+  if (effectsEnabled) hero.healGlow = HEAL_GLOW_SECONDS; // o herói brilha ao se curar (ADR 0098)
   return say("healed", true);
 }
 

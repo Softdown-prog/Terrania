@@ -8,6 +8,8 @@ import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
 import { STAVES, type StaffId } from "../engine/character/Staves.ts";
 import { FOODS, FOOD_EAT_COOLDOWN, FOOD_HEAL_INTERVAL, MAX_NUTRITION,
   normalizeNutrition, type FoodId, type FoodUseResult, type NutritionState } from "../engine/character/Food.ts";
+/** Quanto dura o brilho de cura de quem usa uma poção (só desenho; ADR 0098). */
+export const HEAL_GLOW_SECONDS = 1.6;
 export class Player {
   x = 16;
   y = 16;
@@ -26,6 +28,8 @@ export class Player {
   attackWindup: number = WEAPONS.starter.windup;
   attackCooldown = 0;
   hurtTime = 0;
+  /** Segundos que faltam do brilho de cura (poção); só apresentação, não é salvo (ADR 0098). */
+  healGlow = 0;
   private receivedHits = 0;
   private readonly effects: Record<DebuffKind, number> = { slow: 0, poison: 0, freeze: 0, "attack-slow": 0, burn: 0, stun: 0, blind: 0, infection: 0, "weak-venom": 0, root: 0 };
   private poisonElapsed = 0;
@@ -201,6 +205,7 @@ export class Player {
     this.attackTime = Math.max(0, this.attackTime - dt);
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
     this.hurtTime = Math.max(0, this.hurtTime - dt);
+    this.healGlow = Math.max(0, this.healGlow - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
     this.advanceNutrition(dt);
     this.advanceDebuffs(dt);

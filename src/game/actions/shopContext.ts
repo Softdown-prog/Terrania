@@ -10,6 +10,8 @@ export interface ShopContext {
   readonly menuOpen: boolean;
   /** O herói da caverna caiu. Só a poção rápida consulta isto. */
   readonly caveHeroDown: boolean;
+  /** A opção de efeitos está ligada? Desligada, o brilho de cura não acende (padrão: ligada). */
+  readonly effectsEnabled?: boolean;
 }
 
 /** `changed` indica que a bolsa mudou: quem chama salva e atualiza o HUD. A mensagem sempre vai ao jogador. */

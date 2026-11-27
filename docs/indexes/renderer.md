@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (347)
+## Todos os arquivos deste módulo (348)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -154,6 +154,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/creatures/west/griffins/summitGriffin.ts`](../../src/render/creatures/west/griffins/summitGriffin.ts)
 - [`src/render/creatures/west/salamanders/magmaSalamander.ts`](../../src/render/creatures/west/salamanders/magmaSalamander.ts)
 - [`src/render/draw.ts`](../../src/render/draw.ts)
+- [`src/render/healGlow.ts`](../../src/render/healGlow.ts)
 - [`src/render/hero/context.ts`](../../src/render/hero/context.ts)
 - [`src/render/hero/look.ts`](../../src/render/hero/look.ts)
 - [`src/render/hero/mage/body/face.ts`](../../src/render/hero/mage/body/face.ts)

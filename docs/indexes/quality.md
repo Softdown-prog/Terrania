@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (223)
+## Todos os arquivos deste módulo (224)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -131,6 +131,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/folder-capacity.test.ts`](../../tests/folder-capacity.test.ts)
 - [`tests/food-mana.test.ts`](../../tests/food-mana.test.ts)
 - [`tests/game-styles.test.ts`](../../tests/game-styles.test.ts)
+- [`tests/heal-glow.test.ts`](../../tests/heal-glow.test.ts)
 - [`tests/helpers/artAssets.ts`](../../tests/helpers/artAssets.ts)
 - [`tests/helpers/boundaries.ts`](../../tests/helpers/boundaries.ts)
 - [`tests/helpers/browserEncounter.ts`](../../tests/helpers/browserEncounter.ts)
