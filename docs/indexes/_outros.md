@@ -190,7 +190,6 @@
 - [`docs/screenshots/montarias-antes-depois.png`](../../docs/screenshots/montarias-antes-depois.png)
 - [`docs/screenshots/site-alfa03.jpg`](../../docs/screenshots/site-alfa03.jpg)
 - [`index.html`](../../index.html)
-- [`node_modules`](../../node_modules)
 - [`package-lock.json`](../../package-lock.json)
 - [`package.json`](../../package.json)
 - [`playwright.config.ts`](../../playwright.config.ts)
