@@ -33,6 +33,7 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
     host.effects.spells.update(paused ? 0 : dt, cave.player, cave.monsters.values());
     // O que as criaturas derrubadas deixam no chão da caverna é recolhido ao chegar perto, como na superfície (ADR 0084).
     const changed = applyCaveVictories(host.sim, cave);
+    cave.respawnTick(dt, () => host.sim.expireDefeats()); // quem já pode voltar reaparece no lugar onde nasceu, com o herói longe (ADR 0029)
     const collected = collectDrops(cave.drops, cave.player, host.sim.inventory);
     if(changed || collected)host.save();
   }

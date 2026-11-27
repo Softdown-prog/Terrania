@@ -1,5 +1,5 @@
 import { resolveSwordStrike, swordStrikeTargets } from "../combat/SwordCombat.ts";
-import { SOUTH_COMMON_KINDS, type CreatureKind } from "../../actors/CreatureCatalog.ts";
+import { SOUTH_COMMON_KINDS, type CreatureKind, type RegionalCreatureKind } from "../../actors/CreatureCatalog.ts";
 import { Slime } from "../../actors/Slime.ts";
 import { centralCaveMonsters } from "./CaveCentral.ts";
 import { caveDefeatDrops } from "./CaveLoot.ts";
@@ -27,6 +27,9 @@ export interface CaveRoomOptions {
   readonly floorIndex?: number;
   readonly arrivedFrom?: CaveArrival;
 }
+/** De quanto em quanto tempo o andar confere quem já pode voltar, e a que distância do herói alguém pode reaparecer (a mesma da primeira povoação). */
+export const RESPAWN_SCAN_SECONDS = 1;
+export const RESPAWN_MIN_DISTANCE = 170;
 const pixel = (tile: { readonly x: number; readonly y: number }): { x: number; y: number } =>
   ({ x: (tile.x + .5) * TILE_SIZE, y: (tile.y + .5) * TILE_SIZE });
 export class CaveRoom {
@@ -41,10 +44,13 @@ export class CaveRoom {
   /** Nome do andar (da masmorra) ou, em caverna comum, o da própria caverna. */
   readonly floorName: string;
   private readonly victories: Array<{ kind: CreatureKind; id: string }> = [];
-  private readonly defeated: ReadonlySet<string>;
+  private defeated: ReadonlySet<string>;
+  /** De onde cada criatura nasce (o elenco inteiro do andar, inclusive quem já tinha caído): é para lá que ela volta quando o prazo passa (ADR 0029). */
+  private readonly spawns = new Map<string, { kind: CreatureKind; x: number; y: number }>();
+  private respawnClock = 0;
   constructor(entrance:CaveEntrance, hp = 100, maxHp = 100,
     defeated: ReadonlySet<string> = new Set(), options: CaveRoomOptions = {}) {
-    this.defeated=defeated;
+    this.defeated=new Set(); // o povoamento sorteia o elenco inteiro; os já derrotados saem logo depois
     this.floorCount=caveFloorCount(entrance);
     this.floorIndex=Math.max(1,Math.min(this.floorCount,Math.floor(options.floorIndex ?? 1)));
     this.floorName=dungeonFloor(entrance,this.floorIndex)?.name ?? entrance.name;
@@ -60,6 +66,29 @@ export class CaveRoom {
     this.player.faceY=below ? 0 : -1;
     this.player.faceX=below ? -1 : 0;
     this.populate(entrance);
+    for(const [id,mob] of this.monsters)this.spawns.set(id,{kind:mob.kind,x:mob.x,y:mob.y});
+    this.defeated=defeated;
+    for(const id of this.spawns.keys())if(defeated.has(id))this.monsters.delete(id);
+  }
+  /**
+   * O tempo de volta também corre dentro do andar (ADR 0029): a cada segundo `release` devolve ao mundo quem já pode voltar e quem estava caído reaparece onde
+   * nasceu, com a vida cheia e sem o que deixou no chão, desde que o herói esteja longe do lugar (ninguém surge em cima dele). Devolve os ids que voltaram.
+   */
+  respawnTick(dt:number,release:()=>void):string[] {
+    if(!Number.isFinite(dt)||dt<=0)return [];
+    this.respawnClock+=dt;
+    if(this.respawnClock<RESPAWN_SCAN_SECONDS)return [];
+    this.respawnClock=0;
+    release();
+    const back:string[]=[];
+    for(const [id,spawn] of this.spawns){
+      if(this.monsters.has(id)||this.defeated.has(id))continue;
+      if(Math.hypot(spawn.x-this.player.x,spawn.y-this.player.y)<RESPAWN_MIN_DISTANCE)continue;
+      this.monsters.set(id,spawn.kind==="slime" ? new Slime(id,spawn.x,spawn.y) : new RegionalMonster(id,spawn.kind as RegionalCreatureKind,spawn.x,spawn.y));
+      this.drops.delete(id);this.drops.delete(id+":coin");
+      back.push(id);
+    }
+    return back;
   }
   private populate(entrance: CaveEntrance): void {
     // Criatura só nasce em chão que o herói alcança a pé (nada de ilha isolada ou câmara fechada).

@@ -29,3 +29,6 @@ Até aqui **nenhum monstro derrotado voltava**: o id ia para a lista de derrotad
 - Dentro de uma masmorra, quem vence o monstro não o vê voltar enquanto estiver lá; só depois de sair e entrar de novo (ou de trocar de andar).
 - O saque em dinheiro e em material continua o de sempre a cada vitória (não há limite diário).
 - Não verificado: Android físico e o custo do repovoamento a cada 5 s no aparelho.
+
+## Atualização (2026-11-27)
+Dentro de uma caverna o prazo só era aplicado ao entrar ou trocar de andar; a volta no mesmo andar passou a valer pelo [ADR 0097](0097-respawn-dentro-do-andar.md).

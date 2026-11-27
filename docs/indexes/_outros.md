@@ -157,6 +157,7 @@
 - [`docs/adr/0094-masmorra-das-raizes-lote-4.md`](../../docs/adr/0094-masmorra-das-raizes-lote-4.md)
 - [`docs/adr/0095-magia-sem-cone-e-golpe-que-segue-o-alvo.md`](../../docs/adr/0095-magia-sem-cone-e-golpe-que-segue-o-alvo.md)
 - [`docs/adr/0096-criaturas-olham-para-onde-andam.md`](../../docs/adr/0096-criaturas-olham-para-onde-andam.md)
+- [`docs/adr/0097-respawn-dentro-do-andar.md`](../../docs/adr/0097-respawn-dentro-do-andar.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/cajados-lote-1.png`](../../docs/screenshots/cajados-lote-1.png)

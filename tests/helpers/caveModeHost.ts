@@ -13,9 +13,9 @@ export const FRAME: Frame = { dt: 1 / 60, paused: false, movement: { x: 0, y: 0 
 const quiet = new Proxy({}, { get: () => () => undefined }) as unknown;
 
 export interface CaveHost { host: ModeHost; sim: OfflineSimulation; cave: CaveRoom }
-export function caveHost(heroClass: "knight" | "mage"): CaveHost {
-  const sim = new OfflineSimulation(CAVE_SEED, undefined, heroClass), entrance = caveEntranceInCell(0, 0, CAVE_SEED)!;
-  const cave = new CaveRoom(entrance, sim.player.hp, sim.player.maxHp, new Set());
+export function caveHost(heroClass: "knight" | "mage", entrance = caveEntranceInCell(0, 0, CAVE_SEED)!): CaveHost {
+  const sim = new OfflineSimulation(CAVE_SEED, undefined, heroClass);
+  const cave = new CaveRoom(entrance, sim.player.hp, sim.player.maxHp, sim.defeated);
   const fake = {
     sim, travel: new TravelState(), hud: quiet, scene: quiet, input: { acknowledgeMovement: () => undefined }, effects: { spells: new SpellBolts() }, camera: { zoom: 1 },
     timers: { clock: 0, battleClock: 0, saveClock: 0, accumulator: 0 }, world: quiet,
