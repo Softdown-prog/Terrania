@@ -3,21 +3,25 @@ import { SOUTH_BUILDINGS, SOUTH_SIGNS } from "../world/southCity.ts";
 import { SOUTH_NPCS, SOUTH_NPC_LOOKS, SOUTH_DIALOGUES } from "./south/index.ts";
 import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { CENTER_NPCS, CENTER_NPC_LOOKS, CENTER_NPC_DIALOGUES } from "./center/index.ts";
-import { CAPITAL_NPCS, CAPITAL_NPC_LOOKS, CAPITAL_NPC_DIALOGUES } from "./center/capital/index.ts";
+import { CAPITAL_NPCS, CAPITAL_NPC_LOOKS, CAPITAL_NPC_DIALOGUES, CITIZEN_PATROLS } from "./center/capital/index.ts";
 import { CAPITAL_DOORS } from "../world/center/capital/index.ts";
 import { aelaDialogue } from "./center/aela.ts";
 import type { Npc, NpcAppearance, NpcDialogueState } from "./types.ts";
 
 export const NPC_TALK_RANGE=82;
 /** Patrulhas curtas: Aela e Eron ficam fixos para as missões. */
-const PATROLS: Readonly<Record<string, { x: number; y: number }>> = {
+const TILE_PX = 32;
+/** `phase`: o quanto o passo está adiantado (em radianos); sem ele, o passo começa parado no ponto de origem. */
+const PATROLS: Readonly<Record<string, { x: number; y: number; phase?: number }>> = {
   mira: { x: 65, y: 0 }, toren: { x: 35, y: 0 }, lina: { x: 0, y: 36 },
   "south-hesh":{x:48,y:0}, "south-zinha":{x:22,y:0},
+  // Os moradores que andam pelas ruas da capital (ADR 0108): a rota vem em tiles, a patrulha em pixels.
+  ...Object.fromEntries(Object.entries(CITIZEN_PATROLS).map(([id, p]) => [id, { x: p.x * TILE_PX, y: p.y * TILE_PX, phase: p.phase }])),
 };
 export function npcPositionAt(npc: Npc, time = 0): { x: number; y: number; walking: boolean } {
   const route = PATROLS[npc.id];
   if (!route || !Number.isFinite(time)) return { x: npc.x, y: npc.y, walking: false };
-  const phase = Math.max(0, time) * .35;
+  const phase = Math.max(0, time) * .35 + (route.phase ?? 0);
   const step = Math.sin(phase);
   return { x: npc.x + route.x * step, y: npc.y + route.y * step,
     walking: Math.abs(Math.cos(phase)) > .08 };

@@ -71,4 +71,6 @@ Uma guilda para cada herói: **cavaleiro, arqueiro e mago**. O **Arquivo dos Exp
 2. Função e interior dos outros edifícios, na ordem de [CAPITAL_EDIFICIOS.md](CAPITAL_EDIFICIOS.md); missões e o serviço de cada guilda.
 3. Tochas e fogo nos portões e nas torres.
 
-Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md), [ADR 0058](adr/0058-capital-cidadela-dos-povos.md), [ADR 0060](adr/0060-capital-alameda-das-guildas.md), [ADR 0061](adr/0061-soltar-sprites-fora-da-capital.md), [ADR 0062](adr/0062-capital-hospedaria-piloto.md), [ADR 0063](adr/0063-capital-banco-da-casa-da-moeda.md) e [ADR 0064](adr/0064-capital-templo-renascimento.md).
+**Já feito (ADR 0108):** oito moradores sem função (Tomé, Dona Cecília, Rui, Marta, Bento, Inês, Olavo e Clara) vão e voltam pelas ruas e conversam; só andam em rua, longe do monumento e dos edifícios.
+
+Ver [ADR 0055](adr/0055-capital-do-centro-planta.md), [ADR 0056](adr/0056-capital-muralha-portoes-torres.md), [ADR 0057](adr/0057-capital-piso-praca-monumento.md), [ADR 0058](adr/0058-capital-cidadela-dos-povos.md), [ADR 0060](adr/0060-capital-alameda-das-guildas.md), [ADR 0061](adr/0061-soltar-sprites-fora-da-capital.md), [ADR 0062](adr/0062-capital-hospedaria-piloto.md), [ADR 0063](adr/0063-capital-banco-da-casa-da-moeda.md) [ADR 0064](adr/0064-capital-templo-renascimento.md) e [ADR 0108](adr/0108-moradores-da-capital.md).
