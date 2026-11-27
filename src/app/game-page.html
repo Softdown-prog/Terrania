@@ -43,7 +43,7 @@
           </div>
         </div>
         <div class="quest">
-          <span class="stat-heading">{{ hud.cave() ? (hud.cave()!.floor.entrance.tower ? "EXPLORAÇÃO · TORRE" : "EXPLORAÇÃO · SUBSOLO") : "MISSÃO DA CLAREIRA" }}</span
+          <span class="stat-heading">{{ hud.cave() ? (hud.cave()!.floor.entrance.tower ? "EXPLORAÇÃO · TORRE" : "EXPLORAÇÃO · SUBSOLO") : hud.questHeading() }}</span
           ><b id="quest">{{ hud.quest() }}</b>
           <div class="quest-bottom">
             <div class="quest-meter"><div id="questFill" [style.width.%]="hud.questPercent()"></div></div>
@@ -219,10 +219,12 @@
             (click)="hud.inventoryTab.set('bag')">Mochila</button>
           <button id="inventoryTabEquipment" type="button" [attr.aria-pressed]="hud.inventoryTab() === 'equipment'"
             (click)="hud.inventoryTab.set('equipment')">Equipamento</button>
+          <button id="inventoryTabQuests" type="button" [attr.aria-pressed]="hud.inventoryTab() === 'quests'"
+            (click)="hud.inventoryTab.set('quests')">Missões</button>
           <button id="inventoryTabMap" type="button" [attr.aria-pressed]="hud.inventoryTab() === 'map'"
             (click)="hud.inventoryTab.set('map')">Mapa do mundo</button>
         </div>
-        <div class="inventory-columns" [class.map-hidden]="hud.inventoryTab() === 'map'">
+        <div class="inventory-columns" [class.map-hidden]="hud.inventoryTab() === 'map' || hud.inventoryTab() === 'quests'">
           <section class="inventory-panel armory-panel" [class.mobile-hidden]="hud.inventoryTab() !== 'equipment'" aria-labelledby="equipmentTitle">
             <div class="equipment-heading"><h2 id="equipmentTitle">Equipamento</h2>
               @if (hud.wearsArmor() && hud.gear() !== null) { <span id="equipmentDefense">Defesa {{ hud.defense() }}</span> }
@@ -404,6 +406,49 @@
             </div>
           </section>
         </div>
+        @if (hud.inventoryTab() === 'quests') {
+          <section id="questJournal" class="quest-journal" aria-labelledby="questJournalTitle">
+            <span class="dialog-kicker">DIÁRIO</span>
+            <h2 id="questJournalTitle">Missões</h2>
+            <p class="quest-journal-help">Aqui ficam as missões que você aceitou, as que já dá para começar e as que você concluiu. O painel do alto da tela mostra a missão marcada com ★.</p>
+            @for (group of questGroups(); track group.id) {
+              @if (group.entries.length) {
+                <h3 class="quest-group-title" [id]="'questGroup-' + group.id">{{ group.title }} ({{ group.entries.length }})</h3>
+                @for (entry of group.entries; track entry.id) {
+                  <article class="quest-entry" [class.completed]="entry.status === 'completed'" [attr.data-quest]="entry.id">
+                    <header>
+                      <h4>{{ entry.title }}</h4>
+                      @if (entry.status === 'active') {
+                        <button type="button" class="quest-track" [attr.aria-pressed]="hud.trackedQuest()?.id === entry.id"
+                          (click)="hud.trackQuest(entry.id)">{{ hud.trackedQuest()?.id === entry.id ? '★ Acompanhando' : '☆ Acompanhar' }}</button>
+                      }
+                    </header>
+                    <small class="quest-giver">{{ entry.giver }}</small>
+                    <p class="quest-summary">{{ entry.summary }}</p>
+                    @if (entry.status === 'active' || entry.status === 'available') {
+                      <div class="quest-meter"><div [style.width.%]="entry.percent"></div></div>
+                    }
+                    <ol class="quest-steps">
+                      @for (step of entry.steps; track $index) {
+                        <li [class]="'step-' + step.state">
+                          <span class="step-mark" aria-hidden="true">{{ step.state === 'done' ? '✓' : step.state === 'current' ? '▶' : '○' }}</span>
+                          <span class="step-text">{{ step.text }}
+                            @if (step.state === 'current' && step.place; as place) {
+                              @if (stepGuide(place); as guide) {
+                                <em class="step-guide">{{ guide.arrow }} {{ place.label }}: {{ guide.text }}</em>
+                              }
+                            }
+                          </span>
+                        </li>
+                      }
+                    </ol>
+                    @if (entry.reward) { <small class="quest-reward">Recompensa: {{ entry.reward }}</small> }
+                  </article>
+                }
+              }
+            }
+          </section>
+        }
         @if (hud.inventoryTab() === 'map') {
           @if (hud.cave(); as cave) {
             <section id="inventoryMapPanel" class="world-atlas-panel" aria-label="Mapa do andar subterrâneo">

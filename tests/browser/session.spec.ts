@@ -38,7 +38,9 @@ for (const layout of ['normal', 'paisagem'] as const) {
     await expect(page.locator('#coords')).toHaveText('X 13 · Y 1');
     await expect(page.locator('#hpText')).toHaveText('110 / 110');
     await expect(page.locator('#xpText')).toHaveText('XP 20 / 60');
-    await expect(page.locator('#questProgress')).toHaveText('Missão concluída ✓');
+    // A clareira já foi concluída e recompensada: sai do painel da tela e fica no diário (ADR 0100).
+    await expect(page.locator('#quest')).toHaveText('Nenhuma missão em andamento');
+    await expect(page.locator('#questProgress')).toContainText('Diário');
     const revived = await page.evaluate(() => JSON.parse(localStorage.getItem('terrania-origins-v1')!));
     expect(revived).toMatchObject({ ...save, x: 432, y: 48, hp: 110 });
     expect(revived).not.toHaveProperty('awaitingRespawn');

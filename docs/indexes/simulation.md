@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (130)
+## Todos os arquivos deste módulo (136)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -138,6 +138,12 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/movement/ClassicTileWalker.ts`](../../src/engine/movement/ClassicTileWalker.ts)
 - [`src/engine/movement/Journey.ts`](../../src/engine/movement/Journey.ts)
 - [`src/engine/movement/TapNavigator.ts`](../../src/engine/movement/TapNavigator.ts)
+- [`src/engine/quests/journal/clearing.ts`](../../src/engine/quests/journal/clearing.ts)
+- [`src/engine/quests/journal/guide.ts`](../../src/engine/quests/journal/guide.ts)
+- [`src/engine/quests/journal/index.ts`](../../src/engine/quests/journal/index.ts)
+- [`src/engine/quests/journal/types.ts`](../../src/engine/quests/journal/types.ts)
+- [`src/engine/quests/journal/warhorse.ts`](../../src/engine/quests/journal/warhorse.ts)
+- [`src/engine/quests/journal/well.ts`](../../src/engine/quests/journal/well.ts)
 - [`src/engine/quests/south/well/WellInvestigation.ts`](../../src/engine/quests/south/well/WellInvestigation.ts)
 - [`src/engine/quests/south/well/constants.ts`](../../src/engine/quests/south/well/constants.ts)
 - [`src/engine/quests/south/well/events.ts`](../../src/engine/quests/south/well/events.ts)

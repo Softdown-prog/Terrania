@@ -76,8 +76,8 @@ test('HUD e diálogo da Aela exibem o progresso do jogo e a recompensa é entreg
   const interact = () => info.project.name === 'android' ? talk.tap() : talk.click();
 
   await page.goto('/jogar/?modo=solo');
-  await expect(page.locator('#questProgress')).toHaveText('4 / 5 slimes');
-  await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\s*80%/);
+  await expect(page.locator('#questProgress')).toContainText('Derrote 5 slimes na gruta (4/5)');
+  await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\s*64%/);
   await interact();
   await expect(npcDialog).toBeVisible();
   await expect(page.locator('#npcName')).toHaveText('Aela');
@@ -86,8 +86,8 @@ test('HUD e diálogo da Aela exibem o progresso do jogo e a recompensa é entreg
   await expect(page.locator('#npcStep')).toHaveText('Mensagem 2 de 3');
 
   await page.goto('/jogar/?modo=classico');
-  await expect(page.locator('#questProgress')).toHaveText('Missão concluída ✓');
-  await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\s*100%/);
+  await expect(page.locator('#questProgress')).toContainText('Volte a falar com a Aela'); // os 5 slimes caíram; falta a recompensa
+  await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\s*80%/);
   await interact();
   await expect(page.locator('#npcSpeech')).toContainText('Você conseguiu!');
   await expect(page.locator('#npcStep')).toHaveText('Mensagem 1 de 4');
@@ -96,6 +96,8 @@ test('HUD e diálogo da Aela exibem o progresso do jogo e a recompensa é entreg
   await next.click();
   await expect(npcDialog).toBeHidden();
   await expect(page.locator('canvas#game')).toBeFocused();
+  // Recompensa recebida: a missão concluída sai do painel da tela (ADR 0100) e fica no diário.
+  await expect(page.locator('#quest')).toHaveText('Nenhuma missão em andamento');
 
   await interact();
   await expect(page.locator('#npcStep')).toHaveText('Mensagem 1 de 3');
@@ -110,7 +112,7 @@ test('abates de slimes na superfície não completam missão da gruta de Aela', 
     seed: 842136, x: 16, y: 16, hp: 100, kills: 5, trainingKills: 0, defeated: [],
   })));
   await page.goto('/jogar/?modo=solo');
-  await expect(page.locator('#questProgress')).toHaveText('0 / 5 slimes');
+  await expect(page.locator('#questProgress')).toContainText('Derrote 5 slimes na gruta (0/5)');
   await expect(page.locator('#questFill')).toHaveAttribute('style', /width:\s*0%/);
 });
 
@@ -144,7 +146,7 @@ test('HUD oferece ler placa, entrar e sair conforme a interação do mundo', asy
   await interact();
   await expect(action).toHaveAccessibleName('Entrar (E)');
   await expect(outside).toHaveText('X 11 · Y -2');
-  await expect(page.locator('#questProgress')).toHaveText('0 / 5 slimes');
+  await expect(page.locator('#questProgress')).toContainText('Derrote 5 slimes na gruta (0/5)');
 });
 
 test('abrir o jogo envia o sinal anônimo ao servidor real e o painel nunca inventa zero nas falhas', async ({ page }) => {

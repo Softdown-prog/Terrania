@@ -10,6 +10,7 @@ import { runtimeConfig } from './runtime-config.ts';
 import { renderHero } from '../render/actors.ts';
 import { drawWorldAtlas } from '../render/terrain.ts';
 import { drawCaveAtlas } from '../render/cave.ts';
+import { questGuide, type QuestGuide } from '../engine/quests/journal/index.ts';
 import { atlasFrame, atlasTileAt, GROUND_NAMES, BIOME_NAMES, sectorIndex, surveySectors, type AtlasScale } from '../world/atlas.ts';
 import { REGIONS, getWorldRegion } from '../world/regions.ts';
 import { getRegionDifficulty } from '../world/regionDifficulty.ts';
@@ -29,6 +30,12 @@ export class GamePageComponent implements AfterViewInit {
   readonly inventoryOpen = signal(false);
   readonly previewDirection = signal(0);
   readonly atlasScale = signal<AtlasScale>('world');
+  /** As três seções do diário de missões (ADR 0100), na ordem em que aparecem. */
+  readonly questGroups = computed(() => [
+    { id: 'active', title: 'Em andamento', entries: this.hud.journalActive() },
+    { id: 'available', title: 'Para começar', entries: this.hud.journalAvailable() },
+    { id: 'completed', title: 'Concluídas', entries: this.hud.journalCompleted() },
+  ]);
   readonly selectedSector = signal(4);
   /** O destino da viagem escolhido com um clique no Mapa do mundo, em tiles (ADR 0099). */
   readonly atlasTarget = signal<{ x: number; y: number } | null>(null);
@@ -134,6 +141,8 @@ export class GamePageComponent implements AfterViewInit {
     this.atlasTarget.set(null);
     this.inventoryDialog().nativeElement.close();
   }
+  /** Para onde e a que distância fica o lugar da etapa atual, a partir de onde o herói está. */
+  stepGuide(place: { x: number; y: number }): QuestGuide | null { return questGuide(this.hud.mapTile(), place); }
   showOwnSector(): void {
     const { x, y } = this.hud.mapTile();
     this.selectedSector.set(sectorIndex(x, y));

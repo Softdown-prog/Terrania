@@ -87,6 +87,6 @@ test("painel de missão: com a clareira concluída, mostra o progresso da água 
   await page.goto("/jogar/?modo=solo");
   await expect(page.locator("canvas#game")).toBeVisible();
   await expect(page.locator("body")).toContainText("A Água Escura");
-  await expect(page.locator("body")).toContainText("Ouça as 3 versões: 2 / 3");
+  await expect(page.locator("body")).toContainText("Ouça as 3 versões (2/3)");
   expect(errors).toEqual([]);
 });

@@ -10,7 +10,6 @@ import { loadLocalSave, saveLocal } from "../storage/localSave.ts";
 import { CanvasScene } from "../ui/CanvasScene.ts";
 import type { GameUi, Preferences } from "../ui/GameUi.ts";
 import { nearestNpc, npcDialogue } from "../world/npcs.ts";
-import { aelaQuestProgress } from "../world/aelaQuest.ts";
 import { QUEST_REWARD_POTIONS } from "../engine/character/Inventory.ts";
 import { InteriorRoom, hasInterior } from "../engine/rooms/InteriorRoom.ts";
 import { CaveRoom } from "../engine/rooms/CaveRoom.ts";
@@ -39,10 +38,11 @@ import { isHeroClassPlayable, manaMeter, type HeroClassId } from "../engine/char
 import { STAVES } from "../engine/character/Staves.ts";
 import { BANKER_ID } from "../npcs/center/capital/index.ts";
 import { MOUNT_BLOCKED_MESSAGE, MOUNT_MESSAGES } from "./messages/mountMessages.ts";
-import { wellQuestSummary } from "../engine/quests/south/well/index.ts";
+import { buildJournal } from "../engine/quests/journal/index.ts";
+import { caveEntranceInCell } from "../world/caves.ts";
 import { WELL_LINES } from "./messages/south/well/index.ts";
 import { visibleBattleCreatures } from "../engine/combat/ClassicBattleList.ts";
-import { experienceProgress } from "../engine/character/Experience.ts";
+import { experienceProgress, levelForExperience } from "../engine/character/Experience.ts";
 import { collectDrops } from "../engine/character/loot.ts";
 
 
@@ -145,14 +145,19 @@ export class Game {
       heroClass: this.sim.heroClass,
       equippedStaff: this.sim.equippedStaff,
       mana: this.sim.usesMana ? manaMeter(this.sim.mana, this.sim.maxMana, STAVES[this.sim.equippedStaff].manaCost) : null,
-    }, aelaQuestProgress(this.sim.trainingKills), wellQuestSummary(this.sim.well.view));
+    });
+    const mounts = this.sim.mounts.view(kills), starter = caveEntranceInCell(0, 0, this.sim.seed);
+    this.hud.updateJournal(buildJournal({
+      trainingKills: this.sim.trainingKills, clearingRewardClaimed: inventory.questRewardClaimed, mounts, level: levelForExperience(this.sim.experience),
+      well: this.sim.well.view, ...(starter ? { trainingCave: { x: starter.x, y: starter.y } } : {}),
+    }));
     this.hud.updateInventory(inventory.gel, inventory.potion, inventory.food, inventory.materials, inventory.coins, inventory.elixirs);
     this.hud.updateBank(this.sim.bank.balance);
     this.hud.updateRespawnPoint(this.sim.respawnPoint);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateStaves(inventory.staves);
     this.hud.updateGear(inventory.gear);
-    this.hud.updateMount(this.sim.mounts.view(kills));
+    this.hud.updateMount(mounts);
   }
   /** Battle entries are derived from the same camera/viewport as the canvas. */
   private battleCreatures() {

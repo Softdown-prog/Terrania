@@ -38,6 +38,8 @@ precisam de artefatos/interações, novos pontos de interesse e lógica de habil
 
 ## Fluxo jogável — O Garrano Fugitivo (nova narrativa)
 
+> **Em palavras simples** (ADR 0100): o *garrano* é o cavalo de batalha da guarnição que fugiu para o bosque a oeste da vila. Você segue as **marcas de cascos** no chão (saída oeste da vila) até achá-lo, e o diário (**Mochila → Missões**) e o painel do alto da tela dizem **onde ir** ("as marcas de cascos: a N tiles a oeste") e **o que apertar** (a tecla E perto do alvo).
+
 1. Com nível 15, vá até **Eron** e repare o cercado do estábulo (72 Terrania Gold).
    Treine Cavalaria I e aceite a missão. Eron entrega automaticamente
    uma **Maçã Silvestre Doce**, registrada no estado da quest.

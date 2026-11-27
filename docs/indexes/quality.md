@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (228)
+## Todos os arquivos deste módulo (230)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -61,6 +61,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mana-bar.spec.ts`](../../tests/browser/mana-bar.spec.ts)
 - [`tests/browser/map-size.spec.ts`](../../tests/browser/map-size.spec.ts)
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
+- [`tests/browser/quest-journal.spec.ts`](../../tests/browser/quest-journal.spec.ts)
 - [`tests/browser/roads.spec.ts`](../../tests/browser/roads.spec.ts)
 - [`tests/browser/rocks.spec.ts`](../../tests/browser/rocks.spec.ts)
 - [`tests/browser/session.spec.ts`](../../tests/browser/session.spec.ts)
@@ -195,6 +196,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/qa-mage.test.ts`](../../tests/qa-mage.test.ts)
 - [`tests/qa-natural.test.ts`](../../tests/qa-natural.test.ts)
 - [`tests/quality-gates.test.ts`](../../tests/quality-gates.test.ts)
+- [`tests/quest-journal.test.ts`](../../tests/quest-journal.test.ts)
 - [`tests/region-boundaries.test.ts`](../../tests/region-boundaries.test.ts)
 - [`tests/regional-creatures.test.ts`](../../tests/regional-creatures.test.ts)
 - [`tests/regional-landmark-art.test.ts`](../../tests/regional-landmark-art.test.ts)

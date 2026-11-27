@@ -5,7 +5,7 @@ import type { MountAction, MountView } from '../engine/mounts/MountStable.ts';
 import { WEAPONS, WEAPON_IDS, weaponUnlocked, type WeaponId, type WeaponLoadout } from '../engine/character/Weapons.ts';
 import { EQUIPMENT_SLOTS, GEAR, gearDefense, gearIdsFor, gearLevel, gearSetName, gearUnlocked, type GearDefinition, type EquipmentSlot, type GearId, type GearSlot, type GearState } from '../engine/character/Equipment.ts';
 import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
-import type { AelaQuestProgress } from '../world/aelaQuest.ts';
+import { questPanel, trackedEntry, type JournalEntry } from '../engine/quests/journal/index.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { foodItemIcon, gearItemIcon, slotItemIcon, staffItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
 import { DEFAULT_STAFF, STAFF_IDS, STAVES, isStaffId, staffUnlocked, type StaffId } from '../engine/character/Staves.ts';
@@ -21,7 +21,6 @@ import { describeGearBonus, describeGearTotals } from '../game/messages/gearBonu
 import { NO_GEAR_BONUS, gearBonus } from '../engine/character/gearBonus.ts';
 import { HERO_CLASS_HINT, HERO_CLASS_INTRO, HERO_CLASS_LOCKED, HERO_CLASS_TITLE } from '../game/messages/classIntro.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
-import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
 import { ELIXIR_RECIPES, elixirRecipe, emptyElixirCounts, type ElixirCounts, type ElixirId } from '../engine/character/south/alchemy/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
 
@@ -57,7 +56,7 @@ export interface BackpackItemView {
   readonly comparedDamage?: number;
 }
 type BackpackFilter = 'all' | 'supplies' | 'gear';
-type InventoryTab = 'bag' | 'equipment' | 'map';
+type InventoryTab = 'bag' | 'equipment' | 'map' | 'quests';
 
 @Injectable()
 export class HudService implements GameUi {
@@ -95,9 +94,18 @@ export class HudService implements GameUi {
     equal: (previous, next) => previous === next || (previous !== null && next !== null &&
       previous.level === next.level && previous.earned === next.earned && previous.needed === next.needed),
   });
-  readonly quest = signal('Proteja a clareira');
+  readonly quest = signal('Nenhuma missão em andamento');
   readonly questProgress = signal('');
   readonly questPercent = signal(0);
+  /** O rótulo do painel de missão da tela: "MISSÃO" (com quantas outras estão em andamento) ou "MISSÕES" quando nenhuma está (ADR 0100). */
+  readonly questHeading = signal('MISSÃO');
+  /** O diário de missões (ADR 0100) e a missão que o jogador escolheu acompanhar na tela. */
+  readonly journal = signal<readonly JournalEntry[]>([], { equal: (a, b) => JSON.stringify(a) === JSON.stringify(b) });
+  readonly trackedQuestId = signal<string | null>(null);
+  readonly trackedQuest = computed(() => trackedEntry(this.journal(), this.trackedQuestId()));
+  readonly journalActive = computed(() => this.journal().filter(entry => entry.status === 'active'));
+  readonly journalAvailable = computed(() => this.journal().filter(entry => entry.status === 'available'));
+  readonly journalCompleted = computed(() => this.journal().filter(entry => entry.status === 'completed'));
   readonly coords = signal('X 0 · Y 0');
   readonly mapTile = signal({ x: 0, y: 0 }, { equal: (a, b) => a.x === b.x && a.y === b.y });
   readonly seed = signal(842136);
@@ -544,24 +552,21 @@ export class HudService implements GameUi {
     this.quest.set(name); this.questProgress.set('E ou porta: sair');
     this.coords.set('Interior · ' + place);
   }
-  updateHero(hero: HeroHudState, quest: AelaQuestProgress, well?: WellQuestSummary): void {
+  updateHero(hero: HeroHudState): void {
     this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);
     this.mana.set(hero.mana);
     this.heroClass.set(hero.heroClass); this.staff.set(hero.equippedStaff);
     this.nutrition.set(hero.nutrition);
     this.awaitingRespawn.set(hero.awaitingRespawn);
     this.progression.set(hero.progression);
-    // Uma missão no painel: a da clareira até ser concluída; depois a do poço, se já começou (ADR 0031).
-    if (quest.completed && well?.started) {
-      this.quest.set(well.title);
-      this.questProgress.set(well.progress);
-      this.questPercent.set(well.percent);
-    } else {
-      this.quest.set(quest.completed ? 'Clareira protegida' : 'Proteja a clareira');
-      this.questProgress.set(quest.completed ? 'Missão concluída ✓' : `${quest.defeated} / ${quest.goal} slimes`);
-      this.questPercent.set(quest.defeated / quest.goal * 100);
-    }
     this.mapTile.set({ x: hero.tileX, y: hero.tileY });
     this.coords.set(`X ${hero.tileX} · Y ${hero.tileY}`);
   }
+  /** O diário e o painel da tela: o painel acompanha uma missão em andamento (a escolhida, ou a primeira) e some quando ela termina; sem missão em andamento, aponta para o diário. */
+  updateJournal(entries: readonly JournalEntry[]): void {
+    this.journal.set(entries);
+    const panel = questPanel(entries, this.trackedQuestId());
+    this.questHeading.set(panel.heading); this.quest.set(panel.title); this.questProgress.set(panel.progress); this.questPercent.set(panel.percent);
+  }
+  trackQuest(id: string): void { this.trackedQuestId.set(id); this.updateJournal(this.journal()); }
 }

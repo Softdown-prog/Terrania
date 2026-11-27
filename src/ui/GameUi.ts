@@ -1,8 +1,7 @@
-import type { AelaQuestProgress } from '../world/aelaQuest.ts';
+import type { JournalEntry } from '../engine/quests/journal/index.ts';
 import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import type { ElixirCounts, ElixirId } from '../engine/character/south/alchemy/index.ts';
-import type { WellQuestSummary } from '../engine/quests/south/well/index.ts';
 import type { MarketId } from '../engine/character/coins/index.ts';
 import type { RespawnPointId } from '../engine/character/center/shrine/index.ts';
 import type { HeroClassId, ManaMeter } from '../engine/character/classes/index.ts';
@@ -93,7 +92,9 @@ export interface GameUi {
   updateGear(gear: GearState | null): void;
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void;
   setQuickPotionFeedback(message: string): void;
-  updateHero(hero: HeroHudState, quest: AelaQuestProgress, well?: WellQuestSummary): void;
+  updateHero(hero: HeroHudState): void;
+  /** O diário de missões (ADR 0100): todas as missões, com etapas; o painel da tela acompanha uma em andamento. */
+  updateJournal(entries: readonly JournalEntry[]): void;
   /** Avisos de transição (por exemplo, descer ou subir de uma caverna). */
   setTravelNotice(message: string): void;
   setTargetCombat(enabled: boolean): void;

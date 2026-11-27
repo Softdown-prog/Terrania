@@ -97,7 +97,7 @@ test("entrar na gruta solo, abrir mapa do andar e subir pela mesma saída (deskt
     await page.keyboard.up("s");
   }
   await expect(page.locator("#quest")).toHaveText("Proteja a clareira");
-  await expect(page.locator(".quest .stat-heading")).toContainText("MISSÃO DA CLAREIRA");
+  await expect(page.locator(".quest .stat-heading")).toHaveText("MISSÃO");
   // Regression: the old CSS had pointer-events:none on the toast parent.
   // This must exercise a real tap/click, not call the Angular method directly.
   const dismiss=page.locator("#dismissTravelNotice");

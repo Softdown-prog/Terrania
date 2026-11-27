@@ -139,3 +139,28 @@
 #journeyBar { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 10px;
   padding: 6px 10px; border: 1px solid #e9cf8f; border-radius: 999px; background: #14271fe6; color: #fff1ce; font: 700 12px system-ui; }
 #journeyBar button { min-height: 28px; padding: 0 10px; border: 1px solid #e9cf8f; border-radius: 999px; background: #324939; color: #fff1ce; font: 700 12px system-ui; }
+
+/* Diário de missões (ADR 0100). */
+.quest-journal { padding: 4px 2px 12px; color: #e8e7d0; }
+.quest-journal h2 { margin: 2px 0 6px; font: 600 22px Georgia, serif; color: #fff1ce; }
+.quest-journal-help { margin: 0 0 12px; color: #c9d4bd; font: 13px/1.45 system-ui; }
+.quest-group-title { margin: 16px 0 8px; font: 700 12px system-ui; letter-spacing: .12em; text-transform: uppercase; color: #dac793; }
+.quest-entry { margin: 0 0 10px; padding: 12px; border: 1px solid #5f7a69; border-radius: 8px; background: linear-gradient(180deg, #1f372e, #162b25); }
+.quest-entry.completed { opacity: .8; border-color: #46604f; }
+.quest-entry header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.quest-entry h4 { margin: 0; font: 700 16px Georgia, serif; color: #fff1ce; }
+.quest-giver { display: block; margin: 2px 0 6px; color: #b9c8ad; }
+.quest-summary { margin: 0 0 8px; color: #dce5cf; font: 13px/1.45 system-ui; }
+.quest-track { min-height: 32px; padding: 0 10px; border: 1px solid #718a76; border-radius: 999px; background: #243d33; color: #e8e7d0; font: 600 12px system-ui; }
+.quest-track[aria-pressed="true"] { border-color: #e9cf8f; color: #fff1ce; background: #3b5842; }
+.quest-meter { height: 6px; margin: 0 0 8px; border-radius: 3px; background: #0f1d19; overflow: hidden; }
+.quest-meter > div { height: 100%; background: linear-gradient(90deg, #d8b45a, #9bd98a); }
+.quest-steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font: 13px/1.4 system-ui; }
+.quest-steps li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; color: #c9d4bd; }
+.quest-steps .step-done { color: #8fae8b; }
+.quest-steps .step-done .step-text { text-decoration: line-through; text-decoration-color: #6f8a6c; }
+.quest-steps .step-current { color: #fff1ce; font-weight: 600; }
+.quest-steps .step-todo { opacity: .75; }
+.step-mark { text-align: center; }
+.step-guide { display: block; margin-top: 3px; font-style: normal; font-weight: 700; color: #ffd36b; }
+.quest-reward { display: block; margin-top: 8px; color: #dac793; }
