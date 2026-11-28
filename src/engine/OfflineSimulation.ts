@@ -26,6 +26,7 @@ import { RootsQuest, rootsQuestStarted, type RootsQuestState } from "./quests/ce
 import { Bank, type BankState } from "./character/center/bank/index.ts";
 import { STAVES, type StaffId } from "./character/Staves.ts";
 import { BOWS, DEFAULT_BOW, type BowId } from "./character/Bows.ts";
+import { arrowStrikeTarget, resolveArrowStrike } from "./combat/ArrowCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import { resolveSpellStrike, spellReach, spellStrikeTargets } from "./combat/SpellCombat.ts";
 import { NO_GEAR_BONUS, gearBonus, scaledMaxMana, type GearBonus } from "./character/gearBonus.ts";
@@ -205,7 +206,7 @@ export class OfflineSimulation {
     // O Arqueiro atira de longe com o arco e precisa de flecha na aljava (ADR 0110); o disparo em si vem no lote A1c.
     if (this.heroClass === "archer") {
       const bow = BOWS[this.equippedBow], reach = bow.range * TILE_SIZE;
-      return { interval: bow.interval, weapon, ranged: { reach, ready: this.inventory.quiver.counts[this.inventory.quiver.equipped] >= bow.arrowsPerShot }, followStop: reach - 4 };
+      return { interval: bow.interval, weapon, ranged: { reach, ready: this.inventory.quiver.counts[this.inventory.quiver.equipped] >= bow.arrowsPerShot, lacks: "ammo" }, followStop: reach - 4 };
     }
     if (!this.usesMana) return { interval: this.inventory.weapon.interval, weapon, followStop: CLASSIC_FOLLOW_STOP };
     const staff = STAVES[this.equippedStaff], reach = spellReach(this.equippedStaff);
@@ -349,15 +350,22 @@ export class OfflineSimulation {
     }
     // O Mago lança a magia do cajado (gasta mana, só com alvo escolhido); o Cavaleiro bate com a espada.
     if (attack) {
-      if (this.usesMana) this.player.startCast(this.equippedStaff, cost => typeof strikeTargetId === "string" && this.spendMana(cost));
+      if (this.heroClass === "archer") this.player.startShot(this.equippedBow, arrows => typeof strikeTargetId === "string" && this.inventory.spendArrows(arrows));
+      else if (this.usesMana) this.player.startCast(this.equippedStaff, cost => typeof strikeTargetId === "string" && this.spendMana(cost));
       else this.player.startAttack(this.inventory.loadout.equipped);
     }
     // Keep the swing facing the creature it was started against while walking.
     const focused = typeof strikeTargetId === "string" ? this.slimes.get(strikeTargetId) : null;
     if (focused && this.player.attackTime > 0) faceTarget(this.player, focused);
     if (this.player.consumeStrike()) {
-      const staff=this.player.attackStaff;
-      if (staff) {
+      const staff=this.player.attackStaff, bow=this.player.attackBow;
+      if (bow) {
+        const target=arrowStrikeTarget(bow,this.player,this.slimes.values(),this.collision,strikeTargetId);
+        resolveArrowStrike(bow,this.inventory.quiver.equipped,this.player,target,mob=>{
+          this.registerDefeat(mob.id,mob,defense);
+          changed=true;
+        });
+      } else if (staff) {
         const hit=spellStrikeTargets(staff,this.player,this.slimes.values(),this.collision,strikeTargetId);
         resolveSpellStrike(staff,this.player,hit,this.collision,mob=>{
           this.registerDefeat(mob.id,mob,defense);

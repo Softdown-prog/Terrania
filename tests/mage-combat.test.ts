@@ -291,7 +291,7 @@ test("a fiação do combate à distância: os dois modos usam o perfil, avisam '
   for (const [name, source] of [["superfície", surface], ["caverna", cave]] as const) {
     assert.match(source, /const profile = host\.sim\.combatProfile;/, `${name}: lê o perfil`);
     assert.match(source, /profile\.interval,\s*profile\.weapon,\s*profile\.ranged\)/, `${name}: a mira recebe intervalo, arma e alcance`);
-    assert.match(source, /host\.travel\.combat\.takeBlocked\(\) === "no-mana"\) host\.hud\.setTravelNotice\(NO_MANA_MESSAGE\)/, `${name}: avisa sem mana`);
+    assert.match(source, /const blocked = host\.travel\.combat\.takeBlocked\(\);\s*\n\s*if \(blocked\) host\.hud\.setTravelNotice\(blocked === "no-ammo" \? NO_AMMO_MESSAGE : NO_MANA_MESSAGE\)/, `${name}: avisa sem mana (e sem flechas, do Arqueiro)`);
     assert.match(source, /profile\.followStop/, `${name}: a perseguição para no alcance`);
   }
   assert.equal((surface.match(/profile\.followStop/g) ?? []).length, 2, "as duas perseguições da superfície (quadro e passo por tile)");

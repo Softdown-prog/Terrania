@@ -3,6 +3,7 @@ import { collectDrops } from "../../engine/character/loot.ts";
 import type { CaveRoom } from "../../engine/rooms/CaveRoom.ts";
 import { nearbyStairsMove, reachedStairsMove } from "../../engine/rooms/caveStairs.ts";
 import { TILE_SIZE } from "../../world/terrain.ts";
+import { NO_AMMO_MESSAGE } from "../messages/noAmmo.ts";
 import { NO_MANA_MESSAGE } from "../messages/noMana.ts";
 import type { Frame, ModeHost } from "./types.ts";
 
@@ -17,7 +18,8 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
     const classicStrike = host.travel.combat.tick(dt,cave.player,cave.monsters,
       cave.collision,profile.interval,profile.weapon,profile.ranged);
     // Ao alcance e sem mana: a magia não sai e a tela avisa uma vez (ADR 0069).
-    if (host.travel.combat.takeBlocked() === "no-mana") host.hud.setTravelNotice(NO_MANA_MESSAGE);
+    const blocked = host.travel.combat.takeBlocked();
+    if (blocked) host.hud.setTravelNotice(blocked === "no-ammo" ? NO_AMMO_MESSAGE : NO_MANA_MESSAGE);
     const follow = host.travel.autoFollow && !manualActive && host.travel.navigator.target === null;
     const caveMovement = follow
       ? host.travel.pursuit.direction(dt,cave.player,focused,cave.monsters,cave.collision,false,null,profile.followStop)
@@ -28,7 +30,9 @@ export function tickCave(host: ModeHost, cave: CaveRoom, frame: Frame): boolean 
       host.sim.inventory.loadout.equipped,host.sim.inventory.defense,
       // O alvo do golpe vai em TODOS os quadros, como na superfície: a magia sai depois do preparo, em outro quadro que o do pedido.
       host.travel.combat.strikeTargetId,
-      host.sim.usesMana ? { staff: host.sim.equippedStaff, spend: cost => host.sim.spendMana(cost), gain: amount => host.sim.gainMana(amount), damagePercent: host.sim.gearBonus.damage } : undefined);
+      host.sim.usesMana ? { staff: host.sim.equippedStaff, spend: cost => host.sim.spendMana(cost), gain: amount => host.sim.gainMana(amount), damagePercent: host.sim.gearBonus.damage } : undefined,
+      // O Arqueiro atira o arco e gasta as flechas da aljava (ADR 0111).
+      host.sim.heroClass === "archer" ? { bow: host.sim.equippedBow, arrow: host.sim.inventory.quiver.equipped, spend: arrows => host.sim.inventory.spendArrows(arrows) } : undefined);
     host.input.acknowledgeMovement();
     host.sim.advanceClock(dt); // o tempo de volta dos monstros também anda dentro da masmorra (ADR 0029)
     // A magia do Mago também se vê na caverna: o projétil voa e o estouro mostra o dano (ADR 0070).

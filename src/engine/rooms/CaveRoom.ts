@@ -10,7 +10,10 @@ import { AELA_SLIME_GOAL } from "../../world/aelaQuest.ts";
 import { RegionalMonster, caveMonsterKinds } from "../../actors/RegionalMonster.ts";
 import { faceTarget } from "../combat/combat.ts";
 import { resolveSpellStrike, spellStrikeTargets } from "../combat/SpellCombat.ts";
+import { arrowStrikeTarget, resolveArrowStrike } from "../combat/ArrowCombat.ts";
 import type { StaffId } from "../character/Staves.ts";
+import type { BowId } from "../character/Bows.ts";
+import { DEFAULT_ARROW, type ArrowId } from "../character/Arrows.ts";
 import type { WeaponId } from "../character/Weapons.ts";
 
 import { Player } from "../../actors/Player.ts";
@@ -195,12 +198,14 @@ export class CaveRoom {
   }
   /** `caster`: o Mago lança a magia do cajado e paga a mana de fora (a mana é da simulação); sem ele, o herói bate com a espada (ADR 0069). */
   update(dt:number,movement:{x:number;y:number},attack=false,weapon:WeaponId="starter",defense=0,
-    targetId?: string | null,caster?: { readonly staff: StaffId; readonly spend: (cost: number) => boolean; readonly gain?: (amount: number) => void; readonly damagePercent?: number }):void {
+    targetId?: string | null,caster?: { readonly staff: StaffId; readonly spend: (cost: number) => boolean; readonly gain?: (amount: number) => void; readonly damagePercent?: number },
+    shooter?: { readonly bow: BowId; readonly arrow: ArrowId; readonly spend: (arrows: number) => boolean }):void {
     if(!Number.isFinite(dt)||dt<=0||this.player.hp<=0)return;
     dt=Math.min(dt,.1);
     this.player.update(dt,movement,this.collision);
     if(attack){
-      if(caster)this.player.startCast(caster.staff,cost=>typeof targetId==="string" && caster.spend(cost));
+      if(shooter)this.player.startShot(shooter.bow,arrows=>typeof targetId==="string" && shooter.spend(arrows));
+      else if(caster)this.player.startCast(caster.staff,cost=>typeof targetId==="string" && caster.spend(cost));
       else this.player.startAttack(weapon);
     }
     for(const [id,monster] of this.monsters){
@@ -213,7 +218,12 @@ export class CaveRoom {
     const focused=typeof targetId==="string" ? this.monsters.get(targetId) : undefined;
     if(focused && this.player.attackTime>0)faceTarget(this.player,focused);
     if(this.player.consumeStrike()){
-      const staff=this.player.attackStaff;
+      const staff=this.player.attackStaff,bow=this.player.attackBow;
+      if(bow){
+        const target=arrowStrikeTarget(bow,this.player,this.monsters.values(),this.collision,targetId);
+        resolveArrowStrike(bow,shooter?.arrow??DEFAULT_ARROW,this.player,target,monster=>this.defeat(monster.id,monster,defense));
+        return;
+      }
       if(staff){
         const hit=spellStrikeTargets(staff,this.player,this.monsters.values(),this.collision,targetId);
         if(hit[0])faceTarget(this.player,hit[0]);

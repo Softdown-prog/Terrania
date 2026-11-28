@@ -17,12 +17,15 @@ type Point = Readonly<{ x: number; y: number }>;
 const isPoint = (p: Point): boolean =>
   Number.isFinite(p.x) && Number.isFinite(p.y);
 
+/** Por que o ataque à distância não saiu: o Mago sem mana ou o Arqueiro sem flecha (ADR 0069, ADR 0111). */
+export type BlockedReason = "no-mana" | "no-ammo";
+
 /** A selected target never authorizes an out-of-range or wall-penetrating strike. */
 export class ClassicCombat {
   private selected: string | null = null;
   private swingTarget: string | null = null;
   private remaining = 0;
-  private blocked: "no-mana" | null = null;
+  private blocked: BlockedReason | null = null;
   private blockedNotified = false;
 
   get targetId(): string | null { return this.selected; }
@@ -48,10 +51,10 @@ export class ClassicCombat {
   }
 
   /**
-   * Por que o ataque não saiu (ADR 0069): hoje só "sem mana". Devolve o motivo UMA vez por bloqueio, para a tela avisar sem repetir a cada
+   * Por que o ataque não saiu (ADR 0069, ADR 0111): "sem mana" (Mago) ou "sem flecha" (Arqueiro). Devolve o motivo UMA vez por bloqueio, para a tela avisar sem repetir a cada
    * quadro; volta a avisar depois que o ataque sai ou o alvo muda.
    */
-  takeBlocked(): "no-mana" | null {
+  takeBlocked(): BlockedReason | null {
     if (this.blocked === null || this.blockedNotified) return null;
     this.blockedNotified = true;
     return this.blocked;
@@ -94,9 +97,10 @@ export class ClassicCombat {
     faceTarget(facing, mob);
     const arc = ranged ? { reach: ranged.reach, cone: -0.1 } : swordArc(weapon);
     if (!canStrike(facing, mob, collision, arc.reach, arc.cone)) { this.unblock(); return false; }
-    // Ao alcance mas sem mana: a magia não sai e a recarga não é gasta (ADR 0069).
+    // Ao alcance mas sem mana (ou sem flecha): o ataque não sai e a recarga não é gasta (ADR 0069, ADR 0111).
     if (ranged && !ranged.ready) {
-      if (this.blocked !== "no-mana") { this.blocked = "no-mana"; this.blockedNotified = false; }
+      const reason: BlockedReason = ranged.lacks === "ammo" ? "no-ammo" : "no-mana";
+      if (this.blocked !== reason) { this.blocked = reason; this.blockedNotified = false; }
       return false;
     }
     this.unblock();

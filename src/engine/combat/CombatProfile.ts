@@ -9,8 +9,8 @@ export interface CombatProfile {
   readonly interval: number;
   /** A arma da espada equipada (o alcance e o arco do Cavaleiro vêm dela). */
   readonly weapon: WeaponId;
-  /** Presente só para quem ataca de longe: o alcance em pixels e se há mana para a próxima magia. */
-  readonly ranged?: { readonly reach: number; readonly ready: boolean };
+  /** Presente só para quem ataca de longe: o alcance em pixels, se há o que gastar (mana do Mago, flecha do Arqueiro) e, sem isso, o que falta (sem o campo, mana). */
+  readonly ranged?: { readonly reach: number; readonly ready: boolean; readonly lacks?: "mana" | "ammo" };
   /** A distância em que a perseguição para: dentro do alcance, com margem para o caminho. */
   readonly followStop: number;
 }

@@ -2,6 +2,7 @@ import { currentMountQuestStep } from "../../engine/mounts/MountQuestState.ts";
 import { dungeonEntranceNear } from "../../world/entrances.ts";
 import { nearestNpc } from "../../world/npcs.ts";
 import { questStepId, surfaceNearbyAction } from "../interactions.ts";
+import { NO_AMMO_MESSAGE } from "../messages/noAmmo.ts";
 import { NO_MANA_MESSAGE } from "../messages/noMana.ts";
 import type { Frame, ModeHost } from "./types.ts";
 
@@ -20,7 +21,8 @@ export function tickSurface(host: ModeHost, frame: Frame): void {
       const classicStrike = host.travel.combat.tick(1 / 60, before, host.sim.slimes, host.sim.collision,
         profile.interval, profile.weapon, profile.ranged);
       // Ao alcance e sem mana: a magia não sai e a tela avisa uma vez (ADR 0069).
-      if (host.travel.combat.takeBlocked() === "no-mana") host.hud.setTravelNotice(NO_MANA_MESSAGE);
+      const blocked = host.travel.combat.takeBlocked();
+      if (blocked) host.hud.setTravelNotice(blocked === "no-ammo" ? NO_AMMO_MESSAGE : NO_MANA_MESSAGE);
       const follow = !manualActive && !tileRoute && host.travel.autoFollow;
       if (follow) host.travel.pursuit.direction(1 / 60, before, host.travel.combat.targetId,
         host.sim.slimes, host.sim.collision, true, host.travel.walker.destination, profile.followStop);

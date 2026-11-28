@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (150)
+## Todos os arquivos deste módulo (151)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -129,6 +129,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/weapons/swords/obsidian.ts`](../../src/engine/character/weapons/swords/obsidian.ts)
 - [`src/engine/character/weapons/swords/starter.ts`](../../src/engine/character/weapons/swords/starter.ts)
 - [`src/engine/character/weapons/swords/tempest.ts`](../../src/engine/character/weapons/swords/tempest.ts)
+- [`src/engine/combat/ArrowCombat.ts`](../../src/engine/combat/ArrowCombat.ts)
 - [`src/engine/combat/ClassicBattleList.ts`](../../src/engine/combat/ClassicBattleList.ts)
 - [`src/engine/combat/ClassicCombat.ts`](../../src/engine/combat/ClassicCombat.ts)
 - [`src/engine/combat/ClassicPursuit.ts`](../../src/engine/combat/ClassicPursuit.ts)

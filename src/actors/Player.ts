@@ -6,6 +6,7 @@ import {
 import { BASE_MAX_HP } from "../engine/character/Experience.ts";
 import { WEAPONS, type WeaponId } from "../engine/character/Weapons.ts";
 import { STAVES, type StaffId } from "../engine/character/Staves.ts";
+import { BOWS, type BowId } from "../engine/character/Bows.ts";
 import { FOODS, FOOD_EAT_COOLDOWN, FOOD_HEAL_INTERVAL, MAX_NUTRITION,
   normalizeNutrition, type FoodId, type FoodUseResult, type NutritionState } from "../engine/character/Food.ts";
 /** Quanto dura o brilho de cura de quem usa uma poção (só desenho; ADR 0098). */
@@ -24,6 +25,8 @@ export class Player {
   attackWeapon: WeaponId = "starter";
   /** O cajado da magia em andamento (ADR 0069); `null` é um golpe de espada. */
   attackStaff: StaffId | null = null;
+  /** O arco do tiro em andamento (ADR 0111); `null` quando o golpe é de espada ou magia. */
+  attackBow: BowId | null = null;
   /** Segundos de preparo do golpe ou da magia em andamento, guardados ao começar. */
   attackWindup: number = WEAPONS.starter.windup;
   attackCooldown = 0;
@@ -214,7 +217,7 @@ export class Player {
     this.advanceDebuffs(dt);
   }
   get attackSequence(): number { return this.swingNumber; }
-  get strikeDamage(): number { return this.attackStaff ? STAVES[this.attackStaff].damage : WEAPONS[this.attackWeapon].damage; }
+  get strikeDamage(): number { return this.attackBow ? BOWS[this.attackBow].damage : this.attackStaff ? STAVES[this.attackStaff].damage : WEAPONS[this.attackWeapon].damage; }
   /** O golpe em andamento é uma magia do cajado? */
   get attackIsSpell(): boolean { return this.attackStaff !== null; }
   startAttack(weapon: WeaponId = "starter"): boolean {
@@ -223,6 +226,7 @@ export class Player {
     this.attackCooldown = WEAPONS[weapon].interval * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
     this.attackWeapon = weapon;
     this.attackStaff = null;
+    this.attackBow = null;
     this.attackWindup = WEAPONS[weapon].windup;
     this.strikePending = true;
     return true;
@@ -238,6 +242,23 @@ export class Player {
     this.attackTime = ATTACK_DURATION;
     this.attackCooldown = definition.interval * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
     this.attackStaff = staff;
+    this.attackBow = null;
+    this.attackWindup = definition.windup;
+    this.strikePending = true;
+    return true;
+  }
+  /**
+   * Começa um tiro de arco (ADR 0111). Só gasta a flecha se o herói pode atacar agora (recarga, vida e atordoamento valem como no golpe de
+   * espada); `spend` paga as flechas do tiro e diz se havia. Devolve se o tiro saiu.
+   */
+  startShot(bow: BowId, spend: (arrows: number) => boolean): boolean {
+    if (this.attackCooldown > 0 || this.hp <= 0 || this.stunned) return false;
+    const definition = BOWS[bow];
+    if (!spend(definition.arrowsPerShot)) return false;
+    this.attackTime = ATTACK_DURATION;
+    this.attackCooldown = definition.interval * (this.effects["attack-slow"] > 0 ? 1.8 : 1);
+    this.attackStaff = null;
+    this.attackBow = bow;
     this.attackWindup = definition.windup;
     this.strikePending = true;
     return true;
