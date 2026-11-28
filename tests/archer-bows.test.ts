@@ -22,7 +22,7 @@ const archer = (level: number, extra: Record<string, unknown> = {}) => new Offli
 const context = (sim: OfflineSimulation, extra: Partial<ShopContext> = {}): ShopContext => ({ sim, hero: sim.player, inInterior: false, menuOpen: false, caveHeroDown: false, ...extra });
 
 test("os três arcos do lote: nível, dano e ritmo da espada correspondente, material e ordem do catálogo", () => {
-  assert.deepEqual([...BOW_IDS], ["hunting", "horn", "yew", "bone", "ember", "thorn", "boreal"]); assert.equal(DEFAULT_BOW, "hunting");
+  assert.deepEqual([...BOW_IDS], ["hunting", "horn", "yew", "bone", "ember", "thorn", "boreal", "sun", "moon", "storm", "astral"]); assert.equal(DEFAULT_BOW, "hunting");
   const rows = (["horn", "yew", "bone"] as const).map(id => [id, BOWS[id].name, BOWS[id].level, BOWS[id].damage, BOWS[id].interval, BOWS[id].windup, BOWS[id].range, BOWS[id].arrowsPerShot, BOWS[id].material]);
   assert.deepEqual(rows, [
     ["horn", "Arco de Chifre", 10, 16, 1, 0.13, 7, 1, "chifre curvo"],
@@ -40,7 +40,7 @@ test("os três arcos do lote: nível, dano e ritmo da espada correspondente, mat
 test("cada arco tem a sua aparência: cores próprias, comprimento e pontas viradas de cada um", () => {
   const woods = BOW_IDS.map(id => BOWS[id].visual.limb.mid); assert.equal(new Set(woods).size, BOW_IDS.length, "madeira diferente em cada um");
   const looks = BOW_IDS.map(id => JSON.stringify(BOWS[id].visual)); assert.equal(new Set(looks).size, BOW_IDS.length);
-  assert.deepEqual(BOW_IDS.map(id => [BOWS[id].visual.length, BOWS[id].visual.flick]), [[1, 0], [1, 1.6], [1.2, 0], [1.06, 0.8], [1.08, 0.6], [1.12, 0.4], [1.1, 1.2]]);
+  assert.deepEqual(BOW_IDS.map(id => [BOWS[id].visual.length, BOWS[id].visual.flick]), [[1, 0], [1, 1.6], [1.2, 0], [1.06, 0.8], [1.08, 0.6], [1.12, 0.4], [1.1, 1.2], [1.1, 1], [1.08, 0.8], [1.1, 1.4], [1.15, 1]]);
   for (const id of BOW_IDS) for (const key of ["light", "mid", "dark"] as const) assert.match(BOWS[id].visual.limb[key], /^#[0-9a-f]{6}$/, `${id} ${key}`);
 });
 
@@ -113,6 +113,25 @@ test("o lote 2 dos arcos (A4b): Brasa, Espinheiro e Boreal, com o nível, o dano
   const icons = read("src/app/item-icon.component.ts"); for (const id of ["ember", "thorn", "boreal"]) assert.match(icons, new RegExp(`@case \\('bow-${id}'\\) \\{`));
 });
 
+test("o lote final (A4c): Solar, Lua Negra, Tempestade e Estelar completam os onze arcos, cada um com o nível, o dano e o ritmo da sua espada", () => {
+  const rows = (["sun", "moon", "storm", "astral"] as const).map(id => [id, BOWS[id].name, BOWS[id].level, BOWS[id].damage, BOWS[id].interval, BOWS[id].windup, BOWS[id].range, BOWS[id].arrowsPerShot, BOWS[id].material]);
+  assert.deepEqual(rows, [
+    ["sun", "Arco Solar", 70, 84, 1.25, 0.14, 7, 1, "latão e feixe de luz"],
+    ["moon", "Arco da Lua Negra", 80, 98, 1.3, 0.14, 7, 1, "madeira escura e corda de sombra"],
+    ["storm", "Arco da Tempestade", 90, 115, 1.15, 0.13, 7, 1, "cobre e corda que faísca"],
+    ["astral", "Arco Estelar", 100, 140, 1.4, 0.15, 7, 1, "liga de estrelas"],
+  ]);
+  assert.equal(BOW_IDS.length, 11, "os onze do plano");
+  const swords = { hunting: "starter", horn: "forge", yew: "common", bone: "bronze", ember: "copper", thorn: "dunes", boreal: "boreal", sun: "obsidian", moon: "marsh", storm: "tempest", astral: "astral" } as const;
+  for (const id of BOW_IDS) assert.deepEqual([BOWS[id].level, BOWS[id].damage, BOWS[id].interval], [WEAPONS[swords[id]].level, WEAPONS[swords[id]].damage, WEAPONS[swords[id]].interval], `${id} espelha a espada ${swords[id]}`);
+  const bag = new Inventory(undefined, 100, "archer");
+  for (const id of BOW_IDS) { assert.equal(bag.equipBow(id, 100), id === "hunting" ? "bow-already-equipped" : "bow-equipped", id); assert.equal(new Inventory(bag.snapshot(), 100, "archer").bows.equipped, id); }
+  assert.equal(new Inventory({ gel: 0, potion: 0, questRewardClaimed: false, bows: { equipped: "astral" } }, 99, "archer").bows.equipped, "hunting", "o Estelar só no nível 100");
+  const sim = archer(100); sim.inventory.equipBow("astral", 100); assert.equal(sim.equippedBow, "astral"); assert.equal(sim.combatProfile.interval, 1.4); assert.equal(arrowHitDamage("astral", "iron", { defense: 0 } as never), 143);
+  const icons = read("src/app/item-icon.component.ts"); for (const id of ["sun", "moon", "storm", "astral"]) assert.match(icons, new RegExp(`@case \\('bow-${id}'\\) \\{`));
+  assert.match(read("src/app/game-page.html"), /' · coleção completa'/);
+});
+
 type Move = { x: number; y: number };
 /** As pontas do arco desenhado: os pontos onde o contorno da madeira começa (moveTo) e termina. */
 const tips = (bow: BowId): { top: Move; bottom: Move } => {
@@ -142,6 +161,6 @@ test("a ligação: o jogo troca o arco, o HUD guarda a lista e o inventário mos
   assert.match(service, /status: id === this\.bow\(\) \? 'equipped' as const : bowUnlocked\(id, level\) \? 'available' as const : 'locked' as const/);
   assert.match(page, /@for \(row of hud\.bowRows\(\); track row\.id\) \{/); assert.match(page, /\[attr\.id\]="'equip-slot-bow-' \+ row\.id"/);
   assert.match(page, /\[disabled\]="row\.status !== 'available'"\s*\n\s*\(click\)="hud\.equipBow\(row\.id\)"/);
-  assert.match(page, /Arcos do arqueiro · \{\{ hud\.bowIds\.length \}\} de 11/);
+  assert.match(page, /Arcos do arqueiro · \{\{ hud\.bowIds\.length \}\} de 11\{\{ hud\.bowIds\.length < 11 \? ' · os outros chegam nos próximos lotes' : ' · coleção completa' \}\}/);
   for (const id of ["horn", "yew", "bone"]) { assert.match(icons, new RegExp(`\\| 'bow-${id}'`)); assert.match(icons, new RegExp(`@case \\('bow-${id}'\\) \\{`)); }
 });

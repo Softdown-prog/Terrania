@@ -5,12 +5,16 @@ import { BONE_BOW } from "./weapons/bows/bone.ts";
 import { EMBER_BOW } from "./weapons/bows/ember.ts";
 import { THORN_BOW } from "./weapons/bows/thorn.ts";
 import { BOREAL_BOW } from "./weapons/bows/boreal.ts";
+import { SUN_BOW } from "./weapons/bows/sun.ts";
+import { MOON_BOW } from "./weapons/bows/moon.ts";
+import { STORM_BOW } from "./weapons/bows/storm.ts";
+import { ASTRAL_BOW } from "./weapons/bows/astral.ts";
 
 /**
  * Catálogo dos arcos do Arqueiro (ADR 0110, lista em `docs/ARQUEIRO.md`). Os onze espelham as espadas; o Arco de Caça é o primeiro e os outros dez entram em lotes (A4):
- * o lote A4a traz o de Chifre, o Longo de Teixo e o de Osso (ADR 0120) e o A4b o de Brasa, o de Espinheiro e o Boreal (ADR 0121). Só dados, sem Canvas: o desenho dos arcos vem no lote A2.
+ * o lote A4a traz o de Chifre, o Longo de Teixo e o de Osso (ADR 0120) o A4b o de Brasa, o de Espinheiro e o Boreal (ADR 0121) e o A4c o Solar, o da Lua Negra, o da Tempestade e o Estelar (ADR 0122), que completa os onze. Só dados, sem Canvas: o desenho dos arcos vem no lote A2.
  */
-export const BOW_IDS = ["hunting", "horn", "yew", "bone", "ember", "thorn", "boreal"] as const;
+export const BOW_IDS = ["hunting", "horn", "yew", "bone", "ember", "thorn", "boreal", "sun", "moon", "storm", "astral"] as const;
 export type BowId = typeof BOW_IDS[number];
 export const DEFAULT_BOW: BowId = "hunting";
 
@@ -48,7 +52,7 @@ export interface BowDefinition {
   readonly visual: BowVisualProfile;
 }
 
-export const BOWS: Readonly<Record<BowId, BowDefinition>> = { hunting: HUNTING_BOW, horn: HORN_BOW, yew: YEW_BOW, bone: BONE_BOW, ember: EMBER_BOW, thorn: THORN_BOW, boreal: BOREAL_BOW };
+export const BOWS: Readonly<Record<BowId, BowDefinition>> = { hunting: HUNTING_BOW, horn: HORN_BOW, yew: YEW_BOW, bone: BONE_BOW, ember: EMBER_BOW, thorn: THORN_BOW, boreal: BOREAL_BOW, sun: SUN_BOW, moon: MOON_BOW, storm: STORM_BOW, astral: ASTRAL_BOW };
 
 export function isBowId(value: unknown): value is BowId {
   return typeof value === "string" && BOW_IDS.some(id => id === value);

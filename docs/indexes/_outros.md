@@ -183,6 +183,7 @@
 - [`docs/adr/0119-arqueiro-liberado.md`](../../docs/adr/0119-arqueiro-liberado.md)
 - [`docs/adr/0120-arqueiro-a4a-arcos-e-troca.md`](../../docs/adr/0120-arqueiro-a4a-arcos-e-troca.md)
 - [`docs/adr/0121-arqueiro-a4b-arcos-brasa-espinheiro-boreal.md`](../../docs/adr/0121-arqueiro-a4b-arcos-brasa-espinheiro-boreal.md)
+- [`docs/adr/0122-arqueiro-a4c-arcos-finais.md`](../../docs/adr/0122-arqueiro-a4c-arcos-finais.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/arcos-do-arqueiro-desenho.png`](../../docs/screenshots/arcos-do-arqueiro-desenho.png)

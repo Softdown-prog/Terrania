@@ -16,7 +16,7 @@ export type ItemIconId =
   | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
   | 'sword-tempest' | 'sword-astral'
   | 'staff-apprentice' | 'staff-breeze' | 'staff-stone' | 'staff-tide' | 'staff-ember' | 'staff-thorn' | 'staff-frost' | 'staff-sun' | 'staff-moon' | 'staff-storm' | 'staff-astral'
-  | 'bow-hunting' | 'bow-horn' | 'bow-yew' | 'bow-bone' | 'bow-ember' | 'bow-thorn' | 'bow-boreal'
+  | 'bow-hunting' | 'bow-horn' | 'bow-yew' | 'bow-bone' | 'bow-ember' | 'bow-thorn' | 'bow-boreal' | 'bow-sun' | 'bow-moon' | 'bow-storm' | 'bow-astral'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
   | 'mage-hat' | 'mage-robe' | 'mage-trousers' | 'mage-boots' | 'mage-book'
   | 'greater-potion' | 'antidote'
@@ -609,6 +609,56 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
             <path d="M8.6 16H24" fill="none" stroke="#cfe3ee" stroke-width="1.5"/>
             <path d="M4.6 16L9.6 13.2V18.8Z" fill="#cfd6dc"/>
             <path d="M24.2 .4L25.4 2.6H23Z" fill="#bff1ff"/><path d="M24.2 31.6L25.4 29.4H23Z" fill="#bff1ff"/>
+          </g>
+        }
+        @case ('bow-sun') {
+          <g transform="rotate(-40 16 16)">
+            <path d="M24.2 1.8Q8.6 16 24.2 30.2" fill="none" stroke="#5a3a0c" stroke-width="4" stroke-linecap="round"/>
+            <path d="M24.2 1.8Q8.6 16 24.2 30.2" fill="none" stroke="#d9a63a" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M23 3.8Q11.4 16 23 28.2" fill="none" stroke="#fff0a8" stroke-width=".9" stroke-linecap="round"/>
+            <rect x="11.8" y="13" width="3.6" height="6" rx=".8" fill="#b8741e" stroke="#5a3a0c" stroke-width="1"/>
+            <path d="M24.2 2.2L24.2 29.8" fill="none" stroke="#fff6c8" stroke-width="1"/>
+            <path d="M8.6 16H24" fill="none" stroke="#d9a63a" stroke-width="1.5"/>
+            <path d="M4.6 16L9.6 13.2V18.8Z" fill="#cfd6dc"/>
+            <circle cx="24.2" cy="2" r="1.6" fill="#ffe27a"/><circle cx="24.2" cy="30" r="1.6" fill="#ffe27a"/>
+          </g>
+        }
+        @case ('bow-moon') {
+          <g transform="rotate(-40 16 16)">
+            <path d="M23.8 2Q9 16 23.8 30" fill="none" stroke="#0a0714" stroke-width="4" stroke-linecap="round"/>
+            <path d="M23.8 2Q9 16 23.8 30" fill="none" stroke="#2f2748" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M22.6 4Q11.2 16 22.6 28" fill="none" stroke="#6b5a8c" stroke-width=".9" stroke-linecap="round"/>
+            <rect x="12.2" y="13" width="3.6" height="6" rx=".8" fill="#1c1530" stroke="#0a0714" stroke-width="1"/>
+            <path d="M23.8 2.4L23.8 29.6" fill="none" stroke="#b9a6ff" stroke-width="1"/>
+            <path d="M9 16H23.8" fill="none" stroke="#2f2748" stroke-width="1.5"/>
+            <path d="M5 16L10 13.2V18.8Z" fill="#cfd6dc"/>
+            <path d="M25.4 .8Q22.4 2.4 23.8 4.6Q24.2 2.8 26.2 2.2Z" fill="#d9ccff"/><path d="M25.4 31.2Q22.4 29.6 23.8 27.4Q24.2 29.2 26.2 29.8Z" fill="#d9ccff"/>
+          </g>
+        }
+        @case ('bow-storm') {
+          <g transform="rotate(-40 16 16)">
+            <path d="M24.6 1.6Q8.4 16 24.6 30.4" fill="none" stroke="#5a2c14" stroke-width="4" stroke-linecap="round"/>
+            <path d="M24.6 1.6Q8.4 16 24.6 30.4" fill="none" stroke="#c8703a" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M23.4 3.6Q11.2 16 23.4 28.4" fill="none" stroke="#ffcf9a" stroke-width=".9" stroke-linecap="round"/>
+            <rect x="11.6" y="13" width="3.6" height="6" rx=".8" fill="#3a4a6a" stroke="#1c2638" stroke-width="1"/>
+            <path d="M24.6 2L24.6 30" fill="none" stroke="#fff27a" stroke-width="1" stroke-dasharray="4 1.4"/>
+            <path d="M8.4 16H24.6" fill="none" stroke="#c8703a" stroke-width="1.5"/>
+            <path d="M4.4 16L9.4 13.2V18.8Z" fill="#cfd6dc"/>
+            <path d="M20 8L17.4 12.2L19.6 12L17.2 16.6" fill="none" stroke="#7ad0ff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="24.6" cy="1.8" r="1.4" fill="#fff27a"/><circle cx="24.6" cy="30.2" r="1.4" fill="#fff27a"/>
+          </g>
+        }
+        @case ('bow-astral') {
+          <g transform="rotate(-40 16 16)">
+            <path d="M24.4 1.4Q8 16 24.4 30.6" fill="none" stroke="#1a1440" stroke-width="4" stroke-linecap="round"/>
+            <path d="M24.4 1.4Q8 16 24.4 30.6" fill="none" stroke="#8a7be0" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M23.2 3.4Q10.8 16 23.2 28.6" fill="none" stroke="#fff0ff" stroke-width=".9" stroke-linecap="round"/>
+            <rect x="11.4" y="13" width="3.6" height="6" rx=".8" fill="#3b2f7a" stroke="#1a1440" stroke-width="1"/>
+            <path d="M24.4 1.8L24.4 30.2" fill="none" stroke="#ffe9a8" stroke-width="1"/>
+            <path d="M8.2 16H24.4" fill="none" stroke="#8a7be0" stroke-width="1.5"/>
+            <path d="M4.2 16L9.2 13.2V18.8Z" fill="#cfd6dc"/>
+            <path d="M17.4 8.4L18.2 10.4L20.2 10.8L18.4 12L19 14L17.4 12.8L15.8 14L16.4 12L14.6 10.8L16.6 10.4Z" fill="#fff0ff"/>
+            <circle cx="24.4" cy="1.4" r="1.5" fill="#ffffff"/><circle cx="24.4" cy="30.6" r="1.5" fill="#ffffff"/>
           </g>
         }
         @case ('arrows') {

@@ -263,7 +263,7 @@
                   @let bow = hud.equippedBow();
                   <strong id="equippedWeapon">{{ bow.name }}</strong>
                   <p id="equippedBowStats">{{ bow.damage }} de dano · {{ bow.interval }} s entre tiros · {{ bow.arrowsPerShot }} flecha por tiro · alcance de {{ bow.range }} tiles</p>
-                  <p class="weapon-roster-caption">Arcos do arqueiro · {{ hud.bowIds.length }} de 11 · os outros chegam nos próximos lotes</p>
+                  <p class="weapon-roster-caption">Arcos do arqueiro · {{ hud.bowIds.length }} de 11{{ hud.bowIds.length < 11 ? ' · os outros chegam nos próximos lotes' : ' · coleção completa' }}</p>
                   <div class="weapon-picker bow-picker" role="group" aria-label="Arcos do arqueiro">
                     @for (row of hud.bowRows(); track row.id) {
                       <button type="button" class="sword-choice"
