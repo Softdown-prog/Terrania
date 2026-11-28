@@ -1,12 +1,17 @@
 import type { EquipmentSlot } from "../Equipment.ts";
 import type { HeroClassId } from "./heroClass.ts";
 
+/** Com o que a vocação luta: as espadas do Cavaleiro, os cajados do Mago ou os arcos do Arqueiro (ADR 0113). */
+export type WeaponKind = "sword" | "staff" | "bow";
+
 /** A ficha de uma vocação: o nome e a mana, que dependem só do nível (sem relógio, sem sorteio). */
 export interface HeroClassSheet {
   readonly id: HeroClassId;
   readonly name: string;
   /** Pode ser escolhido por um jogador novo? O Mago ficou jogável quando corpo, cajado, combate, animação, barra de mana e inventário ficaram prontos (ADR 0065/0072). */
   readonly playable: boolean;
+  /** O tipo de arma da vocação: decide o que o inventário, as lojas e o combate mostram e aceitam. */
+  readonly weapon: WeaponKind;
   /** Luta com as espadas do Cavaleiro (as onze) e as compra com o ferreiro? O Mago luta com cajados (ADR 0072). */
   readonly usesSwords: boolean;
   /** Veste equipamento (armadura do Cavaleiro ou roupas do Mago)? As roupas do Mago entraram no ADR 0078. */

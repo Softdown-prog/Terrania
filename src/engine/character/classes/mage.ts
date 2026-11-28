@@ -11,7 +11,7 @@ export const MAGE_FULL_RECHARGE_SECONDS = 20;
 export const MAGE_HP_PERCENT = 80;
 const maxMana = (level: number): number => MAGE_BASE_MANA + (Math.max(1, Math.floor(level)) - 1) * MAGE_MANA_PER_LEVEL;
 export const MAGE: HeroClassSheet = {
-  id: "mage", name: "Mago", playable: true, usesSwords: false, wearsArmor: true,
+  id: "mage", name: "Mago", playable: true, weapon: "staff", usesSwords: false, wearsArmor: true,
   equipmentSlots: ["head", "neck", "ring", "chest", "weapon", "shield", "legs", "feet"],
   slotLabels: { head: "Chapéu", neck: "Colar", ring: "Anel", chest: "Túnica", weapon: "Cajado", shield: "Livro de magias", legs: "Calça", feet: "Botas" },
   hpPercent: MAGE_HP_PERCENT, speedPercent: 100, usesMana: true, maxMana,

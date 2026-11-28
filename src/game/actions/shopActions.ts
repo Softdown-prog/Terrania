@@ -100,7 +100,7 @@ export function equipWeapon({ sim }: ShopContext, weapon: WeaponId): ShopResult 
 
 /** Compra um cajado da mestra da Academia Arcana (ADR 0074): só o Mago, fora das casas, com o menu aberto e perto dela; o preço e a posse são da bolsa. */
 export function buyStaff({ sim, inInterior, menuOpen }: ShopContext, staff: StaffId): ShopResult {
-  if (heroClassSheet(sim.heroClass).usesSwords) return { message: NO_STAVES_MESSAGE, changed: false };
+  if (heroClassSheet(sim.heroClass).weapon !== "staff") return { message: NO_STAVES_MESSAGE, changed: false };
   if (inInterior || !menuOpen || !nearMageMaster(sim)) return say("staff-too-far");
   const result = sim.inventory.buyStaff(staff, sim.player);
   return say(result, result === "staff-purchased");
@@ -108,7 +108,7 @@ export function buyStaff({ sim, inInterior, menuOpen }: ShopContext, staff: Staf
 
 /** Troca o cajado em mãos (ADR 0073): só o Mago usa cajado; precisa do nível dele e, se é vendido, de tê-lo comprado. */
 export function equipStaff({ sim }: ShopContext, staff: StaffId): ShopResult {
-  if (heroClassSheet(sim.heroClass).usesSwords) return { message: NO_STAVES_MESSAGE, changed: false };
+  if (heroClassSheet(sim.heroClass).weapon !== "staff") return { message: NO_STAVES_MESSAGE, changed: false };
   if (sim.awaitingRespawn) return say("unavailable");
   const result = sim.inventory.equipStaff(staff, experienceProgress(sim.experience).level);
   return say(result, result === "staff-equipped");

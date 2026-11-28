@@ -7,7 +7,10 @@ import { EQUIPMENT_SLOTS, GEAR, gearDefense, gearIdsFor, gearLevel, gearSetName,
 import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import { questPanel, trackedEntry, type JournalEntry } from '../engine/quests/journal/index.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
-import { foodItemIcon, gearItemIcon, slotItemIcon, staffItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
+import { bowItemIcon, foodItemIcon, gearItemIcon, slotItemIcon, staffItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
+import { ARROWS, ARROW_IDS, type ArrowId } from '../engine/character/Arrows.ts';
+import { BOWS, DEFAULT_BOW, type BowId } from '../engine/character/Bows.ts';
+import { EMPTY_QUIVER, type Quiver } from '../engine/character/Quiver.ts';
 import { DEFAULT_STAFF, STAFF_IDS, STAVES, isStaffId, staffUnlocked, type StaffId } from '../engine/character/Staves.ts';
 import type { StaffLoadout } from '../engine/character/StaffLoadout.ts';
 import { southRareLootByName } from '../monsters/rareLoot.ts';
@@ -155,6 +158,17 @@ export class HudService implements GameUi {
   readonly heroClass = signal<HeroClassId>('knight');
   readonly staff = signal<StaffId>(DEFAULT_STAFF);
   readonly usesSwords = computed(() => HERO_CLASSES[this.heroClass()].usesSwords);
+  /** Com o que o herói luta (ADR 0113): decide o painel da arma, o ícone e o nome do espaço. */
+  readonly weaponKind = computed(() => HERO_CLASSES[this.heroClass()].weapon);
+  /** O arco em mãos e a aljava do Arqueiro (ADR 0113). */
+  readonly bow = signal<BowId>(DEFAULT_BOW);
+  readonly quiver = signal<Quiver>(EMPTY_QUIVER);
+  readonly equippedBow = computed(() => BOWS[this.bow()]);
+  readonly arrowIds = ARROW_IDS;
+  arrowName(id: ArrowId): string { return ARROWS[id].name; }
+  /** Quantas flechas há de cada tipo e no total. */
+  arrowCount(id: ArrowId): number { return this.quiver().counts[id]; }
+  readonly arrowTotal = computed(() => ARROW_IDS.reduce((sum, id) => sum + this.quiver().counts[id], 0));
   readonly wearsArmor = computed(() => HERO_CLASSES[this.heroClass()].wearsArmor);
   /** Os espaços de equipamento da vocação (o Cavaleiro tem os dez; o Mago, o cajado e as sete roupas), na ordem da ficha dela (ADR 0078). */
   readonly visibleEquipmentSlots = computed(() => HERO_CLASSES[this.heroClass()].equipmentSlots.flatMap(id => EQUIPMENT_SLOTS.filter(slot => slot.id === id)));
@@ -470,11 +484,14 @@ export class HudService implements GameUi {
   }
   /** Ícone do espaço: a arma mostra a espada realmente equipada. */
   slotIcon(slot: EquipmentSlot): ItemIconId {
-    if (slot === 'weapon' && !this.usesSwords()) return staffItemIcon(this.staff());
+    if (slot === 'weapon' && this.weaponKind() === 'bow') return bowItemIcon(this.bow());
+    if (slot === 'weapon' && this.weaponKind() === 'staff') return staffItemIcon(this.staff());
     return slotItemIcon(slot, this.loadout()?.equipped ?? 'starter', this.heroClass());
   }
   equippedName(slot: EquipmentSlot): string {
-    if (slot === 'weapon' && !this.usesSwords()) return STAVES[this.staff()].name;
+    if (slot === 'weapon' && this.weaponKind() === 'bow') return BOWS[this.bow()].name;
+    if (slot === 'weapon' && this.weaponKind() === 'staff') return STAVES[this.staff()].name;
+    if (slot === 'ammo' && this.weaponKind() === 'bow') return this.arrowTotal() > 0 ? ARROWS[this.quiver().equipped].name + ' × ' + this.arrowCount(this.quiver().equipped) : '';
     if (slot === 'weapon') {
       const loadout = this.loadout();
       return loadout ? WEAPONS[loadout.equipped].name : '';
@@ -492,6 +509,8 @@ export class HudService implements GameUi {
   }
   updateLoadout(loadout: WeaponLoadout | null): void { this.loadout.set(loadout); }
   updateStaves(loadout: StaffLoadout): void { this.staffBought.set(loadout.bought.join(',')); }
+  /** A aljava do Arqueiro (ADR 0113). */
+  updateQuiver(quiver: Quiver): void { this.quiver.set(quiver); }
   updateGear(gear: GearState | null): void { this.gear.set(gear); }
   setInventoryFeedback(section: 'bag' | 'npc', message: string): void {
     (section === 'bag' ? this.inventoryFeedback : this.npcTradeFeedback).set(message);
@@ -555,7 +574,7 @@ export class HudService implements GameUi {
   updateHero(hero: HeroHudState): void {
     this.hp.set(hero.hp); this.maxHp.set(hero.maxHp);
     this.mana.set(hero.mana);
-    this.heroClass.set(hero.heroClass); this.staff.set(hero.equippedStaff);
+    this.heroClass.set(hero.heroClass); this.staff.set(hero.equippedStaff); this.bow.set(hero.equippedBow);
     this.nutrition.set(hero.nutrition);
     this.awaitingRespawn.set(hero.awaitingRespawn);
     this.progression.set(hero.progression);

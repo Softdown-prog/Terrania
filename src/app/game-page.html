@@ -233,7 +233,7 @@
             </div>
             @if (hud.loadout(); as loadout) {
               <div class="equipment-grid" [class.single-slot]="!hud.wearsArmor()" [class.mage-grid]="hud.heroClass() === 'mage'" role="group"
-                [attr.aria-label]="(hud.visibleEquipmentSlots().length === 10 ? 'Dez' : hud.visibleEquipmentSlots().length === 8 ? 'Oito' : 'Um') + ' espaços de equipamento do ' + hud.heroName()">
+                [attr.aria-label]="(hud.visibleEquipmentSlots().length === 10 ? 'Dez' : hud.visibleEquipmentSlots().length === 9 ? 'Nove' : hud.visibleEquipmentSlots().length === 8 ? 'Oito' : 'Um') + ' espaços de equipamento do ' + hud.heroName()">
                 @for (slot of hud.visibleEquipmentSlots(); track slot.id) {
                   @let equipped = hud.equippedName(slot.id);
                   <button type="button" class="equipment-slot" [attr.data-equipment-slot]="slot.id"
@@ -259,7 +259,29 @@
                     @if (slot.id === hud.selectedSlot()) { {{ hud.slotLabel(slot.id) }} }
                   }
                 </h3>
-                @if (hud.selectedSlot() === 'weapon' && !hud.usesSwords()) {
+                @if (hud.selectedSlot() === 'weapon' && hud.weaponKind() === 'bow') {
+                  @let bow = hud.equippedBow();
+                  <strong id="equippedWeapon">{{ bow.name }}</strong>
+                  <p id="equippedBowStats">{{ bow.damage }} de dano · {{ bow.interval }} s entre tiros · {{ bow.arrowsPerShot }} flecha por tiro · alcance de {{ bow.range }} tiles</p>
+                  <p class="weapon-roster-caption">Arcos do arqueiro · 1 de 11 · os outros chegam nos próximos lotes</p>
+                  <div class="weapon-picker bow-picker" role="group" aria-label="Arcos do arqueiro">
+                    <button type="button" class="sword-choice is-equipped" id="equip-slot-bow-hunting" data-bow-id="hunting" aria-pressed="true" disabled
+                      [attr.title]="bow.name + ' · inicial · dano ' + bow.damage">
+                      <app-item-icon class="sword-choice-icon" [name]="hud.slotIcon('weapon')" />
+                      <strong class="sword-choice-name">{{ bow.name }}</strong>
+                      <small class="sword-choice-stats">Inicial · {{ bow.damage }} dano</small>
+                      <span class="sword-choice-status">Equipado</span>
+                    </button>
+                  </div>
+                } @else if (hud.selectedSlot() === 'ammo' && hud.weaponKind() === 'bow') {
+                  <strong id="equippedAmmo">{{ hud.arrowTotal() > 0 ? hud.arrowTotal() + ' flechas na aljava' : 'Aljava vazia' }}</strong>
+                  <p id="quiverNote">Cada tiro gasta uma flecha; sem flecha o arco não atira. No máximo 99 de cada tipo.</p>
+                  <div class="quiver-list" role="list" aria-label="Flechas da aljava">
+                    @for (id of hud.arrowIds; track id) {
+                      <p role="listitem" class="quiver-row" [attr.data-arrow-id]="id">{{ hud.arrowName(id) }} · {{ hud.arrowCount(id) }} de 99</p>
+                    }
+                  </div>
+                } @else if (hud.selectedSlot() === 'weapon' && hud.weaponKind() === 'staff') {
                   @let staff = hud.equippedStaff();
                   <strong id="equippedWeapon">{{ staff.name }}</strong>
                   <p id="equippedStaffStats">{{ staff.damage }} de dano · {{ staff.interval }} s entre magias · {{ staff.manaCost }} de mana · alcance de {{ staff.range }} tiles</p>

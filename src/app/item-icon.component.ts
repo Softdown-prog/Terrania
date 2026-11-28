@@ -4,6 +4,7 @@ import type { EquipmentSlot, GearSlot } from '../engine/character/Equipment.ts';
 import type { FoodId } from '../engine/character/Food.ts';
 import type { WeaponId } from '../engine/character/Weapons.ts';
 import type { StaffId } from '../engine/character/Staves.ts';
+import type { BowId } from '../engine/character/Bows.ts';
 import type { HeroClassId } from '../engine/character/classes/index.ts';
 import type { SouthRareLootId } from '../monsters/rareLoot.ts';
 import type { CoinId } from '../engine/character/coins/index.ts';
@@ -15,6 +16,7 @@ export type ItemIconId =
   | 'sword-dunes' | 'sword-boreal' | 'sword-obsidian' | 'sword-marsh'
   | 'sword-tempest' | 'sword-astral'
   | 'staff-apprentice' | 'staff-breeze' | 'staff-stone' | 'staff-tide' | 'staff-ember' | 'staff-thorn' | 'staff-frost' | 'staff-sun' | 'staff-moon' | 'staff-storm' | 'staff-astral'
+  | 'bow-hunting'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
   | 'mage-hat' | 'mage-robe' | 'mage-trousers' | 'mage-boots' | 'mage-book'
   | 'greater-potion' | 'antidote'
@@ -41,6 +43,10 @@ export function gearItemIcon(slot: GearSlot, heroClass: HeroClassId): ItemIconId
 /** O ícone do cajado em mãos (ADR 0072); cada cajado novo ganha o seu `staff-<id>`. */
 export function staffItemIcon(staff: StaffId): ItemIconId {
   return `staff-${staff}`;
+}
+/** O ícone do arco em mãos (ADR 0113); cada arco novo ganha o seu `bow-<id>`. */
+export function bowItemIcon(bow: BowId): ItemIconId {
+  return `bow-${bow}`;
 }
 export function weaponItemIcon(weapon: WeaponId): ItemIconId {
   return `sword-${weapon}`;
@@ -521,6 +527,17 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
           <path d="M8 4H24L25.2 12L22 28H17.4L16 14.5L14.6 28H10L6.8 12Z" fill="#6f84a0"/>
           <rect x="8" y="4" width="16" height="3.4" fill="#4a3a28"/>
           <path d="M16 8V14.5M10.2 24.2H14M18 24.2H21.8" fill="none" stroke="#9db0c6" stroke-width="1.3"/>
+        }
+        @case ('bow-hunting') {
+          <g transform="rotate(-40 16 16)">
+            <path d="M22.5 3Q9 16 22.5 29" fill="none" stroke="#5a3b24" stroke-width="4"/>
+            <path d="M22.5 3Q9 16 22.5 29" fill="none" stroke="#a9824f" stroke-width="2.4"/>
+            <path d="M21.4 5Q11.6 16 21.4 27" fill="none" stroke="#d8b878" stroke-width=".9" stroke-linecap="round"/>
+            <rect x="12.6" y="13" width="3.6" height="6" rx=".8" fill="#6e4f2c" stroke-width="1"/>
+            <path d="M22.5 3.2L22.5 28.8" fill="none" stroke="#efe4c4" stroke-width="1"/>
+            <path d="M9 16H22" fill="none" stroke="#a9824f" stroke-width="1.5"/>
+            <path d="M5 16L10 13.2V18.8Z" fill="#cfd6dc"/>
+          </g>
         }
         @case ('arrows') {
           <g transform="rotate(40 16 16)">

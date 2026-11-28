@@ -146,6 +146,7 @@ export class Game {
       awaitingRespawn: player.hp <= 0,
       heroClass: this.sim.heroClass,
       equippedStaff: this.sim.equippedStaff,
+      equippedBow: this.sim.equippedBow,
       mana: this.sim.usesMana ? manaMeter(this.sim.mana, this.sim.maxMana, STAVES[this.sim.equippedStaff].manaCost) : null,
     });
     const mounts = this.sim.mounts.view(kills), starter = caveEntranceInCell(0, 0, this.sim.seed);
@@ -161,6 +162,7 @@ export class Game {
     this.hud.updateRespawnPoint(this.sim.respawnPoint);
     this.hud.updateLoadout(inventory.loadout);
     this.hud.updateStaves(inventory.staves);
+    this.hud.updateQuiver(inventory.quiver);
     this.hud.updateGear(inventory.gear);
     this.hud.updateMount(mounts);
   }

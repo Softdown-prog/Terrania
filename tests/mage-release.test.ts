@@ -78,14 +78,14 @@ test("a ligação: o jogo diz a vocação ao HUD, que esconde espadas e armadura
   assert.match(service, /private readonly kitIds = computed\(\(\) => gearIdsFor\(this\.heroClass\(\)\)\);/, "a mochila lista só as peças da vocação");
   assert.match(service, /if \(gear !== null && this\.wearsArmor\(\)\) \{/, "a mochila lista as peças de quem veste");
   assert.match(service, /if \(loadout && this\.usesSwords\(\)\) \{/, "nem espadas");
-  assert.match(service, /if \(slot === 'weapon' && !this\.usesSwords\(\)\) return staffItemIcon\(this\.staff\(\)\);/);
-  assert.match(service, /if \(slot === 'weapon' && !this\.usesSwords\(\)\) return STAVES\[this\.staff\(\)\]\.name;/);
+  assert.match(service, /if \(slot === 'weapon' && this\.weaponKind\(\) === 'staff'\) return staffItemIcon\(this\.staff\(\)\);/);
+  assert.match(service, /if \(slot === 'weapon' && this\.weaponKind\(\) === 'staff'\) return STAVES\[this\.staff\(\)\]\.name;/);
   assert.match(service, /return HERO_CLASSES\[this\.heroClass\(\)\]\.slotLabels\[slot\] \?\? EQUIPMENT_SLOTS\.find\(item => item\.id === slot\)\?\.label \?\? slot;/, "o Mago chama o espaço de Cajado, Chapéu, Túnica, Livro de magias...");
   assert.match(page, /<h1 id="inventoryTitle">Inventário do \{\{ hud\.heroName\(\) \}\}<\/h1>/);
   assert.match(page, /@for \(slot of hud\.visibleEquipmentSlots\(\); track slot\.id\)/);
   assert.match(page, /\[class\.single-slot\]="!hud\.wearsArmor\(\)"/);
   assert.match(page, /SEU \{\{ hud\.heroName\(\)\.toUpperCase\(\) \}\}/);
-  assert.match(page, /@if \(hud\.selectedSlot\(\) === 'weapon' && !hud\.usesSwords\(\)\) \{/, "o Mago vê o cajado onde o Cavaleiro vê as espadas");
+  assert.match(page, /@else if \(hud\.selectedSlot\(\) === 'weapon' && hud\.weaponKind\(\) === 'staff'\) \{/, "o Mago vê o cajado onde o Cavaleiro vê as espadas");
   assert.match(page, /@if \(hud\.wearsArmor\(\) && hud\.gear\(\) !== null\) \{ <span>Defesa/, "o Mago mostra a defesa das roupas");
   assert.match(page, /\{\{ row\.def\.level > 0 \? "Nível " \+ row\.def\.level : "Inicial" \}\} · \{\{ row\.def\.damage \}\} dano/, "o cajado inicial é \"Inicial\", não \"Nível 0\"");
   assert.match(component, /gear: this\.hud\.wearsArmor\(\) \? this\.hud\.gear\(\) \?\? undefined : undefined,\s*\n\s*heroClass: this\.hud\.heroClass\(\), equippedStaff: this\.hud\.staff\(\),/, "a prévia desenha o herói de verdade");

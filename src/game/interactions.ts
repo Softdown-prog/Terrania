@@ -64,7 +64,7 @@ export function npcOffer(npcId: string, heroClass: HeroClassId = DEFAULT_HERO_CL
   if (npcId === BANKER_ID) return { item: "bank", price: 0 };
   if (npcId === PRIESTESS_ID) return { item: "shrine", price: 0 };
   // A Academia Arcana só vende ao Mago (o preço é o do primeiro cajado elemental, ADR 0074).
-  if (npcId === MAGE_MASTER_ID) return heroClassSheet(heroClass).usesSwords ? undefined : { item: "academy", price: BREEZE_STAFF.price };
+  if (npcId === MAGE_MASTER_ID) return heroClassSheet(heroClass).weapon === "staff" ? { item: "academy", price: BREEZE_STAFF.price } : undefined;
   if (npcId === "stablemaster") return { item: "stable", price: 0 };
   return undefined;
 }
