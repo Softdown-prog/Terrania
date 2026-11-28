@@ -10,6 +10,7 @@ import { nearestNpc } from "../../world/npcs.ts";
 import { MAX_COINS, marketFor, materialSalePrice, normalizeCoins, type MarketId } from "./coins/index.ts";
 import { ELIXIR_IDS, elixirRecipe, emptyElixirCounts, normalizeElixirs, type ElixirCounts, type ElixirCraftResult,
   type ElixirId, type ElixirUseResult } from "./south/alchemy/index.ts";
+import { DEFAULT_BOW_LOADOUT, equipBowResult, isDefaultBowLoadout, normalizeBowLoadout, sanitizeBowLoadout, type BowEquipResult, type BowLoadout } from "./BowLoadout.ts";
 import { DEFAULT_STAFF_LOADOUT, isDefaultStaffLoadout, normalizeStaffLoadout, sanitizeStaffLoadout, type StaffBuyResult, type StaffEquipResult, type StaffLoadout } from "./StaffLoadout.ts";
 import { EMPTY_QUIVER, STARTING_QUIVER, addArrows, arrowRoom, sanitizeQuiver, selectArrow, spendArrows, type Quiver } from "./Quiver.ts";
 import { ARROWS, ARROW_PACK, isArrowId, type ArrowId } from "./Arrows.ts";
@@ -34,7 +35,7 @@ export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned" | "
 /** O que a compra de flechas na Irmandade dos Arqueiros responde (ADR 0117); `arrows-bought` é a única que muda a bolsa. */
 export type ArrowBuyResult = "arrows-bought" | "arrows-not-archer" | "arrows-quiver-full" | "arrows-insufficient-coins" | "arrows-too-far" | "arrows-unavailable";
 export type ArrowEquipResult = "arrow-equipped" | "arrow-already-equipped" | "arrow-none" | "arrow-not-archer";
-export type InventoryOutcome = ArrowBuyResult | ArrowEquipResult | PotionTradeResult | InnRestResult | MaterialSaleResult | SwordPurchaseResult | SwordEquipResult | StaffBuyResult | StaffEquipResult | GearResult |
+export type InventoryOutcome = ArrowBuyResult | ArrowEquipResult | BowEquipResult | PotionTradeResult | InnRestResult | MaterialSaleResult | SwordPurchaseResult | SwordEquipResult | StaffBuyResult | StaffEquipResult | GearResult |
   FoodTradeResult | FoodUseResult | ElixirCraftResult | ElixirUseResult | "healed" | "full-health" | "no-potion" | "too-far";
 
 export interface InventoryState {
@@ -47,6 +48,8 @@ export interface InventoryState {
   staves?: StaffLoadout;
   /** A aljava do Arqueiro (ADR 0110): flechas por tipo e a que está em uso; ausente para as outras vocações. */
   quiver?: Quiver;
+  /** O arco em mãos do Arqueiro (ADR 0120); ausente no padrão (Arco de Caça) e nas outras vocações. */
+  bows?: BowLoadout;
   gear?: GearState;
   materials?: Record<string, number>;
   /** Dinheiro em Terrania Gold (ADR 0023); as moedas maiores saem da conta. Ausente quando é zero. */
@@ -81,6 +84,7 @@ export function normalizeInventory(value: unknown): InventoryState {
         equipped: isWeaponId(state.loadout?.equipped) ? state.loadout.equipped : "starter" }
     : undefined;
   const staves = sanitizeStaffLoadout(state.staves);
+  const bows = sanitizeBowLoadout(state.bows);
   const gear = normalizeGear(state.gear);
   const food = normalizeFoodCounts(state.food);
   const elixirs = normalizeElixirs(state.elixirs);
@@ -94,6 +98,7 @@ export function normalizeInventory(value: unknown): InventoryState {
     ...(loadout ? { loadout } : {}),
     ...(isDefaultStaffLoadout(staves) ? {} : { staves }),
     ...(state.quiver === undefined ? {} : { quiver: sanitizeQuiver(state.quiver) }),
+    ...(isDefaultBowLoadout(bows) ? {} : { bows }),
     ...(Object.keys(gear).length || hasGearRecord(state.gear) ? { gear } : {}),
     ...(Object.keys(normalizeMaterials(state.materials)).length ? { materials: normalizeMaterials(state.materials) } : {}),
   };
@@ -113,6 +118,7 @@ export class Inventory {
   private weapons: WeaponLoadout;
   private staffLoadout: StaffLoadout = DEFAULT_STAFF_LOADOUT;
   private arrows: Quiver = EMPTY_QUIVER;
+  private bowLoadout: BowLoadout = DEFAULT_BOW_LOADOUT;
   private equippedGear: GearState;
   private readonly heroClass: HeroClassId;
 
@@ -133,6 +139,7 @@ export class Inventory {
     // E só o que o nível já libera (ADR 0080).
     this.equippedGear = heroClass === "mage" && state.gear === undefined ? MAGE_STARTING_GEAR : gearForLevel(gearForClass(state.gear ?? {}, heroClass), level);
     this.staffLoadout = normalizeStaffLoadout(state.staves, level);
+    this.bowLoadout = heroClass === "archer" ? normalizeBowLoadout(state.bows, level) : DEFAULT_BOW_LOADOUT;
     // Só o Arqueiro tem aljava; sem registro (mundo novo ou save antigo) ele começa com as 30 flechas de junco.
     this.arrows = heroClass !== "archer" ? EMPTY_QUIVER : state.quiver === undefined ? STARTING_QUIVER : sanitizeQuiver(state.quiver);
   }
@@ -198,6 +205,7 @@ export class Inventory {
   get loadout(): WeaponLoadout { return this.weapons; }
   /** O cajado em mãos e os comprados (ADR 0073). */
   get staves(): StaffLoadout { return this.staffLoadout; }
+  get bows(): BowLoadout { return this.bowLoadout; }
   /** A aljava do Arqueiro (vazia para as outras vocações). */
   get quiver(): Quiver { return this.arrows; }
   /** Gasta flechas da que está em uso, tudo ou nada (ADR 0110). */
@@ -364,6 +372,14 @@ export class Inventory {
   }
 
   /** Troca o cajado em mãos: precisa do nível dele e, se é vendido, de tê-lo comprado. */
+  /** Troca o arco em mãos do Arqueiro (ADR 0120): precisa existir e o nível alcançar o dele. */
+  equipBow(bow: unknown, level: number): BowEquipResult {
+    if (this.heroClass !== "archer") return "bow-unknown";
+    const { result, loadout } = equipBowResult(this.bowLoadout, bow, level);
+    this.bowLoadout = loadout;
+    return result;
+  }
+
   equipStaff(staff: StaffId, level: number): StaffEquipResult {
     if (!isStaffId(staff)) return "staff-not-owned";
     if (staff === this.staffLoadout.equipped) return "staff-already-equipped";
@@ -392,6 +408,7 @@ export class Inventory {
       ...(this.weapons.forged || this.weapons.equipped !== "starter" ? { loadout: this.weapons } : {}),
       ...(isDefaultStaffLoadout(this.staffLoadout) ? {} : { staves: this.staffLoadout }),
       ...(this.heroClass === "archer" ? { quiver: this.arrows } : {}),
+      ...(this.heroClass === "archer" && !isDefaultBowLoadout(this.bowLoadout) ? { bows: this.bowLoadout } : {}),
       ...(Object.keys(this.equippedGear).length || this.heroClass === "mage" ? { gear: this.equippedGear } : {}),
       ...(Object.keys(this.materialCounts).length ? { materials: { ...this.materialCounts } } : {}),
     };

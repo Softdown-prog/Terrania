@@ -11,9 +11,10 @@ import { MARKET_NPC, describeCoins, type MarketId } from "../../engine/character
 import { INVENTORY_FEEDBACK, ateManaMessage } from "../messages/inventoryFeedback.ts";
 import { CAPITAL_INN_RESTED } from "../messages/capitalInn.ts";
 import { heroClassSheet } from "../../engine/character/classes/index.ts";
-import { NO_STAVES_MESSAGE, NO_SWORDS_MESSAGE } from "../messages/classRules.ts";
+import { NO_BOWS_MESSAGE, NO_STAVES_MESSAGE, NO_SWORDS_MESSAGE } from "../messages/classRules.ts";
 import type { StaffId } from "../../engine/character/Staves.ts";
 import type { ArrowId } from "../../engine/character/Arrows.ts";
+import type { BowId } from "../../engine/character/Bows.ts";
 import { say } from "./say.ts";
 import type { ShopContext, ShopResult } from "./shopContext.ts";
 export type { ShopContext, ShopResult } from "./shopContext.ts";
@@ -128,6 +129,14 @@ export function buyArrows({ sim, inInterior, menuOpen }: ShopContext, arrow: Arr
   if (inInterior || !menuOpen || !nearArcherMaster(sim)) return say("arrows-too-far");
   const result = sim.inventory.buyArrows(arrow, sim.player);
   return say(result, result === "arrows-bought");
+}
+
+/** Troca o arco em mãos (ADR 0120): só o Arqueiro usa arco; precisa do nível dele. */
+export function equipBow({ sim }: ShopContext, bow: BowId): ShopResult {
+  if (heroClassSheet(sim.heroClass).weapon !== "bow") return { message: NO_BOWS_MESSAGE, changed: false };
+  if (sim.awaitingRespawn) return say("unavailable");
+  const result = sim.inventory.equipBow(bow, experienceProgress(sim.experience).level);
+  return say(result, result === "bow-equipped");
 }
 
 /** Troca a flecha em uso (ADR 0118): em qualquer lugar (só mexe na aljava), só o Arqueiro, e só para um tipo de que há flechas. */

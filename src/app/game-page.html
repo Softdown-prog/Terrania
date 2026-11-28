@@ -263,15 +263,30 @@
                   @let bow = hud.equippedBow();
                   <strong id="equippedWeapon">{{ bow.name }}</strong>
                   <p id="equippedBowStats">{{ bow.damage }} de dano · {{ bow.interval }} s entre tiros · {{ bow.arrowsPerShot }} flecha por tiro · alcance de {{ bow.range }} tiles</p>
-                  <p class="weapon-roster-caption">Arcos do arqueiro · 1 de 11 · os outros chegam nos próximos lotes</p>
+                  <p class="weapon-roster-caption">Arcos do arqueiro · {{ hud.bowIds.length }} de 11 · os outros chegam nos próximos lotes</p>
                   <div class="weapon-picker bow-picker" role="group" aria-label="Arcos do arqueiro">
-                    <button type="button" class="sword-choice is-equipped" id="equip-slot-bow-hunting" data-bow-id="hunting" aria-pressed="true" disabled
-                      [attr.title]="bow.name + ' · inicial · dano ' + bow.damage">
-                      <app-item-icon class="sword-choice-icon" [name]="hud.slotIcon('weapon')" />
-                      <strong class="sword-choice-name">{{ bow.name }}</strong>
-                      <small class="sword-choice-stats">Inicial · {{ bow.damage }} dano</small>
-                      <span class="sword-choice-status">Equipado</span>
-                    </button>
+                    @for (row of hud.bowRows(); track row.id) {
+                      <button type="button" class="sword-choice"
+                        [attr.id]="'equip-slot-bow-' + row.id"
+                        [attr.data-bow-id]="row.id"
+                        [attr.aria-pressed]="row.status === 'equipped'"
+                        [attr.title]="row.def.name + ' · ' + (row.def.level > 0 ? 'nível ' + row.def.level : 'inicial') + ' · dano ' + row.def.damage"
+                        [class.is-equipped]="row.status === 'equipped'"
+                        [class.is-locked]="row.status === 'locked'"
+                        [disabled]="row.status !== 'available'"
+                        (click)="hud.equipBow(row.id)">
+                        <app-item-icon class="sword-choice-icon" [name]="hud.bowIcon(row.id)" />
+                        <strong class="sword-choice-name">{{ row.def.name }}</strong>
+                        <small class="sword-choice-stats">{{ row.def.level > 0 ? "Nível " + row.def.level : "Inicial" }} · {{ row.def.damage }} dano</small>
+                        <span class="sword-choice-status">
+                          @switch (row.status) {
+                            @case ('equipped') { Equipado }
+                            @case ('available') { Equipar }
+                            @default { Bloqueado }
+                          }
+                        </span>
+                      </button>
+                    }
                   </div>
                 } @else if (hud.selectedSlot() === 'ammo' && hud.weaponKind() === 'bow') {
                   <strong id="equippedAmmo">{{ hud.arrowTotal() > 0 ? hud.arrowTotal() + ' flechas na aljava' : 'Aljava vazia' }}</strong>

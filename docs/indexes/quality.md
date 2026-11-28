@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (251)
+## Todos os arquivos deste módulo (253)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -30,6 +30,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/archer-body.test.ts`](../../tests/archer-body.test.ts)
 - [`tests/archer-bow-render.test.ts`](../../tests/archer-bow-render.test.ts)
 - [`tests/archer-bow.test.ts`](../../tests/archer-bow.test.ts)
+- [`tests/archer-bows.test.ts`](../../tests/archer-bows.test.ts)
 - [`tests/archer-class.test.ts`](../../tests/archer-class.test.ts)
 - [`tests/archer-inventory.test.ts`](../../tests/archer-inventory.test.ts)
 - [`tests/archer-shot.test.ts`](../../tests/archer-shot.test.ts)
@@ -38,6 +39,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/atlas.test.ts`](../../tests/atlas.test.ts)
 - [`tests/bestiary-audit.test.ts`](../../tests/bestiary-audit.test.ts)
 - [`tests/browser/app.spec.ts`](../../tests/browser/app.spec.ts)
+- [`tests/browser/archer-bows.spec.ts`](../../tests/browser/archer-bows.spec.ts)
 - [`tests/browser/archer-inventory.spec.ts`](../../tests/browser/archer-inventory.spec.ts)
 - [`tests/browser/archer-shot.spec.ts`](../../tests/browser/archer-shot.spec.ts)
 - [`tests/browser/capital-academy.spec.ts`](../../tests/browser/capital-academy.spec.ts)

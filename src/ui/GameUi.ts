@@ -84,6 +84,7 @@ export interface GameUi {
   onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void;
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
   onStaffEquip(callback: (staff: StaffId) => string): void;
+  onBowEquip(callback: (bow: BowId) => string): void;
   onStaffBuy(callback: (staff: StaffId) => string): void;
   /** A compra de um pacote de flechas na Irmandade dos Arqueiros e a troca da flecha em uso (ADR 0118). */
   onArrowBuy(callback: (arrow: ArrowId) => string): void;

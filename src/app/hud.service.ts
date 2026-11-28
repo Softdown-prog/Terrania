@@ -9,7 +9,7 @@ import { questPanel, trackedEntry, type JournalEntry } from '../engine/quests/jo
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { bowItemIcon, foodItemIcon, gearItemIcon, slotItemIcon, staffItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
 import { ARROWS, ARROW_IDS, ARROW_PACK, MAX_ARROWS, type ArrowId } from '../engine/character/Arrows.ts';
-import { BOWS, DEFAULT_BOW, type BowId } from '../engine/character/Bows.ts';
+import { BOWS, BOW_IDS, DEFAULT_BOW, bowUnlocked, type BowId } from '../engine/character/Bows.ts';
 import { EMPTY_QUIVER, type Quiver } from '../engine/character/Quiver.ts';
 import { DEFAULT_STAFF, STAFF_IDS, STAVES, isStaffId, staffUnlocked, type StaffId } from '../engine/character/Staves.ts';
 import type { StaffLoadout } from '../engine/character/StaffLoadout.ts';
@@ -164,6 +164,13 @@ export class HudService implements GameUi {
   readonly bow = signal<BowId>(DEFAULT_BOW);
   readonly quiver = signal<Quiver>(EMPTY_QUIVER);
   readonly equippedBow = computed(() => BOWS[this.bow()]);
+  readonly bowIds = BOW_IDS;
+  bowIcon(id: BowId): ItemIconId { return bowItemIcon(id); }
+  /** Os arcos do Arqueiro para a tela, na ordem do catálogo: em mãos, disponível ou bloqueado pelo nível (ADR 0120). */
+  readonly bowRows = computed(() => {
+    const level = this.progression()?.level ?? 1;
+    return BOW_IDS.map(id => ({ id, def: BOWS[id], status: id === this.bow() ? 'equipped' as const : bowUnlocked(id, level) ? 'available' as const : 'locked' as const }));
+  });
   readonly arrowIds = ARROW_IDS;
   arrowName(id: ArrowId): string { return ARROWS[id].name; }
   /** Quantas flechas há de cada tipo e no total. */
@@ -343,6 +350,7 @@ export class HudService implements GameUi {
   private swordPurchaseCallback: () => string = () => '';
   private weaponEquipCallback: (weapon: WeaponId) => string = () => '';
   private staffEquipCallback: (staff: StaffId) => string = () => '';
+  private bowEquipCallback: (bow: BowId) => string = () => '';
   private staffBuyCallback: (staff: StaffId) => string = () => '';
   private arrowBuyCallback: (arrow: ArrowId) => string = () => '';
   private arrowEquipCallback: (arrow: ArrowId) => string = () => '';
@@ -399,6 +407,7 @@ export class HudService implements GameUi {
   onMaterialSale(callback: (market: MarketId, material: string, quantity: number) => string): void { this.materialSaleCallback = callback; }
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
   onStaffEquip(callback: (staff: StaffId) => string): void { this.staffEquipCallback = callback; }
+  onBowEquip(callback: (bow: BowId) => string): void { this.bowEquipCallback = callback; }
   onStaffBuy(callback: (staff: StaffId) => string): void { this.staffBuyCallback = callback; }
   onArrowBuy(callback: (arrow: ArrowId) => string): void { this.arrowBuyCallback = callback; }
   onArrowEquip(callback: (arrow: ArrowId) => string): void { this.arrowEquipCallback = callback; }
@@ -486,6 +495,7 @@ export class HudService implements GameUi {
   buySword(): void { this.npcTradeFeedback.set(this.swordPurchaseCallback()); }
   equipWeapon(weapon: WeaponId): void { this.inventoryFeedback.set(this.weaponEquipCallback(weapon)); }
   equipStaff(staff: StaffId): void { this.inventoryFeedback.set(this.staffEquipCallback(staff)); }
+  equipBow(bow: BowId): void { this.inventoryFeedback.set(this.bowEquipCallback(bow)); }
   buyStaff(staff: StaffId): void { this.npcTradeFeedback.set(this.staffBuyCallback(staff)); }
   buyArrows(arrow: ArrowId): void { this.npcTradeFeedback.set(this.arrowBuyCallback(arrow)); }
   equipArrow(arrow: ArrowId): void { this.npcTradeFeedback.set(this.arrowEquipCallback(arrow)); }

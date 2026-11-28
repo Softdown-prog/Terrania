@@ -23,7 +23,7 @@ import { driveJourney, type JourneyEvent } from "./journeyDriver.ts";
 import { JOURNEY_MESSAGES } from "./messages/journeyMessages.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { runMountAction } from "../engine/mounts/MountActions.ts";
-import { buyArrows, buyFood, buyStaff, buySword, eatFood, equipArrow, equipGear, equipStaff, equipWeapon, restAtInn, sellMaterial, tradeGelForPotion, usePotion,
+import { buyArrows, buyFood, buyStaff, buySword, eatFood, equipArrow, equipBow, equipGear, equipStaff, equipWeapon, restAtInn, sellMaterial, tradeGelForPotion, usePotion,
   type ShopContext, type ShopResult } from "./actions/shopActions.ts";
 import { craftElixir, drinkElixir } from "./actions/south/alchemyActions.ts";
 import { TravelState } from "./TravelState.ts";
@@ -112,6 +112,7 @@ export class Game {
     this.hud.onFoodTrade(id => this.shop(context => buyFood(context, id)));
     this.hud.onWeaponEquip(weapon => this.shop(context => equipWeapon(context, weapon)));
     this.hud.onStaffEquip(staff => this.shop(context => equipStaff(context, staff)));
+    this.hud.onBowEquip(bow => this.shop(context => equipBow(context, bow)));
     this.hud.onStaffBuy(staff => this.shop(context => buyStaff(context, staff)));
     this.hud.onArrowBuy(arrow => this.shop(context => buyArrows(context, arrow)));
     this.hud.onArrowEquip(arrow => this.shop(context => equipArrow(context, arrow)));

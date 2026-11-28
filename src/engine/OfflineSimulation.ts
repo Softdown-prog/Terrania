@@ -25,7 +25,7 @@ import { WellInvestigation, wellQuestStarted, type WellQuestState } from "./ques
 import { RootsQuest, rootsQuestStarted, type RootsQuestState } from "./quests/center/roots/index.ts";
 import { Bank, type BankState } from "./character/center/bank/index.ts";
 import { STAVES, type StaffId } from "./character/Staves.ts";
-import { BOWS, DEFAULT_BOW, type BowId } from "./character/Bows.ts";
+import { BOWS, type BowId } from "./character/Bows.ts";
 import { arrowStrikeTarget, resolveArrowStrike } from "./combat/ArrowCombat.ts";
 import { TILE_SIZE } from "../world/terrain.ts";
 import { resolveSpellStrike, spellReach, spellStrikeTargets } from "./combat/SpellCombat.ts";
@@ -198,8 +198,8 @@ export class OfflineSimulation {
   }
   /** O cajado que o Mago segura; com um só cajado, o de Aprendiz (a escolha entre vários vem com o inventário, fatia F). */
   get equippedStaff(): StaffId { return this.inventory.staves.equipped; }
-  /** O arco que o Arqueiro segura; com um só arco, o de Caça (a escolha entre vários vem com os dez arcos restantes, lote A4). */
-  get equippedBow(): BowId { return DEFAULT_BOW; }
+  /** O arco que o Arqueiro segura (ADR 0120): o da bolsa, que começa no de Caça. */
+  get equippedBow(): BowId { return this.inventory.bows.equipped; }
   /** Como o herói ataca agora: o Cavaleiro de perto com a espada; o Mago de longe com o cajado, se houver mana (ADR 0069). */
   get combatProfile(): CombatProfile {
     const weapon = this.inventory.loadout.equipped;

@@ -42,9 +42,9 @@ test("as mensagens de recusa dizem de quem é cada arma e o que as outras vocaç
 
 test("o ícone do arco: um por arco (`bow-<id>`), com o desenho no componente; as flechas usam o ícone de flechas", () => {
   const icons = read("src/app/item-icon.component.ts");
-  assert.match(icons, /\| 'bow-hunting'/); assert.match(icons, /@case \('bow-hunting'\) \{/);
+  for (const id of BOW_IDS) { assert.match(icons, new RegExp(`'bow-${id}'`)); assert.match(icons, new RegExp(`@case \\('bow-${id}'\\) \\{`)); }
   assert.match(icons, /export function bowItemIcon\(bow: BowId\): ItemIconId \{\s*return `bow-\$\{bow\}`;\s*\}/);
-  assert.deepEqual(BOW_IDS.map(id => `bow-${id}`), ["bow-hunting"], "todo arco do catálogo tem o ícone com o nome previsto");
+  assert.deepEqual(BOW_IDS.map(id => `bow-${id}`), ["bow-hunting", "bow-horn", "bow-yew", "bow-bone"], "todo arco do catálogo tem o ícone com o nome previsto");
   assert.match(icons, /ammo: 'arrows'/);
 });
 

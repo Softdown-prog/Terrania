@@ -21,5 +21,7 @@ export const HUNTING_BOW = {
     wrapDark: "#4a3220",
     tip: "#d6c9a4",
     charm: "#a8482a",
+    length: 1,
+    flick: 0,
   },
 } as const satisfies BowDefinition;

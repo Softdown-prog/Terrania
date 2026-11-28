@@ -16,7 +16,7 @@ export const BOW_FULL_DRAW = 7.5;
  */
 export function drawBow(ctx: CanvasRenderingContext2D, bow: BowId, draw: number, tone: (color: string) => string): void {
   const v = BOWS[bow].visual, d = Math.max(0, Math.min(1, Number.isFinite(draw) ? draw : 0));
-  const tip = BOW_TIP_X - d * 1.1, half = BOW_HALF, belly = BOW_BELLY, pull = BOW_TIP_X - BOW_FULL_DRAW * d;
+  const tip = BOW_TIP_X - d * 1.1 + v.flick, half = BOW_HALF * v.length, belly = BOW_BELLY, pull = BOW_TIP_X + v.flick - BOW_FULL_DRAW * d;  // o comprimento e o coice das pontas vêm da ficha do arco; em repouso a corda é reta de ponta a ponta
   const limb = (): void => {
     ctx.beginPath(); ctx.moveTo(tip, -half); ctx.quadraticCurveTo(belly * 2.3, -half * 0.5, belly, 0); ctx.quadraticCurveTo(belly * 2.3, half * 0.5, tip, half);
   };
