@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (356)
+## Todos os arquivos deste módulo (364)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -163,6 +163,14 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/creatures/west/salamanders/magmaSalamander.ts`](../../src/render/creatures/west/salamanders/magmaSalamander.ts)
 - [`src/render/draw.ts`](../../src/render/draw.ts)
 - [`src/render/healGlow.ts`](../../src/render/healGlow.ts)
+- [`src/render/hero/archer/body/face.ts`](../../src/render/hero/archer/body/face.ts)
+- [`src/render/hero/archer/body/hairBack.ts`](../../src/render/hero/archer/body/hairBack.ts)
+- [`src/render/hero/archer/body/hairFront.ts`](../../src/render/hero/archer/body/hairFront.ts)
+- [`src/render/hero/archer/head.ts`](../../src/render/hero/archer/head.ts)
+- [`src/render/hero/archer/index.ts`](../../src/render/hero/archer/index.ts)
+- [`src/render/hero/archer/palette.ts`](../../src/render/hero/archer/palette.ts)
+- [`src/render/hero/archer/quiver.ts`](../../src/render/hero/archer/quiver.ts)
+- [`src/render/hero/archer/torso.ts`](../../src/render/hero/archer/torso.ts)
 - [`src/render/hero/context.ts`](../../src/render/hero/context.ts)
 - [`src/render/hero/look.ts`](../../src/render/hero/look.ts)
 - [`src/render/hero/mage/body/face.ts`](../../src/render/hero/mage/body/face.ts)

@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (245)
+## Todos os arquivos deste módulo (246)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -26,6 +26,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/README.md`](../../tests/README.md)
 - [`tests/alchemy.test.ts`](../../tests/alchemy.test.ts)
 - [`tests/archer-arrow-render.test.ts`](../../tests/archer-arrow-render.test.ts)
+- [`tests/archer-body.test.ts`](../../tests/archer-body.test.ts)
 - [`tests/archer-bow.test.ts`](../../tests/archer-bow.test.ts)
 - [`tests/archer-class.test.ts`](../../tests/archer-class.test.ts)
 - [`tests/archer-inventory.test.ts`](../../tests/archer-inventory.test.ts)

@@ -63,22 +63,52 @@ async function heroTile(page: Page): Promise<Tile & { cave: boolean }> {
  * caber no limite de tempo.
  */
 const navigations: string[] = [];
+/**
+ * Segura `key` até o herói chegar ao tile `limit` no eixo (ou o andar mudar, ou o prazo acabar) e solta a tecla **dentro da página**, no quadro em que a chegada aparece em
+ * `#coords`. Soltar pelo teste custa uma ida e volta ao navegador, e numa CI lenta ela chega a segundos: o herói (126 px/s) passava mais de um tile do ponto, a rota era refeita
+ * de volta, passava de novo e ficava indo e voltando até acabarem os 300 passos ("o herói não chegou ao destino", execução do ADR 0113). Dentro da página o atraso é de um quadro.
+ */
+async function holdUntil(page: Page, key: string, axis: "x" | "y", direction: 1 | -1, limit: number, timeout: number): Promise<void> {
+  await page.keyboard.down(key);
+  try {
+    await page.evaluate(({ code, axis, direction, limit, timeout }) => new Promise<void>(resolve => {
+      const coords = document.querySelector("#coords"), progress = document.querySelector("#questProgress");
+      const startProgress = progress?.textContent ?? "", started = performance.now();
+      const release = (): void => { window.dispatchEvent(new KeyboardEvent("keyup", { code })); resolve(); };
+      const tick = (): void => {
+        const text = coords?.textContent ?? "", match = /X\s+(-?\d+)\s+·\s+Y\s+(-?\d+)/.exec(text);
+        const value = match ? Number(match[axis === "x" ? 1 : 2]) : Number.NaN;
+        const arrived = Number.isFinite(value) && (direction > 0 ? value >= limit : value <= limit);
+        if (arrived || !text.includes("Subsolo") || (progress?.textContent ?? "") !== startProgress || performance.now() - started > timeout) release();
+        else requestAnimationFrame(tick);
+      };
+      tick();
+    }), { code: "Key" + key.toUpperCase(), axis, direction, limit, timeout });
+  } finally {
+    await page.keyboard.up(key);
+  }
+}
 async function walk(page: Page, floor: CaveFloor, goal: Tile, act: () => Promise<void>,
   done: () => Promise<boolean>): Promise<void> {
   let last: Tile | null = null, still = 0;
+  const trail: string[] = [], visits = new Map<string, number>();
   for (let step = 0; step < 300; step++) {
     const here = await heroTile(page);
     if (await done()) return; // a leitura de `here` pode já ser da superfície (saiu agora)
     // O jogo saiu da caverna sem o teste pedir (a página recarregou?): falha na hora dizendo isso, em vez de caminhar pela superfície até o limite de 5 minutos.
     if (!here.cave) throw new Error(`o jogo saiu da caverna fora do roteiro (em ${here.x},${here.y}); a página recarregou? navegações: ${navigations.join(" | ")}`);
+    // O trajeto fica no erro: se o herói andar em círculos (ou parar), a CI mostra por onde, sem precisar do rastro.
+    trail.push(`${here.x},${here.y}`); if (trail.length > 24) trail.shift();
+    const seen = (visits.get(`${here.x},${here.y}`) ?? 0) + 1; visits.set(`${here.x},${here.y}`, seen);
+    if (seen >= 8 && !(here.x === goal.x && here.y === goal.y)) throw new Error(`o herói passou ${seen} vezes por ${here.x},${here.y} sem chegar a ${goal.x},${goal.y}; últimos tiles: ${trail.join(" ")}`);
     // Herói parado fora da escada: a tecla não está chegando ao jogo (o foco saiu da tela?). Devolve o foco e, se não adiantar, falha cedo e
-    // dizendo onde parou, em vez de girar até o limite de 5 minutos do teste sem nenhuma pista (a CI não guarda o rastro).
+    // dizendo onde parou, em vez de girar até o limite de 5 minutos do teste sem nenhuma pista.
     still = last && last.x === here.x && last.y === here.y && !(here.x === goal.x && here.y === goal.y) ? still + 1 : 0;
     last = here;
     if (still >= 2) await page.locator("canvas#game").focus();
     if (still >= 6) {
       const where = ((await page.locator("#questProgress").textContent()) ?? "?").trim();
-      throw new Error(`o herói parou em ${here.x},${here.y} (destino ${goal.x},${goal.y}, ${where}) e não saiu do lugar por ${still} tentativas`);
+      throw new Error(`o herói parou em ${here.x},${here.y} (destino ${goal.x},${goal.y}, ${where}) e não saiu do lugar por ${still} tentativas; últimos tiles: ${trail.join(" ")}`);
     }
     if (here.x === goal.x && here.y === goal.y) {
       await act();
@@ -95,19 +125,9 @@ async function walk(page: Page, floor: CaveFloor, goal: Tile, act: () => Promise
     let end = 1;
     while (end + 1 < path!.length && toward(path![end]!, path![end + 1]!) === key) end++;
     const target = path![end] ?? goal;
-    const arrived = (at: Tile): boolean => key === "d" ? at.x >= target.x : key === "a" ? at.x <= target.x : key === "s" ? at.y >= target.y : at.y <= target.y;
-    await page.keyboard.down(key);
-    const deadline = Date.now() + 2500 + end * 450;
-    try {
-      for (;;) {
-        if (arrived(await heroTile(page)) || await done() || Date.now() > deadline) break;
-        await page.waitForTimeout(30);
-      }
-    } finally {
-      await page.keyboard.up(key);
-    }
+    await holdUntil(page, key, key === "d" || key === "a" ? "x" : "y", key === "d" || key === "s" ? 1 : -1, key === "d" || key === "a" ? target.x : target.y, 2500 + end * 450);
   }
-  throw new Error("o herói não chegou ao destino");
+  throw new Error(`o herói não chegou ao destino ${goal.x},${goal.y}; últimos tiles: ${trail.join(" ")}`);
 }
 
 // Na CI o desktop trava de vez em quando na primeira rodada deste arquivo (execuções 732, 734 e 736) e passa na seguinte; até a causa aparecer (os registros acima e o rastro salvo
