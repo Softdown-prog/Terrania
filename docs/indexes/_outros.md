@@ -171,6 +171,7 @@
 - [`docs/adr/0107-transicao-suave-do-solo.md`](../../docs/adr/0107-transicao-suave-do-solo.md)
 - [`docs/adr/0108-moradores-da-capital.md`](../../docs/adr/0108-moradores-da-capital.md)
 - [`docs/adr/0109-arqueiro-a1a-vocacao.md`](../../docs/adr/0109-arqueiro-a1a-vocacao.md)
+- [`docs/adr/0110-arqueiro-a1b-arco-e-flechas.md`](../../docs/adr/0110-arqueiro-a1b-arco-e-flechas.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/bau-da-toca.png`](../../docs/screenshots/bau-da-toca.png)

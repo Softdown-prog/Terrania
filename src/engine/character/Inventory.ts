@@ -11,6 +11,8 @@ import { MAX_COINS, marketFor, materialSalePrice, normalizeCoins, type MarketId 
 import { ELIXIR_IDS, elixirRecipe, emptyElixirCounts, normalizeElixirs, type ElixirCounts, type ElixirCraftResult,
   type ElixirId, type ElixirUseResult } from "./south/alchemy/index.ts";
 import { DEFAULT_STAFF_LOADOUT, isDefaultStaffLoadout, normalizeStaffLoadout, sanitizeStaffLoadout, type StaffBuyResult, type StaffEquipResult, type StaffLoadout } from "./StaffLoadout.ts";
+import { EMPTY_QUIVER, STARTING_QUIVER, addArrows, sanitizeQuiver, spendArrows, type Quiver } from "./Quiver.ts";
+import type { ArrowId } from "./Arrows.ts";
 import { STAVES, isStaffId, staffUnlocked, type StaffId } from "./Staves.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, MAGE_STARTING_GEAR, gearDefense, gearForClass, gearForLevel, gearHeroClass, gearUnlocked, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
@@ -40,6 +42,8 @@ export interface InventoryState {
   loadout?: WeaponLoadout;
   /** O cajado em mãos e os comprados do Mago (ADR 0073); ausente no padrão e no Cavaleiro. */
   staves?: StaffLoadout;
+  /** A aljava do Arqueiro (ADR 0110): flechas por tipo e a que está em uso; ausente para as outras vocações. */
+  quiver?: Quiver;
   gear?: GearState;
   materials?: Record<string, number>;
   /** Dinheiro em Terrania Gold (ADR 0023); as moedas maiores saem da conta. Ausente quando é zero. */
@@ -86,6 +90,7 @@ export function normalizeInventory(value: unknown): InventoryState {
     ...(Object.values(elixirs).some(v => v > 0) ? { elixirs } : {}),
     ...(loadout ? { loadout } : {}),
     ...(isDefaultStaffLoadout(staves) ? {} : { staves }),
+    ...(state.quiver === undefined ? {} : { quiver: sanitizeQuiver(state.quiver) }),
     ...(Object.keys(gear).length || hasGearRecord(state.gear) ? { gear } : {}),
     ...(Object.keys(normalizeMaterials(state.materials)).length ? { materials: normalizeMaterials(state.materials) } : {}),
   };
@@ -104,6 +109,7 @@ export class Inventory {
   private claimed = false;
   private weapons: WeaponLoadout;
   private staffLoadout: StaffLoadout = DEFAULT_STAFF_LOADOUT;
+  private arrows: Quiver = EMPTY_QUIVER;
   private equippedGear: GearState;
   private readonly heroClass: HeroClassId;
 
@@ -124,6 +130,8 @@ export class Inventory {
     // E só o que o nível já libera (ADR 0080).
     this.equippedGear = heroClass === "mage" && state.gear === undefined ? MAGE_STARTING_GEAR : gearForLevel(gearForClass(state.gear ?? {}, heroClass), level);
     this.staffLoadout = normalizeStaffLoadout(state.staves, level);
+    // Só o Arqueiro tem aljava; sem registro (mundo novo ou save antigo) ele começa com as 30 flechas de junco.
+    this.arrows = heroClass !== "archer" ? EMPTY_QUIVER : state.quiver === undefined ? STARTING_QUIVER : sanitizeQuiver(state.quiver);
   }
 
   get gel(): number { return this.gelCount; }
@@ -187,6 +195,22 @@ export class Inventory {
   get loadout(): WeaponLoadout { return this.weapons; }
   /** O cajado em mãos e os comprados (ADR 0073). */
   get staves(): StaffLoadout { return this.staffLoadout; }
+  /** A aljava do Arqueiro (vazia para as outras vocações). */
+  get quiver(): Quiver { return this.arrows; }
+  /** Gasta flechas da que está em uso, tudo ou nada (ADR 0110). */
+  spendArrows(amount: number): boolean {
+    const next = this.heroClass === "archer" ? spendArrows(this.arrows, amount) : null;
+    if (!next) return false;
+    this.arrows = next;
+    return true;
+  }
+  /** Põe flechas na aljava até o máximo do tipo; devolve quantas entraram (0 para quem não é Arqueiro). */
+  gainArrows(id: ArrowId, amount: number): number {
+    if (this.heroClass !== "archer") return 0;
+    const result = addArrows(this.arrows, id, amount);
+    this.arrows = result.quiver;
+    return result.added;
+  }
   get weapon() { return WEAPONS[this.weapons.equipped]; }
   get gear(): GearState { return this.equippedGear; }
   get defense(): number { return gearDefense(this.equippedGear); }
@@ -342,6 +366,7 @@ export class Inventory {
       ...(Object.values(this.elixirCounts).some(v => v > 0) ? { elixirs: { ...this.elixirCounts } } : {}),
       ...(this.weapons.forged || this.weapons.equipped !== "starter" ? { loadout: this.weapons } : {}),
       ...(isDefaultStaffLoadout(this.staffLoadout) ? {} : { staves: this.staffLoadout }),
+      ...(this.heroClass === "archer" ? { quiver: this.arrows } : {}),
       ...(Object.keys(this.equippedGear).length || this.heroClass === "mage" ? { gear: this.equippedGear } : {}),
       ...(Object.keys(this.materialCounts).length ? { materials: { ...this.materialCounts } } : {}),
     };
