@@ -267,7 +267,7 @@ export class HudService implements GameUi {
     }
     const gear = this.gear();
     if (gear !== null && this.wearsArmor()) {
-      const mage = this.heroClass() === 'mage';
+      const mage = this.heroClass() !== 'knight';
       for (const id of this.kitIds()) {
         const item = GEAR[id];
         if (gear[item.slot] === id || !gearUnlocked(id, this.progression()?.level ?? 1)) continue;

@@ -16,7 +16,7 @@ import { EMPTY_QUIVER, STARTING_QUIVER, addArrows, arrowRoom, sanitizeQuiver, se
 import { ARROWS, ARROW_PACK, isArrowId, type ArrowId } from "./Arrows.ts";
 import { STAVES, isStaffId, staffUnlocked, type StaffId } from "./Staves.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
-import { GEAR, MAGE_STARTING_GEAR, gearDefense, gearForClass, gearForLevel, gearHeroClass, gearUnlocked, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
+import { GEAR, gearDefense, gearForClass, gearForLevel, gearHeroClass, gearUnlocked, isGearId, isGearSlot, normalizeGear, startingGearFor, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
 import { DEFAULT_HERO_CLASS, type HeroClassId } from "./classes/index.ts";
 
 /** Regras da bolsa do jogo solo (antes compartilhadas com a sala Node, já retirada). */
@@ -135,9 +135,9 @@ export class Inventory {
     const restored=state.loadout ?? { forged: false, equipped: "starter" };
     this.weapons = weaponUnlocked(restored.equipped, level, restored.forged)
       ? restored : { ...restored, equipped: "starter" };
-    // Só vale o que é da vocação. O Mago sem registro de equipamento (mundo novo ou save antigo) nasce com o conjunto do Aprendiz.
+    // Só vale o que é da vocação. O Mago sem registro de equipamento (mundo novo ou save antigo) nasce com o conjunto do Aprendiz e o Arqueiro, com o Couro Cru.
     // E só o que o nível já libera (ADR 0080).
-    this.equippedGear = heroClass === "mage" && state.gear === undefined ? MAGE_STARTING_GEAR : gearForLevel(gearForClass(state.gear ?? {}, heroClass), level);
+    this.equippedGear = (state.gear === undefined ? startingGearFor(heroClass) : undefined) ?? gearForLevel(gearForClass(state.gear ?? {}, heroClass), level);
     this.staffLoadout = normalizeStaffLoadout(state.staves, level);
     this.bowLoadout = heroClass === "archer" ? normalizeBowLoadout(state.bows, level) : DEFAULT_BOW_LOADOUT;
     // Só o Arqueiro tem aljava; sem registro (mundo novo ou save antigo) ele começa com as 30 flechas de junco.
@@ -409,7 +409,7 @@ export class Inventory {
       ...(isDefaultStaffLoadout(this.staffLoadout) ? {} : { staves: this.staffLoadout }),
       ...(this.heroClass === "archer" ? { quiver: this.arrows } : {}),
       ...(this.heroClass === "archer" && !isDefaultBowLoadout(this.bowLoadout) ? { bows: this.bowLoadout } : {}),
-      ...(Object.keys(this.equippedGear).length || this.heroClass === "mage" ? { gear: this.equippedGear } : {}),
+      ...(Object.keys(this.equippedGear).length || startingGearFor(this.heroClass) !== undefined ? { gear: this.equippedGear } : {}),
       ...(Object.keys(this.materialCounts).length ? { materials: { ...this.materialCounts } } : {}),
     };
   }

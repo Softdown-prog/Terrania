@@ -19,6 +19,7 @@ export type ItemIconId =
   | 'bow-hunting' | 'bow-horn' | 'bow-yew' | 'bow-bone' | 'bow-ember' | 'bow-thorn' | 'bow-boreal' | 'bow-sun' | 'bow-moon' | 'bow-storm' | 'bow-astral'
   | 'ring' | 'helm' | 'pendant' | 'shield' | 'chest' | 'pack' | 'legs' | 'arrows' | 'boots'
   | 'mage-hat' | 'mage-robe' | 'mage-trousers' | 'mage-boots' | 'mage-book'
+  | 'archer-hood' | 'archer-jerkin' | 'archer-trousers' | 'archer-boots' | 'archer-gloves'
   | 'greater-potion' | 'antidote'
   | CoinId
   | SouthRareLootId;
@@ -31,14 +32,19 @@ const SLOT_ICONS: Record<GearSlot, ItemIconId> = {
 const MAGE_SLOT_ICONS: Record<GearSlot, ItemIconId> = {
   ...SLOT_ICONS, head: 'mage-hat', chest: 'mage-robe', legs: 'mage-trousers', feet: 'mage-boots', shield: 'mage-book',
 };
+/** Os ícones das roupas do Arqueiro (ADR 0123): capuz, gibão, calça, botas e luvas no lugar do escudo; o anel e o colar usam os mesmos desenhos do Cavaleiro. */
+const ARCHER_SLOT_ICONS: Record<GearSlot, ItemIconId> = {
+  ...SLOT_ICONS, head: 'archer-hood', chest: 'archer-jerkin', legs: 'archer-trousers', feet: 'archer-boots', shield: 'archer-gloves',
+};
+const CLASS_SLOT_ICONS: Partial<Record<HeroClassId, Record<GearSlot, ItemIconId>>> = { mage: MAGE_SLOT_ICONS, archer: ARCHER_SLOT_ICONS };
 const FOOD_ICONS: Record<FoodId, ItemIconId> = { apple: 'apple', bread: 'bread', meat: 'meat' };
 
 export function slotItemIcon(slot: EquipmentSlot, weapon: WeaponId, heroClass: HeroClassId = 'knight'): ItemIconId {
-  return slot === 'weapon' ? weaponItemIcon(weapon) : (heroClass === 'mage' ? MAGE_SLOT_ICONS : SLOT_ICONS)[slot];
+  return slot === 'weapon' ? weaponItemIcon(weapon) : (CLASS_SLOT_ICONS[heroClass] ?? SLOT_ICONS)[slot];
 }
 /** O ícone de uma peça de equipamento da vocação. */
 export function gearItemIcon(slot: GearSlot, heroClass: HeroClassId): ItemIconId {
-  return (heroClass === 'mage' ? MAGE_SLOT_ICONS : SLOT_ICONS)[slot];
+  return (CLASS_SLOT_ICONS[heroClass] ?? SLOT_ICONS)[slot];
 }
 /** O ícone do cajado em mãos (ADR 0072); cada cajado novo ganha o seu `staff-<id>`. */
 export function staffItemIcon(staff: StaffId): ItemIconId {
@@ -527,6 +533,34 @@ export function foodItemIcon(food: FoodId): ItemIconId { return FOOD_ICONS[food]
           <path d="M8 4H24L25.2 12L22 28H17.4L16 14.5L14.6 28H10L6.8 12Z" fill="#6f84a0"/>
           <rect x="8" y="4" width="16" height="3.4" fill="#4a3a28"/>
           <path d="M16 8V14.5M10.2 24.2H14M18 24.2H21.8" fill="none" stroke="#9db0c6" stroke-width="1.3"/>
+        }
+        @case ('archer-hood') {
+          <path d="M16 3C10 3 6.6 8.4 6.6 14.6L7.4 25.4H24.6L25.4 14.6C25.4 8.4 22 3 16 3Z" fill="#8f6a3e"/>
+          <path d="M16 8.4C12.4 8.4 10.4 11 10.4 14.4V18.6C10.4 21 12.6 22.6 16 22.6C19.4 22.6 21.6 21 21.6 18.6V14.4C21.6 11 19.6 8.4 16 8.4Z" fill="#2a1d12"/>
+          <path d="M7.4 22.4H24.6" fill="none" stroke="#c99a60" stroke-width="1.2" stroke-dasharray="2 1.6"/>
+          <path d="M9.2 9.6C10.4 6.8 12.8 5 15.4 4.6" fill="none" stroke="#c99a60" stroke-width="1.3"/>
+        }
+        @case ('archer-jerkin') {
+          <path d="M11 4L6.4 7.6L4.4 14L9 15.6L10 14V27H22V14L23 15.6L27.6 14L25.6 7.6L21 4C20 6.6 18 7.8 16 7.8C14 7.8 12 6.6 11 4Z" fill="#8f6a3e"/>
+          <path d="M16 8.6V27" fill="none" stroke="#3d2a1c" stroke-width="1.3"/>
+          <path d="M13.2 12L18.8 13.6M13.2 16.4L18.8 18M13.2 20.8L18.8 22.4" fill="none" stroke="#e1c48f" stroke-width="1.1"/>
+          <path d="M10 23H22V27H10Z" fill="#5a3f22" stroke="none"/>
+        }
+        @case ('archer-trousers') {
+          <path d="M8 4H24L25.2 12L22 28H17.4L16 14.5L14.6 28H10L6.8 12Z" fill="#7a5a34"/>
+          <rect x="8" y="4" width="16" height="3.4" fill="#3d2a1c"/>
+          <path d="M16 8V14.5M10.4 23.6H14M18 23.6H21.6" fill="none" stroke="#c99a60" stroke-width="1.2"/>
+        }
+        @case ('archer-boots') {
+          <path d="M10 4.6H19V16.4C19 18.4 21.6 19.4 24.8 21C27.4 22.4 27.8 26.2 25.4 27.4H8.4C6.4 27.4 5.8 25.8 5.8 24.4V21.6L10 18Z" fill="#a0784a"/>
+          <path d="M10 4.6H19V8.4H10Z" fill="#d1ad78"/>
+          <path d="M5.8 25.2H26.8L26.4 27.4H7Z" fill="#3d2a1c"/>
+          <path d="M10.4 11.4H18.6M10.4 14.4H18.6" fill="none" stroke="#e1c48f" stroke-width="1" stroke-dasharray="2 1.6"/>
+        }
+        @case ('archer-gloves') {
+          <path d="M9 26V15L7 12.6V8.4H9.6V11.6H10.8V5H13.4V11H14.4V4H17V11H18V5.6H20.6V12.4L24 14.6V19.6L21.4 26Z" fill="#8f6a3e"/>
+          <path d="M9 22.4H21.8V26H9Z" fill="#3d2a1c" stroke="none"/>
+          <path d="M10.6 17.6H20.6" fill="none" stroke="#e1c48f" stroke-width="1.1" stroke-dasharray="2 1.6"/>
         }
         @case ('bow-hunting') {
           <g transform="rotate(-40 16 16)">

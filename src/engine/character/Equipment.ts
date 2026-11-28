@@ -2,6 +2,7 @@ import type { HeroClassId } from "./classes/heroClass.ts";
 import { KNIGHT_GEAR } from "./knight/gear/index.ts";
 import { APPRENTICE_GEAR } from "./mage/gear/apprentice/index.ts";
 import { BREEZE_GEAR } from "./mage/gear/breeze/index.ts";
+import { LEATHER_GEAR } from "./archer/gear/leather/index.ts";
 
 export const EQUIPMENT_SLOTS = [
   { id: "ring", label: "Anel", icon: "◈" },
@@ -23,7 +24,7 @@ export type GearSlot = Exclude<EquipmentSlot, "weapon">;
 export interface GearBonusValues { mana?: number; regen?: number; damage?: number }
 
 /**
- * Uma peça de equipamento. Sem `heroClass`, é do Cavaleiro (o kit inicial); as roupas do Mago levam `heroClass: "mage"` (ADR 0078). `level` é o nível
+ * Uma peça de equipamento. Sem `heroClass`, é do Cavaleiro (o kit inicial); as roupas do Mago levam `heroClass: "mage"` (ADR 0078) e as do Arqueiro `heroClass: "archer"` (ADR 0123). `level` é o nível
  * que libera a peça (sem o campo, vale desde o nível 1) e `set` o nome do conjunto a que pertence, para a tela (ADR 0080).
  */
 export interface GearDefinition { slot: GearSlot; name: string; defense: number; heroClass?: HeroClassId; bonus?: GearBonusValues; level?: number; set?: string }
@@ -33,6 +34,7 @@ export const GEAR = {
   ...KNIGHT_GEAR,
   ...APPRENTICE_GEAR,
   ...BREEZE_GEAR,
+  ...LEATHER_GEAR,
 } as const satisfies Record<string, GearDefinition>;
 
 export type GearId = keyof typeof GEAR;
@@ -68,6 +70,15 @@ export function gearSetName(id: GearId): string {
 /** O que o Mago veste ao nascer: o conjunto do Aprendiz inteiro. O Cavaleiro nasce sem nada vestido. */
 export const MAGE_STARTING_GEAR: GearState = Object.fromEntries(
   (Object.keys(APPRENTICE_GEAR) as Array<keyof typeof APPRENTICE_GEAR>).map(id => [APPRENTICE_GEAR[id].slot, id]));
+
+/** O que o Arqueiro veste ao nascer: o conjunto Couro Cru inteiro (ADR 0123). */
+export const ARCHER_STARTING_GEAR: GearState = Object.fromEntries(
+  (Object.keys(LEATHER_GEAR) as Array<keyof typeof LEATHER_GEAR>).map(id => [LEATHER_GEAR[id].slot, id]));
+
+/** O que a vocação veste ao nascer, sem registro de equipamento no save: o conjunto do Mago ou o do Arqueiro; o Cavaleiro nasce sem nada (`undefined`). */
+export function startingGearFor(heroClass: HeroClassId): GearState | undefined {
+  return heroClass === "mage" ? MAGE_STARTING_GEAR : heroClass === "archer" ? ARCHER_STARTING_GEAR : undefined;
+}
 
 /** Só fica o que é da vocação: um save com peças da outra vocação não as veste. */
 export function gearForClass(gear: GearState, heroClass: HeroClassId): GearState {

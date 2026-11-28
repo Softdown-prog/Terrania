@@ -365,7 +365,7 @@
                     @let gear = hud.gearCatalog[id];
                     @let equipped = hud.gear()?.[gear.slot] === id;
                     <strong>{{ gear.name }}</strong>
-                    <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto " + (hud.heroClass() === 'mage' ? hud.gearSetOf(id) : "inicial") }}{{ hud.gearBonusLabel(id) ? " · " + hud.gearBonusLabel(id) : "" }}</p>
+                    <p>{{ gear.defense > 0 ? "Defesa +" + gear.defense : "Acessório do conjunto " + (hud.heroClass() !== 'knight' ? hud.gearSetOf(id) : "inicial") }}{{ hud.gearBonusLabel(id) ? " · " + hud.gearBonusLabel(id) : "" }}</p>
                     @if (hud.gear() !== null) {
                       @if (hud.gearLocked(id)) {
                         <p class="dialog-note" [attr.data-gear-locked]="id">Bloqueada: exige o nível {{ hud.gearLevelOf(id) }}.</p>

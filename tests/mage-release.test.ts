@@ -62,7 +62,7 @@ test("as mensagens de vocação explicam o motivo", () => {
 test("o ícone do cajado existe e a tela usa o do cajado em mãos", () => {
   const svg = read("src/app/item-icon.component.ts");
   assert.match(svg, /export function staffItemIcon\(staff: StaffId\): ItemIconId \{\s*\n\s*return `staff-\$\{staff\}`;/, "cada cajado tem o ícone staff-<id>");
-  assert.match(svg, /return slot === 'weapon' \? weaponItemIcon\(weapon\) : \(heroClass === 'mage' \? MAGE_SLOT_ICONS : SLOT_ICONS\)\[slot\];/, "as espadas continuam como eram");
+  assert.match(svg, /return slot === 'weapon' \? weaponItemIcon\(weapon\) : \(CLASS_SLOT_ICONS\[heroClass\] \?\? SLOT_ICONS\)\[slot\];/, "as espadas continuam como eram");
   assert.match(svg, /@case \('staff-apprentice'\) \{/, "o ícone é desenhado");
   assert.match(svg, /\| 'staff-apprentice'/);
   assert.ok(STAVES.apprentice.name.length > 3);

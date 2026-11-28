@@ -8,6 +8,7 @@ import { WEAPON_IDS } from "../src/engine/character/Weapons.ts";
 import { APPRENTICE_GEAR } from "../src/engine/character/mage/gear/apprentice/index.ts";
 import { BREEZE_GEAR } from "../src/engine/character/mage/gear/breeze/index.ts";
 import { KNIGHT_GEAR } from "../src/engine/character/knight/gear/index.ts";
+import { LEATHER_GEAR } from "../src/engine/character/archer/gear/leather/index.ts";
 
 /**
  * Regra do dono: **um item, um arquivo**. Cada peça de roupa, cada cajado, cada espada, cada alimento e a paleta de cada peça mora no seu arquivo (com o
@@ -23,13 +24,15 @@ const oneEach = (dir: string, names: readonly string[], support: readonly string
   for (const name of names) assert.equal(exportsOf(`${dir}/${name}.ts`), 1, `${dir}/${name}.ts exporta uma coisa só`);
 };
 
-test("roupas: cada peça (do Cavaleiro e de cada conjunto do Mago) tem o seu arquivo, com o id da peça no nome", () => {
+test("roupas: cada peça (do Cavaleiro e de cada conjunto do Mago e do Arqueiro) tem o seu arquivo, com o id da peça no nome", () => {
   oneEach("src/engine/character/knight/gear", Object.keys(KNIGHT_GEAR));
   oneEach("src/engine/character/mage/gear/apprentice", Object.keys(APPRENTICE_GEAR), ["set.ts"]);
   oneEach("src/engine/character/mage/gear/breeze", Object.keys(BREEZE_GEAR), ["set.ts"]);
-  assert.equal(gearIdsFor("knight").length + gearIdsFor("mage").length, Object.keys(GEAR).length, "toda peça do catálogo é de uma vocação");
-  assert.equal(Object.keys(KNIGHT_GEAR).length + Object.keys(APPRENTICE_GEAR).length + Object.keys(BREEZE_GEAR).length, Object.keys(GEAR).length, "e vem de um conjunto, não de uma lista solta");
+  oneEach("src/engine/character/archer/gear/leather", Object.keys(LEATHER_GEAR), ["set.ts"]);
+  assert.equal(gearIdsFor("knight").length + gearIdsFor("mage").length + gearIdsFor("archer").length, Object.keys(GEAR).length, "toda peça do catálogo é de uma vocação");
+  assert.equal(Object.keys(KNIGHT_GEAR).length + Object.keys(APPRENTICE_GEAR).length + Object.keys(BREEZE_GEAR).length + Object.keys(LEATHER_GEAR).length, Object.keys(GEAR).length, "e vem de um conjunto, não de uma lista solta");
   for (const set of ["apprentice", "breeze"]) assert.equal(exportsOf(`src/engine/character/mage/gear/${set}/set.ts`), 1, `o que o conjunto ${set} tem em comum é uma coisa só`);
+  assert.equal(exportsOf("src/engine/character/archer/gear/leather/set.ts"), 1, "o que o conjunto Couro Cru tem em comum é uma coisa só");
 });
 
 test("cajados, espadas e alimentos: um arquivo por item", () => {
@@ -46,7 +49,7 @@ test("aparência: a paleta de cada peça de cada conjunto do Mago tem o seu arqu
 });
 
 test("o índice de cada pasta de itens só reúne: importa cada arquivo e não define peça nenhuma", () => {
-  for (const [dir, names] of [["src/engine/character/knight/gear", Object.keys(KNIGHT_GEAR)], ["src/engine/character/mage/gear/apprentice", Object.keys(APPRENTICE_GEAR)], ["src/engine/character/mage/gear/breeze", Object.keys(BREEZE_GEAR)]] as const) {
+  for (const [dir, names] of [["src/engine/character/knight/gear", Object.keys(KNIGHT_GEAR)], ["src/engine/character/mage/gear/apprentice", Object.keys(APPRENTICE_GEAR)], ["src/engine/character/mage/gear/breeze", Object.keys(BREEZE_GEAR)], ["src/engine/character/archer/gear/leather", Object.keys(LEATHER_GEAR)]] as const) {
     const index = read(`${dir}/index.ts`);
     for (const name of names) assert.ok(index.includes(`from "./${name}.ts"`), `${dir}/index.ts reúne ${name}`);
     assert.equal(/slot:\s*"/.test(index), false, `${dir}/index.ts não define peça nenhuma`);

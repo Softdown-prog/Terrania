@@ -3,6 +3,7 @@ import { describeCoins } from "../../engine/character/coins/index.ts";
 import { FORGE_SWORD_PRICE, WEAPONS } from "../../engine/character/Weapons.ts";
 import { BREEZE_STAFF } from "../../engine/character/weapons/staves/breeze.ts";
 import { ARROWS, ARROW_PACK } from "../../engine/character/Arrows.ts";
+import { WRONG_GEAR_CLASS_MESSAGE } from "./classRules.ts";
 
 /**
  * Texto mostrado ao jogador para cada resultado da bolsa, da loja e do equipamento.
@@ -75,7 +76,7 @@ export const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
   "gear-equipped": "Item equipado.",
   "gear-removed": "Item guardado na bolsa.",
   "gear-unchanged": "O espaço já está assim.",
-  "gear-wrong-class": "Essa peça é de outra vocação: o Mago veste roupas mágicas e o Cavaleiro, armaduras.",
+  "gear-wrong-class": WRONG_GEAR_CLASS_MESSAGE,
   "gear-level-too-low": "Seu nível ainda não permite vestir essa peça.",
   "wrong-slot": "Este item pertence a outro espaço.",
 };
