@@ -178,6 +178,7 @@
 - [`docs/adr/0114-arqueiro-a2a-corpo.md`](../../docs/adr/0114-arqueiro-a2a-corpo.md)
 - [`docs/adr/0115-ci-masmorra-solta-a-tecla-na-pagina.md`](../../docs/adr/0115-ci-masmorra-solta-a-tecla-na-pagina.md)
 - [`docs/adr/0116-arqueiro-a2b-arco-e-pose.md`](../../docs/adr/0116-arqueiro-a2b-arco-e-pose.md)
+- [`docs/adr/0117-arqueiro-a3a-flechas-e-compra.md`](../../docs/adr/0117-arqueiro-a3a-flechas-e-compra.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/arqueiro-atirando.png`](../../docs/screenshots/arqueiro-atirando.png)

@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (151)
+## Todos os arquivos deste módulo (152)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -103,6 +103,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/south/alchemy/recipes/antidote.ts`](../../src/engine/character/south/alchemy/recipes/antidote.ts)
 - [`src/engine/character/south/alchemy/recipes/greater-potion.ts`](../../src/engine/character/south/alchemy/recipes/greater-potion.ts)
 - [`src/engine/character/south/alchemy/results.ts`](../../src/engine/character/south/alchemy/results.ts)
+- [`src/engine/character/weapons/arrows/iron.ts`](../../src/engine/character/weapons/arrows/iron.ts)
 - [`src/engine/character/weapons/arrows/reed.ts`](../../src/engine/character/weapons/arrows/reed.ts)
 - [`src/engine/character/weapons/bows/hunting.ts`](../../src/engine/character/weapons/bows/hunting.ts)
 - [`src/engine/character/weapons/staves/README.md`](../../src/engine/character/weapons/staves/README.md)

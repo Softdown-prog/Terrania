@@ -11,8 +11,8 @@ import { MAX_COINS, marketFor, materialSalePrice, normalizeCoins, type MarketId 
 import { ELIXIR_IDS, elixirRecipe, emptyElixirCounts, normalizeElixirs, type ElixirCounts, type ElixirCraftResult,
   type ElixirId, type ElixirUseResult } from "./south/alchemy/index.ts";
 import { DEFAULT_STAFF_LOADOUT, isDefaultStaffLoadout, normalizeStaffLoadout, sanitizeStaffLoadout, type StaffBuyResult, type StaffEquipResult, type StaffLoadout } from "./StaffLoadout.ts";
-import { EMPTY_QUIVER, STARTING_QUIVER, addArrows, sanitizeQuiver, spendArrows, type Quiver } from "./Quiver.ts";
-import type { ArrowId } from "./Arrows.ts";
+import { EMPTY_QUIVER, STARTING_QUIVER, addArrows, arrowRoom, sanitizeQuiver, selectArrow, spendArrows, type Quiver } from "./Quiver.ts";
+import { ARROWS, ARROW_PACK, isArrowId, type ArrowId } from "./Arrows.ts";
 import { STAVES, isStaffId, staffUnlocked, type StaffId } from "./Staves.ts";
 import { FORGE_SWORD_PRICE, WEAPONS, isWeaponId, weaponUnlocked, type WeaponId, type WeaponLoadout } from "./Weapons.ts";
 import { GEAR, MAGE_STARTING_GEAR, gearDefense, gearForClass, gearForLevel, gearHeroClass, gearUnlocked, isGearId, isGearSlot, normalizeGear, type GearId, type GearResult, type GearSlot, type GearState } from "./Equipment.ts";
@@ -31,7 +31,10 @@ export type InnRestResult = "rested" | "insufficient-rest-coins" | "too-far-from
 export type MaterialSaleResult = "sold" | "not-sellable-here" | "no-material" | "wallet-full";
 export type SwordEquipResult = "equipped" | "already-equipped" | "not-owned" | "level-too-low";
 /** Tudo que uma ação da bolsa pode responder; a interface traduz cada valor em uma mensagem. */
-export type InventoryOutcome = PotionTradeResult | InnRestResult | MaterialSaleResult | SwordPurchaseResult | SwordEquipResult | StaffBuyResult | StaffEquipResult | GearResult |
+/** O que a compra de flechas na Irmandade dos Arqueiros responde (ADR 0117); `arrows-bought` é a única que muda a bolsa. */
+export type ArrowBuyResult = "arrows-bought" | "arrows-not-archer" | "arrows-quiver-full" | "arrows-insufficient-coins" | "arrows-too-far" | "arrows-unavailable";
+export type ArrowEquipResult = "arrow-equipped" | "arrow-already-equipped" | "arrow-none" | "arrow-not-archer";
+export type InventoryOutcome = ArrowBuyResult | ArrowEquipResult | PotionTradeResult | InnRestResult | MaterialSaleResult | SwordPurchaseResult | SwordEquipResult | StaffBuyResult | StaffEquipResult | GearResult |
   FoodTradeResult | FoodUseResult | ElixirCraftResult | ElixirUseResult | "healed" | "full-health" | "no-potion" | "too-far";
 
 export interface InventoryState {
@@ -203,6 +206,28 @@ export class Inventory {
     if (!next) return false;
     this.arrows = next;
     return true;
+  }
+  /**
+   * Compra um pacote de flechas (ADR 0117): `ARROW_PACK` do tipo, ou só o que cabe na aljava (cada flecha custa o preço dela), e o herói precisa estar de pé. Só o
+   * Arqueiro tem aljava. Sem moedas para o que cabe, nada muda.
+   */
+  buyArrows(id: ArrowId, hero: { hp: number }): ArrowBuyResult {
+    if (this.heroClass !== "archer" || !isArrowId(id)) return "arrows-not-archer";
+    if (hero.hp <= 0) return "arrows-unavailable";
+    const amount = Math.min(ARROW_PACK, arrowRoom(this.arrows, id));
+    if (amount < 1) return "arrows-quiver-full";
+    if (!this.spendCoins(ARROWS[id].price * amount)) return "arrows-insufficient-coins";
+    this.arrows = addArrows(this.arrows, id, amount).quiver;
+    return "arrows-bought";
+  }
+  /** Muda a flecha em uso (só para um tipo de que há flechas); só o Arqueiro (ADR 0117). */
+  equipArrow(id: ArrowId): ArrowEquipResult {
+    if (this.heroClass !== "archer") return "arrow-not-archer";
+    const next = selectArrow(this.arrows, id);
+    if (!next) return "arrow-none";
+    if (next === this.arrows) return "arrow-already-equipped";
+    this.arrows = next;
+    return "arrow-equipped";
   }
   /** Põe flechas na aljava até o máximo do tipo; devolve quantas entraram (0 para quem não é Arqueiro). */
   gainArrows(id: ArrowId, amount: number): number {

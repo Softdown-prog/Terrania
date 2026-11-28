@@ -48,7 +48,7 @@ test("Arqueiro: o inventário tem nove espaços com nomes próprios, o Arco de C
   // o espaço das flechas mostra a aljava
   await press(page.locator("[data-equipment-slot=ammo]"));
   await expect(page.locator("#equippedAmmo")).toHaveText("30 flechas na aljava");
-  await expect(page.locator(".quiver-row")).toHaveText(["Flecha de Junco · 30 de 99"]);
+  await expect(page.locator(".quiver-row")).toHaveText(["Flecha de Junco · 30 de 99", "Flecha de Ferro · 0 de 99"]);
   await expect(page.locator("#quiverNote")).toContainText("Cada tiro gasta uma flecha");
   await page.locator("#inventoryDialog .dialog-x").click();
   expect(errors).toEqual([]);
@@ -74,7 +74,7 @@ test("Arqueiro: sem nenhuma flecha o espaço fica vazio e o painel diz aljava va
   await expect(page.locator("[data-equipment-slot=ammo] small")).toHaveText("Vazio");
   await press(page.locator("[data-equipment-slot=ammo]"));
   await expect(page.locator("#equippedAmmo")).toHaveText("Aljava vazia");
-  await expect(page.locator(".quiver-row")).toHaveText(["Flecha de Junco · 0 de 99"]);
+  await expect(page.locator(".quiver-row")).toHaveText(["Flecha de Junco · 0 de 99", "Flecha de Ferro · 0 de 99"]);
   await page.locator("#inventoryDialog .dialog-x").click();
   expect(errors).toEqual([]);
 });

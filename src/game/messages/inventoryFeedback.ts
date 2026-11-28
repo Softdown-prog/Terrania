@@ -2,12 +2,23 @@ import { INN_REST_PRICE, POTION_GEL_PRICE, POTION_HEAL, type InventoryOutcome } 
 import { describeCoins } from "../../engine/character/coins/index.ts";
 import { FORGE_SWORD_PRICE, WEAPONS } from "../../engine/character/Weapons.ts";
 import { BREEZE_STAFF } from "../../engine/character/weapons/staves/breeze.ts";
+import { ARROWS, ARROW_PACK } from "../../engine/character/Arrows.ts";
 
 /**
  * Texto mostrado ao jogador para cada resultado da bolsa, da loja e do equipamento.
  * Só dados: nenhuma regra. O tipo `Record<InventoryOutcome, string>` obriga a cobrir todo resultado novo.
  */
 export const INVENTORY_FEEDBACK: Record<InventoryOutcome, string> = {
+  "arrows-bought": `Flechas na aljava: a Irmandade dos Arqueiros entregou o pacote (até ${ARROW_PACK}).`,
+  "arrows-not-archer": "Só o Arqueiro leva aljava e compra flechas.",
+  "arrows-quiver-full": "Sua aljava já está cheia desse tipo (no máximo 99 de cada).",
+  "arrows-insufficient-coins": `Você precisa de ${describeCoins(ARROWS.reed.price)} por flecha de junco (e ${describeCoins(ARROWS.iron.price)} por flecha de ferro) para comprar um pacote.`,
+  "arrows-too-far": "Aproxime-se do mestre arqueiro, na Irmandade dos Arqueiros, na capital, para comprar flechas.",
+  "arrows-unavailable": "Retorne à vila para continuar.",
+  "arrow-equipped": "Flecha trocada: agora você atira com ela.",
+  "arrow-already-equipped": "Você já atira com essa flecha.",
+  "arrow-none": "Você não tem flechas desse tipo.",
+  "arrow-not-archer": "Só o Arqueiro leva aljava.",
   "healed": `Poção utilizada! Vida restaurada em até ${POTION_HEAL} pontos.`,
   "full-health": "Sua vida já está completa.",
   "no-potion": "Você não possui poções de cura.",
