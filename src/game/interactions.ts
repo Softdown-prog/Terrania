@@ -1,8 +1,9 @@
-import { BANKER_ID, INNKEEPER_ID, MAGE_MASTER_ID, PRIESTESS_ID } from "../npcs/center/capital/index.ts";
+import { ARCHER_MASTER_ID, BANKER_ID, INNKEEPER_ID, MAGE_MASTER_ID, PRIESTESS_ID } from "../npcs/center/capital/index.ts";
 import { BREEZE_STAFF } from "../engine/character/weapons/staves/breeze.ts";
 import type { MountAction } from "../engine/mounts/MountStable.ts";
 import { currentMountQuestStep, type MountQuestProgress } from "../engine/mounts/MountQuestState.ts";
 import { FORGE_SWORD_PRICE } from "../engine/character/Weapons.ts";
+import { ARROWS, ARROW_PACK } from "../engine/character/Arrows.ts";
 import { DEFAULT_HERO_CLASS, heroClassSheet, type HeroClassId } from "../engine/character/classes/index.ts";
 import { INN_REST_PRICE, POTION_GEL_PRICE } from "../engine/character/Inventory.ts";
 import type { Npc } from "../world/npcs.ts";
@@ -65,6 +66,8 @@ export function npcOffer(npcId: string, heroClass: HeroClassId = DEFAULT_HERO_CL
   if (npcId === PRIESTESS_ID) return { item: "shrine", price: 0 };
   // A Academia Arcana só vende ao Mago (o preço é o do primeiro cajado elemental, ADR 0074).
   if (npcId === MAGE_MASTER_ID) return heroClassSheet(heroClass).weapon === "staff" ? { item: "academy", price: BREEZE_STAFF.price } : undefined;
+  // A Irmandade dos Arqueiros só vende ao Arqueiro (o preço é o do pacote de flechas de junco, ADR 0118).
+  if (npcId === ARCHER_MASTER_ID) return heroClassSheet(heroClass).weapon === "bow" ? { item: "archery", price: ARROWS.reed.price * ARROW_PACK } : undefined;
   if (npcId === "stablemaster") return { item: "stable", price: 0 };
   return undefined;
 }

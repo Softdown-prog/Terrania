@@ -8,7 +8,7 @@ import type { BattleCreature } from '../engine/combat/ClassicBattleList.ts';
 import { questPanel, trackedEntry, type JournalEntry } from '../engine/quests/journal/index.ts';
 import type { ExperienceProgress } from '../engine/character/Experience.ts';
 import { bowItemIcon, foodItemIcon, gearItemIcon, slotItemIcon, staffItemIcon, weaponItemIcon, type ItemIconId } from './item-icon.component.ts';
-import { ARROWS, ARROW_IDS, type ArrowId } from '../engine/character/Arrows.ts';
+import { ARROWS, ARROW_IDS, ARROW_PACK, MAX_ARROWS, type ArrowId } from '../engine/character/Arrows.ts';
 import { BOWS, DEFAULT_BOW, type BowId } from '../engine/character/Bows.ts';
 import { EMPTY_QUIVER, type Quiver } from '../engine/character/Quiver.ts';
 import { DEFAULT_STAFF, STAFF_IDS, STAVES, isStaffId, staffUnlocked, type StaffId } from '../engine/character/Staves.ts';
@@ -168,6 +168,11 @@ export class HudService implements GameUi {
   arrowName(id: ArrowId): string { return ARROWS[id].name; }
   /** Quantas flechas há de cada tipo e no total. */
   arrowCount(id: ArrowId): number { return this.quiver().counts[id]; }
+  /** As flechas à venda na Irmandade (ADR 0118): o que cada tipo faz, o preço de cada flecha e do pacote, quantas há e quantas ainda cabem. */
+  readonly arrowRows = computed(() => ARROW_IDS.map(id => {
+    const count = this.quiver().counts[id], room = MAX_ARROWS - count, pack = Math.min(ARROW_PACK, room), def = ARROWS[id];
+    return { id, name: def.name, bonus: def.bonusDamage, price: def.price, packSize: pack, packPrice: def.price * pack, count, room, equipped: this.quiver().equipped === id };
+  }));
   readonly arrowTotal = computed(() => ARROW_IDS.reduce((sum, id) => sum + this.quiver().counts[id], 0));
   readonly wearsArmor = computed(() => HERO_CLASSES[this.heroClass()].wearsArmor);
   /** Os espaços de equipamento da vocação (o Cavaleiro tem os dez; o Mago, o cajado e as sete roupas), na ordem da ficha dela (ADR 0078). */
@@ -339,6 +344,8 @@ export class HudService implements GameUi {
   private weaponEquipCallback: (weapon: WeaponId) => string = () => '';
   private staffEquipCallback: (staff: StaffId) => string = () => '';
   private staffBuyCallback: (staff: StaffId) => string = () => '';
+  private arrowBuyCallback: (arrow: ArrowId) => string = () => '';
+  private arrowEquipCallback: (arrow: ArrowId) => string = () => '';
   private gearEquipCallback: (slot: GearSlot, item: GearId | null) => string = () => '';
   private respawnCallback: () => void = () => {};
   private mountActionCallback: (action: MountAction) => string = () => '';
@@ -393,6 +400,8 @@ export class HudService implements GameUi {
   onWeaponEquip(callback: (weapon: WeaponId) => string): void { this.weaponEquipCallback = callback; }
   onStaffEquip(callback: (staff: StaffId) => string): void { this.staffEquipCallback = callback; }
   onStaffBuy(callback: (staff: StaffId) => string): void { this.staffBuyCallback = callback; }
+  onArrowBuy(callback: (arrow: ArrowId) => string): void { this.arrowBuyCallback = callback; }
+  onArrowEquip(callback: (arrow: ArrowId) => string): void { this.arrowEquipCallback = callback; }
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void { this.gearEquipCallback = callback; }
   onRespawn(callback: () => void): void { this.respawnCallback = callback; }
   onMountAction(callback:(action:MountAction)=>string):void {this.mountActionCallback=callback;}
@@ -478,6 +487,8 @@ export class HudService implements GameUi {
   equipWeapon(weapon: WeaponId): void { this.inventoryFeedback.set(this.weaponEquipCallback(weapon)); }
   equipStaff(staff: StaffId): void { this.inventoryFeedback.set(this.staffEquipCallback(staff)); }
   buyStaff(staff: StaffId): void { this.npcTradeFeedback.set(this.staffBuyCallback(staff)); }
+  buyArrows(arrow: ArrowId): void { this.npcTradeFeedback.set(this.arrowBuyCallback(arrow)); }
+  equipArrow(arrow: ArrowId): void { this.npcTradeFeedback.set(this.arrowEquipCallback(arrow)); }
   equipGear(id: GearId): void {
     const { slot } = GEAR[id];
     this.inventoryFeedback.set(this.gearEquipCallback(slot, this.gear()?.[slot] === id ? null : id));

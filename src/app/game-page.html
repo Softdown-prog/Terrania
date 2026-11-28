@@ -780,6 +780,25 @@
               }
               <p class="dialog-note">Os outros cajados elementais liberam sozinhos quando o seu nível chega ao deles. Um cajado comprado só pode ser usado a partir do nível dele.</p>
             </section>
+          } @else if (offer.item === 'archery') {
+            <section class="mount-stable-panel" aria-label="Irmandade dos Arqueiros">
+              <h3>Flechas da Irmandade</h3>
+              <p class="dialog-note" id="archeryCoins">Você tem {{ hud.coinText(hud.coins()) }} · {{ hud.arrowTotal() }} flechas na aljava</p>
+              @for (row of hud.arrowRows(); track row.id) {
+                <div class="staff-sale-row" [attr.data-arrow-row]="row.id">
+                  <app-item-icon class="sword-choice-icon" [name]="'arrows'" />
+                  <div>
+                    <strong>{{ row.name }}</strong>
+                    <p>{{ row.bonus > 0 ? '+' + row.bonus + ' de dano' : 'Sem dano extra' }} · {{ hud.coinText(row.price) }} cada · {{ row.count }} de 99 na aljava{{ row.equipped ? ' · em uso' : '' }}</p>
+                  </div>
+                  <button type="button" class="secondary-button" [attr.id]="'buy-arrows-' + row.id"
+                    [disabled]="row.room < 1 || hud.coins() < row.packPrice" (click)="hud.buyArrows(row.id)">{{ row.room < 1 ? "Aljava cheia" : "Comprar " + row.packSize + " por " + hud.coinText(row.packPrice) }}</button>
+                  <button type="button" class="secondary-button" [attr.id]="'use-arrows-' + row.id"
+                    [disabled]="row.equipped || row.count < 1" (click)="hud.equipArrow(row.id)">{{ row.equipped ? "Em uso" : "Usar" }}</button>
+                </div>
+              }
+              <p class="dialog-note">Cada tiro gasta uma flecha. A aljava leva no máximo 99 de cada tipo; com ela quase cheia, o pacote traz só o que cabe.</p>
+            </section>
           } @else if (offer.item === 'shrine') {
             <section class="mount-stable-panel" aria-label="Templo da Concórdia">
               <p id="shrinePlace" class="dialog-note">Você renasce em: {{ hud.respawnPoints[hud.respawnPoint()].name }}</p>

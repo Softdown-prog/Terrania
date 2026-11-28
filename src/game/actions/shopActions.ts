@@ -6,13 +6,14 @@ import { FOODS } from "../../engine/character/Food.ts";
 import { experienceProgress } from "../../engine/character/Experience.ts";
 import { HEAL_GLOW_SECONDS } from "../../actors/Player.ts";
 import { nearestNpc } from "../../world/npcs.ts";
-import { INNKEEPER_ID, MAGE_MASTER_ID } from "../../npcs/center/capital/index.ts";
+import { ARCHER_MASTER_ID, INNKEEPER_ID, MAGE_MASTER_ID } from "../../npcs/center/capital/index.ts";
 import { MARKET_NPC, describeCoins, type MarketId } from "../../engine/character/coins/index.ts";
 import { INVENTORY_FEEDBACK, ateManaMessage } from "../messages/inventoryFeedback.ts";
 import { CAPITAL_INN_RESTED } from "../messages/capitalInn.ts";
 import { heroClassSheet } from "../../engine/character/classes/index.ts";
 import { NO_STAVES_MESSAGE, NO_SWORDS_MESSAGE } from "../messages/classRules.ts";
 import type { StaffId } from "../../engine/character/Staves.ts";
+import type { ArrowId } from "../../engine/character/Arrows.ts";
 import { say } from "./say.ts";
 import type { ShopContext, ShopResult } from "./shopContext.ts";
 export type { ShopContext, ShopResult } from "./shopContext.ts";
@@ -20,6 +21,7 @@ export type { ShopContext, ShopResult } from "./shopContext.ts";
 const nearMadame = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === "south-madame";
 const nearBrigida = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === INNKEEPER_ID;
 const nearMageMaster = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === MAGE_MASTER_ID;
+const nearArcherMaster = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === ARCHER_MASTER_ID;
 const nearLina = (sim: OfflineSimulation): boolean => nearestNpc(sim.player.x, sim.player.y)?.id === "lina";
 
 export function usePotion({ sim, hero, caveHeroDown, effectsEnabled = true }: ShopContext): ShopResult {
@@ -118,4 +120,18 @@ export function equipGear({ sim }: ShopContext, slot: GearSlot, item: GearId | n
   if (sim.awaitingRespawn) return say("unavailable");
   const result = sim.inventory.equipGear(slot, item, experienceProgress(sim.experience).level);
   return say(result, result === "gear-equipped" || result === "gear-removed");
+}
+
+/** Compra um pacote de flechas do mestre da Irmandade dos Arqueiros (ADR 0118): só o Arqueiro, fora das casas, com o painel aberto e perto dele; o preço, o tamanho do pacote e a aljava cheia são da bolsa (`Inventory.buyArrows`, ADR 0117). */
+export function buyArrows({ sim, inInterior, menuOpen }: ShopContext, arrow: ArrowId): ShopResult {
+  if (heroClassSheet(sim.heroClass).weapon !== "bow") return say("arrows-not-archer");
+  if (inInterior || !menuOpen || !nearArcherMaster(sim)) return say("arrows-too-far");
+  const result = sim.inventory.buyArrows(arrow, sim.player);
+  return say(result, result === "arrows-bought");
+}
+
+/** Troca a flecha em uso (ADR 0118): em qualquer lugar (só mexe na aljava), só o Arqueiro, e só para um tipo de que há flechas. */
+export function equipArrow({ sim }: ShopContext, arrow: ArrowId): ShopResult {
+  const result = sim.inventory.equipArrow(arrow);
+  return say(result, result === "arrow-equipped");
 }

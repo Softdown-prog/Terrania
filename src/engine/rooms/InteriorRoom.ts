@@ -84,6 +84,12 @@ export const ROOM_FURNITURE: Readonly<Record<string, readonly Furniture[]>> = {
     {x:269,y:78,width:65,height:90,kind:"shelf"},
     {x:131,y:100,width:98,height:42,kind:"table"},
   ],
+  // Irmandade dos Arqueiros (ADR 0118): dois cavaletes altos de arcos e flechas (as estantes) e a mesa do mestre no meio.
+  "capital-arqueiros":[
+    {x:26,y:78,width:65,height:90,kind:"shelf"},
+    {x:269,y:78,width:65,height:90,kind:"shelf"},
+    {x:131,y:100,width:98,height:42,kind:"table"},
+  ],
   // Templo da Concórdia (ADR 0064): o altar no meio e um banco de cada lado, na nave.
   "capital-templo":[
     {x:30,y:100,width:82,height:40,kind:"bench"},

@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (248)
+## Todos os arquivos deste módulo (250)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -40,6 +40,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/app.spec.ts`](../../tests/browser/app.spec.ts)
 - [`tests/browser/archer-inventory.spec.ts`](../../tests/browser/archer-inventory.spec.ts)
 - [`tests/browser/capital-academy.spec.ts`](../../tests/browser/capital-academy.spec.ts)
+- [`tests/browser/capital-archers.spec.ts`](../../tests/browser/capital-archers.spec.ts)
 - [`tests/browser/capital-bank.spec.ts`](../../tests/browser/capital-bank.spec.ts)
 - [`tests/browser/capital-citizens.spec.ts`](../../tests/browser/capital-citizens.spec.ts)
 - [`tests/browser/capital-inn.spec.ts`](../../tests/browser/capital-inn.spec.ts)
@@ -113,6 +114,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/center-bank.test.ts`](../../tests/center-bank.test.ts)
 - [`tests/center-capital-academy.test.ts`](../../tests/center-capital-academy.test.ts)
 - [`tests/center-capital-alameda.test.ts`](../../tests/center-capital-alameda.test.ts)
+- [`tests/center-capital-archers.test.ts`](../../tests/center-capital-archers.test.ts)
 - [`tests/center-capital-art.test.ts`](../../tests/center-capital-art.test.ts)
 - [`tests/center-capital-bank.test.ts`](../../tests/center-capital-bank.test.ts)
 - [`tests/center-capital-buildings.test.ts`](../../tests/center-capital-buildings.test.ts)

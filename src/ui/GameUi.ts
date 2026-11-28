@@ -7,6 +7,7 @@ import type { RespawnPointId } from '../engine/character/center/shrine/index.ts'
 import type { HeroClassId, ManaMeter } from '../engine/character/classes/index.ts';
 import type { StaffId } from '../engine/character/Staves.ts';
 import type { BowId } from '../engine/character/Bows.ts';
+import type { ArrowId } from '../engine/character/Arrows.ts';
 import type { Quiver } from '../engine/character/Quiver.ts';
 import type { StaffLoadout } from '../engine/character/StaffLoadout.ts';
 import type { FoodCounts, FoodId, NutritionState } from '../engine/character/Food.ts';
@@ -49,7 +50,7 @@ export interface CaveMapState {
   readonly tileX: number;
   readonly tileY: number;
 }
-export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary' | 'desert-stable' | 'alchemy' | 'bank' | 'shrine' | 'academy'; price: number };
+export type NpcOffer = { item: 'potion' | 'sword' | 'stable' | 'rest' | 'bazaar' | 'ossuary' | 'desert-stable' | 'alchemy' | 'bank' | 'shrine' | 'academy' | 'archery'; price: number };
 
 /** Data and commands exchanged between the game coordinator and the HUD. */
 export interface GameUi {
@@ -84,6 +85,9 @@ export interface GameUi {
   onWeaponEquip(callback: (weapon: WeaponId) => string): void;
   onStaffEquip(callback: (staff: StaffId) => string): void;
   onStaffBuy(callback: (staff: StaffId) => string): void;
+  /** A compra de um pacote de flechas na Irmandade dos Arqueiros e a troca da flecha em uso (ADR 0118). */
+  onArrowBuy(callback: (arrow: ArrowId) => string): void;
+  onArrowEquip(callback: (arrow: ArrowId) => string): void;
   onGearEquip(callback: (slot: GearSlot, item: GearId | null) => string): void;
   onRespawn(callback: () => void): void;
   onMountAction(callback: (action: MountAction) => string): void;

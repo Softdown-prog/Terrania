@@ -40,7 +40,7 @@ test("a Academia Arcana abre a porta: é um dos edifícios com função, a porta
   assert.equal(CAPITAL_PLOTS.find(p => p.id === "academia-arcana")!.door, "s");
   assert.equal(canMoveOnSeed(door.x, door.y, SEED), true, "a porta está na rua"); assert.equal(capitalBuildingBlocks(door.x, door.y, 7), false);
   assert.equal(nearestNpc(door.x, door.y)?.id, "capital-academia-arcana", "a porta se usa de frente");
-  for (const id of ["arqueiros", "quartel", "conselho", "ordem-cavaleiros"]) assert.equal(hasInterior(capitalDoorId(id)), false, `${id} segue como fachada`);
+  for (const id of ["quartel", "conselho", "ordem-cavaleiros"]) assert.equal(hasInterior(capitalDoorId(id)), false, `${id} segue como fachada`);
 });
 
 test("a mestra da Academia: mora na rua perto da porta, é uma NPC registrada, com aparência e falas, e não bloqueia nem some", () => {
@@ -101,7 +101,7 @@ test("a ligação: o jogo compra, o HUD guarda a lista à venda e a tela mostra 
   const game = read("src/game/Game.ts"), service = read("src/app/hud.service.ts"), page = read("src/app/game-page.html"), ui = read("src/ui/GameUi.ts");
   assert.match(game, /this\.hud\.onStaffBuy\(staff => this\.shop\(context => buyStaff\(context, staff\)\)\);/);
   assert.match(game, /const offer = npcOffer\(npc\.id, this\.sim\.heroClass\);/);
-  assert.match(ui, /'bank' \| 'shrine' \| 'academy'; price: number/); assert.match(ui, /onStaffBuy\(callback: \(staff: StaffId\) => string\): void;/);
+  assert.match(ui, /'bank' \| 'shrine' \| 'academy' \| 'archery'; price: number/); assert.match(ui, /onStaffBuy\(callback: \(staff: StaffId\) => string\): void;/);
   assert.match(service, /buyStaff\(staff: StaffId\): void \{ this\.npcTradeFeedback\.set\(this\.staffBuyCallback\(staff\)\); \}/);
   assert.match(service, /return STAFF_IDS\.flatMap\(id => \{ const price = STAVES\[id\]\.price; return price === undefined \? \[\] : \[\{ id, def: STAVES\[id\], price, owned: bought\.includes\(id\) \}\]; \}\);/, "só os que têm preço");
   assert.match(page, /\} @else if \(offer\.item === 'academy'\) \{/);

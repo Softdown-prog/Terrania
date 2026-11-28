@@ -31,10 +31,10 @@ function world(coins = 0) {
   return { sim, context, goTo };
 }
 
-test("só os edifícios com função abrem a porta (Hospedaria, banco, Templo e Academia Arcana, por enquanto): a lista é de decisão do dono, e cada porta é de um edifício construído e fica à frente dele", () => {
-  assert.deepEqual([...CAPITAL_ENTERABLE], ["hospedaria", "casa-da-moeda", "templo", "academia-arcana"]);
-  assert.equal(CAPITAL_DOORS.length, 4);
-  assert.deepEqual(CAPITAL_DOORS.map(d => d.id), ["capital-hospedaria", "capital-casa-da-moeda", "capital-templo", "capital-academia-arcana"]);
+test("só os edifícios com função abrem a porta (Hospedaria, banco, Templo, Academia Arcana e Irmandade dos Arqueiros, por enquanto): a lista é de decisão do dono, e cada porta é de um edifício construído e fica à frente dele", () => {
+  assert.deepEqual([...CAPITAL_ENTERABLE], ["hospedaria", "casa-da-moeda", "templo", "academia-arcana", "arqueiros"]);
+  assert.equal(CAPITAL_DOORS.length, 5);
+  assert.deepEqual(CAPITAL_DOORS.map(d => d.id), ["capital-hospedaria", "capital-casa-da-moeda", "capital-templo", "capital-academia-arcana", "capital-arqueiros"]);
   assert.deepEqual({ ...door }, { id: "capital-hospedaria", name: "Hospedaria dos Viajantes", x: inn.x, y: inn.y + CAPITAL_DOOR_REACH });
   assert.equal(CAPITAL_DOOR_REACH, 29); assert.equal(capitalDoorId("hospedaria"), "capital-hospedaria");
   for (const d of CAPITAL_DOORS) assert.ok(CAPITAL_BUILDINGS.some(b => capitalDoorId(b.id) === d.id), "porta de um edifício construído");
@@ -63,8 +63,8 @@ test("a porta se usa da frente do edifício: dentro do alcance de 25 × 28 px da
     const near = nearestNpc(door.x + dx, door.y + dy)?.id;
     if (hit) assert.equal(near, "capital-hospedaria", `${dx},${dy}`); else assert.notEqual(near, "capital-hospedaria", `${dx},${dy}`);
   }
-  assert.equal(nearestNpc(inn.x, inn.y + 7)?.kind, "door"); assert.deepEqual(NPCS.slice(-4).map(n => n.id), ["capital-hospedaria", "capital-casa-da-moeda", "capital-templo", "capital-academia-arcana"], "as portas da capital vêm por último");
-  assert.equal(npcDialogue(NPCS.at(-4)!, 0).join(" "), "Use E perto da porta para entrar em Hospedaria dos Viajantes.");
+  assert.equal(nearestNpc(inn.x, inn.y + 7)?.kind, "door"); assert.deepEqual(NPCS.slice(-5).map(n => n.id), ["capital-hospedaria", "capital-casa-da-moeda", "capital-templo", "capital-academia-arcana", "capital-arqueiros"], "as portas da capital vêm por último");
+  assert.equal(npcDialogue(NPCS.at(-5)!, 0).join(" "), "Use E perto da porta para entrar em Hospedaria dos Viajantes.");
 });
 
 test("a sala da Hospedaria: duas camas e o balcão, mobília que bloqueia, saída pela porta de baixo e paleta própria da capital", () => {

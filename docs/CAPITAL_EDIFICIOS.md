@@ -15,7 +15,7 @@ Quando um terreno ganha função, ele entra em `CAPITAL_ENTERABLE` (`src/world/c
 | Quartel da Guarda | sim | missões de caça e defesa | sala de armas | a decidir (história) |
 | Salão da Ordem dos Cavaleiros | sim | guilda do cavaleiro | salão de guilda | a decidir |
 | Academia Arcana | sim | **guilda do mago**: a Mestra Ilvana vende o Cajado da Brisa (30 Terrania Gold); os outros cajados liberam por nível | salão de guilda: duas estantes e a mesa de estudo | **pronto** (ADR 0074) |
-| Irmandade dos Arqueiros | sim | guilda do arqueiro | salão de guilda | a decidir |
+| Irmandade dos Arqueiros | sim | **guilda do arqueiro**: o Mestre Orlan vende pacotes de dez flechas (junco 10, ferro 30 Terrania Gold) | salão de guilda: duas estantes e a mesa do mestre | **pronto** (ADR 0118) |
 | Forjas da Travessia | sim | comprar e melhorar armas | forja com bigorna | proposta (edifício ainda não desenhado) |
 | Mercado Coberto | sim | comprar e vender itens | balcões de feira | proposta (não desenhado) |
 | Arquivo dos Exploradores | sim | registro dos mistérios descobertos | estantes e mesa de leitura | a decidir (não desenhado) |
