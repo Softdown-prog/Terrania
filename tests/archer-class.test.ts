@@ -11,12 +11,12 @@ import { EQUIPMENT_SLOTS } from "../src/engine/character/Equipment.ts";
 /** O Arqueiro como vocação (ADR 0109, lote A1a): ficha, vida de 85%, 10% mais ágil, sem mana, e ainda bloqueado na tela de escolha. */
 const SEED = 842136;
 
-test("a ficha do Arqueiro: nome, sem mana, 85% de vida, 10% mais ágil, e ainda não jogável", () => {
+test("a ficha do Arqueiro: nome, sem mana, 85% de vida, 10% mais ágil, e jogável", () => {
   assert.deepEqual([ARCHER.id, ARCHER.name, ARCHER.usesMana, ARCHER.usesSwords, ARCHER.wearsArmor], ["archer", "Arqueiro", false, false, true]);
   assert.deepEqual([ARCHER_HP_PERCENT, ARCHER_SPEED_PERCENT], [85, 110]); assert.deepEqual([ARCHER.hpPercent, ARCHER.speedPercent], [85, 110]);
   assert.deepEqual([KNIGHT.speedPercent, MAGE.speedPercent], [100, 100], "só o Arqueiro é mais ágil");
   assert.deepEqual([1, 10, 100].map(ARCHER.maxMana).concat([1, 10, 100].map(ARCHER.manaPerSecond)), [0, 0, 0, 0, 0, 0], "nunca tem mana");
-  assert.equal(ARCHER.playable, false); assert.equal(isHeroClassPlayable("archer"), false); assert.strictEqual(heroClassSheet("archer"), ARCHER); assert.strictEqual(HERO_CLASSES.archer, ARCHER);
+  assert.equal(ARCHER.playable, true); assert.equal(isHeroClassPlayable("archer"), true); assert.strictEqual(heroClassSheet("archer"), ARCHER); assert.strictEqual(HERO_CLASSES.archer, ARCHER);
   assert.equal(normalizeHeroClass("archer"), "archer");
   assert.equal(regenerateMana(0, "archer", 10, 100), 0);
 });

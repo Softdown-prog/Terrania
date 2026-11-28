@@ -180,6 +180,7 @@
 - [`docs/adr/0116-arqueiro-a2b-arco-e-pose.md`](../../docs/adr/0116-arqueiro-a2b-arco-e-pose.md)
 - [`docs/adr/0117-arqueiro-a3a-flechas-e-compra.md`](../../docs/adr/0117-arqueiro-a3a-flechas-e-compra.md)
 - [`docs/adr/0118-arqueiro-a3b-irmandade-dos-arqueiros.md`](../../docs/adr/0118-arqueiro-a3b-irmandade-dos-arqueiros.md)
+- [`docs/adr/0119-arqueiro-liberado.md`](../../docs/adr/0119-arqueiro-liberado.md)
 - [`docs/screenshots/academia-arcana-painel.png`](../../docs/screenshots/academia-arcana-painel.png)
 - [`docs/screenshots/academia-arcana-salao.png`](../../docs/screenshots/academia-arcana-salao.png)
 - [`docs/screenshots/arqueiro-atirando.png`](../../docs/screenshots/arqueiro-atirando.png)

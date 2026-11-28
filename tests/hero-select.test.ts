@@ -13,10 +13,10 @@ const SEED = 842136;
 const game = readFileSync("src/game/Game.ts", "utf8"), page = readFileSync("src/app/game-page.html", "utf8"), component = readFileSync("src/app/game-page.component.ts", "utf8"),
   hud = readFileSync("src/app/hud.service.ts", "utf8");
 
-test("quem pode ser escolhido: o Cavaleiro e o Mago; o Arqueiro aparece bloqueado (ADR 0109)", () => {
-  assert.equal(KNIGHT.playable, true); assert.equal(MAGE.playable, true);
-  assert.deepEqual(HERO_CLASS_IDS.map(isHeroClassPlayable), [true, true, false]);
-  assert.deepEqual(HERO_CLASS_IDS.filter(id => heroClassSheet(id).playable), ["knight", "mage"]);
+test("quem pode ser escolhido: os três: Cavaleiro, Mago e Arqueiro (ADR 0119)", () => {
+  assert.equal(KNIGHT.playable, true); assert.equal(MAGE.playable, true); assert.equal(HERO_CLASSES.archer.playable, true);
+  assert.deepEqual(HERO_CLASS_IDS.map(isHeroClassPlayable), [true, true, true]);
+  assert.deepEqual(HERO_CLASS_IDS.filter(id => heroClassSheet(id).playable), ["knight", "mage", "archer"]);
   assert.equal(HERO_CLASSES.mage.playable, true);
   assert.equal(isHeroClassPlayable("lua" as never), false, "o que não é vocação não é jogável");
 });

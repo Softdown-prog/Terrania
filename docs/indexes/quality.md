@@ -15,7 +15,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/browser/mounts.spec.ts`](../../tests/browser/mounts.spec.ts)
 - [`tests/mount-quests.test.ts`](../../tests/mount-quests.test.ts)
 
-## Todos os arquivos deste módulo (250)
+## Todos os arquivos deste módulo (251)
 
 - [`src/qa/QaBot.ts`](../../src/qa/QaBot.ts)
 - [`src/qa/QaCaves.ts`](../../src/qa/QaCaves.ts)
@@ -39,6 +39,7 @@ Testes unitários e navegador desktop/Android; cenários de regressão e robôs 
 - [`tests/bestiary-audit.test.ts`](../../tests/bestiary-audit.test.ts)
 - [`tests/browser/app.spec.ts`](../../tests/browser/app.spec.ts)
 - [`tests/browser/archer-inventory.spec.ts`](../../tests/browser/archer-inventory.spec.ts)
+- [`tests/browser/archer-shot.spec.ts`](../../tests/browser/archer-shot.spec.ts)
 - [`tests/browser/capital-academy.spec.ts`](../../tests/browser/capital-academy.spec.ts)
 - [`tests/browser/capital-archers.spec.ts`](../../tests/browser/capital-archers.spec.ts)
 - [`tests/browser/capital-bank.spec.ts`](../../tests/browser/capital-bank.spec.ts)

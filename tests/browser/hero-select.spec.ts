@@ -12,7 +12,7 @@ const save = (extra: Record<string, unknown> = {}) => JSON.stringify({ mapVersio
 type Saved = { seed: number; heroClass?: string };
 const readSave = (page: import("@playwright/test").Page) => page.evaluate((key) => { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) as Saved : null; }, KEY);
 
-test("jogador novo: a tela de escolha abre com os dois heróis liberados e o Arqueiro bloqueado, Esc não fecha e escolher o Cavaleiro começa e salva (desktop/Android)", async ({ page }, info) => {
+test("jogador novo: a tela de escolha abre com os três heróis liberados, Esc não fecha e escolher o Cavaleiro começa e salva (desktop/Android)", async ({ page }, info) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.addInitScript(() => localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false })));
@@ -25,10 +25,10 @@ test("jogador novo: a tela de escolha abre com os dois heróis liberados e o Arq
   await expect(dialog.locator("[data-hero=mage] .hero-card-badge")).toHaveCount(0);
   await expect(dialog.locator("[data-hero=knight] canvas")).toBeVisible();
   await expect(dialog.locator("[data-hero=mage] canvas")).toBeVisible();
-  // O Arqueiro (ADR 0109) já aparece, mas bloqueado: "Em breve", botão desligado, e o corpo dele (ADR 0116) desenhado no cartão.
+  // O Arqueiro (ADR 0119) está liberado como os outros: botão ligado, sem faixa "Em breve" e o corpo dele (ADR 0116) desenhado no cartão.
   const archer = dialog.locator("#choose-archer");
-  await expect(archer).toBeDisabled(); await expect(archer).toContainText("Arqueiro · Em breve");
-  await expect(dialog.locator("[data-hero=archer] .hero-card-badge")).toHaveText("Em breve");
+  await expect(archer).toBeEnabled(); await expect(archer).toContainText("Jogar como Arqueiro");
+  await expect(dialog.locator("[data-hero=archer] .hero-card-badge")).toHaveCount(0);
   await expect(dialog.locator("[data-hero=archer] canvas")).toBeVisible();
   await expect(dialog.locator("[data-hero=archer]")).toContainText("até 7 tiles");
   await dialog.screenshot({ path: test.info().outputPath("escolha-heroi.png") });
@@ -108,6 +108,35 @@ test("jogador novo escolhe o Mago: o mundo começa de Mago, com barra de mana, c
   await expect(page.locator("canvas#game")).toBeVisible();
   await expect(page.getByRole("dialog", { name: "Escolha o seu herói" })).toBeHidden();
   await expect(page.locator("#manaText")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("jogador novo escolhe o Arqueiro: o mundo começa de Arqueiro, sem mana, com 85 de vida, o Arco de Caça e a aljava de 30 flechas (desktop/Android)", async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.addInitScript(() => localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false })));
+  await page.goto("/jogar/?modo=solo");
+  const dialog = page.getByRole("dialog", { name: "Escolha o seu herói" });
+  await expect(dialog).toBeVisible();
+  const press = async (locator: ReturnType<typeof page.locator>): Promise<void> => { if (info.project.name === "android") await locator.tap(); else await locator.click(); };
+  await dialog.screenshot({ path: test.info().outputPath("escolha-do-heroi-com-arqueiro.png") });
+  await press(dialog.locator("#choose-archer"));
+  await expect(dialog).toBeHidden();
+  await expect.poll(async () => (await readSave(page))?.heroClass).toBe("archer");
+  await expect(page.locator("#hpText")).toHaveText("85 / 85");
+  await expect(page.locator("#manaText")).toHaveCount(0);
+  await press(page.locator("#gameMenuButton")); await press(page.locator("#inventoryButton"));
+  await expect(page.locator("#inventoryTitle")).toHaveText("Inventário do arqueiro");
+  if (info.project.name === "android") await press(page.locator("#inventoryTabEquipment"));
+  await expect(page.locator("[data-equipment-slot]")).toHaveCount(9);
+  await expect(page.locator("[data-equipment-slot=weapon] small")).toHaveText("Arco de Caça");
+  await expect(page.locator("[data-equipment-slot=ammo] small")).toHaveText("Flecha de Junco × 30");
+  await expect(page.locator(".preview-eyebrow")).toHaveText("SEU ARQUEIRO");
+  await page.locator("#inventoryDialog .dialog-x").click();
+  await page.reload();
+  await expect(page.locator("canvas#game")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Escolha o seu herói" })).toBeHidden();
+  await expect(page.locator("#hpText")).toHaveText("85 / 85");
   expect(errors).toEqual([]);
 });
 
