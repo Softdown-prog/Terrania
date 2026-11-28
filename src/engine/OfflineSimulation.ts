@@ -114,6 +114,7 @@ export class OfflineSimulation {
     this.seed = seed;
     // A vocação vem antes de tudo o que depende dela (vida máxima, mana): a do save do mesmo mundo, ou a escolhida ao criá-lo.
     this.heroClass = normalizeHeroClass(saved?.seed === seed ? saved.heroClass : startingClass);
+    this.player.speedScale = heroClassSheet(this.heroClass).speedPercent / 100;
     this.collision = new SeedCollision(seed);
     this.inventory = new Inventory(saved?.seed === seed ? saved.inventory : undefined,
       levelForExperience(saved?.seed === seed ? normalizeExperience(saved?.experience) : 0), this.heroClass);
@@ -239,6 +240,7 @@ export class OfflineSimulation {
     if (!this.awaitingRespawn) return false;
     this.mounts.dismount();
     this.player = new Player(maxHpForExperience(this.experience, this.heroClass));
+    this.player.speedScale = heroClassSheet(this.heroClass).speedPercent / 100;
     this.player.x = RESPAWN_POINTS[this.respawnPoint].x;
     this.player.y = RESPAWN_POINTS[this.respawnPoint].y;
     this.spawnedChunk = "";

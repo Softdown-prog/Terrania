@@ -22,7 +22,7 @@ Estado: **feito** · **em andamento** · **a fazer** · **espera o dono** (falta
 | Frente | Estado | O que falta | Detalhe |
 | --- | --- | --- | --- |
 | **Druida** | espera o dono | Antes do D1, o **sim** dele à arma: **bordão** (recomendado), garras e foice, ou totem. Depois D1 a D6: a vocação e o primeiro bordão; o desenho; os dez bordões; as sete magias especiais; os onze conjuntos de pele; as formas de lobo e urso | [DRUIDA.md](DRUIDA.md) |
-| **Arqueiro** | a fazer | A1 a A6: a vocação, o primeiro arco e as flechas de junco; o desenho e a animação de atirar; os tipos de flecha e a compra na Irmandade dos Arqueiros; os dez arcos; as habilidades; os onze conjuntos | [ARQUEIRO.md](ARQUEIRO.md) |
+| **Arqueiro** | em andamento | A1a feita (ficha, vida, agilidade e cartão bloqueado, ADR 0109). Falta: A1b/A1c o primeiro arco, as flechas de junco e o disparo; A2 a A6: o primeiro arco e as flechas de junco; o desenho e a animação de atirar; os tipos de flecha e a compra na Irmandade dos Arqueiros; os dez arcos; as habilidades; os onze conjuntos | [ARQUEIRO.md](ARQUEIRO.md), [ADR 0109](adr/0109-arqueiro-a1a-vocacao.md) |
 | **Mago: magias especiais** (além do ataque do cajado) | a fazer | Definir em documento e implementar em lotes | [MAGO_CAJADOS.md](MAGO_CAJADOS.md) |
 | **Mago: roupas** | a fazer | Lote B2 (Rocha Viva), B3 (Marés), C (Brasa Rubra, Espinheiro, Geada Boreal), D (Sol Nascente, Lua Negra, Tempestade) e o conjunto do Astral | [MAGO_ROUPAS.md](MAGO_ROUPAS.md) |
 | **Mago: aparência** | a fazer | M2: barba e cabelo que envelhecem e o nível no desenho; M3: o corpo que se fortalece, rugas e a mensagem de nível | [MAGO_APARENCIA.md](MAGO_APARENCIA.md) |

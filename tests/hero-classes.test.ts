@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { experienceForLevel } from "../src/engine/character/Experience.ts";
-import { DEFAULT_HERO_CLASS, HERO_CLASSES, HERO_CLASS_IDS, KNIGHT, MAGE, MAGE_BASE_MANA, MAGE_FULL_RECHARGE_SECONDS, MAGE_MANA_PER_LEVEL, heroClassSheet, normalizeHeroClass,
+import { ARCHER, DEFAULT_HERO_CLASS, HERO_CLASSES, HERO_CLASS_IDS, KNIGHT, MAGE, MAGE_BASE_MANA, MAGE_FULL_RECHARGE_SECONDS, MAGE_MANA_PER_LEVEL, heroClassSheet, normalizeHeroClass,
   normalizeMana, regenerateMana } from "../src/engine/character/classes/index.ts";
 import { loadLocalSave, saveLocal } from "../src/storage/localSave.ts";
 
@@ -13,12 +13,12 @@ import { loadLocalSave, saveLocal } from "../src/storage/localSave.ts";
 const SEED = 842136, STILL = { x: 0, y: 0 };
 const mage = (extra: Record<string, unknown> = {}) => new OfflineSimulation(SEED, { ...new OfflineSimulation(SEED).snapshot(), heroClass: "mage", ...extra });
 
-test("as vocações: Cavaleiro (a de sempre) e Mago; o que não é vocação conhecida vira Cavaleiro", () => {
-  assert.deepEqual([...HERO_CLASS_IDS], ["knight", "mage"]); assert.equal(DEFAULT_HERO_CLASS, "knight");
-  assert.deepEqual(HERO_CLASSES, { knight: KNIGHT, mage: MAGE }); assert.strictEqual(heroClassSheet("mage"), MAGE);
+test("as vocações: Cavaleiro (a de sempre), Mago e Arqueiro; o que não é vocação conhecida vira Cavaleiro", () => {
+  assert.deepEqual([...HERO_CLASS_IDS], ["knight", "mage", "archer"]); assert.equal(DEFAULT_HERO_CLASS, "knight");
+  assert.deepEqual(HERO_CLASSES, { knight: KNIGHT, mage: MAGE, archer: ARCHER }); assert.strictEqual(heroClassSheet("mage"), MAGE);
   assert.deepEqual([KNIGHT.name, MAGE.name], ["Cavaleiro", "Mago"]); assert.deepEqual([KNIGHT.usesMana, MAGE.usesMana], [false, true]);
-  for (const bad of [undefined, null, 1, "", "Mage", "archer", "druid", {}, []]) assert.equal(normalizeHeroClass(bad), "knight", String(bad));
-  assert.equal(normalizeHeroClass("mage"), "mage"); assert.equal(normalizeHeroClass("knight"), "knight");
+  for (const bad of [undefined, null, 1, "", "Mage", "Archer", "druid", {}, []]) assert.equal(normalizeHeroClass(bad), "knight", String(bad));
+  assert.equal(normalizeHeroClass("mage"), "mage"); assert.equal(normalizeHeroClass("archer"), "archer"); assert.equal(normalizeHeroClass("knight"), "knight");
 });
 
 test("a mana do Mago: 50 no nível 1, mais 10 por nível, e a barra enche inteira em 20 s em qualquer nível; o Cavaleiro nunca tem mana", () => {

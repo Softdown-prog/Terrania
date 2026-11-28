@@ -19,7 +19,7 @@ import { describeStaffEffect } from '../game/messages/staffEffects.ts';
 import { themeOfPiece, type MageSetTheme } from '../render/hero/mage/sets/index.ts';
 import { describeGearBonus, describeGearTotals } from '../game/messages/gearBonus.ts';
 import { NO_GEAR_BONUS, gearBonus } from '../engine/character/gearBonus.ts';
-import { HERO_CLASS_HINT, HERO_CLASS_INTRO, HERO_CLASS_LOCKED, HERO_CLASS_TITLE } from '../game/messages/classIntro.ts';
+import { HERO_CLASS_HINT, HERO_CLASS_INTRO, HERO_CLASS_LOCKED, HERO_CLASS_PLACEHOLDER, HERO_CLASS_TITLE } from '../game/messages/classIntro.ts';
 import { COIN_TIERS, coinBreakdown, describeCoins, marketFor, materialSalePrice, type MarketId } from '../engine/character/coins/index.ts';
 import { ELIXIR_RECIPES, elixirRecipe, emptyElixirCounts, type ElixirCounts, type ElixirId } from '../engine/character/south/alchemy/index.ts';
 import { FOOD_IDS, FOODS, MAX_NUTRITION, emptyFoodCounts, type FoodCounts, type FoodId, type NutritionState } from '../engine/character/Food.ts';
@@ -122,7 +122,7 @@ export class HudService implements GameUi {
   readonly heroClassIds = HERO_CLASS_IDS;
   readonly heroClasses = HERO_CLASSES;
   readonly heroClassIntro = HERO_CLASS_INTRO;
-  readonly heroClassText = { locked: HERO_CLASS_LOCKED, title: HERO_CLASS_TITLE, hint: HERO_CLASS_HINT };
+  readonly heroClassText = { locked: HERO_CLASS_LOCKED, placeholder: HERO_CLASS_PLACEHOLDER, title: HERO_CLASS_TITLE, hint: HERO_CLASS_HINT };
   /** Onde o herói renasce (ADR 0064): a Vila ou o Templo da capital. */
   readonly respawnPoint = signal<RespawnPointId>(DEFAULT_RESPAWN_POINT);
   readonly respawnPoints = RESPAWN_POINTS;

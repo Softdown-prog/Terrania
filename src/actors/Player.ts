@@ -43,12 +43,15 @@ export class Player {
   /** Status apply equally to tile-mode outdoor movement and free cave movement. */
   get movementMultiplier(): number {
     if (this.effects.freeze > 0 || this.effects.stun > 0 || this.effects.root > 0) return 0;
-    return this.effects.slow > 0 ? .58 : 1;
+    return (this.effects.slow > 0 ? .58 : 1) * this.speedScale;
   }
+  /** O quanto a vocação anda em relação ao Cavaleiro (1 = igual; o Arqueiro, 1,1). Não é salvo: vem da ficha da vocação (ADR 0109). */
+  speedScale = 1;
   /** Copy only adventure vitals across the cave/surface boundary, preserving coordinates. */
   syncAdventureStateFrom(other: Player): void {
     this.hp = other.hp;
     this.maxHp = other.maxHp;
+    this.speedScale = other.speedScale;
     this.nourishment = { ...other.nourishment };
     for (const kind of Object.keys(this.effects) as DebuffKind[])
       this.effects[kind] = other.effects[kind];

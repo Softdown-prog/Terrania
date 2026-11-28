@@ -1,6 +1,6 @@
 # A vocação Arqueiro
 
-**Proposta** do dono (2026-11-26), no mesmo molde das outras vocações. **Todos os números, nomes e escolhas abaixo são propostas que o dono ajusta.** **Nada está feito ainda:** este documento define o que será feito e em que ordem. O dono pediu: os arcos, as flechas que ele lança, as roupas e os itens, no mesmo padrão do Mago, e o uso do inventário.
+**Proposta** do dono (2026-11-26), no mesmo molde das outras vocações. **Todos os números, nomes e escolhas abaixo são propostas que o dono ajusta.** **Andamento:** a ficha do Arqueiro (vida de 85%, 10% mais ágil, sem mana, espaços do inventário) já existe e a tela de escolha o mostra bloqueado, "Em breve" ([ADR 0109](adr/0109-arqueiro-a1a-vocacao.md), lote A1a). O resto abaixo ainda não está feito; este documento define o que será feito e em que ordem. O dono pediu: os arcos, as flechas que ele lança, as roupas e os itens, no mesmo padrão do Mago, e o uso do inventário.
 
 ## Onde estamos hoje
 - Existem duas vocações jogáveis, o **Cavaleiro** e o **Mago**. O Arqueiro só aparece como a **Irmandade dos Arqueiros**, um prédio da capital, e como o espaço **Flechas** do inventário do Cavaleiro (hoje só enfeite: "Flechas de junco", sem efeito).
@@ -51,7 +51,7 @@ Aparência própria: rosto anguloso, **cabelo curto preso** por uma faixa, **cap
 Espaços do Arqueiro: capuz, colar, anel, gibão, **arco**, **luvas** no lugar do escudo, calça, botas e **flechas**. Sem mochila (hoje enfeite). A tela de escolha do herói ganha o Arqueiro.
 
 ## Os lotes (proposta)
-1. **A1:** a vocação (ficha, vida, escolha do herói, inventário, save), o **primeiro arco** e as flechas de junco, com o disparo à distância na superfície e na caverna.
+1. **A1:** a vocação (ficha, vida, escolha do herói, inventário, save), o **primeiro arco** e as flechas de junco, com o disparo à distância na superfície e na caverna. Em fatias: **A1a (feita, ADR 0109)** ficha, vida, agilidade e cartão bloqueado; **A1b** arco de caça e flechas de junco no motor; **A1c** disparo, projétil e inventário, e a liberação na tela de escolha.
 2. **A2:** o desenho do personagem e a animação de atirar.
 3. **A3:** os tipos de flecha, a compra na Irmandade dos Arqueiros e a munição no inventário.
 4. **A4:** os dez arcos restantes, em lotes de três.

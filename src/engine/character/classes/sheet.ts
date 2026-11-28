@@ -17,6 +17,8 @@ export interface HeroClassSheet {
   readonly slotLabels: Readonly<Partial<Record<EquipmentSlot, string>>>;
   /** Só o Mago usa mana; para o Cavaleiro a barra nem existe. */
   readonly usesMana: boolean;
+  /** Quanto o herói anda em relação ao Cavaleiro, em porcentagem (100 = igual): o Arqueiro é 10% mais ágil (ADR 0109). */
+  readonly speedPercent: number;
   /** A vida máxima, em porcentagem da do Cavaleiro no mesmo nível (100 = igual). */
   readonly hpPercent: number;
   /** Mana máxima no nível dado (inteiro, sempre 0 para quem não usa mana). */

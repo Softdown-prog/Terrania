@@ -1,7 +1,7 @@
-/* Tela de escolha do herói (ADR 0066): duas cartas lado a lado no desktop, empilhadas no celular. */
-.hero-select { width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; }
+/* Tela de escolha do herói (ADR 0066): as cartas lado a lado no desktop (três, com o Arqueiro, ADR 0109), empilhadas no celular. */
+.hero-select { width: min(1040px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; }
 .hero-select-hint { margin: 0 0 12px; color: #b6c9bc; font-size: .9rem; }
-.hero-select-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.hero-select-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .hero-card { display: grid; align-content: start; gap: 6px; padding: 12px; border: 1px solid #d3bb8560; border-radius: 10px; background: #112c27b0; text-align: center; }
 .hero-card h2 { margin: 0; font-size: 1.25rem; color: #f3e2bf; }
 .hero-card p { margin: 0; font-size: .88rem; color: #cfe0d4; }
@@ -13,8 +13,12 @@
 .hero-card.locked { opacity: .82; }
 .hero-card .primary-button { min-height: 46px; }
 .hero-card .primary-button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 900px) {
+  .hero-select-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 650px) {
   .hero-select-grid { grid-template-columns: 1fr; }
   .hero-card-art { height: 130px; }
   .hero-card-art canvas { height: 130px; }
   }
+.hero-card-soon { font-size: 5.5rem; line-height: 1; opacity: .55; color: var(--gold, #d8b45c); }
