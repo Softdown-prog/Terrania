@@ -40,7 +40,7 @@ test("Arqueiro: o inventário tem nove espaços com nomes próprios, o Arco de C
   await expect(page.locator("#selectedSlotTitle")).toContainText("Arco");
   await expect(page.locator("#equippedWeapon")).toHaveText("Arco de Caça");
   await expect(page.locator("#equippedBowStats")).toHaveText("8 de dano · 0.8 s entre tiros · 1 flecha por tiro · alcance de 7 tiles");
-  await expect(page.locator(".bow-picker .sword-choice")).toHaveCount(4);
+  await expect(page.locator(".bow-picker .sword-choice")).toHaveCount(7);
   await expect(page.locator("#equip-slot-bow-hunting")).toContainText("Equipado");
   await expect(page.locator("#equippedStaffStats")).toHaveCount(0);
   await expect(page.locator("[data-sword-id]")).toHaveCount(0);

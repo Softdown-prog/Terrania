@@ -12,7 +12,7 @@ const save = (level: number) => JSON.stringify({ mapVersion: 2, seed: 842136, x:
 type Saved = { inventory?: { bows?: { equipped: string } } };
 const readSave = (page: Page) => page.evaluate(key => JSON.parse(localStorage.getItem(key) ?? "{}") as Saved, KEY);
 
-test("Arqueiro nível 15: o inventário mostra os quatro arcos, troca para o Longo de Teixo e o save guarda (desktop/Android)", async ({ page }, info) => {
+test("Arqueiro nível 15: o inventário mostra os sete arcos, troca para o Longo de Teixo e o save guarda (desktop/Android)", async ({ page }, info) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.addInitScript(([key, value]) => { if (!localStorage.getItem(key!)) localStorage.setItem(key!, value!); localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false })); }, [KEY, save(15)]);
@@ -22,13 +22,14 @@ test("Arqueiro nível 15: o inventário mostra os quatro arcos, troca para o Lon
   await press(page.locator("#gameMenuButton")); await press(page.locator("#inventoryButton"));
   if (info.project.name === "android") await press(page.locator("#inventoryTabEquipment"));
   await press(page.locator("[data-equipment-slot=weapon]"));
-  await expect(page.locator(".bow-picker .sword-choice")).toHaveCount(4);
+  await expect(page.locator(".bow-picker .sword-choice")).toHaveCount(7);
   await expect(page.locator("#equippedWeapon")).toHaveText("Arco de Caça");
   await expect(page.locator("#equip-slot-bow-hunting")).toContainText("Equipado");
   await expect(page.locator("#equip-slot-bow-horn")).toContainText("Equipar"); await expect(page.locator("#equip-slot-bow-horn")).toBeEnabled();
   await expect(page.locator("#equip-slot-bow-yew")).toContainText("Equipar"); await expect(page.locator("#equip-slot-bow-yew")).toBeEnabled();
   await expect(page.locator("#equip-slot-bow-bone")).toContainText("Bloqueado"); await expect(page.locator("#equip-slot-bow-bone")).toBeDisabled();
   await expect(page.locator("#equip-slot-bow-bone")).toContainText("Nível 20");
+  await expect(page.locator("#equip-slot-bow-boreal")).toContainText("Nível 60"); await expect(page.locator("#equip-slot-bow-ember")).toBeDisabled();
   await expect(page.locator("#equip-slot-bow-yew app-item-icon")).toHaveAttribute("data-icon", "bow-yew");
   await press(page.locator("#equip-slot-bow-yew"));
   await expect(page.locator("#inventoryFeedback")).toContainText("Arco equipado");
@@ -48,13 +49,13 @@ test("Arqueiro nível 15: o inventário mostra os quatro arcos, troca para o Lon
   expect(errors).toEqual([]);
 });
 
-test("Arqueiro nível 1: só o Arco de Caça está disponível e os outros três ficam bloqueados (desktop/Android)", async ({ page }, info) => {
+test("Arqueiro nível 1: só o Arco de Caça está disponível e os outros seis ficam bloqueados (desktop/Android)", async ({ page }, info) => {
   await page.addInitScript(([key, value]) => { if (!localStorage.getItem(key!)) localStorage.setItem(key!, value!); localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false })); }, [KEY, save(1)]);
   await page.goto("/jogar/?modo=solo");
   const press = async (locator: ReturnType<typeof page.locator>): Promise<void> => { if (info.project.name === "android") await locator.tap(); else await locator.click(); };
   await press(page.locator("#gameMenuButton")); await press(page.locator("#inventoryButton"));
   if (info.project.name === "android") await press(page.locator("#inventoryTabEquipment"));
   await press(page.locator("[data-equipment-slot=weapon]"));
-  for (const id of ["horn", "yew", "bone"]) { await expect(page.locator(`#equip-slot-bow-${id}`)).toContainText("Bloqueado"); await expect(page.locator(`#equip-slot-bow-${id}`)).toBeDisabled(); }
+  for (const id of ["horn", "yew", "bone", "ember", "thorn", "boreal"]) { await expect(page.locator(`#equip-slot-bow-${id}`)).toContainText("Bloqueado"); await expect(page.locator(`#equip-slot-bow-${id}`)).toBeDisabled(); }
   await expect(page.locator("#equip-slot-bow-hunting")).toContainText("Equipado");
 });

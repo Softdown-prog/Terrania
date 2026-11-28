@@ -2,12 +2,15 @@ import { HUNTING_BOW } from "./weapons/bows/hunting.ts";
 import { HORN_BOW } from "./weapons/bows/horn.ts";
 import { YEW_BOW } from "./weapons/bows/yew.ts";
 import { BONE_BOW } from "./weapons/bows/bone.ts";
+import { EMBER_BOW } from "./weapons/bows/ember.ts";
+import { THORN_BOW } from "./weapons/bows/thorn.ts";
+import { BOREAL_BOW } from "./weapons/bows/boreal.ts";
 
 /**
  * Catálogo dos arcos do Arqueiro (ADR 0110, lista em `docs/ARQUEIRO.md`). Os onze espelham as espadas; o Arco de Caça é o primeiro e os outros dez entram em lotes (A4):
- * o lote A4a traz o de Chifre, o Longo de Teixo e o de Osso (ADR 0120). Só dados, sem Canvas: o desenho dos arcos vem no lote A2.
+ * o lote A4a traz o de Chifre, o Longo de Teixo e o de Osso (ADR 0120) e o A4b o de Brasa, o de Espinheiro e o Boreal (ADR 0121). Só dados, sem Canvas: o desenho dos arcos vem no lote A2.
  */
-export const BOW_IDS = ["hunting", "horn", "yew", "bone"] as const;
+export const BOW_IDS = ["hunting", "horn", "yew", "bone", "ember", "thorn", "boreal"] as const;
 export type BowId = typeof BOW_IDS[number];
 export const DEFAULT_BOW: BowId = "hunting";
 
@@ -45,7 +48,7 @@ export interface BowDefinition {
   readonly visual: BowVisualProfile;
 }
 
-export const BOWS: Readonly<Record<BowId, BowDefinition>> = { hunting: HUNTING_BOW, horn: HORN_BOW, yew: YEW_BOW, bone: BONE_BOW };
+export const BOWS: Readonly<Record<BowId, BowDefinition>> = { hunting: HUNTING_BOW, horn: HORN_BOW, yew: YEW_BOW, bone: BONE_BOW, ember: EMBER_BOW, thorn: THORN_BOW, boreal: BOREAL_BOW };
 
 export function isBowId(value: unknown): value is BowId {
   return typeof value === "string" && BOW_IDS.some(id => id === value);

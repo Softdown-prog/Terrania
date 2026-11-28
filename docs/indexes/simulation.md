@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (156)
+## Todos os arquivos deste módulo (159)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -107,8 +107,11 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/weapons/arrows/iron.ts`](../../src/engine/character/weapons/arrows/iron.ts)
 - [`src/engine/character/weapons/arrows/reed.ts`](../../src/engine/character/weapons/arrows/reed.ts)
 - [`src/engine/character/weapons/bows/bone.ts`](../../src/engine/character/weapons/bows/bone.ts)
+- [`src/engine/character/weapons/bows/boreal.ts`](../../src/engine/character/weapons/bows/boreal.ts)
+- [`src/engine/character/weapons/bows/ember.ts`](../../src/engine/character/weapons/bows/ember.ts)
 - [`src/engine/character/weapons/bows/horn.ts`](../../src/engine/character/weapons/bows/horn.ts)
 - [`src/engine/character/weapons/bows/hunting.ts`](../../src/engine/character/weapons/bows/hunting.ts)
+- [`src/engine/character/weapons/bows/thorn.ts`](../../src/engine/character/weapons/bows/thorn.ts)
 - [`src/engine/character/weapons/bows/yew.ts`](../../src/engine/character/weapons/bows/yew.ts)
 - [`src/engine/character/weapons/staves/README.md`](../../src/engine/character/weapons/staves/README.md)
 - [`src/engine/character/weapons/staves/apprentice.ts`](../../src/engine/character/weapons/staves/apprentice.ts)

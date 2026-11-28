@@ -12,7 +12,7 @@ const SEED = 842136;
 const archer = (extra: Record<string, unknown> = {}) => new OfflineSimulation(SEED, { ...new OfflineSimulation(SEED).snapshot(), heroClass: "archer", ...extra });
 
 test("o Arco de Caça: nível 0, 8 de dano, 0,8 s entre tiros, 0,12 s de preparo, 7 tiles, uma flecha por tiro", () => {
-  assert.deepEqual([...BOW_IDS], ["hunting", "horn", "yew", "bone"]); assert.equal(DEFAULT_BOW, "hunting");
+  assert.deepEqual([...BOW_IDS], ["hunting", "horn", "yew", "bone", "ember", "thorn", "boreal"]); assert.equal(DEFAULT_BOW, "hunting");
   const bow = BOWS.hunting;
   assert.deepEqual([bow.name, bow.level, bow.damage, bow.interval, bow.windup, bow.range, bow.arrowsPerShot, bow.material], ["Arco de Caça", 0, 8, 0.8, 0.12, 7, 1, "madeira de freixo"]);
   assert.equal(bowUnlocked("hunting", 1), true); assert.equal(bowUnlocked("hunting", 0), true); assert.equal(bowUnlocked("hunting", -1), false); assert.equal(bowUnlocked("hunting", 1.5), false);
