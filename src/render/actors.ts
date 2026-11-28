@@ -11,6 +11,7 @@ import { clamp01, ellipse, hashString, limb, mix, rgba, smoothstep, softShadow }
 import type { HeroClassId } from "../engine/character/classes/index.ts";
 import type { HeroDrawContext } from "./hero/context.ts";
 import { mageWear } from "./hero/mage/index.ts";
+import { archerWear } from "./hero/archer/index.ts";
 import { drawMageBook } from "./hero/mage/gear/book.ts";
 import { drawMagePendant } from "./hero/mage/gear/pendant.ts";
 import { drawMageRing } from "./hero/mage/gear/ring.ts";
@@ -181,13 +182,16 @@ export function renderHero(
   const dirX = Math.cos(Math.atan2(player.faceY, player.faceX));
   const frame = swordMount(player);
   // A aparência da vocação (ADR 0067): sem ela, é o Cavaleiro. O Mago veste as roupas dele (ADR 0078) e não o kit do Cavaleiro.
-  const wear = player.heroClass === "mage" ? mageWear(player.gear) : null;
+  const wear = player.heroClass === "mage" ? mageWear(player.gear) : player.heroClass === "archer" ? archerWear(player.gear) : null;
   const look = wear?.look ?? null;
   const gear = wear ? undefined : player.gear;
   // O que o herói segura: a espada do Cavaleiro ou o cajado do Mago (ADR 0068); o braço, a mão e a ordem de camadas são os mesmos.
   const staffSway = Math.sin(player.walkTime * 2) * g.moving * 0.05;
-  const held: { readonly hand: number; readonly gripX: number; readonly gripY: number } = look ? staffMount(player, staffSway, cast) : frame;
+  // O Arqueiro (ADR 0114) ainda não segura o arco na mão (lote A2b): o braço usa o ponto de empunhadura da espada e nada é desenhado nele.
+  const bowman = player.heroClass === "archer";
+  const held: { readonly hand: number; readonly gripX: number; readonly gripY: number } = look && !bowman ? staffMount(player, staffSway, cast) : frame;
   const drawHeld = (): void => {
+    if (bowman) return;
     if (look) renderStaff(ctx, staffMount(player, staffSway, cast), player.equippedStaff ?? DEFAULT_STAFF, tone, t, cast.charge);
     else renderWeapon(ctx, frame, player, tone, atk.impact, t);
   };

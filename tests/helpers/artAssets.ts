@@ -99,6 +99,9 @@ import { drawArrowHit } from "../../src/render/arrows/hit.ts";
 import { drawSpellBolt } from "../../src/render/spells/bolt.ts";
 import { drawSpellBurst } from "../../src/render/spells/burst.ts";
 import { paintStaffHead } from "../../src/render/staves/head.ts";
+import { drawArcherHead } from "../../src/render/hero/archer/head.ts";
+import { drawArcherQuiver } from "../../src/render/hero/archer/quiver.ts";
+import { drawArcherTorso } from "../../src/render/hero/archer/torso.ts";
 import { drawWizardHat } from "../../src/render/hero/mage/hat.ts";
 import { drawMageCloak } from "../../src/render/hero/mage/cloak.ts";
 import { drawMageHead } from "../../src/render/hero/mage/head.ts";
@@ -187,6 +190,13 @@ export const ASSETS: ArtAsset[] = [
   // As quatro peças que só o Mago veste, sozinhas, cada uma cumprindo o piso das peças pequenas (ADR 0067).
   { id: "mago: cabeça jovem de frente", tier: "prop", fn: "drawMageHead", draw: c => drawMageHead(c, mageCtx()) },
   { id: "mago: cabeça jovem de lado", tier: "prop", fn: "drawMageHead", draw: c => drawMageHead(c, mageCtx({ side: 1, faceX: 1, faceY: 0 })) },
+  { id: "arqueiro: cabeça de frente", tier: "prop", fn: "drawArcherHead", draw: c => drawArcherHead(c, mageCtx()) },
+  { id: "arqueiro: cabeça de lado", tier: "prop", fn: "drawArcherHead", draw: c => drawArcherHead(c, mageCtx({ side: 1, faceX: 1, faceY: 0 })) },
+  { id: "arqueiro: cabeça de costas", tier: "prop", fn: "drawArcherHead", draw: c => drawArcherHead(c, mageCtx({ back: true, faceY: -1 })) },
+  { id: "arqueiro: aljava de frente", tier: "prop", fn: "drawArcherQuiver", draw: c => drawArcherQuiver(c, mageCtx()) },
+  { id: "arqueiro: aljava de costas", tier: "prop", fn: "drawArcherQuiver", draw: c => drawArcherQuiver(c, mageCtx({ back: true })) },
+  { id: "arqueiro: tronco de frente", tier: "prop", fn: "drawArcherTorso", draw: c => drawArcherTorso(c, mageCtx()) },
+  { id: "arqueiro: tronco de costas", tier: "prop", fn: "drawArcherTorso", draw: c => drawArcherTorso(c, mageCtx({ back: true })) },
   { id: "mago: chapéu pontudo", tier: "prop", fn: "drawWizardHat", draw: c => drawWizardHat(c, mageCtx()) },
   { id: "mago: manto escuro com capuz", tier: "prop", fn: "drawMageCloak", draw: c => drawMageCloak(c, mageCtx({ back: true })) },
   { id: "mago: barra da túnica", tier: "prop", fn: "drawMageRobe", draw: c => drawMageRobe(c, mageCtx()) },
