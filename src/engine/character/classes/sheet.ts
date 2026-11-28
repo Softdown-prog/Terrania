@@ -1,8 +1,8 @@
 import type { EquipmentSlot } from "../Equipment.ts";
 import type { HeroClassId } from "./heroClass.ts";
 
-/** Com o que a vocação luta: as espadas do Cavaleiro, os cajados do Mago ou os arcos do Arqueiro (ADR 0113). */
-export type WeaponKind = "sword" | "staff" | "bow";
+/** Com o que a vocação luta: as espadas do Cavaleiro, os cajados do Mago, os arcos do Arqueiro (ADR 0113) ou os bordões do Druida (ADR 0124). */
+export type WeaponKind = "sword" | "staff" | "bow" | "crook";
 
 /** A ficha de uma vocação: o nome e a mana, que dependem só do nível (sem relógio, sem sorteio). */
 export interface HeroClassSheet {

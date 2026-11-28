@@ -18,6 +18,10 @@ export const HERO_CLASS_INTRO: Readonly<Record<HeroClassId, HeroClassIntro>> = {
     tagline: "Caçador ágil, acerta de longe com arco e flecha.",
     traits: ["Atira flechas à distância, até 7 tiles", "Sem mana: cada tiro gasta uma flecha", "Mais ágil que o Cavaleiro, porém mais frágil"],
   },
+  druid: {
+    tagline: "Guardião da natureza, prende, envenena e cura com mana.",
+    traits: ["Luta com o bordão, de madeira viva", "Usa mana, que volta mais depressa ao ar livre", "Mais resistente que o Mago, ótimo no apoio"],
+  },
 };
 export const HERO_CLASS_LOCKED = "Em breve";
 export const HERO_CLASS_TITLE = "Escolha o seu herói";

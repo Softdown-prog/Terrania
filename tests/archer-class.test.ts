@@ -70,7 +70,7 @@ test("o Arqueiro nasce com 85 de vida e o save guarda a vocação; ninguém o es
   assert.deepEqual(Object.keys(HERO_CLASS_INTRO), [...HERO_CLASS_IDS]); assert.equal(HERO_CLASS_INTRO.archer.traits.length, 3);
   assert.match(HERO_CLASS_INTRO.archer.traits.join(" "), /7 tiles/); assert.match(HERO_CLASS_INTRO.archer.traits.join(" "), /flecha/);
   const page = readFileSync("src/app/game-page.html", "utf8");
-  assert.match(page, /@else if \(id === 'mage'\) \{ <canvas #classMage width="170" height="190"><\/canvas> \}\s*\n\s*@else \{ <canvas #classArcher width="170" height="190"><\/canvas> \}/, "o Arqueiro tem o canvas dele, não o do Mago");
+  assert.match(page, /@else if \(id === 'mage'\) \{ <canvas #classMage width="170" height="190"><\/canvas> \}\s*\n\s*@else if \(id === 'archer'\) \{ <canvas #classArcher width="170" height="190"><\/canvas> \}\s*\n\s*@else \{ <span class="hero-card-glyph">❦<\/span> \}/, "o Arqueiro tem o canvas dele, não o do Mago");
   assert.doesNotMatch(page, /hero-card-soon/, "o ➶ de antes saiu");
   const component = readFileSync("src/app/game-page.component.ts", "utf8");
   assert.match(component, /\[this\.classArcher\(\), 'archer', 2\.6\]/, "o corpo do Arqueiro é desenhado na prévia da escolha");

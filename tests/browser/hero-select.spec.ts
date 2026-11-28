@@ -12,7 +12,7 @@ const save = (extra: Record<string, unknown> = {}) => JSON.stringify({ mapVersio
 type Saved = { seed: number; heroClass?: string };
 const readSave = (page: import("@playwright/test").Page) => page.evaluate((key) => { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) as Saved : null; }, KEY);
 
-test("jogador novo: a tela de escolha abre com os três heróis liberados, Esc não fecha e escolher o Cavaleiro começa e salva (desktop/Android)", async ({ page }, info) => {
+test("jogador novo: a tela de escolha abre com os três heróis liberados e o Druida bloqueado, Esc não fecha e escolher o Cavaleiro começa e salva (desktop/Android)", async ({ page }, info) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.addInitScript(() => localStorage.setItem("terrania-preferences-v1", JSON.stringify({ zoom: 1, effects: false, cameraMotion: false })));
@@ -31,6 +31,13 @@ test("jogador novo: a tela de escolha abre com os três heróis liberados, Esc n
   await expect(dialog.locator("[data-hero=archer] .hero-card-badge")).toHaveCount(0);
   await expect(dialog.locator("[data-hero=archer] canvas")).toBeVisible();
   await expect(dialog.locator("[data-hero=archer]")).toContainText("até 7 tiles");
+  // O Druida (ADR 0124) aparece bloqueado: "Em breve", botão desligado, os três traços e uma folha no lugar do desenho.
+  const druid = dialog.locator("#choose-druid");
+  await expect(druid).toBeDisabled(); await expect(druid).toContainText("Druida · Em breve");
+  await expect(dialog.locator("[data-hero=druid] .hero-card-badge")).toHaveText("Em breve");
+  await expect(dialog.locator("[data-hero=druid] .hero-card-glyph")).toBeVisible(); await expect(dialog.locator("[data-hero=druid] canvas")).toHaveCount(0);
+  await expect(dialog.locator("[data-hero=druid]")).toContainText("bordão"); await expect(dialog.locator("[data-hero=druid]")).toContainText("mana");
+  await expect(dialog.locator(".hero-card")).toHaveCount(4);
   await dialog.screenshot({ path: test.info().outputPath("escolha-heroi.png") });
   if (info.project.name !== "android") { await page.keyboard.press("Escape"); await expect(dialog).toBeVisible(); }
   expect(await readSave(page), "ainda sem save antes de escolher").toBeNull();

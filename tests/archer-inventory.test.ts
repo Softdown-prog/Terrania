@@ -15,7 +15,7 @@ const context = (sim: OfflineSimulation): ShopContext => ({ sim, hero: sim.playe
 const read = (path: string): string => readFileSync(path, "utf8");
 
 test("o tipo de arma de cada vocação: espada, cajado, arco", () => {
-  assert.deepEqual(HERO_CLASS_IDS.map(id => heroClassSheet(id).weapon), ["sword", "staff", "bow"]);
+  assert.deepEqual(HERO_CLASS_IDS.map(id => heroClassSheet(id).weapon), ["sword", "staff", "bow", "crook"]);
   assert.deepEqual([KNIGHT.weapon, MAGE.weapon, ARCHER.weapon], ["sword", "staff", "bow"]);
   for (const id of HERO_CLASS_IDS) assert.equal(heroClassSheet(id).usesSwords, heroClassSheet(id).weapon === "sword", "só o tipo espada usa espadas: " + id);
 });

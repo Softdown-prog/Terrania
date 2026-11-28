@@ -1,9 +1,9 @@
 # A vocação Druida
 
-**Proposta** do dono (2026-11-26), no mesmo molde do Mago ([MAGO_CAJADOS.md](MAGO_CAJADOS.md), [MAGO_ROUPAS.md](MAGO_ROUPAS.md), [MAGO_APARENCIA.md](MAGO_APARENCIA.md)). **Todos os números, nomes e escolhas abaixo são propostas que o dono ajusta.** **Nada está feito ainda:** este documento define o que será feito e em que ordem. O dono pediu: a vocação, as magias, o que ele usa como arma (ainda não definido), as roupas de pele de animais, o uso de mana e o inventário próprio.
+**Proposta** do dono (2026-11-26), no mesmo molde do Mago ([MAGO_CAJADOS.md](MAGO_CAJADOS.md), [MAGO_ROUPAS.md](MAGO_ROUPAS.md), [MAGO_APARENCIA.md](MAGO_APARENCIA.md)). **Todos os números, nomes e escolhas abaixo são propostas que o dono ajusta.** **Andamento:** o dono aprovou o **bordão** como arma (2026-11-28) e o Druida já existe como vocação, bloqueada na tela de escolha ([ADR 0124](adr/0124-druida-d1a-vocacao.md), D1a). O resto abaixo ainda não está feito; este documento define o que será feito e em que ordem. O dono pediu: a vocação, as magias, o que ele usa como arma (ainda não definido), as roupas de pele de animais, o uso de mana e o inventário próprio.
 
 ## Onde estamos hoje
-- Existem duas vocações jogáveis, o **Cavaleiro** e o **Mago** (`HERO_CLASS_IDS`). O Druida e o Arqueiro só aparecem hoje como nome de prédio da capital (a Irmandade dos Arqueiros) e como ideia no roteiro das quatro vocações.
+- (Histórico:) existiam duas vocações jogáveis, o **Cavaleiro** e o **Mago**. Hoje são três (o **Arqueiro** foi liberado, ADR 0119) e o **Druida** já aparece como a quarta, bloqueada (ADR 0124).
 - O Mago deixou o caminho pronto: ficha da vocação (`HeroClassSheet`: espaços de equipamento, mana, vida), inventário com espaços e nomes próprios, roupas por vocação com nível mínimo, aparência por vocação (`HeroLook`), tela de escolha do herói, mana e barra de mana. O Druida reaproveita tudo isso.
 
 ## O papel
@@ -12,8 +12,8 @@ Guardião da natureza: **apoio, cura e controle**, com **mana** (como o Mago) e 
 - **Mana:** como o Mago (50 no nível 1, mais 10 por nível), mas **volta mais depressa fora das cavernas** (a natureza ajuda): +25% de recarga ao ar livre, nada de bônus no subsolo.
 - **Comida devolve mana** (vale também para o Mago; frente própria na lista).
 
-## A arma (decisão do dono pendente)
-Três opções; a **recomendada** é a primeira:
+## A arma (decidido: o bordão)
+**O dono disse sim ao bordão em 2026-11-28.** As três opções que foram apresentadas (a primeira é a escolhida):
 1. **Bordão** (cajado de madeira viva, mais curto e grosso que o do Mago): ataque à distância média (5 tiles), um tiro de **seiva e espinhos** com efeito natural (veneno, lentidão, raízes). Mesma estrutura dos cajados: onze bordões, um por nível, cada um com o seu arquivo e o seu desenho.
 2. **Garras e foice de lua:** luta de perto, mais forte nas formas de animal.
 3. **Totem:** a arma é um totem que o Druida finca no chão e que dispara sozinho; ele em si se defende e cura.
@@ -43,7 +43,7 @@ Aparência própria, como a do Mago: rosto marcado e cabelo longo trançado com 
 Espaços do Druida: cocar, colar, anel, peitoral, bordão, totem de mão, calça e botas (sem mochila e sem flechas, como o Mago). Os conjuntos aparecem na mochila só no nível deles. A tela de escolha do herói ganha o Druida.
 
 ## Os lotes (proposta)
-1. **D1:** a vocação (ficha, vida, mana, escolha do herói, inventário, save) e o **primeiro bordão** com a magia básica.
+1. **D1:** a vocação (ficha, vida, mana, escolha do herói, inventário, save) e o **primeiro bordão** com a magia básica. Em fatias: **D1a (feita, ADR 0124)** ficha, vida, mana e o cartão bloqueado; **D1b** o bordão, a magia básica, a recarga ao ar livre e o inventário; depois a liberação na tela de escolha.
 2. **D2:** o desenho do personagem (corpo e cabeça) e o conjunto inicial de pele (Coelho).
 3. **D3:** os dez bordões restantes, em lotes de três.
 4. **D4:** as magias especiais, uma ou duas por lote.
@@ -51,4 +51,4 @@ Espaços do Druida: cocar, colar, anel, peitoral, bordão, totem de mão, calça
 6. **D6:** as formas de animal (lobo, urso) com o desenho próprio.
 
 ## Decidido por enquanto (as opções recomendadas)
-O **bordão** como arma (opção 1); 90% de vida; recarga de mana maior ao ar livre; magias especiais por nível como na tabela; roupas de pele nos onze conjuntos acima. O dono ajusta quando quiser; antes de começar o D1, preciso do **sim** dele à arma (bordão, garras ou totem).
+O **bordão** como arma (opção 1); 90% de vida; recarga de mana maior ao ar livre; magias especiais por nível como na tabela; roupas de pele nos onze conjuntos acima. O dono ajusta quando quiser; o **sim** à arma (o bordão) já veio e o D1a está feito.

@@ -20,7 +20,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/mounts/MountActions.ts`](../../src/engine/mounts/MountActions.ts)
 - [`src/engine/rooms/CaveRewards.ts`](../../src/engine/rooms/CaveRewards.ts)
 
-## Todos os arquivos deste módulo (172)
+## Todos os arquivos deste módulo (173)
 
 - [`src/engine/Limits.ts`](../../src/engine/Limits.ts)
 - [`src/engine/OfflineSimulation.ts`](../../src/engine/OfflineSimulation.ts)
@@ -57,6 +57,7 @@ Combate, progressão, inventário, equipamento, loot e navegação; sem DOM, Pha
 - [`src/engine/character/center/shrine/points.ts`](../../src/engine/character/center/shrine/points.ts)
 - [`src/engine/character/classes/archer.ts`](../../src/engine/character/classes/archer.ts)
 - [`src/engine/character/classes/catalog.ts`](../../src/engine/character/classes/catalog.ts)
+- [`src/engine/character/classes/druid.ts`](../../src/engine/character/classes/druid.ts)
 - [`src/engine/character/classes/heroClass.ts`](../../src/engine/character/classes/heroClass.ts)
 - [`src/engine/character/classes/index.ts`](../../src/engine/character/classes/index.ts)
 - [`src/engine/character/classes/knight.ts`](../../src/engine/character/classes/knight.ts)
