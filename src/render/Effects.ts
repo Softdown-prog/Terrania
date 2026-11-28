@@ -137,7 +137,7 @@ export class Effects {
     let hit = false;
     const hurt = player.hp < this.hp;
     // A magia do cajado tem o projétil e o estouro dela: o impacto de espada não se mistura.
-    const spell = player.attackStaff !== null && player.attackTime > 0;
+    const spell = (player.attackStaff !== null || player.attackBow !== null) && player.attackTime > 0;
     this.spells.update(dt, player, mobs);
     const weapon=player.attackWeapon;
     const flashColor=WEAPONS[weapon].trail.second;

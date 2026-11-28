@@ -5,6 +5,7 @@ import { staffMount, staffTip } from "../heroPose.ts";
 import { drawSpellBolt } from "./bolt.ts";
 import { drawSpellBurst } from "./burst.ts";
 import { castPhase } from "./castPose.ts";
+import { ArrowFlights } from "../arrows/ArrowFlights.ts";
 
 /** Velocidade do projétil, em pixels por segundo, e os limites do voo (perto: quase instantâneo; longe: um instante a mais). */
 export const BOLT_SPEED = 1100;
@@ -17,7 +18,7 @@ export const BOLT_LABEL_LIFE = 0.8;
 const CHEST = 12;
 const MAX_BOLTS = 12, MAX_BURSTS = 16, MAX_LABELS = 16;
 
-export type SpellCaster = Pick<Player, "x" | "y" | "faceX" | "faceY" | "attackTime" | "attackStaff" | "attackWindup" | "strikeDamage">;
+export type SpellCaster = Pick<Player, "x" | "y" | "faceX" | "faceY" | "attackTime" | "attackStaff" | "attackBow" | "attackWindup" | "strikeDamage">;
 export interface SpellTarget { readonly id: string; readonly x: number; readonly y: number; readonly hp: number }
 
 interface Bolt { staff: StaffId; fromX: number; fromY: number; toX: number; toY: number; age: number; flight: number; damage: number; kill: boolean }
@@ -32,24 +33,30 @@ const finite = (v: number): boolean => Number.isFinite(v);
  * vida do monstro (como `Effects`) e atrasa só o que se vê. Serve a superfície e a caverna, que têm a mesma magia.
  */
 export class SpellBolts {
+  /** As flechas do Arqueiro (ADR 0112) seguem o mesmo caminho (atualizar, desenhar, limpar) que o projétil da magia, na superfície e na caverna. */
+  readonly arrows = new ArrowFlights();
+  private _enabled = true;
   /** Com os efeitos desligados (ajuste de desempenho) só o projétil aparece; estouro e números não. */
-  enabled = true;
+  get enabled(): boolean { return this._enabled; }
+  set enabled(on: boolean) { this._enabled = on; this.arrows.enabled = on; }
   private bolts: Bolt[] = [];
   private bursts: Burst[] = [];
   private labels: Label[] = [];
   private previous = new Map<string, { hp: number; x: number; y: number }>();
   private clock = 0;
 
-  reset(): void { this.bolts = []; this.bursts = []; this.labels = []; this.previous.clear(); this.clock = 0; }
+  reset(): void { this.bolts = []; this.bursts = []; this.labels = []; this.previous.clear(); this.clock = 0; this.arrows.reset(); }
 
   /** Quantos projéteis estão voando (para teste e para a tela decidir se precisa desenhar). */
   get flying(): number { return this.bolts.length; }
-  get active(): boolean { return this.bolts.length + this.bursts.length + this.labels.length > 0; }
+  get active(): boolean { return this.bolts.length + this.bursts.length + this.labels.length > 0 || this.arrows.active; }
 
   update(dt: number, caster: SpellCaster, mobs: Iterable<SpellTarget>): void {
+    const pool = [...mobs];
+    this.arrows.update(dt, caster, pool);
     const spell = caster.attackStaff !== null && caster.attackTime > 0;
     const next = new Map<string, { hp: number; x: number; y: number }>();
-    for (const mob of mobs) {
+    for (const mob of pool) {
       if (!finite(mob.x) || !finite(mob.y)) continue;
       const old = this.previous.get(mob.id);
       if (spell && old && old.hp > mob.hp) this.launch(caster, mob.x, mob.y, old.hp - mob.hp, false);
@@ -90,6 +97,7 @@ export class SpellBolts {
   }
 
   render(ctx: CanvasRenderingContext2D, left: number, top: number): void {
+    this.arrows.render(ctx, left, top);
     for (const bolt of this.bolts) {
       const t = Math.min(1, bolt.age / bolt.flight);
       ctx.save();

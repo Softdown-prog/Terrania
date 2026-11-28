@@ -94,6 +94,8 @@ import { paintSunMotif } from "../../src/render/staves/motifs/sun.ts";
 import { paintMoonMotif } from "../../src/render/staves/motifs/moon.ts";
 import { paintCoilMotif } from "../../src/render/staves/motifs/coil.ts";
 import { paintAstralMotif } from "../../src/render/staves/motifs/astral.ts";
+import { drawArrowShot } from "../../src/render/arrows/arrow.ts";
+import { drawArrowHit } from "../../src/render/arrows/hit.ts";
 import { drawSpellBolt } from "../../src/render/spells/bolt.ts";
 import { drawSpellBurst } from "../../src/render/spells/burst.ts";
 import { paintStaffHead } from "../../src/render/staves/head.ts";
@@ -218,6 +220,9 @@ export const ASSETS: ArtAsset[] = [
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "magia: projétil " + kind, tier: "prop", fn: "drawSpellBolt", draw: c => drawSpellBolt(c, kind, 0.5, 1) })),
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "magia: estouro " + kind, tier: "prop", fn: "drawSpellBurst", draw: c => drawSpellBurst(c, kind, 0.2) })),
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "magia: estouro de abate " + kind, tier: "prop", fn: "drawSpellBurst", draw: c => drawSpellBurst(c, kind, 0.2, true) })),
+  { id: "arqueiro: flecha de junco em voo", tier: "prop", fn: "drawArrowShot", draw: c => drawArrowShot(c, 0.5) },
+  { id: "arqueiro: impacto da flecha", tier: "prop", fn: "drawArrowHit", draw: c => drawArrowHit(c, 0.3) },
+  { id: "arqueiro: impacto da flecha que derruba", tier: "prop", fn: "drawArrowHit", draw: c => drawArrowHit(c, 0.3, true) },
   { id: "hero mago andando", tier: "character", fn: "renderHero", draw: c => renderHero(c, { ...hero, walkTime: 0.9, vx: 70, vy: 0, faceX: 1, faceY: 0, heroClass: "mage" }, 0, 0, 1) },
   ...WEAPON_IDS.map<ArtAsset>(kind => ({
     id:"Espada procedural "+kind,tier:"prop",fn:"drawKnightSword",
