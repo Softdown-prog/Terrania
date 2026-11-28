@@ -180,7 +180,7 @@
               <div class="hero-card-art" aria-hidden="true">
                 @if (id === 'knight') { <canvas #classKnight width="170" height="190"></canvas> }
                 @else if (id === 'mage') { <canvas #classMage width="170" height="190"></canvas> }
-                @else { <span class="hero-card-soon">{{ hud.heroClassText.placeholder }}</span> }
+                @else { <canvas #classArcher width="170" height="190"></canvas> }
               </div>
               <h2>{{ sheet.name }}</h2>
               @if (!sheet.playable) { <span class="hero-card-badge">{{ hud.heroClassText.locked }}</span> }

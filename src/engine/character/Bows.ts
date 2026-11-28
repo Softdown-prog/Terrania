@@ -8,6 +8,17 @@ export const BOW_IDS = ["hunting"] as const;
 export type BowId = typeof BOW_IDS[number];
 export const DEFAULT_BOW: BowId = "hunting";
 
+/** A aparência do arco, declarativa e independente do Canvas (ADR 0116): três tons da madeira, a corda, o couro da empunhadura e as pontas. */
+export interface BowVisualProfile {
+  readonly limb: { readonly light: string; readonly mid: string; readonly dark: string };
+  readonly string: string;
+  readonly wrap: string;
+  readonly wrapDark: string;
+  readonly tip: string;
+  /** A borla de fio pendurada na empunhadura. */
+  readonly charm: string;
+}
+
 export interface BowDefinition {
   readonly name: string;
   /** O nível que libera o arco (o do arco de caça é 0: o Arqueiro já nasce com ele). */
@@ -22,8 +33,9 @@ export interface BowDefinition {
   readonly range: number;
   /** Flechas gastas por tiro. */
   readonly arrowsPerShot: number;
-  /** De que é feito, para o desenho (lote A2). */
+  /** De que é feito. */
   readonly material: string;
+  readonly visual: BowVisualProfile;
 }
 
 export const BOWS: Readonly<Record<BowId, BowDefinition>> = { hunting: HUNTING_BOW };

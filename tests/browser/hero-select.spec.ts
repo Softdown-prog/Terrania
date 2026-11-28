@@ -25,12 +25,11 @@ test("jogador novo: a tela de escolha abre com os dois heróis liberados e o Arq
   await expect(dialog.locator("[data-hero=mage] .hero-card-badge")).toHaveCount(0);
   await expect(dialog.locator("[data-hero=knight] canvas")).toBeVisible();
   await expect(dialog.locator("[data-hero=mage] canvas")).toBeVisible();
-  // O Arqueiro (ADR 0109) já aparece, mas bloqueado: "Em breve", botão desligado, sem o desenho do Mago e com o ➶ no lugar.
+  // O Arqueiro (ADR 0109) já aparece, mas bloqueado: "Em breve", botão desligado, e o corpo dele (ADR 0116) desenhado no cartão.
   const archer = dialog.locator("#choose-archer");
   await expect(archer).toBeDisabled(); await expect(archer).toContainText("Arqueiro · Em breve");
   await expect(dialog.locator("[data-hero=archer] .hero-card-badge")).toHaveText("Em breve");
-  await expect(dialog.locator("[data-hero=archer] canvas")).toHaveCount(0);
-  await expect(dialog.locator("[data-hero=archer] .hero-card-soon")).toHaveText("➶");
+  await expect(dialog.locator("[data-hero=archer] canvas")).toBeVisible();
   await expect(dialog.locator("[data-hero=archer]")).toContainText("até 7 tiles");
   await dialog.screenshot({ path: test.info().outputPath("escolha-heroi.png") });
   if (info.project.name !== "android") { await page.keyboard.press("Escape"); await expect(dialog).toBeVisible(); }

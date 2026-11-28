@@ -21,4 +21,3 @@
   .hero-card-art { height: 130px; }
   .hero-card-art canvas { height: 130px; }
   }
-.hero-card-soon { font-size: 5.5rem; line-height: 1; opacity: .55; color: var(--gold, #d8b45c); }

@@ -5,7 +5,9 @@ import type { WeaponId } from "../engine/character/Weapons.ts";
 import { DEFAULT_STAFF, STAVES, type StaffId } from "../engine/character/Staves.ts";
 import { NO_CAST, castBody, castPhase } from "./spells/castPose.ts";
 import { drawMageStaff } from "./staves.ts";
-import { attackBody, staffMount, swordMount, swingTrail, type StaffMountFrame, type SwordMountFrame } from "./heroPose.ts";
+import { attackBody, bowMount, staffMount, swordMount, swingTrail, type BowMountFrame, type StaffMountFrame, type SwordMountFrame } from "./heroPose.ts";
+import { drawBow } from "./bows/bow.ts";
+import { BOWS, DEFAULT_BOW, type BowId } from "../engine/character/Bows.ts";
 import { blink, gait, smoothTo } from "./animation.ts";
 import { clamp01, ellipse, hashString, limb, mix, rgba, smoothstep, softShadow } from "./draw.ts";
 import type { HeroClassId } from "../engine/character/classes/index.ts";
@@ -23,10 +25,11 @@ export type HeroVisual = Pick<
   Player,
   "faceX" | "faceY" | "walkTime" | "attackTime"
 > &
-  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon" | "attackStaff" | "attackWindup">> &
+  Partial<Pick<Player, "vx" | "vy" | "hurtTime" | "attackWeapon" | "attackStaff" | "attackBow" | "attackWindup">> &
   { id?: string; gear?: GearState | undefined; equippedWeapon?: WeaponId | undefined;
     /** Vocação do herói (ADR 0067): sem ela, é o Cavaleiro. */ heroClass?: HeroClassId | undefined;
     /** O cajado que o Mago segura (ADR 0068); sem ele, o de Aprendiz. */ equippedStaff?: StaffId | undefined;
+    /** O arco que o Arqueiro segura (ADR 0116); sem ele, o de Caça. */ equippedBow?: BowId | undefined;
     /** O andar da montaria sob o herói (ADR 0092): com ele, o herói senta, sobe e desce com o lombo e leva a rédea; sem ele, anda a pé. */ ride?: MountRide | undefined };
 
 /** O que a tela precisa saber da vocação do herói para desenhá-lo (ADR 0067/0068): sem isso, é o Cavaleiro. */
@@ -73,6 +76,13 @@ function renderStaff(ctx: CanvasRenderingContext2D, mount: StaffMountFrame, staf
   tone: (c: string) => string, time: number, charge: number): void {
   ctx.save(); ctx.translate(mount.ox, mount.oy); ctx.rotate(mount.rot);
   drawMageStaff(ctx, staff, time, tone, charge);
+  ctx.restore();
+}
+
+/** O arco do Arqueiro na mão (ADR 0116): na origem da empunhadura, girado e espelhado para o lado da barriga. */
+function renderBow(ctx: CanvasRenderingContext2D, mount: BowMountFrame, bow: BowId, tone: (c: string) => string): void {
+  ctx.save(); ctx.translate(mount.ox, mount.oy); ctx.rotate(mount.rot); ctx.scale(mount.belly, 1);
+  drawBow(ctx, bow, mount.draw, tone);
   ctx.restore();
 }
 
@@ -165,8 +175,11 @@ export function renderHero(
   const walk = gait(player.walkTime, moving);
   const g = rd && rp ? { ...walk, a: { along: 0, lift: 0 }, b: { along: 0, lift: 0 }, bob: rp.bob, lean: rp.lean, armSwing: 0, moving: rd.moving } : walk;
   // Conjurando (ADR 0070), o Mago tem o corpo e o cajado da magia, não os do golpe de espada.
-  const cast = player.heroClass === "mage" && player.attackStaff ? castPhase(player.attackTime, player.attackWindup ?? STAVES[player.attackStaff].windup) : NO_CAST;
-  const afoot = cast.active ? castBody(player.attackTime, player.attackWindup ?? STAVES[player.attackStaff ?? DEFAULT_STAFF].windup) : attackBody(player.attackTime, player.attackWeapon);
+  // O Arqueiro atirando (ADR 0116) usa as mesmas fases do preparo e da saída: o arco ergue, a corda puxa e solta.
+  const shooting = player.heroClass === "archer" && player.attackBow ? player.attackBow : null;
+  const windup = player.attackWindup ?? (shooting ? BOWS[shooting].windup : STAVES[player.attackStaff ?? DEFAULT_STAFF].windup);
+  const cast = player.heroClass === "mage" && player.attackStaff ? castPhase(player.attackTime, windup) : shooting ? castPhase(player.attackTime, windup) : NO_CAST;
+  const afoot = cast.active ? castBody(player.attackTime, windup) : attackBody(player.attackTime, player.attackWeapon);
   // Em cima da montaria o golpe quase não avança o corpo: ele não sai da sela.
   const atk = player.ride ? { ...afoot, lunge: afoot.lunge * .3 } : afoot;
   const hurt = clamp01((player.hurtTime ?? 0) / 0.3);
@@ -187,12 +200,13 @@ export function renderHero(
   const gear = wear ? undefined : player.gear;
   // O que o herói segura: a espada do Cavaleiro ou o cajado do Mago (ADR 0068); o braço, a mão e a ordem de camadas são os mesmos.
   const staffSway = Math.sin(player.walkTime * 2) * g.moving * 0.05;
-  // O Arqueiro (ADR 0114) ainda não segura o arco na mão (lote A2b): o braço usa o ponto de empunhadura da espada e nada é desenhado nele.
+  // O que o herói segura: a espada do Cavaleiro, o cajado do Mago (ADR 0068) ou o arco do Arqueiro (ADR 0116); o braço, a mão e a ordem de camadas são os mesmos.
   const bowman = player.heroClass === "archer";
-  const held: { readonly hand: number; readonly gripX: number; readonly gripY: number } = look && !bowman ? staffMount(player, staffSway, cast) : frame;
+  const bow = bowman ? bowMount(player, staffSway, cast) : null;
+  const held: { readonly hand: number; readonly gripX: number; readonly gripY: number } = bow ?? (look ? staffMount(player, staffSway, cast) : frame);
   const drawHeld = (): void => {
-    if (bowman) return;
-    if (look) renderStaff(ctx, staffMount(player, staffSway, cast), player.equippedStaff ?? DEFAULT_STAFF, tone, t, cast.charge);
+    if (bow) renderBow(ctx, bow, player.equippedBow ?? DEFAULT_BOW, tone);
+    else if (look) renderStaff(ctx, staffMount(player, staffSway, cast), player.equippedStaff ?? DEFAULT_STAFF, tone, t, cast.charge);
     else renderWeapon(ctx, frame, player, tone, atk.impact, t);
   };
   const hasHelm = gear?.head === "trail-helm";
@@ -355,9 +369,14 @@ export function renderHero(
   const swing = g.armSwing;
   const swordSide = held.hand;
   // A mão que não segura a arma: a pé, balança com a passada; montado, fica na rédea, à frente da cintura, subindo e descendo com a montaria.
-  const handOf = (s: number): readonly [number, number] => rp
+  const restHand = (s: number): readonly [number, number] => rp
     ? [s * 4.4 * wf + (rd?.facing ?? 1) * 3.2, -15.2 + rp.hand + breath * 0.3]
     : [s * 9.6 * wf + mvx * swing * -s * 4.2, -12.5 + mvy * swing * -s * 2.8 - swing * -s * 1.2 + breath * 0.3];
+  // No tiro, a mão livre do Arqueiro sobe até a corda e a puxa (ADR 0116).
+  const handOf = (s: number): readonly [number, number] => {
+    const [x, y] = restHand(s);
+    return bow && s === -bow.hand && bow.raise > 0 && !rp ? [x + (bow.pullX - x) * bow.raise, y + (bow.pullY - y) * bow.raise] : [x, y];
+  };
   for (const s of [-1, 1]) {
     if (s === swordSide) continue; // o braço que segura a arma (a espada ou o cajado) é desenhado junto dela
     const [hx, hy] = handOf(s);

@@ -19,8 +19,6 @@ export const HERO_CLASS_INTRO: Readonly<Record<HeroClassId, HeroClassIntro>> = {
     traits: ["Atira flechas à distância, até 7 tiles", "Sem mana: cada tiro gasta uma flecha", "Mais ágil que o Cavaleiro, porém mais frágil"],
   },
 };
-/** O desenho do herói que ainda não tem corpo pronto (o Arqueiro, até o lote A2). */
-export const HERO_CLASS_PLACEHOLDER = "➶";
 export const HERO_CLASS_LOCKED = "Em breve";
 export const HERO_CLASS_TITLE = "Escolha o seu herói";
 export const HERO_CLASS_HINT = "Você escolhe uma vez por mundo; o herói não muda depois.";

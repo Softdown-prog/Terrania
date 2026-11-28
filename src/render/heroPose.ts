@@ -41,6 +41,39 @@ export function staffMount(player: { readonly faceX: number; readonly faceY?: nu
   const rot = hand * STAFF_LEAN + sway - aim * 0.38 * cast.charge + aim * 1.05 * cast.thrust;
   return { ox: gripX, oy: gripY, rot, hand, gripX, gripY };
 }
+/** Onde o arco do Arqueiro fica (ADR 0116): a empunhadura, a rotação, o lado da barriga, o quanto a corda está puxada e onde a mão que puxa a corda fica. */
+export interface BowMountFrame {
+  readonly ox: number;
+  readonly oy: number;
+  readonly rot: number;
+  readonly hand: number;
+  readonly gripX: number;
+  readonly gripY: number;
+  /** Para que lado a barriga do arco aponta (para onde o herói mira; de frente ou de costas, para o lado da mão que o segura). */
+  readonly belly: 1 | -1;
+  /** 0 a 1: o quanto a corda está puxada (sobe no preparo do tiro e solta na saída). */
+  readonly draw: number;
+  /** 0 a 1: o quanto o braço do arco está erguido e esticado (0 é o arco carregado ao lado do corpo). */
+  readonly raise: number;
+  readonly pullX: number;
+  readonly pullY: number;
+}
+const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
+/**
+ * O Arqueiro leva o arco ao lado do corpo, quase em pé; no tiro (mesmas fases da conjuração, `castPhase`) o braço do arco ergue e estica para o alvo na altura do
+ * ombro e a outra mão puxa a corda até perto do queixo; na saída a corda solta. A mão que segura o arco é a mesma da espada.
+ */
+export function bowMount(player: { readonly faceX: number; readonly faceY?: number }, sway = 0, cast: CastPhase = NO_CAST): BowMountFrame {
+  const hand = player.faceX < -.3 ? -1 : 1;
+  const aim = player.faceX > .3 ? 1 : player.faceX < -.3 ? -1 : 0;
+  const belly = (aim !== 0 ? aim : hand) as 1 | -1;
+  const raise = cast.active ? Math.min(1, cast.charge * 1.6 + cast.thrust * 1.2) : 0, draw = cast.active ? cast.charge : 0;
+  const aimX = aim !== 0 ? aim * 8.6 : hand * 6.6, aimY = aim !== 0 ? -19.4 : -18.2;
+  const gripX = lerp(hand * 10, aimX, raise), gripY = lerp(-14, aimY, raise);
+  const rot = lerp(hand * 0.14 + sway, 0, raise);
+  const pullX = gripX + belly * (-2.6 - 7.5 * draw), pullY = gripY;
+  return { ox: gripX, oy: gripY, rot, hand, gripX, gripY, belly, draw, raise, pullX, pullY };
+}
 /** O ponto da gema do cajado no referencial dos pés do herói: de onde a magia sai. */
 export function staffTip(mount: StaffMountFrame): { x: number; y: number } {
   const reach = STAFF_GEM_REACH;

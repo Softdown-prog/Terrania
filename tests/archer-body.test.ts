@@ -77,23 +77,23 @@ test("o tronco: cordões da gola, correia da aljava e cinto com a fivela; de cos
   assert.ok(front.calls.createLinearGradient! >= 2 && back.calls.createLinearGradient! >= 2, "correia e cinto têm degradê");
 });
 
-test("o herói Arqueiro inteiro: é outro desenho que o do Cavaleiro e o do Mago, usa as cores dele, e não segura espada nem cajado", () => {
+test("o herói Arqueiro inteiro: é outro desenho que o do Cavaleiro e o do Mago, usa as cores dele, e não segura espada nem cajado (segura o arco)", () => {
   const archer = hero(), knight = hero({ heroClass: undefined }), mage = hero({ heroClass: "mage" });
   assert.equal(new Set([archer, knight, mage]).size, 3);
   const s = spy(c => renderHero(c, { ...POSE } as never, 3, 4, 1.2));
   for (const tone of [ARCHER_PAL.jerkin.mid, ARCHER_BODY.band, ARCHER_PAL.leather.mid]) assert.ok(usesColor(s, tone), tone);
   assert.equal(hero({ equippedWeapon: "forge", attackWeapon: "forge" }), archer, "a espada equipada não aparece na mão dele");
   assert.equal(hero({ equippedStaff: "storm" }), archer, "nem o cajado");
+  assert.equal(hero({ attackBow: null, attackTime: 0 }), archer, "parado, o arco de repouso é sempre o mesmo");
   assert.equal(new Set([[0, 1], [1, 0], [0, -1], [-1, 0]].map(([fx, fy]) => hero({ faceX: fx!, faceY: fy! }))).size, 4, "as quatro direções são diferentes");
   assert.notEqual(hero({ hurtTime: 0.2 }), archer, "o dano pisca como nos outros"); assert.notEqual(hero({ walkTime: 1, vx: 60 }), archer, "o andar muda o desenho");
   assert.doesNotThrow(() => hero({ attackTime: 0.2, attackBow: "hunting" }));
 });
 
-test("a fiação: o desenho do herói usa a aparência do Arqueiro e não desenha nada na mão dele ainda", () => {
+test("a fiação: o desenho do herói usa a aparência do Arqueiro e, com ela, o arco na mão (ADR 0116)", () => {
   const actors = readFileSync("src/render/actors.ts", "utf8");
   assert.match(actors, /import \{ archerWear \} from "\.\/hero\/archer\/index\.ts";/);
   assert.match(actors, /const wear = player\.heroClass === "mage" \? mageWear\(player\.gear\) : player\.heroClass === "archer" \? archerWear\(player\.gear\) : null;/);
   assert.match(actors, /const bowman = player\.heroClass === "archer";/);
-  assert.match(actors, /look && !bowman \? staffMount\(player, staffSway, cast\) : frame;/);
-  assert.match(actors, /if \(bowman\) return;/);
+  assert.match(actors, /const bow = bowman \? bowMount\(player, staffSway, cast\) : null;/);
 });

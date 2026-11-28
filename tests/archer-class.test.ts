@@ -5,7 +5,7 @@ import { OfflineSimulation } from "../src/engine/OfflineSimulation.ts";
 import { Player } from "../src/actors/Player.ts";
 import { maxHpForExperience, experienceForLevel } from "../src/engine/character/Experience.ts";
 import { ARCHER, ARCHER_HP_PERCENT, ARCHER_SPEED_PERCENT, HERO_CLASSES, HERO_CLASS_IDS, KNIGHT, MAGE, heroClassSheet, isHeroClassPlayable, normalizeHeroClass, regenerateMana } from "../src/engine/character/classes/index.ts";
-import { HERO_CLASS_INTRO, HERO_CLASS_PLACEHOLDER } from "../src/game/messages/classIntro.ts";
+import { HERO_CLASS_INTRO } from "../src/game/messages/classIntro.ts";
 import { EQUIPMENT_SLOTS } from "../src/engine/character/Equipment.ts";
 
 /** O Arqueiro como vocação (ADR 0109, lote A1a): ficha, vida de 85%, 10% mais ágil, sem mana, e ainda bloqueado na tela de escolha. */
@@ -63,14 +63,15 @@ test("a velocidade acompanha o herói para a caverna e de volta, e depois de ren
   assert.equal(new OfflineSimulation(SEED).player.speedScale, 1, "o Cavaleiro segue em 1");
 });
 
-test("o Arqueiro nasce com 85 de vida e o save guarda a vocação; ninguém o escolhe ainda: a tela mostra o cartão bloqueado com o ➶", () => {
+test("o Arqueiro nasce com 85 de vida e o save guarda a vocação; ninguém o escolhe ainda: a tela mostra o cartão bloqueado, com o corpo dele desenhado", () => {
   const sim = new OfflineSimulation(SEED, undefined, "archer");
   assert.deepEqual([sim.heroClass, sim.usesMana, sim.player.maxHp, sim.player.hp], ["archer", false, 85, 85]);
   assert.equal(sim.snapshot().heroClass, "archer");
   assert.deepEqual(Object.keys(HERO_CLASS_INTRO), [...HERO_CLASS_IDS]); assert.equal(HERO_CLASS_INTRO.archer.traits.length, 3);
   assert.match(HERO_CLASS_INTRO.archer.traits.join(" "), /7 tiles/); assert.match(HERO_CLASS_INTRO.archer.traits.join(" "), /flecha/);
-  assert.equal(HERO_CLASS_PLACEHOLDER, "➶");
   const page = readFileSync("src/app/game-page.html", "utf8");
-  assert.match(page, /@else if \(id === 'mage'\) \{ <canvas #classMage width="170" height="190"><\/canvas> \}\s*\n\s*@else \{ <span class="hero-card-soon">\{\{ hud\.heroClassText\.placeholder \}\}<\/span> \}/, "o Arqueiro não usa o desenho do Mago");
-  assert.match(readFileSync("src/app/hud.service.ts", "utf8"), /placeholder: HERO_CLASS_PLACEHOLDER/);
+  assert.match(page, /@else if \(id === 'mage'\) \{ <canvas #classMage width="170" height="190"><\/canvas> \}\s*\n\s*@else \{ <canvas #classArcher width="170" height="190"><\/canvas> \}/, "o Arqueiro tem o canvas dele, não o do Mago");
+  assert.doesNotMatch(page, /hero-card-soon/, "o ➶ de antes saiu");
+  const component = readFileSync("src/app/game-page.component.ts", "utf8");
+  assert.match(component, /\[this\.classArcher\(\), 'archer', 2\.6\]/, "o corpo do Arqueiro é desenhado na prévia da escolha");
 });

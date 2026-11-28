@@ -95,6 +95,8 @@ import { paintMoonMotif } from "../../src/render/staves/motifs/moon.ts";
 import { paintCoilMotif } from "../../src/render/staves/motifs/coil.ts";
 import { paintAstralMotif } from "../../src/render/staves/motifs/astral.ts";
 import { drawArrowShot } from "../../src/render/arrows/arrow.ts";
+import { drawBow } from "../../src/render/bows/bow.ts";
+import { drawNockedArrow } from "../../src/render/bows/nock.ts";
 import { drawArrowHit } from "../../src/render/arrows/hit.ts";
 import { drawSpellBolt } from "../../src/render/spells/bolt.ts";
 import { drawSpellBurst } from "../../src/render/spells/burst.ts";
@@ -230,6 +232,9 @@ export const ASSETS: ArtAsset[] = [
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "magia: projétil " + kind, tier: "prop", fn: "drawSpellBolt", draw: c => drawSpellBolt(c, kind, 0.5, 1) })),
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "magia: estouro " + kind, tier: "prop", fn: "drawSpellBurst", draw: c => drawSpellBurst(c, kind, 0.2) })),
   ...STAFF_IDS.map<ArtAsset>(kind => ({ id: "magia: estouro de abate " + kind, tier: "prop", fn: "drawSpellBurst", draw: c => drawSpellBurst(c, kind, 0.2, true) })),
+  { id: "arqueiro: Arco de Caça em repouso", tier: "prop", fn: "drawBow", draw: c => drawBow(c, "hunting", 0, t => t) },
+  { id: "arqueiro: Arco de Caça com a corda puxada", tier: "prop", fn: "drawBow", draw: c => drawBow(c, "hunting", 1, t => t) },
+  { id: "arqueiro: flecha encaixada", tier: "prop", fn: "drawNockedArrow", draw: c => drawNockedArrow(c, -8, 10, t => t) },
   { id: "arqueiro: flecha de junco em voo", tier: "prop", fn: "drawArrowShot", draw: c => drawArrowShot(c, 0.5) },
   { id: "arqueiro: impacto da flecha", tier: "prop", fn: "drawArrowHit", draw: c => drawArrowHit(c, 0.3) },
   { id: "arqueiro: impacto da flecha que derruba", tier: "prop", fn: "drawArrowHit", draw: c => drawArrowHit(c, 0.3, true) },

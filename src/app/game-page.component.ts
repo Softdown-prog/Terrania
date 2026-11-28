@@ -75,6 +75,7 @@ export class GamePageComponent implements AfterViewInit {
   private readonly classDialog = viewChild<ElementRef<HTMLDialogElement>>('classDialog');
   private readonly classKnight = viewChild<ElementRef<HTMLCanvasElement>>('classKnight');
   private readonly classMage = viewChild<ElementRef<HTMLCanvasElement>>('classMage');
+  private readonly classArcher = viewChild<ElementRef<HTMLCanvasElement>>('classArcher');
   private classPreviewFrame = 0;
   private readonly playersDialog = viewChild.required<ElementRef<HTMLDialogElement>>('playersDialog');
   private readonly inventoryDialog = viewChild.required<ElementRef<HTMLDialogElement>>('inventoryDialog');
@@ -153,10 +154,10 @@ export class GamePageComponent implements AfterViewInit {
     this.selectedSector.set(id);
     this.atlasScale.set('sector');
   }
-  /** Os heróis da tela de escolha são os mesmos heróis procedurais do mundo, de frente: o Cavaleiro com a espada de treino e o Mago com o chapéu (a escala do Mago é menor para o chapéu caber). */
+  /** Os heróis da tela de escolha são os mesmos heróis procedurais do mundo, de frente: o Cavaleiro com a espada de treino, o Mago com o chapéu (a escala do Mago é menor para o chapéu caber) e o Arqueiro com o arco ao lado do corpo e a aljava às costas. */
   private drawClassPreview(time: number): void {
     if (!this.hud.heroClassPrompt()) return;
-    for (const [ref, heroClass, scale] of [[this.classKnight(), undefined, 2.6], [this.classMage(), 'mage', 2.3]] as const) {
+    for (const [ref, heroClass, scale] of [[this.classKnight(), undefined, 2.6], [this.classMage(), 'mage', 2.3], [this.classArcher(), 'archer', 2.6]] as const) {
       const canvas = ref?.nativeElement, ctx = canvas?.getContext('2d');
       if (!ctx || !canvas) continue;
       ctx.clearRect(0, 0, canvas.width, canvas.height);

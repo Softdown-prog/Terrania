@@ -14,4 +14,12 @@ export const HUNTING_BOW = {
   range: 7,
   arrowsPerShot: 1,
   material: "madeira de freixo",
+  visual: {
+    limb: { light: "#e0c88f", mid: "#b08a55", dark: "#6e5030" },
+    string: "#efe9d4",
+    wrap: "#7a5530",
+    wrapDark: "#4a3220",
+    tip: "#d6c9a4",
+    charm: "#a8482a",
+  },
 } as const satisfies BowDefinition;

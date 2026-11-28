@@ -16,7 +16,7 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/mounts.ts`](../../src/render/mounts.ts)
 - [`src/render/regionalCreatures.ts`](../../src/render/regionalCreatures.ts)
 
-## Todos os arquivos deste módulo (364)
+## Todos os arquivos deste módulo (366)
 
 - [`src/render/Camera.ts`](../../src/render/Camera.ts)
 - [`src/render/Effects.ts`](../../src/render/Effects.ts)
@@ -27,6 +27,8 @@ Desenha entidades e mundo; cada monstro possui paleta e anatomia próprias, com 
 - [`src/render/arrows/ArrowFlights.ts`](../../src/render/arrows/ArrowFlights.ts)
 - [`src/render/arrows/arrow.ts`](../../src/render/arrows/arrow.ts)
 - [`src/render/arrows/hit.ts`](../../src/render/arrows/hit.ts)
+- [`src/render/bows/bow.ts`](../../src/render/bows/bow.ts)
+- [`src/render/bows/nock.ts`](../../src/render/bows/nock.ts)
 - [`src/render/cave.ts`](../../src/render/cave.ts)
 - [`src/render/caveChestArt.ts`](../../src/render/caveChestArt.ts)
 - [`src/render/caveDetails.ts`](../../src/render/caveDetails.ts)
